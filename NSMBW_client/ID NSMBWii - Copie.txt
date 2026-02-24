@@ -1,0 +1,12 @@
+Everything was test on Save 2 with an USA game
+
+803741B3 == Star coins collected in the level 1-1. 04 --> not collected 00 --> Mario collect the star 01 --> Luigi collect the star etc +4 for each levels
+815E3AA7 == star coin stockage (systeme byte 000) for each level (815E3A*7)
+80315B9E == Level world when you are in a level(Ex: 0 --> world 1)
+80315B9F == level level when you are in a level(EX: 0 --> level 1)
+80C8084F == level stat. Ex: first byte (00 == level not completed, 10 == level completed, 20 == secret exit) second byte (01 == first star coin collected, 02 == second star coin collected, 03 == first and second stars coins collected) +4 for the others levels
+80C807D9 == inventory items (+1 byte for each)
+80315B9C == World level (World Map)
+80315B9D == level level (World Map)
+80C80EDC == Hint movie stat. Ex: 0 == not available, 1 == unlocked. +1 for each hint movie (80C80ED*)
+80C80812 == World stat in the select menu. Ex: 0 == not available, 1== unlocked. +1 for each world (80C8081*) 
