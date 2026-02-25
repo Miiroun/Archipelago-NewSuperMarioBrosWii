@@ -18,15 +18,6 @@ from Options import Choice, OptionGroup, PerGameCommonOptions, Range, Toggle
 # A toggle is an option that can either be on or off. This will be represented by a checkbox on the website.
 # The default for a toggle is "off".
 # If you want a toggle to be on by default, you can use the "DefaultOnToggle" class instead of the "Toggle" class.
-class HardMode(Toggle):
-    """
-    In hard mode, the basic enemy and the final boss will have more health.
-    The Health Upgrades become progression, as they are now required to beat the final boss.
-    """
-
-    # The docstring of an option is used as the description on the website and in the template yaml.
-
-    # You'll also want to set a display name, which will determine what the option is called on the website.
 
 
 class TrapChance(Range):

@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 import multiprocessing
 import traceback
 import zipfile
@@ -13,12 +13,15 @@ from NSMBWContext import *
 import dolphin_interface_client
 
 from CommonClient import get_base_parser, handle_url_arg, logging, gui_enabled, server_loop
+from NetUtils import ClientStatus
+from worlds.factorio.Technologies import unlock
 
+from worlds.nsmbw.items import ITEM_NAME_TO_ID
+from worlds.nsmbw.locations import LOCATION_NAME_TO_ID
 
 logger = logging.getLogger("Client")
 
-
-        
+ITEM_ID_TO_NAME = {v: k for k, v in ITEM_NAME_TO_ID.items()}
 
 
 def launch_NSMBW_client(*args):
@@ -28,9 +31,7 @@ def launch_NSMBW_client(*args):
         multiprocessing.freeze_support()
         logger.info("main")
         parser = get_base_parser()
-        parser.add_argument(
-            "apmp1_file", default="", type=str, nargs="?", help="Path to an apmp1 file"
-        )
+        parser.add_argument("apmp1_file", default="", type=str, nargs="?", help="Path to an apmp1 file")
         parser_args = parser.parse_args()
 
         ctx = NSMBWContext(parser_args.connect, parser_args.password, parser_args.apmp1_file)
@@ -41,6 +42,8 @@ def launch_NSMBW_client(*args):
 
         logger.info("Connecting to server...")
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="Server Loop")
+        if tracker_loaded:
+            ctx.run_generator()
         if gui_enabled:
             ctx.run_gui()
         ctx.run_cli()
@@ -142,8 +145,6 @@ async def handle_check_deathlink(ctx: NSMBWContext):
 
 
 async def _handle_game_ready(ctx: NSMBWContext):
-    #await print_data(ctx)
-    await check_starcoins(ctx)# should remove these in release
 
     if ctx.server:
         ctx.last_error_message = None
@@ -157,6 +158,8 @@ async def _handle_game_ready(ctx: NSMBWContext):
         await handle_checked_location(ctx) #, current_inventory)
         await handle_check_goal_complete(ctx)
         # await handle_tracker_level(ctx)
+        await print_data(ctx)
+
 
         if ctx.death_link_enabled:
             await handle_check_deathlink(ctx)
@@ -208,7 +211,7 @@ def get_options_from_apmp1(apmp1_file: str) -> Dict[str, Any]:
         with zip_file.open("options.json") as file:
             options_json = file.read().decode("utf-8")
             options_json = json.loads(options_json)
-    return typing.cast(Dict[str, Any], options_json)
+    return cast(Dict[str, Any], options_json)
 
 print("--------------------------- Code started ---------------------------------------------")
 
@@ -219,29 +222,76 @@ async def handle_check_goal_complete(ctx: NSMBWContext):
         await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
 async def handle_checked_location(ctx: NSMBWContext):
-    pass
+    await check_starcoins(ctx)
 
 async def handle_receive_items(ctx: NSMBWContext):
-    pass
+    unlocked_worlds = [0 for i in range(1,9+1)]
+    for network_item in ctx.items_received:
+        item_id = network_item.item
+        item_name = ITEM_ID_TO_NAME[item_id]
+        if not network_item in ctx.items_handled:
+            #print(network_item)
+
+            if item_name is None:
+                continue
+
+            logger.info(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
+            if item_name == "Starcoin":
+                print(f"A starcoin was received")
+            elif item_name == "Gomba trap":
+                print(f"World Gombatrap was received ")
+            elif item_name == "Powerup_mushroom":
+                print(f"World powerup mushroom was received ")
+            elif item_id >= 201 and item_id <= 209:
+                world_num = item_id-200
+                print(f"World {world_num} was received ")
+                ctx.game_interface.set_Worldstats(world_num, b'\x01')
+
+            if network_item.player != ctx.slot:
+                receipt_message = ("online")
+                ctx.notification_manager.queue_notification(
+                    f"{item_name} {receipt_message} ({ctx.player_names[network_item.player]})"
+                )
+            ctx.items_handled.append(network_item)
+
+        # does every time loop, not just first time
+        #for world_num in range(1,9+1):
+            #elif item_id >= 201 and item_id <= 209:
+            #print(f"World {item_id - 200} was received ")
+
+
 
 async def check_starcoins(ctx: NSMBWContext):
-    sc_status = ctx.game_interface.get_SC()
-    if int.from_bytes(sc_status, "big") == 0: # becomes 0 if collected
-        if True: # need to check if already counted for this level
-            sc_num = 1
-            world_num = int.from_bytes(ctx.game_interface.get_world_level(), "big")+1
-            level_num = int.from_bytes(ctx.game_interface.get_world_level(), "big")+1
-            print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-            checked_locations = f"World{world_num}_level{level_num}_SC{sc_num}"
-            await ctx.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+    sc_statuses = ctx.game_interface.get_SC()
+    for n in range(0,3):
+        sc_status = sc_statuses[3+4*n]
+        print(sc_status)
+        print(sc_statuses)
+        sc_num = n+1
+        if sc_status == 0: # becomes 0 if collected
+            world_num = int.from_bytes(ctx.game_interface.get_world_level(), "big") + 1
+            level_num = int.from_bytes(ctx.game_interface.get_world_level(), "big") + 1
+            location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
+            if not location_name in ctx.locations_handled: # need to check if already counted for this level
+                print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
+                checked_locations = [LOCATION_NAME_TO_ID[location_name]]
+                await ctx.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+                logger.info(f"Sent check from item{location_name}")
+
+                ctx.locations_handled.append(location_name)
 
 async def print_data(ctx: NSMBWContext):
-    print("SC:", ctx.game_interface.get_SC())
-    print("level_world:", ctx.game_interface.get_level_world())
-    print("level_stats:", ctx.game_interface.get_level_stats())
-    print("world_level:", ctx.game_interface.get_world_level())
-    print("level_level:", ctx.game_interface.get_level_level())
-    print("Worldstats_selectmenu:", ctx.game_interface.get_Worldstats_selectmenu())
+    do_print_data = True
+    if do_print_data:
+        print("-------------------------------------")
+        print("SC:", ctx.game_interface.get_SC())
+        print("level_world:", ctx.game_interface.get_level_world())
+        print("level_stats:", ctx.game_interface.get_level_stats())
+        print("world_level:", ctx.game_interface.get_world_level())
+        print("level_level:", ctx.game_interface.get_level_level())
+        print("Worldstats_selectmenu:", ctx.game_interface.get_Worldstats_selectmenu())
+        print("-------------------------------------")
+
 
 
 
