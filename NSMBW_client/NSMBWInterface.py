@@ -4,19 +4,22 @@ from logging import Logger
 from typing import Dict, Optional
 
 from dolphin_interface_client import *
+from worlds.oot.Messages import int_to_bytes
+
 
 class ConnectionState(Enum):
     DISCONNECTED = 0
     IN_GAME = 1
     IN_MENU = 2
     MULTIPLE_DOLPHIN_INSTANCES = 3
+    SCOUTS_SENT = 4
 
 _SUPPORTED_VERSIONS = ["US"]
 GAMES: Dict[str, Any] = {
     "US": {
         "game_id": b"SMNE01",
         "game_rev": 2,
-        "SC_1-1" : 0x803741B3,
+        "SC_current_level" : 0x803741B0,
         "SC_stockage": 0x815E3AA7, # (systeme byte 000) for each level (815E3A*7)",
         "level_world": 0x80315B9E, #"Level world when you are in a level",
         "level_stat": 0x80C8084F, #. Ex: first byte (00 == level not completed, 10 == level completed, 20 == secret exit) second byte (01 == first star coin collected, 02 == second star coin collected, 03 == first and second stars coins collected) +4 for the others levels
@@ -24,14 +27,19 @@ GAMES: Dict[str, Any] = {
         "world_level": 0x80315B9C, #(World Map)
         "level_level": 0x80315B9D, #(World Map)
         "HM_stats": 0x80C80EDC, #. Ex: 0 == not available, 1 == unlocked. +1 for each hint movie (80C80ED*)
-        "Worldstats_selectmenu": 0x80C80812 #. Ex: 0 == not available, 1== unlocked. +1 for each world (80C8081*) 
+        "Worldstats_selectmenu": 0x80C80812, #. Ex: 0 == not available, 1== unlocked. +1 for each world (80C8081*)
+
+
+        "HUD_MESSAGE_ADDRESS": 0x803F0BA8,#copypasted these from metroid
+        "HUD_TRIGGER_ADDRESS": 0x80573494,
     },"EU": {
         "game_id": b"SMNP01" # EU partially supported
     }
 }
 
 # game constants
-HUD_MESSAGE_DURATION = 196
+HUD_MESSAGE_DURATION = 7.0
+HUD_MAX_MESSAGE_SIZE = 194
 
 class NSMBWInterface():
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with Metroid Prime"""
@@ -157,10 +165,10 @@ class NSMBWInterface():
     
     #my code-------------------------------------------------
 
-
+    # just created
     def get_SC(self):
-        address = GAMES[self.current_game]["SC_1-1"]
-        return self.dolphin_client.read_address(address,1)
+        address = GAMES[self.current_game]["SC_current_level"]
+        return self.dolphin_client.read_address(address,4*3)
     def starcoin_stockage(self):
         address = GAMES[self.current_game]["SC_stockage"]
         return self.dolphin_client.read_address(address,1)
@@ -185,4 +193,9 @@ class NSMBWInterface():
     def get_Worldstats_selectmenu(self):
         address = GAMES[self.current_game]["Worldstats_selectmenu"]
         return self.dolphin_client.read_address(address,1)
-    
+
+    #thought about
+    def set_Worldstats(self,world_num : int, status : bytes):
+        address = GAMES[self.current_game]["Worldstats_selectmenu"] + (world_num-1)
+        self.dolphin_client.write_address(address, status)
+

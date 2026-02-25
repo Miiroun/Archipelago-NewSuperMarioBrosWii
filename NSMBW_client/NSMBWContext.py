@@ -1,8 +1,19 @@
 from typing import Optional, List
 
-from CommonClient import get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
+from MultiServer import mark_raw
 from NSMBWInterface import *
+from NetUtils import NetworkItem
 from NotificationManager import NotificationManager
+
+
+tracker_loaded = False
+try:
+    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
+
+    tracker_loaded = True
+except ModuleNotFoundError:
+    from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
+
 
 logger = logging.getLogger("Client")
 
@@ -34,6 +45,16 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         logger.info(message)
         self.ctx.notification_manager.queue_notification(message)
 
+    @mark_raw
+    def _cmd_locationscout(self, key: str =""):
+        """"scout location"""
+        self.ctx.send_msgs([{"cmd": "LocationScouts", "locations": key}])
+
+    @mark_raw
+    def _cmd_sendlocation(self, key: str =""):
+        """Send item check"""
+        self.ctx.send_msgs([{"cmd": "LocationChecks", "locations": key}])
+        self.connection_status = ConnectionState.SCOUTS_SENT
 
 
 status_messages = {
@@ -41,14 +62,15 @@ status_messages = {
     ConnectionState.IN_MENU: "Connected to game, waiting for game to start",
     ConnectionState.DISCONNECTED: "Unable to connect to the Dolphin instance, attempting to reconnect...",
     ConnectionState.MULTIPLE_DOLPHIN_INSTANCES: "Warning: Multiple Dolphin instances detected, client may not function correctly.",
+    ConnectionState.SCOUTS_SENT: "Sent location scout",
 }
 
-class NSMBWContext(CommonContext):
+class NSMBWContext(SuperContext):
         # Text Mode to use !hint and such with games that have no text entry
-        tags = CommonContext.tags
+        tags = {"AP"}#CommonContext.tags
         game = 'NSMBW'  # empty matches any game since 0.3.2
         items_handling = 0b111  # receive all items for /received
-        want_slot_data = False  # Can't use game specific slot_data
+        want_slot_data = True  # Can't use game specific slot_data
         game_interface: NSMBWInterface
         connection_state = ConnectionState.DISCONNECTED
         last_error_message: Optional[str] = None
@@ -57,26 +79,36 @@ class NSMBWContext(CommonContext):
         death_link_enabled = False
         command_processor = NSMBWCommandProcessor
         apmp1_file: Optional[str] = None
+        slot_data: Dict[str, Utils.Any] = {}
 
+
+        #Created for NSMBW
+        items_handled = []
+        locations_handled = []
 
         def __init__(self, server_address: str, password: str, apmp1_file: Optional[str] = None):
             super().__init__(server_address, password)
             self.game_interface = NSMBWInterface(logger)
             self.notification_manager = NotificationManager(HUD_MESSAGE_DURATION, self.game_interface.send_hud_message)
             self.apmp1_file = apmp1_file
-        
+            self.items_handled = []
 
         async def server_auth(self, password_requested: bool = False):
             if password_requested and not self.password:
                 await super(NSMBWContext, self).server_auth(password_requested)
             await self.get_username()
-            await self.send_connect(game="")
+            await self.send_connect()
 
         def on_package(self, cmd: str, args: dict):
-            if cmd == "Connected":
-                self.game = self.slot_info[self.slot].game
+            super().on_package(cmd, args)
+            if cmd == "Connected" and tracker_loaded:
+                args.setdefault("slot_data", dict())
+            if cmd == "ReceivedItems":
+                #handle_recived_items
+                pass
+            else:
+                print(f"Recived package with command: {cmd}")
 
         async def disconnect(self, allow_autoreconnect: bool = False):
-            self.game = ""
             await super().disconnect(allow_autoreconnect)
 

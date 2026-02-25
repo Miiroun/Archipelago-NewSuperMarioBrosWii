@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Main_world",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/Main_world.png"
+  },
+  {
+    "name": "World1",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/World1.png"
+  }
+]

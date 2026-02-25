@@ -1,12 +1,16 @@
 from collections.abc import Mapping
 from typing import Any
 
+from BaseClasses import CollectionState
+from NetUtils import JSONMessagePart
 from worlds.AutoWorld import World
 
 from . import items, locations, regions, rules, web_world
 from . import options as nsmbw_option
 
 from Utils import visualize_regions
+
+from typing import ClassVar
 
 class NSMBWworld(World):
     """
@@ -76,3 +80,25 @@ class NSMBWworld(World):
     def fill_slot_data(self) -> Mapping[str, Any]:
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         return self.options.as_dict("trap_chance")
+
+
+    # UT-tracket imlementation
+    def interpret_slot_data(self, slot_data: dict[str, Any]) -> None:
+        pass
+
+    def get_logical_path(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
+        return []
+
+    def explain_rule(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
+        return []
+
+    tracker_world: ClassVar = {
+            "map_page_folder" : "tracker",            #"external_pack_key" : <optional string that is the name of the setting string that UT reads in order to find the external pop tracker pack, takes priority over internal packs>                                                                                                                                                                         "map_page_folder": "tracker",
+            "map_page_maps": "maps/maps.json",
+            "map_page_locations" : "locations/locations.json",
+            #"map_page_setting_key" : <optional tag that informs which data storage key will be watched for auto tabbing>
+            #"map_page_index" : <optional function that will control the auto tabbing>
+            #"poptracker_name_mapping" : <optional Dict that maps the poptracker pack names to the location id as they exist in the datapackage >
+            #"location_setting_key" : <optional data storage key used to determine where to place the location indicator>
+            #"location_icon_coords" : <optional function used to convert between the map and the value in data storage into coords>
+        }
