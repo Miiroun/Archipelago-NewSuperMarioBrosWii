@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from Options import Choice, OptionGroup, PerGameCommonOptions, Range, Toggle
+import settings
+from Options import *
 
 # In this file, we define the options the player can pick.
 # The most common types of options are Toggle, Range and Choice.
@@ -31,6 +32,9 @@ class TrapChance(Range):
     range_end = 100
     default = 0
 
+class File_path(FreeText):
+    display_name = "File Path"
+    path = ""
 
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
@@ -38,6 +42,7 @@ class TrapChance(Range):
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
     trap_chance: TrapChance
+    #file_path : File_path
 
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
@@ -45,6 +50,7 @@ option_groups = [
     OptionGroup(
         "Gameplay Options",
         [TrapChance],
+        #[File_path],
     ),
 ]
 
@@ -57,3 +63,10 @@ option_presets = {
         "trap_chance": 50,
     },
 }
+
+class NSMBWSettings(settings.Group):
+    pass
+    #class Rom_path(settings.FilePath):
+    #    desciption = "ROM Path"
+    #    location = ""
+    #rom_path : Rom_path = None

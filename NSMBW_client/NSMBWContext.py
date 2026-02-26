@@ -45,6 +45,11 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         logger.info(message)
         self.ctx.notification_manager.queue_notification(message)
 
+    def _cmc_reapply_checks(self):
+        """Do this command if some checks havent been aplied"""
+        self.ctx.items_handled = []
+        self.ctx.locations_handled = []
+
     @mark_raw
     def _cmd_locationscout(self, key: str =""):
         """"scout location"""
@@ -78,7 +83,7 @@ class NSMBWContext(SuperContext):
         notification_manager: NotificationManager
         death_link_enabled = False
         command_processor = NSMBWCommandProcessor
-        apmp1_file: Optional[str] = None
+        apnsmbw_file: Optional[str] = None
         slot_data: Dict[str, Utils.Any] = {}
 
 
@@ -86,11 +91,11 @@ class NSMBWContext(SuperContext):
         items_handled = []
         locations_handled = []
 
-        def __init__(self, server_address: str, password: str, apmp1_file: Optional[str] = None):
+        def __init__(self, server_address: str, password: str, apnsmbw_file: Optional[str] = None):
             super().__init__(server_address, password)
             self.game_interface = NSMBWInterface(logger)
             self.notification_manager = NotificationManager(HUD_MESSAGE_DURATION, self.game_interface.send_hud_message)
-            self.apmp1_file = apmp1_file
+            self.apnsmbw_file = apnsmbw_file
             self.items_handled = []
 
         async def server_auth(self, password_requested: bool = False):
@@ -101,11 +106,21 @@ class NSMBWContext(SuperContext):
 
         def on_package(self, cmd: str, args: dict):
             super().on_package(cmd, args)
-            if cmd == "Connected" and tracker_loaded:
-                args.setdefault("slot_data", dict())
-            if cmd == "ReceivedItems":
+            if cmd == "Connected":
+                if tracker_loaded:
+                    args.setdefault("slot_data", dict())
+            elif cmd == "ReceivedItems":
                 #handle_recived_items
                 pass
+            elif cmd == "Bounced":
+                print("Packed bounced with the following argument")
+                print(args)
+            elif cmd == "PrintJSON":
+                print("Packed PrintJSON with the following argument")
+                print(args)
+            elif cmd == "Retrieved":
+                print("Packed Retrieved with the following argument")
+                print(args)
             else:
                 print(f"Recived package with command: {cmd}")
 

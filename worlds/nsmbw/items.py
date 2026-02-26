@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 ITEM_NAME_TO_ID = {
     "Starcoin" : 101,
     "Gomba trap" : 401,
-    "Powerup_mushroom" : 501,
+    "fill_inventory" : 501,
 }
 
 
@@ -22,7 +22,7 @@ ITEM_NAME_TO_ID = {
 DEFAULT_ITEM_CLASSIFICATIONS = {
     "Starcoin" : ItemClassification.filler, #77 x 3 st
     "Gomba trap" : ItemClassification.trap,
-    "Powerup_mushroom" : ItemClassification.filler,
+    "fill_inventory" : ItemClassification.filler, # onetime myshroom
 }
 
 for i in range(1,9+1):
@@ -30,11 +30,16 @@ for i in range(1,9+1):
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}_unlock" : ItemClassification.progression})
 
 # could add movement rando as checks
-movments = ["Jump", "spin"]
-movments = []
+movments = ["run", "spin", "ground_pound", "climb", "wall_jump", "Yoshi", "hold", "triple_jump", "swim", "p-switch", "red-block"]
 for i in range(len(movments)):
     ITEM_NAME_TO_ID.update({f"movment{movments[i]}" : 300 + i+1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"movment{movments[i]}" : ItemClassification.progression})
+
+#order matters, what coorect?
+powerup_unlocks = ["Super_Mushroom", "Propeller_Mushroom", "Fire_Flower", "Ice_Flower", "Penguin_Suit", "Mini_Mushroom"]
+for i in range(len(powerup_unlocks)):
+    ITEM_NAME_TO_ID.update({f"powerup_state:{powerup_unlocks[i]}" : 600 + i+1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"powerup_state:{powerup_unlocks[i]}" : ItemClassification.progression})
 
 
 
@@ -57,7 +62,7 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
     # DO NOT use a bare random object from Python's built-in random module.
     if world.random.randint(0, 99) < world.options.trap_chance:
         return "Gomba trap"
-    return "Powerup_mushroom"
+    return "fill_inventory"
 
 
 def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSMBWItem:
@@ -88,7 +93,8 @@ def create_all_items(world: NSMBWWorld) -> None:
                 itempool.append(world.create_item(f"World{i}_unlock"))
     for i in range(len(movments)):
         itempool.append(world.create_item(f"movment{movments[i]}"))
-
+    for i in range(len(powerup_unlocks)):
+        itempool.append(world.create_item(f"powerup_state:{powerup_unlocks[i]}"))
 
         # Archipelago requires that each world submits as many locations as it submits items.
     # This is where we can use our filler and trap items.
