@@ -12,6 +12,9 @@ from Utils import visualize_regions
 
 from typing import ClassVar
 
+from .options import NSMBWSettings
+
+
 class NSMBWworld(World):
     """
     NSMBW world
@@ -30,6 +33,8 @@ class NSMBWworld(World):
     # (Note: options.py has been imported as "NSMBW_options" at the top of this file to avoid a name conflict)
     options_dataclass = nsmbw_option.NSMBWOptions
     options: nsmbw_option.NSMBWOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
+
+    settings: NSMBWSettings
 
     # Our world class must have a static location_name_to_id and item_name_to_id defined.
     # We define these in regions.py and items.py respectively, so we just set them here.

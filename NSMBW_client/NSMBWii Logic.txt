@@ -1,0 +1,78 @@
+World 1:
+
+1-1: No Powerups
+1-2: Star Coin 3 Requires Mushroom
+1-3: No Powerups or Yoshi
+1-T: No Powerups
+1-4: No Powerups
+1-5: No Powerups
+1-6: No Powerups
+1-C: Star Coin 3 Requires P-Switch or Propeller Suit
+
+World 2:
+
+2-1: No Powerups
+2-2: Star Coin 3 Requires Mini Mushroom
+2-3: No Powerups
+2-T: No Powerups
+2-4: Star Coin 2 & Secret Exit Require Propeller Suit
+     Star Coin 3 Requires Propeller Suit or Mini Mushroom
+2-5: No Powerups or Yoshi
+2-6: Secret Exit Requires Propeller Suit or Mini Mushroom
+2-C: Star Coin 2 Requires Mushroom
+     Star Coin 3 Requires P-Switch or Propeller Suit
+     Level Completion Requires P-Switch or Ice Flower or Penguin Suit
+
+World 3:
+
+3-1: No Powerups
+3-2: No Powerups or Yoshi
+3-3: No Powerups
+3-G: No Powerups
+3-T: No Powerups
+3-4: Normal Exit Requires Red Blocks
+3-5: Star Coins 2 & 3 & Secret Exit Requires Red Blocks
+3-C: No Powerups
+
+World 4:
+
+4-1: No Powerups
+4-2: No Powerups
+4-3: Star Coin 3 Requires Mini Mushroom
+4-T: No Powerups
+4-4: Star Coin 1 Requires Ice Flower or Penguin Suit or Propeller Suit or Mini Mushroom 
+4-G: Star Coin 2 & Normal Exit Require P-Switch or Ice Flower or Penguin Suit
+4-5: No Powerups or Yoshi
+4-C: No Powerups
+4-A: No Powerups
+
+World 5:
+
+5-1: Star Coin 1 Requires Mushroom
+5-2: No Powerups
+5-3: No Powerups
+5-T: Star Coin 3 Requires Mushroom
+5-4: No Powerups
+5-G: No Powerups
+5-5: No Powerups
+5-C: No Powerups
+
+World 6:
+
+6-1: No Powerups
+6-2: Star Coin 3 Requires P-Switch or Mushroom
+6-3: Star Coin 3 Requires Mushroom
+     Normal Exit Requires ?-Switch or Propeller Suit or Ice Flower or Penguin Suit
+     *Currently here*
+6-4:
+6-T: No Powerups
+6-5:
+6-6:
+6-C:
+6-A:
+
+World 7:
+
+World 8:
+
+World 9:

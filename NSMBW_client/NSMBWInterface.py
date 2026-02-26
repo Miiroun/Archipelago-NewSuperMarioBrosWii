@@ -21,17 +21,26 @@ GAMES: Dict[str, Any] = {
         "game_rev": 2,
         "SC_current_level" : 0x803741B0,
         "SC_stockage": 0x815E3AA7, # (systeme byte 000) for each level (815E3A*7)",
-        "level_world": 0x80315B9E, #"Level world when you are in a level",
+        "level_world": 0x80315B9F, #"Level world when you are in a level", #change beacuse think wrong
         "level_stat": 0x80C8084F, #. Ex: first byte (00 == level not completed, 10 == level completed, 20 == secret exit) second byte (01 == first star coin collected, 02 == second star coin collected, 03 == first and second stars coins collected) +4 for the others levels
         "inventory_items": 0x80C807D9, #(+1 byte for each)
         "world_level": 0x80315B9C, #(World Map)
         "level_level": 0x80315B9D, #(World Map)
-        "HM_stats": 0x80C80EDC, #. Ex: 0 == not available, 1 == unlocked. +1 for each hint movie (80C80ED*)
+        "HM_stats": 0x80C80EDC, #. Ex: 0 == not available, 1 == unlocked. +1 for each hint movie (80C80ED*) #modified, another gameversion?
         "Worldstats_selectmenu": 0x80C80812, #. Ex: 0 == not available, 1== unlocked. +1 for each world (80C8081*)
 
 
+        "powerup_state1" : 0x8154C897,
+        "powerup_state2" : 0x8154CCE7, #not shure what diffens betwen these are
+
+        # need to find
+        "sc_count": 0x0000000,
+
         "HUD_MESSAGE_ADDRESS": 0x803F0BA8,#copypasted these from metroid
         "HUD_TRIGGER_ADDRESS": 0x80573494,
+
+
+
     },"EU": {
         "game_id": b"SMNP01" # EU partially supported
     }
@@ -40,6 +49,9 @@ GAMES: Dict[str, Any] = {
 # game constants
 HUD_MESSAGE_DURATION = 7.0
 HUD_MAX_MESSAGE_SIZE = 194
+
+STARCOIN_COUNT = 65
+
 
 class NSMBWInterface():
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with Metroid Prime"""
@@ -113,7 +125,7 @@ class NSMBWInterface():
             return ConnectionState.DISCONNECTED
     def is_in_playable_state(self) -> bool:
         """Check if the player is in the actual game rather than the main menu"""
-        return (self.get_Worldstats_selectmenu() == b'\x01') and (not self.get_level_level() == b"'")
+        return (self.get_worldstats_selectmenu() == b'\x01') and (not self.get_level_level() == b"'")
 
     def reset_relay_tracker_cache(self):
         self.relay_trackers = None
@@ -166,7 +178,7 @@ class NSMBWInterface():
     #my code-------------------------------------------------
 
     # just created
-    def get_SC(self):
+    def get_sc(self):
         address = GAMES[self.current_game]["SC_current_level"]
         return self.dolphin_client.read_address(address,4*3)
     def starcoin_stockage(self):
@@ -175,11 +187,11 @@ class NSMBWInterface():
     def get_level_world(self):
         address = GAMES[self.current_game]["level_world"]
         return self.dolphin_client.read_address(address,1)
-    def get_level_stats(self):
-        address = GAMES[self.current_game]["level_stat"]
-        return self.dolphin_client.read_address(address,2)
-    def get_inventory_items(self):
-        address = GAMES[self.current_game]["inventory_items"]
+    def get_level_stats(self, level_num):
+        address = GAMES[self.current_game]["level_stat"] + level_num * 4
+        return self.dolphin_client.read_address(address,4)
+    def get_inventory_items(self, type_num):
+        address = GAMES[self.current_game]["inventory_items"] + type_num
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self):
         address = GAMES[self.current_game]["world_level"]
@@ -187,15 +199,42 @@ class NSMBWInterface():
     def get_level_level(self):
         address = GAMES[self.current_game]["level_level"]
         return self.dolphin_client.read_address(address,1)
-    def get_HM_stats(self):
-        address = GAMES[self.current_game]["HM_stats"]
+    def get_hm_stats(self, hm_num):
+        address = GAMES[self.current_game]["HM_stats"] +hm_num
         return self.dolphin_client.read_address(address,1)
-    def get_Worldstats_selectmenu(self):
+    def get_worldstats_selectmenu(self):
         address = GAMES[self.current_game]["Worldstats_selectmenu"]
         return self.dolphin_client.read_address(address,1)
+    def get_powerupstate(self):
+        address1 = GAMES[self.current_game]["powerup_state1"]
+        address2 = GAMES[self.current_game]["powerup_state2"]
+        #powerup_state1 = self.dolphin_client.read_address(address1,1)
+        powerup_state2 = self.dolphin_client.read_address(address2,1)
+        #assert powerup_state1 == powerup_state2, "Powerup states do not match, please report diffrense"
+        return powerup_state2
 
-    #thought about
-    def set_Worldstats(self,world_num : int, status : bytes):
+
+    def set_worldstats(self,world_num : int, status : bytes):
         address = GAMES[self.current_game]["Worldstats_selectmenu"] + (world_num-1)
         self.dolphin_client.write_address(address, status)
+    def set_powerupstate(self, powerup_state : bytes):
+        address1 = GAMES[self.current_game]["powerup_state1"]
+        address2 = GAMES[self.current_game]["powerup_state2"]
+        #self.dolphin_client.write_address(address1, powerup_state) # proberbly unnessesary
+        self.dolphin_client.write_address(address2, powerup_state)
+    def set_sc_count(self, coint_num : int):
+        address = GAMES[self.current_game]["sc_count"]
+        self.dolphin_client.write_address(address, int_to_bytes(coint_num,1))
+    def set_inventory_items(self, value, type_num):
+        address = GAMES[self.current_game]["inventory_items"] + type_num
+        self.dolphin_client.write_address(address, value)
+    def set_level_stats(self, level_num, data):
+        address = GAMES[self.current_game]["level_stat"] + level_num * 4
+        self.dolphin_client.write_address(address,data)
+
+    def update_inventory_items(self, type_num):
+        address = GAMES[self.current_game]["inventory_items"]
+        amount = self.get_inventory_items(type_num)
+        self.set_inventory_items(amount+b'x\01', type_num)
+
 
