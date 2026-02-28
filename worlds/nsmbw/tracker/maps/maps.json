@@ -1,14 +1,57 @@
 [
   {
-    "name": "Main_world",
+    "name": "World 1",
     "location_size": 48,
     "location_border_thickness": 4,
-    "img": "images/maps/Main_world.png"
+    "img": "images/maps/world1.png"
   },
   {
-    "name": "World1",
+    "name": "World 2",
     "location_size": 48,
     "location_border_thickness": 4,
-    "img": "images/maps/World1.png"
+    "img": "images/maps/world2.png"
+  },
+  {
+    "name": "World 3",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world3.png"
+  },
+  {
+    "name": "World 4",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world4.png"
+  },
+  {
+    "name": "World 5",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world5.png"
+  },
+  {
+    "name": "World 6",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world6.png"
+  },
+  {
+    "name": "World 7",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world7.png"
+  },
+  {
+    "name": "World 8",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world8.png"
+  },
+  {
+    "name": "World 9",
+    "location_size": 48,
+    "location_border_thickness": 4,
+    "img": "images/maps/world9.png"
   }
+  
 ]
