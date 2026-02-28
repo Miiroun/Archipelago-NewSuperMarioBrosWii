@@ -1,0 +1,133 @@
+<wiidisc version="1" shiftfiles="true" root="/NewerSMBW" log="true">
+    <id game="SMN">
+        <region type="E"/>
+    </id>
+    <options>
+        <section name="Archipelago for nsmbw rando">
+            <option name="Use ap rando" id="ap_rando">
+                <choice name="Enabled">
+                    <patch id="ap_rando"/>
+                </choice>
+            </option>
+        </section>
+    </options>
+    <patch id="ap_rando">
+        <folder external="Font" disc="/JP/Font"/>
+        <!--  <savegame external="/save/{$__gameid}{$__region}" clone="false" />  -->
+        <folder external="Tilesets" disc="/Stage/Texture" create="true"/>
+        <folder external="TitleReplay" disc="/Replay/title" create="true"/>
+        <folder external="BGs" disc="/Object" create="true"/>
+        <folder external="SpriteTex" disc="/Object" create="true"/>
+        <folder external="Layouts" disc="/Layout" create="true"/>
+        <folder external="Music" disc="/Sound/new" create="true"/>
+        <folder external="Music/sfx" disc="/Sound/new/sfx" create="true"/>
+        <folder external="Music/stream" disc="/Sound/stream" create="true"/>
+        <folder external="Music/rsar" disc="/Sound"/>
+        <folder external="Font" disc="/EU/EngEU/Font"/>
+        <folder external="Font" disc="/EU/GerEU/Font"/>
+        <folder external="Font" disc="/EU/FraEU/Font"/>
+        <folder external="Font" disc="/EU/SpaEU/Font"/>
+        <folder external="Font" disc="/EU/ItaEU/Font"/>
+        <folder external="Font" disc="/US/EngUS/Font"/>
+        <folder external="Font" disc="/US/FraUS/Font"/>
+        <folder external="Font" disc="/US/SpaUS/Font"/>
+        <folder external="Font" disc="/JP/Font"/>
+        <folder external="Font" disc="/KR/Font"/>
+        <folder external="Font" disc="/TW/Font"/>
+        <folder external="Message" disc="/EU/EngEU/Message"/>
+        <folder external="Message" disc="/EU/GerEU/Message"/>
+        <folder external="Message" disc="/EU/FraEU/Message"/>
+        <folder external="Message" disc="/EU/SpaEU/Message"/>
+        <folder external="Message" disc="/EU/ItaEU/Message"/>
+        <folder external="Message" disc="/US/EngUS/Message"/>
+        <folder external="Message" disc="/US/FraUS/Message"/>
+        <folder external="Message" disc="/US/SpaUS/Message"/>
+        <folder external="Message" disc="/JP/Message"/>
+        <folder external="Message" disc="/KR/Message"/>
+        <folder external="Message" disc="/TW/Message"/>
+        <folder external="NewerRes" disc="/NewerRes" create="true"/>
+        <!--  <folder external="CS" disc="/CS" create="true" />  -->
+        <folder external="LevelSamples" disc="/LevelSamples" create="true"/>
+        <folder external="Others"/>
+        <folder external="Others{$__region}"/>
+        <folder external="Maps" disc="/Maps" create="true"/>
+        <folder external="Maps/Texture" disc="/Maps" create="true"/>
+        <folder external="Stages" disc="/Stage" create="true"/>
+        <!--  Save name change  -->
+        <!--  EU  -->
+        <memory offset="0x802F148C" value="4E6572534D4257" original="7769696D6A3264"/>
+        <!--  US  -->
+        <memory offset="0x802F118C" value="4E6572534D4257" original="7769696D6A3264"/>
+        <!--  JP  -->
+        <memory offset="0x802F0FAC" value="4E6572534D4257" original="7769696D6A3264"/>
+        <!--  KR/TW  -->
+        <memory offset="0x802F17CC" value="4E6572534D4257" original="7769696D6A3264"/>
+        <!--  Inject Newer loader  -->
+        <!--  EU  -->
+        <memory offset="0x80328478" value="80001800" original="8015BC60"/>
+        <!--  US  -->
+        <memory offset="0x80328130" value="80001800" original="8015BB20"/>
+        <!--  JP  -->
+        <memory offset="0x80327E98" value="80001800" original="8015B930"/>
+        <!--  KR  -->
+        <memory offset="0x80334E60" value="80001800" original="8015C060"/>
+        <!--  TW  -->
+        <memory offset="0x80333218" value="80001800" original="8015C060"/>
+        <!--  Expand ArchiveHeap  -->
+        <!--  EU  -->
+        <memory offset="0x800E4A84" value="3C600140" original="3C600120"/>
+        <!--  US  -->
+        <memory offset="0x800E4994" value="3C600140" original="3C600120"/>
+        <!--  JP  -->
+        <memory offset="0x800E4914" value="3C600140" original="3C600120"/>
+        <!--  KR/TW  -->
+        <memory offset="0x800E4AA4" value="3C600140" original="3C600120"/>
+        <!--  Expand 2DHeap  -->
+        <!--  EU  -->
+        <memory offset="0x800B64EC" value="3C800032" original="3C800030"/>
+        <!--  US  -->
+        <memory offset="0x800B649C" value="3C800032" original="3C800030"/>
+        <!--  JP  -->
+        <memory offset="0x800B641C" value="3C800032" original="3C800030"/>
+        <!--  KR/TW  -->
+        <memory offset="0x800B65AC" value="3C800032" original="3C800030"/>
+        <!--  Force non-Japanese font  -->
+        <!--  EU  -->
+        <memory offset="0x801B0204" value="38000000" original="5400FFFE"/>
+        <!--  US  -->
+        <memory offset="0x801B00C4" value="38000000" original="5400FFFE"/>
+        <!--  JP  -->
+        <memory offset="0x801AFED4" value="38000000" original="5400FFFE"/>
+        <!--  KR/TW  -->
+        <memory offset="0x801B0604" value="38000000" original="5400FFFE"/>
+        <!--  Title screen fixes  -->
+        <!--  EU  -->
+        <memory offset="0x8015D850" value="4E800020" original="38600000"/>
+        <!--  US  -->
+        <memory offset="0x8015D710" value="4E800020" original="38600000"/>
+        <!--  JP  -->
+        <memory offset="0x8015D520" value="4E800020" original="38600000"/>
+        <!--  KR/TW  -->
+        <memory offset="0x8015DC50" value="4E800020" original="38600000"/>
+        <!--  Disable debug key sequence  -->
+        <!--  EU  -->
+        <memory offset="0x800E4E84" value="38600000" original="3863330C"/>
+        <!--  US  -->
+        <memory offset="0x800E4D70" value="38600000" original="3863300C"/>
+        <!--  JP  -->
+        <memory offset="0x800E4CF0" value="38600000" original="38632E2C"/>
+        <!--  KR/TW  -->
+        <memory offset="0x800E4E80" value="38600000" original="3863364C"/>
+        <!--  Disable unnecessary exception info  -->
+        <!--  EU  -->
+        <memory offset="0x800E4E8C" value="38600021" original="3860003F"/>
+        <!--  US  -->
+        <memory offset="0x800E4D78" value="38600021" original="3860003F"/>
+        <!--  JP  -->
+        <memory offset="0x800E4CF8" value="38600021" original="3860003F"/>
+        <!--  KR/TW  -->
+        <memory offset="0x800E4E88" value="38600021" original="3860003F"/>
+        <!--  Common  -->
+        <memory offset="0x80001800" valuefile="Loader.bin"/>
+    </patch>
+</wiidisc>

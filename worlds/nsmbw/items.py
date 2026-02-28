@@ -30,10 +30,11 @@ for i in range(1,9+1):
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}_unlock" : ItemClassification.progression})
 
 # could add movement rando as checks
-movments = ["run", "spin", "ground_pound", "climb", "wall_jump", "Yoshi", "hold", "triple_jump", "swim", "p-switch", "red-block"]
+movments = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "hold", "triple_jump", "swim", "p-switch", "red-block"]
+# maybe in future "run", "spin",
 for i in range(len(movments)):
-    ITEM_NAME_TO_ID.update({f"movment{movments[i]}" : 300 + i+1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"movment{movments[i]}" : ItemClassification.progression})
+    ITEM_NAME_TO_ID.update({f"movment:{movments[i]}" : 300 + i+1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"movment:{movments[i]}" : ItemClassification.progression})
 
 #order matters, what coorect?
 powerup_unlocks = ["Super_Mushroom", "Propeller_Mushroom", "Fire_Flower", "Ice_Flower", "Penguin_Suit", "Mini_Mushroom"]
@@ -85,17 +86,19 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     itempool: list[Item] = []
 
-    for i in range(0, 77*3):
+    for i in range(77*3):
         itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
             itempool.append(world.create_item(f"World{i}_unlock"))
             if i != 9:
                 itempool.append(world.create_item(f"World{i}_unlock"))
     for i in range(len(movments)):
-        itempool.append(world.create_item(f"movment{movments[i]}"))
+        itempool.append(world.create_item(f"movment:{movments[i]}"))
     for i in range(len(powerup_unlocks)):
         itempool.append(world.create_item(f"powerup_state:{powerup_unlocks[i]}"))
 
+
+    #print(itempool)
         # Archipelago requires that each world submits as many locations as it submits items.
     # This is where we can use our filler and trap items.
     # APQuest has two of these: The Confetti Cannon and the Math Trap.

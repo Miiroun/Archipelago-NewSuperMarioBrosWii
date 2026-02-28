@@ -31,10 +31,9 @@ num_hintmovies = 65
 for i in range(1,num_hintmovies +1):
     LOCATION_NAME_TO_ID.update({f"Hintmovie{i}": 3000 + i})
 
-# want to add hintmovies as locations
-#num_starter_items = 5
-#for i in range(1,num_starter_items+1):
-#    LOCATION_NAME_TO_ID.update({f"starter_location{i}": 4000 + i})
+num_starter_items = 5
+for i in range(1,num_starter_items+1):
+    LOCATION_NAME_TO_ID.update({f"starter_location{i}": 4000 + i})
 
 
 
@@ -84,9 +83,9 @@ def create_regular_locations(world: NSMBWWorld) -> None:
         regions[0].add_locations(hintmovie_location, NSMBWLocation)
 
     # gives player starter location that automaticly checks
-    #for i in range(1,num_starter_items+1):
-    #    starter_location = get_location_names_with_ids([f"starter_location{i}"])
-    #    menu_region.add_locations(starter_location, NSMBWLocation)
+    for i in range(1,num_starter_items+1):
+       starter_location = get_location_names_with_ids([f"starter_location{i}"])
+       menu_region.add_locations(starter_location, NSMBWLocation)
 
 def create_events(world: NSMBWWorld) -> None:
     regions = []
@@ -105,5 +104,5 @@ def create_events(world: NSMBWWorld) -> None:
 
     #events could be usefully for merging split paths
 
-    regions[2*8].add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    regions[2*8-1].add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
