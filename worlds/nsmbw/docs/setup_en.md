@@ -1,42 +1,23 @@
-# APQuest Randomizer Setup Guide
+# New Super Mario Bros Wii Randomizer Setup Guide
 
 ## Required Software
 
-- [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases/latest)
-- [The APQuest apworld](https://github.com/NewSoupVi/Archipelago/releases), 
-  if not bundled with your version of Archipelago
+- [Archipelago V6.7.0](https://github.com/ArchipelagoMW/Archipelago/releases/latest)
+- [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
+- [Dolphin emulator](https://dolphin-emu.org/download/)
+- A legally acquired copy of New Super Mario Bros Wii rom (only USA rev2 currently supported)
+
+
+## OBS
+TO PLAY YOU NEED VERSION 6.7.0 of AP, this is not realeased at time of writing (2026-03-02) so you need to build from their source from their github.
+
+## Setup
+Download and install archipelago and Dolphin.
+Download the apworld file from [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest), dubbelclick it and its installed.
+Then create a player yaml file, either from template or launcher. OBS the ap client is bundled with launcher.
 
 ## How to play
 
-First, you need a room to connect to. For this, you or someone you know has to generate a game.  
-This will not be explained here,
-but you can check the [Archipelago Setup Guide](/tutorial/Archipelago/setup_en#generating-a-game).
-
-You also need to have [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases/latest) installed
-and the [The APQuest apworld](https://github.com/NewSoupVi/Archipelago/releases) installed into Archipelago.
-
-From here, connecting to your APQuest slot is easy. There are two scenarios.
-
-### Webhost Room
-
-If your room is hosted on a WebHost (e.g. [archipelago.gg](https://archipelago.gg)),
-you should be able to simply click on your name in the player list.  
-This will open the Archipelago Launcher
-and ask you whether you want to connect with the Text Client or the APQuest Client.  
-Choose "APQuest Client". The rest should happen completely automatically and you should be able to play APQuest.
-
-### Locally hosted room
-
-If your room does not have a WebHost room page available, you can launch APQuest manually.  
-
-Open the Archipelago Launcher, and then select the APQuest Client from the list.  
-After a short while, the APQuest client should open.  
-Enter the server address at the top and click "Connect".  
-Then, enter your name. If a password exists, enter the password.  
-You should now be connected and able to play APQuest.
-
-## Switching Rooms
-
-The APQuest Client can seamlessly switch rooms without restarting.
-
-Simply click the "Disconnect" button, then connect to a different slot/room.
+Open the AP launcher and find NSMBW Client, press : and find create desktop shortcut. Open the shortcut to launch the Client, it will ask you to select your rom file and the autolaunch dolphin. 
+When game booted select savefile 2 (only one tested) and start playing.
+Make savestates in emulator, saving the game doesnt currently work.

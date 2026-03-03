@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import settings
 from Options import *
+from settings import Bool
+
 
 # In this file, we define the options the player can pick.
 # The most common types of options are Toggle, Range and Choice.
@@ -32,25 +34,45 @@ class TrapChance(Range):
     range_end = 100
     default = 0
 
-class File_path(FreeText):
-    display_name = "File Path"
-    path = ""
 
+class RandomizeStarCoins(Toggle):
+    display_name = "Randomize Star Coins"
+    default = True
+
+class LogicDifficulty(Choice):
+    display_name = "Logic Difficulty"
+    option_normal = 0
+    option_difficult = 1
+    default = option_normal
+
+class StartingWorld(Range):
+    display_name = "Starting World"
+
+    range_start = 1
+    range_end = 9
+    default = 1
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName".
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
     trap_chance: TrapChance
-    #file_path : File_path
+    randomize_coins: RandomizeStarCoins
+    logic_difficulty: LogicDifficulty
+    starting_world: StartingWorld
 
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
     OptionGroup(
         "Gameplay Options",
-        [TrapChance],
-        #[File_path],
+        [
+            TrapChance,
+            RandomizeStarCoins,
+            LogicDifficulty,
+            StartingWorld,
+         ],
+
     ),
 ]
 
@@ -58,10 +80,10 @@ option_groups = [
 option_presets = {
     "boring": {
         "trap_chance": 0,
-    },
-    "the true way to play": {
-        "trap_chance": 50,
-    },
+        "randomize_coins": True,
+        "logic_difficulty": LogicDifficulty.option_normal,
+        "starting_world": 1,
+    }
 }
 
 class NSMBWSettings(settings.Group):

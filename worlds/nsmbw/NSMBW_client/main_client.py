@@ -4,15 +4,16 @@ import asyncio
 import multiprocessing
 import os
 
+
 import Utils
-import traceback
 
 
-from NSMBWContext import NSMBWContext, tracker_loaded, logger
 from CommonClient import get_base_parser, handle_url_arg, gui_enabled, server_loop
+from .NSMBWContext import NSMBWContext, tracker_loaded, logger
 
 
 def launch_NSMBW_client(*args):
+
     Utils.init_logging("NSMBW Client")
 
     async def main(args):
@@ -25,7 +26,6 @@ def launch_NSMBW_client(*args):
         ctx = NSMBWContext(parser_args.connect, parser_args.password, parser_args.apnsmbw_file)
 
         ctx.auth = args.name
-
 
 
         logger.info("Connecting to server...")
@@ -51,7 +51,7 @@ def launch_NSMBW_client(*args):
 
     import colorama
     parser = get_base_parser(description="New Super Mario Bros Wii Archipelago Client.")
-    parser.add_argument('--name', default=None, help="Slot Name to connect as.")
+    parser.add_argument('--name', default=None, help="Slot Name to connect as.") # could replace this by reading from yaml
     parser.add_argument("url", nargs="?", help="Archipelago connection url")
 
     launch_args = handle_url_arg(parser.parse_args(args))
@@ -68,10 +68,12 @@ def launch_NSMBW_client(*args):
 
 async def shutdown():
         os.system("taskkill /im Dolphin.exe")
-        await asyncio.sleep(10)
+        await asyncio.sleep(5)
         os.system("taskkill /im Dolphin.exe")
+
 
 
 if __name__ == "__main__":
     launch_NSMBW_client()
+
 
