@@ -4,27 +4,33 @@ from typing import Optional, List
 
 import logging
 
-from MultiServer import mark_raw
-from NSMBWInterface import *
-from NSMBW_client import dolphin_interface_client
-from NSMBW_client.patcher import patch_iso
+from . import dolphin_interface_client
+from .NSMBWInterface import *
+from .NotificationManager import NotificationManager
+#from .patcher import patch_iso
+
 from NetUtils import NetworkItem, ClientStatus
-from NotificationManager import NotificationManager
 
 
-from worlds.nsmbw.locations import LOCATION_NAME_TO_ID
+
+from ..locations import LOCATION_NAME_TO_ID, levels_per_world
+from ...oot.Messages import bytes_to_int
 
 tracker_loaded = False
 
 logger = logging.getLogger("Client")
 
 try:
-    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
+    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, \
+    ClientCommandProcessor, CommonContext, asyncio, server_loop, updateTracker
 
     tracker_loaded = True
 except ModuleNotFoundError:
     from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
 
+
+def int_to_bytes(num, width, signed=False):
+    return int.to_bytes(num, width, byteorder='big', signed=signed)
 
 class NSMBWCommandProcessor(ClientCommandProcessor):
     ctx: "NSMBWContext"
@@ -54,26 +60,15 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         self.ctx.notification_manager.queue_notification(message)
 
     def _cmd_reapply_checks(self):
-        """Do this command if some checks havent been aplied"""
+        """Do this command if some checks havent been aplied because bug"""
         self.ctx.items_handled = []
         self.ctx.locations_handled = []
 
     def _cmd_unlock_everything(self):
-        """Markes every level as completed"""
-        Utils.async_start(
-            (self.ctx.unlock_everything())
-        )
+        """Markes every level as completed, a cheat used for development"""
+        Utils.async_start(self.ctx.unlock_everything())
 
-    @mark_raw
-    def _cmd_locationscout(self, key: str =""):
-        """"scout location"""
-        self.ctx.send_msgs([{"cmd": "LocationScouts", "locations": key}])
 
-    @mark_raw
-    def _cmd_sendlocation(self, key: str =""):
-        """Send item check"""
-        self.ctx.send_msgs([{"cmd": "LocationChecks", "locations": key}])
-        self.connection_status = ConnectionState.SCOUTS_SENT
 
 
 status_messages = {
@@ -101,14 +96,16 @@ class NSMBWContext(SuperContext):
     command_processor = NSMBWCommandProcessor
     apnsmbw_file: Optional[str] = None
     slot_data: Dict[str, Utils.Any] = {}
-    prev_powerup = b'\x00'
 
 
     #Created for NSMBW
     items_handled = []
     locations_handled = []
     completed_levelstats = [0 for i in range(1,LEVEL_COUNT*3+1)]
-    visits_peachhouse = False
+    moded_levelstats = False
+    prev_powerup = b'\x00'
+    starcoin_count = 0
+
 
     def __init__(self, server_address: str, password: str, apnsmbw_file: Optional[str] = None):
         super().__init__(server_address, password)
@@ -157,7 +154,7 @@ class NSMBWContext(SuperContext):
             # This will not work if the client is running from source
             # version = get_apworld_version()
             version = "0.0.1"
-            logger.info(f"Using metroidprime.apworld version: {version}")
+            logger.info(f"Using nsmbw.apworld version: {version}")
         except:
             pass
     
@@ -266,7 +263,12 @@ class NSMBWContext(SuperContext):
 
     
     async def handle_check_goal_complete(self):
-        bowser_death = False
+        level_bowcast_condit = self.game_interface.get_level_stats(8,10) # not correct number!!
+        #print(level_bowcast_condit)
+        stats_in_bytes = level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
+        bowser_death = (stats_in_bytes == b'\x10\x00\x00\x00'[0]) # the & remvoes starcoin amount from stats when check for compleation
+
+        # TODO implement a check to look if we havent temporararly overwrithen the data
         if bowser_death:
             await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
     
@@ -274,6 +276,7 @@ class NSMBWContext(SuperContext):
     async def handle_checked_location(self):
         await self.check_starcoins()
         await self.check_hintmovies()
+        await self.check_starter_locations()
     
     
     async def check_starcoins(self):
@@ -307,14 +310,25 @@ class NSMBWContext(SuperContext):
                     if not location_name in self.locations_handled:  # need to check if already counted for this level
                         checked_locations.append(LOCATION_NAME_TO_ID[location_name])
                         print(f"Collected hintmovie at {checked_locations}")
+                        self.locations_handled.append(location_name)
             await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
-    
+
+    async def check_starter_locations(self):
+        checked_locations = []
+        num_starter_items = 5
+        for i in range(1,num_starter_items+1):
+            location_name = f"starter_location{i}"
+            if not location_name in self.locations_handled:
+                checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                self.locations_handled.append(location_name)
+        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+
     
     async def handle_receive_items(self):
-        unlocked_worlds = [0 for i in range(1, 9 + 1)]
-        unlocked_powerups = [0 for i in range(1, 9 + 1)]
-        unlocked_moves = [0 for i in range(1, 3 + 1)]
-        starcoin_count = 0
+        unlocked_worlds = [0 for _ in range(1, 9 + 1)]
+        unlocked_powerups = [0 for _ in range(1, 9 + 1)]
+        unlocked_moves = [0 for _ in range(12 + 1)]
+        self.starcoin_count = 0
         for network_item in self.items_received:
             item_id = network_item.item
             item_name = ITEM_ID_TO_NAME[item_id]
@@ -353,9 +367,9 @@ class NSMBWContext(SuperContext):
                 self.items_handled.append(network_item)
     
             if item_id == 101:
-                starcoin_count += 1
+                self.starcoin_count += 1
             elif 201 <= item_id <= 209:
-                unlocked_worlds[item_id - 200] = 1
+                unlocked_worlds[item_id - 201] = 1
             elif 301 <= item_id <= 309:
                 unlocked_moves[item_id - 300] = 1
             elif 601 <= item_id <= 610:
@@ -363,7 +377,7 @@ class NSMBWContext(SuperContext):
         # proccess code
         await self.handle_unlocked_powerups(unlocked_powerups)
         await self.handle_unlocked_worlds(unlocked_worlds)
-        await self.handle_set_sc_count(starcoin_count)
+        await self.handle_set_sc_count(self.starcoin_count)
         await self.handle_unlocked_moves(unlocked_moves)
     
     
@@ -409,45 +423,112 @@ class NSMBWContext(SuperContext):
 
         #self.game_interface.dolphin_client.write_address(0x8005E300, b'\x4E\x80\x00\x20') # makes mario constantly groundpound
 
-        ground_pound_address = 0x8005E300
-        if unlocked_moves[0] == 0:#_ZN10dAcPyKey_c14checkHipAttackEv
-            # ground pound, should look at og memmory to renable ones unlocked
-            self.game_interface.dolphin_client.write_address(ground_pound_address, b'\x38\x60\x00\x00')
-            self.game_interface.dolphin_client.write_address(ground_pound_address+4, b'\x4E\x80\x00\x20')
-        else:
-            self.game_interface.dolphin_client.write_address(ground_pound_address, b'\x94\x21\xFF\xF0')
-            self.game_interface.dolphin_client.write_address(ground_pound_address+4, b'\x7C\x08\x02\xA6\x90')
 
+
+
+        ground_pound_address = 0x8005E300
+        # ground pound, should look at og memmory to renable ones unlocked
+        # _ZN10dAcPyKey_c14checkHipAttackEv
+        address = ground_pound_address
+        if unlocked_moves[0] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
 
 
         #walljump ?
         # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
         #_ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
         address_wall_jump = 0x801285D0
+        address_wall_slide =0x801284C0
+        address = address_wall_jump
         if unlocked_moves[1] == 0:
-            self.game_interface.dolphin_client.write_address(address_wall_jump, b'\x38\x60\x00\x00')
-            self.game_interface.dolphin_client.write_address(address_wall_jump+4, b'\x4E\x80\x00\x20')
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
         else:
-            self.game_interface.dolphin_client.write_address(address_wall_jump, b'\x94\x21\xFF\xE0')
-            self.game_interface.dolphin_client.write_address(address_wall_jump+4, b'\x7C\x08\x02\xA6')
-
-
+            self.game_interface.dolphin_client.write_address(address, b'\x7C\x9F\x23\x78')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x93\xC1\x00\x08')
+        address = address_wall_slide
+        if unlocked_moves[1] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\x7C')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
 
         #_ZN7dAcPy_c11checkCrouchEv      0x8012D490      f
         #_ZN9daYoshi_c11checkCrouchEv    0x8014DBB0
         address_crouch = 0x8012D490
         address_crouch_yoshi = 0x8014DBB0
-        if unlocked_moves[1] == 0:
-            self.game_interface.dolphin_client.write_address(address_crouch, b'\x38\x60\x00\x00')
-            self.game_interface.dolphin_client.write_address(address_crouch+4, b'\x4E\x80\x00\x20')
+        address = address_crouch
+        if unlocked_moves[2] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
         else:
-            self.game_interface.dolphin_client.write_address(address_crouch, b'\x94\x21\xFF\xF0')
-            self.game_interface.dolphin_client.write_address(address_crouch+4, b'\x7C\x08\x02\xA6\x38')
-
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+        address = address_crouch_yoshi
+        if unlocked_moves[2] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
 
 
         #_ZN7dAcPy_c16checkEnableThrowEv 0x8012E6E0      f
         #_ZN7dAcPy_c15checkCarryThrowEv  0x8012E760      f
+        #_ZN7dAcPy_c15checkCarryActorEP7dAcPy_c 0x8013A150
+        address_cary = 0x8013A150
+        address = address_cary
+        if unlocked_moves[6] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x80\xA3\x2A\x78')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x80\x04\x00\x00')
+
+
+        #_ZN7dAcPy_c17checkStartSwingUpEv 0x80136710
+        address_swing_up = 0x80136710
+        #_ZN7dAcPy_c19checkStartSwingDownEv 0x801367E0
+        address_swing_down = 0x801367E0
+        address = address_swing_up
+        if unlocked_moves[11] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xE0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+        address = address_swing_down
+        if unlocked_moves[11] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xD0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+        #_ZN7dAcPy_c24checkCliffHangFootGroundEv 0x80135810 f
+        #_ZN7dAcPy_c19checkCliffHangWaterEv 0x801358E0   f
+        address_hang_ground = 0x80135810
+        address_hang_water = 0x801358E0
+
+        address = address_hang_ground
+        if unlocked_moves[5] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xD0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+        address = address_hang_water
+        if unlocked_moves[5] == 0:
+            self.game_interface.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.game_interface.dolphin_client.write_address(address, b'\x94\x21\xFF\xC0')
+            self.game_interface.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
 
         #_ZN10daPlBase_c16checkJumpTriggerEv 0x80057AD0  f
 
@@ -456,8 +537,8 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_unlocked_powerups(self, unlocked_powerups):
-        current_powerup_state = int.from_bytes(self.game_interface.get_powerupstate())
-        if unlocked_powerups[current_powerup_state] == 0:
+        current_powerup_state = self.game_interface.get_powerupstate()
+        if unlocked_powerups[bytes_to_int(current_powerup_state)] == 0:
             self.game_interface.set_powerupstate(self.prev_powerup)  # currently makes you small mario, maybe better make
         else:
             if self.prev_powerup != current_powerup_state:
@@ -472,48 +553,64 @@ class NSMBWContext(SuperContext):
                 self.game_interface.set_worldstats(world_num, b'\x00')
             elif unlocked_worlds[world_num - 1] == 1:
                 self.game_interface.set_worldstats(world_num, b'\x01')
+
+            elif unlocked_worlds[world_num - 1] == 2:
+                self.game_interface.set_worldstats(world_num, b'\x01')
+
     
     
     async def handle_set_sc_count(self, starcoin_count):
-        # print("Need to implement function for reciving starcoins")
-        # self.game_interface.set_sc_count(starcoin_count)
         # maybe isnt regestry for starcoin?
     
-        # if want, could check if in peach castle, the overwrite all starcoins
-        # print(self.game_interface.get_level_level()== b'\x28')
-        # print(self.game_interface.get_level_level()== b'(')
-        # print(self.game_interface.get_world_level())
+        #check if in peach castle, then overwrite all starcoins
         at_peach_worldmap = self.game_interface.get_level_level() == b'\x28' and self.game_interface.get_world_level() == b'\x00'
         # print(f"peach_worldmap: {at_peach_worldmap}")
     
         if at_peach_worldmap:
-            self.visits_peachhouse = True
+            self.moded_levelstats = True
             for i in range(LEVEL_COUNT):
                 if i * 3 < starcoin_count:
-                    self.game_interface.set_level_stats(i, b'\x07\x00\x00\x00')
+                    self.game_interface.set_level_stats(1,i, b'\x07\x00\x00\x00')
                 elif 3 * i == starcoin_count - 2:
-                    self.game_interface.set_level_stats(i, b'\x03\x00\x00\x00')
+                    self.game_interface.set_level_stats(1,i, b'\x03\x00\x00\x00')
                 elif 3 * i == starcoin_count - 1:
-                    self.game_interface.set_level_stats(i, b'\x01\x00\x00\x00')
+                    self.game_interface.set_level_stats(1,i, b'\x01\x00\x00\x00')
                 else:
                     # should restore starcoin to intended state
-                    self.game_interface.set_level_stats(i, b'\x00\x00\x00\x00')
+                    self.game_interface.set_level_stats(1,i, b'\x00\x00\x00\x00')
         else:
             await self.handle_sc_in_menu()
     
     
     async def handle_sc_in_menu(self):
-        if self.visits_peachhouse:
-            for i in range(LEVEL_COUNT):
-                data = int_to_bytes(self.completed_levelstats[i], 1, False) + b'\x00\x00\x00'
-                self.game_interface.set_level_stats(i, data)
-            self.visits_peachhouse = False
-        else:
-            for i in range(LEVEL_COUNT):
-                self.completed_levelstats[i] = self.game_interface.get_level_stats(i)[0]
+        current_world_num = self.game_interface.get_world_level()
+        if current_world_num != 9:
+            if self.moded_levelstats :
+                for i in range(LEVEL_COUNT):
+                    data = int_to_bytes(self.completed_levelstats[i], 1, False) + b'\x00\x00\x00'
+                    self.game_interface.set_level_stats(1,i, data)
+                self.moded_levelstats = False
+            else:
+                for i in range(LEVEL_COUNT):
+                    current_world_num = i //8
+                    level_num = i % 8
+                    self.completed_levelstats[i] = self.game_interface.get_level_stats(current_world_num,level_num)[0]
                 # print(self.completed_levelstats[i])
         # print(i, self.game_interface.get_level_stats(i))
         # it doesnt work to set worldstats
+        else: # if world_num = 0
+            if not self.moded_levelstats:
+                self.moded_levelstats = True
+
+                for world_num in range(1, 8+1):
+                    for level_num in range(1,len(GAMELEVELS_PER_WORLD[world_num])+1): # need to uppdate to reflect levels / world
+                        unlocked_level = self.starcoin_count > (world_num*10)
+                        data = b'\x07' if unlocked_level else b'\x00'
+                        self.game_interface.set_level_stats(world_num,level_num, data)
+
+
+
+
     
     
     async def handle_increase_inventory(self):
@@ -529,7 +626,7 @@ class NSMBWContext(SuperContext):
             print("-------------------------------------")
             print("SC:", self.game_interface.get_sc())
             print("level_world:", self.game_interface.get_level_world())
-            print("level_stats:", self.game_interface.get_level_stats())
+            print("level_stats:", self.game_interface.get_level_stats(0,0))
             print("world_level:", self.game_interface.get_world_level())
             print("level_level:", self.game_interface.get_level_level())
             print("Worldstats_selectmenu:", self.game_interface.get_worldstats_selectmenu())
@@ -539,18 +636,24 @@ class NSMBWContext(SuperContext):
     async def unlock_everything(self):
         for i in range(50):
             await self.handle_increase_inventory()
-        for level_num in range(LEVEL_COUNT):
-            self.game_interface.set_level_stats(level_num, b'\x37\x00\x00\x00')
-        for world_num in range(1,9+1):
+        for world_num in range(1, 9 + 1):  # worlds
             self.game_interface.set_worldstats(world_num, b'\x01')
+            for level_num in range(1, levels_per_world[world_num - 1] + 1):
+                self.game_interface.set_level_stats(world_num, level_num, b'\x37\x00\x00\x00')
 
 
 #end of class
 
+
+
+
+
+
+
 async def patch_and_run_game(apnsmbw_file: str):
     # copied strait from metroid prime, look into what want to patch
 
-    apnsmbw_file = os.path.abspath(apnsmbw_file)
+    #apnsmbw_file = os.path.abspath(apnsmbw_file)
     # set_obj = get_settings()
     # input_iso_path = get_settings().nsmbw_options.file_path #why isnt it in nsmbw_options (doesnt exitst)
     # print(f"path {input_iso_path}")
@@ -558,9 +661,12 @@ async def patch_and_run_game(apnsmbw_file: str):
     # try to get this info from options
     current_path = os.path.dirname(os.path.abspath(__file__))
 
-    input_iso_path = current_path + r"\\rom_file\\" + ROM_FILE_NAME
-    base_name = os.path.splitext(apnsmbw_file)[0]
-    output_path = base_name + ".wbfs" #mayebe change to iso file if easier to work with?
+    #input_iso_path = current_path + r"\\rom_file\\" + ROM_FILE_NAME
+    #base_name = os.path.splitext(apnsmbw_file)[0]
+    output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
+
+    filetypes = (("Rom path", (".iso", ".wbfs")),)
+    input_iso_path = Utils.open_filename("Select Rom file", filetypes)
 
     if not os.path.exists(output_path):
 
@@ -570,7 +676,8 @@ async def patch_and_run_game(apnsmbw_file: str):
 
             logger.info("Patching ISO...")
 
-            patch_iso(input_iso_path, output_path)
+            output_path = input_iso_path
+            #patch_iso(input_iso_path, output_path)
 
             logger.info("Patching Complete")
 
@@ -601,3 +708,10 @@ async def run_game(romfile: str):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+
+
+def get_in_logic(ctx, items=[], locations=[]):
+    ctx.items_received = [(item,) for item in items]  # to account for the list being ids and not Items
+    ctx.missing_locations = locations
+    updateTracker(ctx)
+    return ctx.locations_available

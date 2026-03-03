@@ -57,7 +57,8 @@ class NSMBWworld(World):
         #state.update_reachable_regions(self.player)
         #visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
 
-
+    def generate_early(self) -> None:
+        pass
 
 
     def set_rules(self) -> None:

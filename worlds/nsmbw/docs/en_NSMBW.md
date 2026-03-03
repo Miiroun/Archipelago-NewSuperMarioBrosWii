@@ -1,69 +1,67 @@
-# APQuest
+# New Super Mario Bros Wii
 
 ## Where is the options page?
 
 The [player options page for this game](../player-options) contains all the options you need to configure and export a
 config file.
 
-## What is APQuest?
+## What is randomized
+Moves, powerups(unlocked), collecting starcoins, unlocking worlds, buying hintmovies
 
-APQuest is an original game made entirely by NewSoupVi.  
-It is a minimal 8bit-era inspired adventure game with grid-like movement.  
-It is about 20 seconds long. However, the client can seamlessly switch between different slots,
-so if you want to have 10 of them, that should work pretty well.
+## What is not randomized currently
+Levels(order), level completion, enemize, powerups (inside levels), pipes
 
-Crucially, this game is entirely integrated into the client sitting inside its .apworld.  
-If you have the .apworld installed into your [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases/latest)
-install, you can play APQuest.
 
-## Why does APQuest exist?
+## What is goal
+- To beat bowsers castle at world 8
+- To do this you need 2x world 8 unlock and ground pound (for 8-airship)
 
-APQuest is implemented to be an example .apworld that can be used as a learning tool for new .apworld developers.  
-Its [source code](https://github.com/NewSoupVi/Archipelago/tree/apquest/worlds/apquest)
-contains countless comments explaining how each part of the World API works.
-Also, as of the writing of this setup guide (2025-08-24), it is up to date with all the modern Archipelago APIs.
 
-The secondary goal of APQuest is to be a semi-minimal generic world that is owned by Archipelago.  
-This means it can be used for Archipelago's unit tests without fear of eventual removal.
+## Items
+- 231 Starcoins (so many starcoins), used for buying hintmovies (might change in future since fills with progression items)
+- Powerup unlocks
+- Move unlocks
+  - Groundpound
+  - Walljump
+  - Crounch
+  - Climb
+  - Swim
+  - Climb
+  - Cary
+- Inventory fill (one of every powerup)
+- Traps (in itemlist but not implemented)
 
-Finally, APQuest was designed to be the first ever "game inside an .apworld",
-where the entire game is coded in Python and Kivy and is playable from within its CommonClient-based Client.  
-I'm not actually sure if it's the first, but I'm not aware of any others.
 
-## Once I'm inside the APQuest client, how do I actually play APQuest?
 
-WASD or Arrow Keys for movement.  
-Space to swing your sword (if you have it) or interact with objects.  
-C to fire the Confetti Cannon.
+## Checks
+- Collecting powerups
+- Buying hintmovies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if need help with unlock
+- Completing towers, castles and secret exits that unlock cannons (but not completing normal levels)
+- 5 Staring to make AP happy with random start
 
-Open chests, slash bushes, open doors, press buttons, defeat enemies.  
-Once you beat the dragon in the top right room, you win.  
-That's all there is! Have fun!
 
-## A statement on the ownership over APQuest
+## Deathlink
+Is implemented
+Toggel it with command in client
 
-APQuest is licensed using the [MIT license](https://opensource.org/license/mit),
-meaning it can be modified and redistributed by anyone for any purpose.  
-However, Archipelago has its own ownership structures built ontop of the license.  
-These ownership structures call into question whether any world implementation can permanently be relied on.
 
-In terms of these non-binding, non-legal Archipelago ownership structures, I will make the following statement.
+## What is diffrent from vannila
+- Can't unlock canons
+- The unlocks from world 9 requies 10 starcoin items / world number  to unlock
 
-I, NewSoupVi, hereby relinquish any and all rights to remove APQuest from Archipelago.  
-This applies to all parts of APQuest with the sole exception of the music and sounds.
-If I want the sounds to be removed, I must do so via a PR to the Archipelago repository myself.
-Said PR must keep APQuest intact and playable, just with the music removed.
+## Multiplayer
+Multiplayer is currently not supported
+- You can play but only mario will be restricted to unlocks
 
-As long as I am the maintainer of APQuest, I wish to act as such.  
-This means that any updates to APQuest must go through me.
+## Tracker
+A basic implementation of Universal tracker / poptracker is bundled with the client. Expect this feature to be expanded.
 
-However, if I ever cease to be the maintainer of APQuest,
-due to my own wishes or because I fail to uphold the maintainership "contract",
-the maintainership of APQuest will go to the Core Maintainers of Archipelago, who may then decide what to do with it.  
-They can decide freely, but if the maintainership goes to another singular person,
-it is my wish that this person adheres to a similar set of rules that I've laid out here for myself.
+## Rivvolution ??
+In its current state the client doesnt modify the gamefile in any way (just editing the games live memory). This means that you dont need a mod patch.
 
-Hopefully, this set of commitments should ensure that APQuest will forever be an apworld that can be relied on in Core.  
-If the ownership structures of Archipelago change,
-I trust the Core Maintainers (or the owners in general) of Archipelago to make reasonable assumptions
-about how this statement should be reinterpreted to fit the new rules.
+
+## Known bugs
+ - At start of game and after completing a world the game moves you to the next without you having unlocked it, which breaks logic.
+   - The current solution is for you to manualy move to a world you have unlocked.
+ - Saving the game is currently difficult depending on location. Do not close game or client when in peach castle or world 9.
+ - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import rule_builder.rules
 from rule_builder import rules
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
+
 
 
 def set_all_rules(world: NSMBWworld) -> None:
@@ -97,7 +99,7 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
         [5, rule_completed_everything],  # 57 #all secret goals
         [5, rules.Has("Starcoin", count=225)],  # 58
         [5, rules.Has("Starcoin", count=220)],  # 59
-        [5, rules.Has("Starcoin§", count=185)],  # 60
+        [5, rules.Has("Starcoin", count=185)],  # 60
         [5, rules.Has("Starcoin", count=210)],  # 61
         [0, rule_completed_everything],  # 62 #all normal goals
         [5, rules.Has("Starcoin", count=230)],  # 63
@@ -108,22 +110,29 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 
 def specific_level_requierments(world: NSMBWworld) -> List:
     # doesnt acount for secret exit
-    propeller = rules.Has(f"powerup_state:{'Propeller_Mushroom'}")
-    ice_peng = rules.Has(f"powerup_state:{'Ice_Flower'}") | rules.Has(f"powerup_state:{'Penguin_Suit'}")
-    mini = rules.Has(f"powerup_state:{'Mini_Mushroom'}")
+    mushroom = rules.Has(f"powerup_state:{'Super_Mushroom'}")
 
-    mushroom = rules.Has(f"powerup_state{'Super_Mushroom'}")
-    mushroom = rules.True_()
+
+    propeller = rules.Has(f"powerup_state:{'Propeller_Mushroom'}") & mushroom
+    ice_peng = (rules.Has(f"powerup_state:{'Ice_Flower'}") | rules.Has(f"powerup_state:{'Penguin_Suit'}")) & mushroom
+    mini = rules.Has(f"powerup_state:{'Mini_Mushroom'}") & mushroom
+
 
     p_switch = rules.Has(f"movment:{'p-switch'}") | rules.True_()
-    red_block = rules.Has(f"movement:{'red-block'}") | rules.True_()
+    red_block = rules.Has(f"movment:{'red-block'}") | rules.True_()
     yoshi = rules.True_()
-    requierments = [
+    star = rules.True_()
+
+    gp = rules.Has(f"movment:{'ground_pound'}")
+
+
+    requierments = []
+    requierments += [ # normal compleation rules
         [  # world 1
-            [rules.True_(), [propeller, rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [propeller | mini | star, rules.True_(), rules.True_()]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -2
-            [rules.True_(), [rules.True_(), mushroom | yoshi | mini, rules.True_()]],  # -3
-            [rules.True_(), [rules.True_(), rules.True_(), ice_peng]],  # -4
+            [rules.True_(), [rules.True_(), mushroom | yoshi | mini, mushroom]],  # -3
+            [rules.True_(), [rules.True_(), yoshi | propeller | mini, ice_peng]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
@@ -140,7 +149,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [ ice_peng | p_switch, [rules.True_(), mushroom, propeller | p_switch]],  # -8 2-C
         ],
         [  # world 3
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [ice_peng, rules.True_(), ice_peng]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [red_block, [rules.True_(), rules.True_(), rules.True_()]],  # -4
@@ -191,8 +200,8 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 7-T
+            [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -9 7-C
 
         ],
         [  # world 8
@@ -203,9 +212,9 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
+            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -9 8-A
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 8-C
         ],
         [  # world 9
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
@@ -216,6 +225,101 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
+        ],
+    ]
+
+    #
+    #requierments += \
+    [ # difficult logic
+        [  # world 1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 8
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 9
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
         ],
     ]
     return requierments
@@ -241,14 +345,14 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                     world.set_rule(flagpole, rules.Has(f"World{world_num}_unlock", count=2) & rules.Has(f"World{world_num}_level{level_num-1}_cleared")& level_req[world_num-1][level_num-1][0])
                 else:
                     # makes a level in logic if previous level is cleared
-                    world.set_rule(flagpole, (rules.Has(f"World{world_num}_level{level_num-1}_cleared") & level_req[world_num-1][level_num-1][0]) | rules.True_() )
+                    world.set_rule(flagpole, (rules.Has(f"World{world_num}_level{level_num-1}_cleared") & level_req[world_num-1][level_num-1][0]))
             if world_num == 9:
-                world.set_rule(flagpole,rules.Has("Starcoin",count=24) & rules.Has(f"World{world_num}_unlock", count=1))
+                world.set_rule(flagpole,rules.Has("Starcoin",count=10*level_num) & rules.Has(f"World{world_num}_unlock", count=1) & level_req[world_num-1][level_num-1][0])
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
                 star_coin = world.get_location(f"World{world_num}_level{level_num}_SC{sc}")
-                world.set_rule(star_coin, (rules.Has(f"World{world_num}_level{level_num}_cleared") & level_req[world_num - 1][level_num - 1][1][sc - 1]) | rules.True_() )
+                world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & level_req[world_num - 1][level_num - 1][1][sc - 1] )
 
     HM_COUNT = 65
     hm_req = specific_hintmovie_requierments(world)
@@ -257,7 +361,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         location = world.get_location(f"Hintmovie{hm_num}")
         #oftlogic for hm
         total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-        world.set_rule(location, (rules.Has(f"Starcoin", count=total_cost) & hm_req[hm_num-1][1] )| rules.True_() )
+        world.set_rule(location, (rules.Has(f"Starcoin", count=total_cost) & hm_req[hm_num-1][1] ) )
 
 
 def set_completion_condition(world: NSMBWworld) -> None:
@@ -268,3 +372,5 @@ def set_completion_condition(world: NSMBWworld) -> None:
     # In our case, we went for the Victory event design pattern (see create_events() in locations.py).
     # So lets undo what we just did, and instead set the completion condition to:
     world.set_completion_rule(rules.Has("Victory"))
+
+#rules to json exists

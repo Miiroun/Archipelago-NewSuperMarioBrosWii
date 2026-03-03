@@ -20,7 +20,7 @@ ITEM_NAME_TO_ID = {
 # Items should have a defined default classification.
 # In our case, we will make a dictionary from item name to classification.
 DEFAULT_ITEM_CLASSIFICATIONS = {
-    "Starcoin" : ItemClassification.filler, #77 x 3 st
+    "Starcoin" : ItemClassification.progression_deprioritized, #77 x 3 st
     "Gomba trap" : ItemClassification.trap,
     "fill_inventory" : ItemClassification.filler, # onetime myshroom
 }
@@ -30,7 +30,7 @@ for i in range(1,9+1):
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}_unlock" : ItemClassification.progression})
 
 # could add movement rando as checks
-movments = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "hold", "triple_jump", "swim", "p-switch", "red-block"]
+movments = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "cary", "triple_jump", "swim", "p-switch", "red-block", "swing"]
 # maybe in future "run", "spin",
 for i in range(len(movments)):
     ITEM_NAME_TO_ID.update({f"movment:{movments[i]}" : 300 + i+1})
@@ -89,9 +89,9 @@ def create_all_items(world: NSMBWWorld) -> None:
     for i in range(77*3):
         itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
+        itempool.append(world.create_item(f"World{i}_unlock"))
+        if i != 9:
             itempool.append(world.create_item(f"World{i}_unlock"))
-            if i != 9:
-                itempool.append(world.create_item(f"World{i}_unlock"))
     for i in range(len(movments)):
         itempool.append(world.create_item(f"movment:{movments[i]}"))
     for i in range(len(powerup_unlocks)):
@@ -166,6 +166,8 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     world.multiworld.itempool += itempool
 
+    #print(world.multiworld.itempool)
+
     # Sometimes, you might want the player to start with certain items already in their inventory.
     # These items are called "precollected items".
     # They will be sent as soon as they connect for the first time (depending on your client's item handling flag).
@@ -178,5 +180,5 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     #menu_world = world.create_item(f"Menu")
     #world.push_precollected(menu_world)
-    starter_world = world.create_item(f"World{1}_unlock") # can randomiz starter world in fututure
+    starter_world = world.create_item(f"World{world.options.starting_world}_unlock") # can randomiz starter world in fututure
     world.push_precollected(starter_world)

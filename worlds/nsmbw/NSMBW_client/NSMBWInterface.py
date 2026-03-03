@@ -1,11 +1,13 @@
 import asyncio
 from enum import Enum
-from logging import Logger
+
 from typing import Dict, Optional
 
-from dolphin_interface_client import *
-from worlds.nsmbw.items import ITEM_NAME_TO_ID
-from worlds.oot.Messages import int_to_bytes
+from .dolphin_interface_client import *
+from ..items import ITEM_NAME_TO_ID
+
+from .memoryAddresses import GAMES
+from ...alttp.EntranceShuffle import addresses
 
 
 class ConnectionState(Enum):
@@ -17,7 +19,6 @@ class ConnectionState(Enum):
     IN_WORLDMAP = 5
 
 _SUPPORTED_VERSIONS = ["US"]
-from memoryAddresses import GAMES
 
 # game constants
 HUD_MESSAGE_DURATION = 7.0
@@ -29,6 +30,10 @@ POWERUP_COUNT = 7
 ITEM_ID_TO_NAME = {v: k for k, v in ITEM_NAME_TO_ID.items()}
 
 ROM_FILE_NAME = r"New Super Mario Bros. Wii (USA) (En,Fr,Es) (Rev 2).wbfs"
+
+
+GAMELEVELS_PER_WORLD = []
+
 
 
 class NSMBWInterface():
@@ -160,6 +165,36 @@ class NSMBWInterface():
         )
     
     #my code-------------------------------------------------
+    def memory_offset_level_stats(self, world_num,level_num):
+        address = GAMES[self.current_game]["savefile1_state:1-1"]
+        savefile_num = self.get_savefile_num()
+        if savefile_num == b'\x00':
+            pass
+        elif savefile_num == b'\x01':
+            address += GAMES[self.current_game]["savefile2_offset"]
+        elif savefile_num == b'\x02':
+            address += GAMES[self.current_game]["savefile3_offset"]
+
+        address = GAMES[self.current_game]["level_stat"]
+
+        for i in range(1,world_num):
+            address += 168
+        if world_num >= 4:
+            address +=1
+
+        for i in range(1,level_num):
+            address += 4
+        if (level_num >= 6 and 3 <= world_num <= 5) or (level_num >= 7 and 3 <= world_num <= 5):
+            address += 64-4
+        if (world_num == 7 and level_num >= 7) or (world_num == 8 and level_num >= 8):
+            address += 60-4
+        if level_num >= 8 and world_num <=7:
+            address += 8-4 # 4 additional = 8 total
+        if (level_num == 9 and (world_num == 4 or world_num == 6)) or (level_num==10 and world_num == 8):
+            address += 56-4
+        if level_num >= 9 and (7 <= world_num <=8 ):
+            address += 8-4
+        return address
 
     # just created
     def get_sc(self):
@@ -171,8 +206,8 @@ class NSMBWInterface():
     def get_level_world(self):
         address = GAMES[self.current_game]["level_world"]
         return self.dolphin_client.read_address(address,4)
-    def get_level_stats(self, level_num):
-        address = GAMES[self.current_game]["level_stat"] + level_num * 4
+    def get_level_stats(self, world_num,level_num): # should make this take in world as paramiter
+        address = self.memory_offset_level_stats(world_num,level_num)
         return self.dolphin_client.read_address(address,4)
     def get_inventory_items(self, type_num):
         address = GAMES[self.current_game]["inventory_items"] + type_num
@@ -200,6 +235,10 @@ class NSMBWInterface():
         address = GAMES[self.current_game]["player_status"]
         return self.dolphin_client.read_address(address,1)
 
+    def get_savefile_num(self):
+        address = GAMES[self.current_game]["savefile_played_on"]
+        return self.dolphin_client.read_address(address,1)
+
 
     def set_worldstats(self,world_num : int, status : bytes):
         address = GAMES[self.current_game]["Worldstats_selectmenu"] + (world_num-1)
@@ -209,14 +248,11 @@ class NSMBWInterface():
         address2 = GAMES[self.current_game]["powerup_state2"]
         #self.dolphin_client.write_address(address1, powerup_state) # proberbly unnessesary
         self.dolphin_client.write_address(address2, powerup_state)
-    def set_sc_count(self, coint_num : int):
-        address = GAMES[self.current_game]["sc_count"]
-        self.dolphin_client.write_address(address, int_to_bytes(coint_num,1))
     def set_inventory_items(self, value, type_num):
         address = GAMES[self.current_game]["inventory_items"] + type_num
         self.dolphin_client.write_address(address, value)
-    def set_level_stats(self, level_num, data):
-        address = GAMES[self.current_game]["level_stat"] + level_num * 4
+    def set_level_stats(self, world_num, level_num, data):
+        address = self.memory_offset_level_stats(world_num,level_num)
         self.dolphin_client.write_address(address,data)
 
     def update_inventory_items(self, type_num):
