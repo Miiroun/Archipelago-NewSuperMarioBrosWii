@@ -36,7 +36,9 @@ def launch_NSMBW_client(*args):
             ctx.run_gui()
         ctx.run_cli()
 
-        logger.info("Running game...")
+
+
+        logger.info("Running game...") #this line below holds main game loop
         ctx.dolphin_sync_task = asyncio.create_task(ctx.dolphin_sync_task_func(), name="Dolphin Sync")
 
         await ctx.exit_event.wait()
@@ -67,8 +69,9 @@ def launch_NSMBW_client(*args):
     )
 
 async def shutdown():
+    if True: # should make option to auto close
         os.system("taskkill /im Dolphin.exe")
-        await asyncio.sleep(5)
+        await asyncio.sleep(3)
         os.system("taskkill /im Dolphin.exe")
 
 

@@ -3,8 +3,11 @@ from enum import Enum
 
 from typing import Dict, Optional
 
+from pony.utils import throw
+
 from .dolphin_interface_client import *
-from ..items import ITEM_NAME_TO_ID
+from ..items import ITEM_NAME_TO_ID, POWERUP_UNLOCK
+from ..locations import LEVELS_PER_WORLD
 
 from .memoryAddresses import GAMES
 from ...alttp.EntranceShuffle import addresses
@@ -26,13 +29,13 @@ HUD_MAX_MESSAGE_SIZE = 194
 
 STARCOIN_COUNT = 65
 LEVEL_COUNT = 77
-POWERUP_COUNT = 7
+POWERUP_COUNT = len(POWERUP_UNLOCK)
 ITEM_ID_TO_NAME = {v: k for k, v in ITEM_NAME_TO_ID.items()}
 
 ROM_FILE_NAME = r"New Super Mario Bros. Wii (USA) (En,Fr,Es) (Rev 2).wbfs"
 
 
-GAMELEVELS_PER_WORLD = []
+GAMELEVELS_PER_WORLD = LEVELS_PER_WORLD
 
 
 
@@ -55,11 +58,11 @@ class NSMBWInterface():
 
 
     def connect_to_game(self):
-        """Initializes the connection to dolphin and verifies it is connected to Metroid Prime"""
+        """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
         try:
             self.dolphin_client.connect()
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
-            
+
             print("gameeid:",game_id) # remove later
 
             try:
@@ -81,7 +84,7 @@ class NSMBWInterface():
                 and game_id != b"\x00\x00\x00\x00\x00\x00"
             ):
                 self.logger.info(
-                    f"Connected to the wrong game ({game_id}, rev {game_rev}), please connect to rigtb game version"
+                    f"Connected to the wrong game ({game_id}, rev {game_rev}), please connect to right game version"
                 )
                 self.game_id_error = game_id
                 if game_rev:
@@ -89,7 +92,7 @@ class NSMBWInterface():
             if self.current_game:
                 self.logger.info("NSMBW Disc Version: " + self.current_game)
         except DolphinException:
-            pass
+            print("An excpetion happend when connecting to dolphin")
 
     def disconnect_from_game(self):
         self.dolphin_client.disconnect()
@@ -104,17 +107,26 @@ class NSMBWInterface():
                 return ConnectionState.IN_GAME
             elif self.is_in_worldmap():
                 return ConnectionState.IN_WORLDMAP
-            else:
+            elif self.is_in_menu():
                 return ConnectionState.IN_MENU
+            else:
+                throw(ConnectionError)
         except DolphinException:
             return ConnectionState.DISCONNECTED
     def is_in_level(self) -> bool:
         """Check if the player is in the actual game rather than the main menu"""
 
-        return self.get_player_status() == b'\x00'
+        player_status = self.get_on_map()[0]
+        worlmap_status = self.get_on_map()[0]
+        #return player_status == b'\x00' or player_status == b'\x01'
+        #print(f"status {worlmap_status}")
+        return worlmap_status == 0
 
     def is_in_worldmap(self) -> bool:
-        return self.get_player_status() == b'\x02'
+        return 1 <= self.get_on_map()[0] <= 9
+
+    def is_in_menu(self):
+        return self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02'
 
     def reset_relay_tracker_cache(self):
         self.relay_trackers = None
@@ -166,8 +178,9 @@ class NSMBWInterface():
     
     #my code-------------------------------------------------
     def memory_offset_level_stats(self, world_num,level_num):
+        """" This function callculates the memory adress for the level stats of the given level"""
         address = GAMES[self.current_game]["savefile1_state:1-1"]
-        savefile_num = self.get_savefile_num()
+        savefile_num = 0 #self.get_savefile_num()
         if savefile_num == b'\x00':
             pass
         elif savefile_num == b'\x01':
@@ -179,12 +192,12 @@ class NSMBWInterface():
 
         for i in range(1,world_num):
             address += 168
-        if world_num >= 4:
-            address +=1
+        #if world_num >= 4:
+        #    address +=1
 
         for i in range(1,level_num):
             address += 4
-        if (level_num >= 6 and 3 <= world_num <= 5) or (level_num >= 7 and 3 <= world_num <= 5):
+        if (level_num >= 6 and 3 <= world_num <= 5) or (level_num >= 7 and 1 <= world_num <= 6):
             address += 64-4
         if (world_num == 7 and level_num >= 7) or (world_num == 8 and level_num >= 8):
             address += 60-4
@@ -194,8 +207,121 @@ class NSMBWInterface():
             address += 56-4
         if level_num >= 9 and (7 <= world_num <=8 ):
             address += 8-4
+
+
+        if world_num == 7  and level_num == 8:
+            address += 4-8
+        if world_num == 7 and level_num == 9:
+            address += -4
+
         return address
 
+    async def handle_unlocked_moves(self, unlocked_moves):
+
+        # ground pound, should look at og memmory to renable ones unlocked
+        # _ZN10dAcPyKey_c14checkHipAttackEv
+        address = GAMES[self.current_game]["ground_pound_address"]
+        if unlocked_moves[0] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            # this doesnt get called, why? renamed groundpound?
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+        # walljump ?
+        # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
+        # _ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
+
+        address = GAMES[self.current_game]["address_wall_slide"]
+        if unlocked_moves[1] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+        address = GAMES[self.current_game]["address_wall_jump"]
+        if unlocked_moves[1] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xE0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+
+
+        # _ZN7dAcPy_c11checkCrouchEv      0x8012D490      f
+        # _ZN9daYoshi_c11checkCrouchEv    0x8014DBB0
+
+        address = GAMES[self.current_game]["address_crouch"]
+        if unlocked_moves[2] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+        address = GAMES[self.current_game]["address_crouch_yoshi"]
+        if unlocked_moves[2] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+        # _ZN7dAcPy_c16checkEnableThrowEv 0x8012E6E0      f
+        # _ZN7dAcPy_c15checkCarryThrowEv  0x8012E760      f
+        # _ZN7dAcPy_c15checkCarryActorEP7dAcPy_c 0x8013A150
+        address = GAMES[self.current_game]["address_cary"]
+        if unlocked_moves[6] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x80\xA3\x2A\x78')
+            self.dolphin_client.write_address(address + 4, b'\x80\x04\x00\x00')
+
+        # _ZN7dAcPy_c17checkStartSwingUpEv 0x80136710
+        # _ZN7dAcPy_c19checkStartSwingDownEv 0x801367E0
+        address = GAMES[self.current_game]["address_swing_up"]
+        if unlocked_moves[11] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xE0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+        address = GAMES[self.current_game]["address_swing_down"]
+        if unlocked_moves[11] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xD0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+        # _ZN7dAcPy_c24checkCliffHangFootGroundEv 0x80135810 f
+        # _ZN7dAcPy_c19checkCliffHangWaterEv 0x801358E0   f
+
+        address = GAMES[self.current_game]["address_hang_ground"]
+        if unlocked_moves[5] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xD0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+        address = GAMES[self.current_game]["address_hang_water"]
+        if unlocked_moves[5] == 0:
+            self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
+            self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+        else:
+            self.dolphin_client.write_address(address, b'\x94\x21\xFF\xC0')
+            self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+
+        # _ZN10daPlBase_c16checkJumpTriggerEv 0x80057AD0  
+
+        # red switch
+        if unlocked_moves[10] == 0:
+            self.set_red_switch(b'\x00')  # reset red switch if not unlocked
+    
+    
     # just created
     def get_sc(self):
         address = GAMES[self.current_game]["SC_current_level"]
@@ -205,12 +331,12 @@ class NSMBWInterface():
         return self.dolphin_client.read_address(address,1)
     def get_level_world(self):
         address = GAMES[self.current_game]["level_world"]
-        return self.dolphin_client.read_address(address,4)
+        return self.dolphin_client.read_address(address,1)
     def get_level_stats(self, world_num,level_num): # should make this take in world as paramiter
         address = self.memory_offset_level_stats(world_num,level_num)
         return self.dolphin_client.read_address(address,4)
     def get_inventory_items(self, type_num):
-        address = GAMES[self.current_game]["inventory_items"] + type_num
+        address = GAMES[self.current_game]["inventory_items"] + type_num -1
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self):
         address = GAMES[self.current_game]["world_level"]
@@ -232,13 +358,20 @@ class NSMBWInterface():
         #assert powerup_state1 == powerup_state2, "Powerup states do not match, please report diffrense"
         return powerup_state2
     def get_player_status(self):
-        address = GAMES[self.current_game]["player_status"]
+        address = GAMES[self.current_game]["player_status"]+3 # beacuse 4 bytes
         return self.dolphin_client.read_address(address,1)
-
     def get_savefile_num(self):
         address = GAMES[self.current_game]["savefile_played_on"]
         return self.dolphin_client.read_address(address,1)
-
+    def get_time_left(self):
+        address = GAMES[self.current_game]["time_left"]
+        return self.dolphin_client.read_address(address,1)
+    def get_on_map(self):
+        address = GAMES[self.current_game]["on_map"]+3 # beacuse 4 bytes
+        return self.dolphin_client.read_address(address,1)
+    def get_map_world(self):
+        address = GAMES[self.current_game]["map_world"]
+        return self.dolphin_client.read_address(address,1)
 
     def set_worldstats(self,world_num : int, status : bytes):
         address = GAMES[self.current_game]["Worldstats_selectmenu"] + (world_num-1)
@@ -249,10 +382,19 @@ class NSMBWInterface():
         #self.dolphin_client.write_address(address1, powerup_state) # proberbly unnessesary
         self.dolphin_client.write_address(address2, powerup_state)
     def set_inventory_items(self, value, type_num):
-        address = GAMES[self.current_game]["inventory_items"] + type_num
+        address = GAMES[self.current_game]["inventory_items"] + type_num -1
         self.dolphin_client.write_address(address, value)
     def set_level_stats(self, world_num, level_num, data):
         address = self.memory_offset_level_stats(world_num,level_num)
+        self.dolphin_client.write_address(address,data)
+    def set_red_switch(self, data):
+        address = GAMES[self.current_game]["red_switch"]
+        self.dolphin_client.write_address(address,data)
+    def set_time_left(self, data):
+        address = GAMES[self.current_game]["time_left"]
+        self.dolphin_client.write_address(address,data)
+    def set_world_level(self,data):
+        address = GAMES[self.current_game]["world_level"]
         self.dolphin_client.write_address(address,data)
 
     def update_inventory_items(self, type_num):
@@ -265,7 +407,7 @@ class NSMBWInterface():
     async def kill_player(self):
         death_addres = 0x800555DC
         self.dolphin_client.write_address(death_addres, b'\60\x00\x00\x00')
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.1)
         self.dolphin_client.write_address(death_addres, b'\x48\x00\x00\x28')
 
 

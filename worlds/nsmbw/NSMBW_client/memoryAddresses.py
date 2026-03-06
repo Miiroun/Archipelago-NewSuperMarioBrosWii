@@ -9,25 +9,34 @@ GAMES: Dict[str, Any] = {
         #0x315b9e 	(US) Current World [8-Bit]
         "level_world": 0x80315B9F, #"Level world when you are in a level", #change beacuse think wrong
         "level_stat": 0x80C8084F, #. Ex: first byte (00 == level not completed, 10 == level completed, 20 == secret exit) second byte (01 == first star coin collected, 02 == second star coin collected, 03 == first and second stars coins collected) +4 for the others levels
-        "inventory_items": 0x80C807D9, #(+1 byte for each)
+        "inventory_items": 0x80C807E9, #(+1 byte for each) # this does not work
         "world_level": 0x80315B9C, #(World Map)
         "level_level": 0x80315B9D, #(World Map)
         "HM_stats": 0x80C80EDC, #. Ex: 0 == not available, 1 == unlocked. +1 for each hint movie (80C80ED*) #modified, another gameversion?
         "Worldstats_selectmenu": 0x80C80812, #. Ex: 0 == not available, 1== unlocked. +1 for each world (80C8081*)
 
 
+        "map_world" : 0x8042A04B,
+
         #"powerup_state1" : 0x8154C897, #dont need 1, always changes to match 2
         "powerup_state2" : 0x8154CCE7, #not shure what diffens betwen these are
 
         "player_status" : 0x8154CC5C, # =0 if in level, 1 if dead, 2 if menu
+        "on_map"  :0x80424798 ,#	        (US) On map flag [32-Bit BE]        0x00 = False        0x01 = True
+        "player1_pointer" : 0x8015e4278, #  Pointer to the Player in Slot 1 (32-bit BE)
+
         #acording to gemini player_status - 0x1148 = marios base address, should try to find static pointer to this dynamic location
 
         # need to find
-        "red_switch": 0x0000000,
+        "red_switch": 0x80d253d4,
 
 
         "HUD_MESSAGE_ADDRESS": 0x803F0BA8,#copypasted these from metroid, whant something similar to display ingame that item was recived
         "HUD_TRIGGER_ADDRESS": 0x80573494,
+
+
+        #codenotes from retro achivments (need to be logged in)
+        "time_left" : 0x801547900,
 
         #0x354e50 	(US) Player 1 Connected Flag (32-Bit BE)
         #0x354e54 	(US) Player 2 Connected Flag (32-Bit BE)
@@ -47,7 +56,7 @@ GAMES: Dict[str, Any] = {
         "savefile3_offset" : 0x1300,# = Save File 3 Offset
         "savefile1_state:1-1" : 0x80c7fed3,
 
-        "Spendable_starcoins_peach" : 0x153e514 	,#Spendables Star Coins in Peach's Castle [32-Bit BE]
+        "Spendable_starcoins_peach" : 0x80153e514 	,#Spendables Star Coins in Peach's Castle [32-Bit BE]
         #0x15dbb70 	Number of player on Items screen (32-Bit BE)
         #0x15e4278 	Pointer to the Player in Slot 1 (32-bit BE)
         #+0xAC | X Position (Float BE)
@@ -65,7 +74,19 @@ GAMES: Dict[str, Any] = {
 
 
         #0x15e48a8 	Current Position on Map [32-Bit BE] (0-based) 0x15 = Fortress 0x17 = Castle 0x19 = Green Toad House 0x1a, 1c = Red Toad House 0x1b = Yellow Toad House        0x23 = Cannon        0x26 = Arrow Spot        0x28 = Peach's Castle        0xfffffffe = Moving on slope 0xffffffff = "Free Movement" Path
-    },"EU": {
+
+        "ground_pound_address" : 0x8005E300,
+        "address_wall_slide" : 0x801284C0,
+        "address_wall_jump" : 0x801285D0,
+        "address_crouch" : 0x8012D490,
+        "address_crouch_yoshi" : 0x8014DBB0,
+        "address_cary" : 0x8013A150,
+        "address_swing_up" : 0x80136710,
+        "address_swing_down" : 0x801367E0,
+        "address_hang_ground" : 0x80135810,
+        "address_hang_water" : 0x801358E0,
+
+},"EU": {
         "game_id": b"SMNP01" # EU partially supported
     }
 }

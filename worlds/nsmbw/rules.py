@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import rule_builder.rules
 from rule_builder import rules
+from .locations import SECRET_EXIT_CANNON
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -38,7 +39,7 @@ def set_all_entrance_rules(world: NSMBWworld) -> None:
 
 def specific_hintmovie_requierments(world: NSMBWworld) -> List:
     # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
-    rule_completed_everything = rules.Has("World8_level10_cleared") # dont want to implement
+    rule_completed_everything = rules.Has("World8_level9_cleared") # dont want to implement
     requierments = [
         [3, rules.True_()],   #01
         [5, rule_completed_everything],  # 02 #find every normal goal in world1-9
@@ -131,7 +132,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
         [  # world 1
             [rules.True_(), [propeller | mini | star, rules.True_(), rules.True_()]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -2
-            [rules.True_(), [rules.True_(), mushroom | yoshi | mini, mushroom]],  # -3
+            [rules.True_(), [rules.True_(), mushroom | yoshi | mini, mushroom], rules.True_()],  # -3
             [rules.True_(), [rules.True_(), yoshi | propeller | mini, ice_peng]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
@@ -144,7 +145,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [rules.True_(), [rules.True_(), propeller, propeller | mini]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()], rules.True_()],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 2-T
             [ ice_peng | p_switch, [rules.True_(), mushroom, propeller | p_switch]],  # -8 2-C
         ],
@@ -154,7 +155,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [red_block, [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), red_block, red_block]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  #-6    # 3-Ghosthous
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
         ],
@@ -165,7 +166,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [ice_peng | mini | propeller, [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
-            [ice_peng | p_switch, [rules.True_(), ice_peng | p_switch, rules.True_()]],  # -7 4-G
+            [ice_peng | p_switch, [rules.True_(), ice_peng | p_switch, rules.True_()],rules.True_()],  # -7 4-G
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 4-C
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 4-A
 
@@ -176,7 +177,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6 #5-Ghosthouse
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -7 5-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 5-C
         ],
@@ -186,7 +187,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -3
             [rules.True_(), [rules.True_(), yoshi | propeller | mini, rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 6-T
             [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -8 6-C
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 6-A
@@ -353,6 +354,11 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 # makes starcoins in logic if this level is cleared
                 star_coin = world.get_location(f"World{world_num}_level{level_num}_SC{sc}")
                 world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & level_req[world_num - 1][level_num - 1][1][sc - 1] )
+
+            if (world_num,level_num) in SECRET_EXIT_CANNON: # currently for secret exit in logic requies
+                secret_exit = world.get_location(f"Secret_exit{world_num}-{level_num}")
+                world.set_rule(secret_exit, rules.Has(f"World{world_num}_level{level_num}_cleared") &
+                               level_req[world_num - 1][level_num - 1][2])
 
     HM_COUNT = 65
     hm_req = specific_hintmovie_requierments(world)
