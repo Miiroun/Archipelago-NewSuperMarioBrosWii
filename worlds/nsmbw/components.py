@@ -1,4 +1,4 @@
-from worlds.LauncherComponents import Component, Type, components, launch
+from worlds.LauncherComponents import Component, Type, components, launch, icon_paths
 
 
 # The most common type of component is a client, but there are other components, such as sprite/palette adjusters.
@@ -17,8 +17,12 @@ def run_client(*args: str) -> None:
     # Also, if your component has its own lifecycle, like if it is its own window that can be interacted with,
     # you should use the LauncherComponents.launch helper (which itself calls launch_subprocess).
     # This will create a subprocess for your component, launching it in a separate window from the Archipelago Launcher.
-    launch(launch_NSMBW_client(), name="New Super Mario Bros Wii Client", args=args)
+    launch(launch_NSMBW_client, name="New Super Mario Bros Wii Client", args=args)
 
+
+#icon_paths.update(
+#    {"nsmbw_icon" : "ap:module.nsmbw/img/nsmbw_icon.png"}
+#)
 
 # You then add this function as a component by appending a Component instance to LauncherComponents.components.
 # Now, it will show up in the Launcher with its display name,
@@ -30,8 +34,12 @@ components.append(
         game_name="NSMBW",
         component_type=Type.CLIENT,
         supports_uri=True,
+        #icon="icon",
+
     )
 )
+
+
 
 # There are two optional parameters that are worth drawing attention to here: "game_name" and "supports_uri".
 # As you might know, on a room page on WebHost, clicking a slot name opens your locally installed Launcher

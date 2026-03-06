@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 ITEM_NAME_TO_ID = {
     "Starcoin" : 101,
     "Gomba trap" : 401,
+    "Time trap": 402,
     "fill_inventory" : 501,
 }
 
@@ -22,25 +23,31 @@ ITEM_NAME_TO_ID = {
 DEFAULT_ITEM_CLASSIFICATIONS = {
     "Starcoin" : ItemClassification.progression_deprioritized, #77 x 3 st
     "Gomba trap" : ItemClassification.trap,
+    "Time trap" : ItemClassification.trap,
     "fill_inventory" : ItemClassification.filler, # onetime myshroom
 }
 
 for i in range(1,9+1):
     ITEM_NAME_TO_ID.update({f"World{i}_unlock" : 200 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}_unlock" : ItemClassification.progression})
+DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}_unlock"] = ItemClassification.progression_skip_balancing
+
 
 # could add movement rando as checks
-movments = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "cary", "triple_jump", "swim", "p-switch", "red-block", "swing"]
+MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "cary",
+            "triple_jump", "swim", "p-switch", "red-block", "swing"]
 # maybe in future "run", "spin",
-for i in range(len(movments)):
-    ITEM_NAME_TO_ID.update({f"movment:{movments[i]}" : 300 + i+1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"movment:{movments[i]}" : ItemClassification.progression})
+for i in range(len(MOVEMENT_UNLOCKS)):
+    ITEM_NAME_TO_ID.update({f"movment:{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"movment:{MOVEMENT_UNLOCKS[i]}" : ItemClassification.progression})
+
 
 #order matters, what coorect?
-powerup_unlocks = ["Super_Mushroom", "Propeller_Mushroom", "Fire_Flower", "Ice_Flower", "Penguin_Suit", "Mini_Mushroom"]
-for i in range(len(powerup_unlocks)):
-    ITEM_NAME_TO_ID.update({f"powerup_state:{powerup_unlocks[i]}" : 600 + i+1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"powerup_state:{powerup_unlocks[i]}" : ItemClassification.progression})
+POWERUP_UNLOCK = ["Super_Mushroom", "Propeller_Mushroom", "Fire_Flower", "Ice_Flower", "Penguin_Suit", "Mini_Mushroom"]
+for i in range(len(POWERUP_UNLOCK)):
+    ITEM_NAME_TO_ID.update({f"powerup_state:{POWERUP_UNLOCK[i]}" : 600 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"powerup_state:{POWERUP_UNLOCK[i]}" : ItemClassification.progression})
+DEFAULT_ITEM_CLASSIFICATIONS[f"movement:{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
 
 
 
@@ -75,6 +82,7 @@ def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSM
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
 def create_all_items(world: NSMBWWorld) -> None:
+    starting_world_num = world.random.randint(1, 8)
     # This is the function in which we will create all the items that this world submits to the multiworld item pool.
     # There must be exactly as many items as there are locations.
     # In our case, there are either six or seven locations.
@@ -90,12 +98,12 @@ def create_all_items(world: NSMBWWorld) -> None:
         itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
         itempool.append(world.create_item(f"World{i}_unlock"))
-        if i != 9:
+        if (i != 9) and (i != starting_world_num):
             itempool.append(world.create_item(f"World{i}_unlock"))
-    for i in range(len(movments)):
-        itempool.append(world.create_item(f"movment:{movments[i]}"))
-    for i in range(len(powerup_unlocks)):
-        itempool.append(world.create_item(f"powerup_state:{powerup_unlocks[i]}"))
+    for i in range(len(MOVEMENT_UNLOCKS)):
+        itempool.append(world.create_item(f"movment:{MOVEMENT_UNLOCKS[i]}"))
+    for i in range(len(POWERUP_UNLOCK)):
+        itempool.append(world.create_item(f"powerup_state:{POWERUP_UNLOCK[i]}"))
 
 
     #print(itempool)
@@ -177,8 +185,10 @@ def create_all_items(world: NSMBWWorld) -> None:
         # We're adding a filler item, but you can also add progression items to the player's precollected inventory.
         #starting_confetti_cannon = world.create_item("Confetti Cannon")
         #world.push_precollected(starting_confetti_cannon)
-
     #menu_world = world.create_item(f"Menu")
     #world.push_precollected(menu_world)
-    starter_world = world.create_item(f"World{world.options.starting_world}_unlock") # can randomiz starter world in fututure
+    #starter_world = world.create_item(f"World{world.options.starting_world}_unlock") # can randomiz starter world in fututure
+    starter_world = world.create_item(f"World{starting_world_num}_unlock") # can randomiz starter world in fututure
+    # will not make you start in world 9
+
     world.push_precollected(starter_world)

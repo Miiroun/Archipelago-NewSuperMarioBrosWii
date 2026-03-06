@@ -49,15 +49,22 @@ Toggel it with command in client
 - Can't unlock canons
 - The unlocks from world 9 requies 10 starcoin items / world number  to unlock
 
+
 ## Multiplayer
 Multiplayer is currently not supported
 - You can play but only mario will be restricted to unlocks
 
+
 ## Tracker
 A basic implementation of Universal tracker / poptracker is bundled with the client. Expect this feature to be expanded.
 
+
 ## Rivvolution ??
 In its current state the client doesnt modify the gamefile in any way (just editing the games live memory). This means that you dont need a mod patch.
+
+
+## Options
+- No options are currently implemented
 
 
 ## Known bugs
@@ -65,3 +72,4 @@ In its current state the client doesnt modify the gamefile in any way (just edit
    - The current solution is for you to manualy move to a world you have unlocked.
  - Saving the game is currently difficult depending on location. Do not close game or client when in peach castle or world 9.
  - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).
+

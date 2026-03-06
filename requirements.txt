@@ -19,3 +19,5 @@ kivymd>=2.0.1.dev0
 
 # Legacy world dependencies that custom worlds rely on
 Pymem>=1.13.0
+
+dolphin-memory-engine

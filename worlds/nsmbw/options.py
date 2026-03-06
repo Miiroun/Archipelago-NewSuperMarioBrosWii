@@ -36,20 +36,31 @@ class TrapChance(Range):
 
 
 class RandomizeStarCoins(Toggle):
+    """
+    If enabled will include starcoins as checks
+    """
     display_name = "Randomize Star Coins"
     default = True
 
 class LogicDifficulty(Choice):
+    """
+    If hard will make checks that require trecet skill to be in logic,
+    recommended to normal
+    """
     display_name = "Logic Difficulty"
     option_normal = 0
     option_difficult = 1
     default = option_normal
 
 class StartingWorld(Range):
+    """
+    Selects you starting world,
+    recommended to select randomly
+    """
     display_name = "Starting World"
 
     range_start = 1
-    range_end = 9
+    range_end = 8
     default = 1
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
