@@ -5,15 +5,15 @@
 The [player options page for this game](../player-options) contains all the options you need to configure and export a
 config file.
 
-## What is randomized
-Moves, powerups(unlocked), collecting starcoins, unlocking worlds, buying hintmovies
+## What is randomized?
+Moves, powerups (unlocked), collecting starcoins, unlocking worlds, buying hintmovies
 
-## What is not randomized currently
-Levels(order), level completion, enemize, powerups (inside levels), pipes
+## What is not randomized currently?
+Levels (order), level completion, enemies, powerups (inside levels), pipes
 
 
-## What is goal
-- To beat bowsers castle at world 8
+## What is the goal?
+- To beat bowser's castle at world 8
 - To do this you need 2x world 8 unlock and ground pound (for 8-airship)
 
 
@@ -27,7 +27,7 @@ Levels(order), level completion, enemize, powerups (inside levels), pipes
   - Climb
   - Swim
   - Climb
-  - Cary
+  - Carry
 - Inventory fill (one of every powerup)
 - Traps (in itemlist but not implemented)
 
@@ -35,19 +35,19 @@ Levels(order), level completion, enemize, powerups (inside levels), pipes
 
 ## Checks
 - Collecting powerups
-- Buying hintmovies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if need help with unlock
+- Buying hintmovies (65 exist). Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if you need help with unlocking them
 - Completing towers, castles and secret exits that unlock cannons (but not completing normal levels)
 - 5 Staring to make AP happy with random start
 
 
 ## Deathlink
 Is implemented
-Toggel it with command in client
+Toggle it with command in client
 
 
 ## What is diffrent from vannila
-- Can't unlock canons
-- The unlocks from world 9 requies 10 starcoin items / world number  to unlock
+- Can't unlock cannons
+- The unlocks from world 9 require 10 starcoin items / world number  to unlock
 
 
 ## Multiplayer
@@ -60,7 +60,7 @@ A basic implementation of Universal tracker / poptracker is bundled with the cli
 
 
 ## Rivvolution ??
-In its current state the client doesnt modify the gamefile in any way (just editing the games live memory). This means that you dont need a mod patch.
+In its current state the client doesn't modify the gamefile in any way (just editing the games live memory). This means that you don't need a mod patch.
 
 
 ## Options
@@ -70,6 +70,6 @@ In its current state the client doesnt modify the gamefile in any way (just edit
 ## Known bugs
  - At start of game and after completing a world the game moves you to the next without you having unlocked it, which breaks logic.
    - The current solution is for you to manualy move to a world you have unlocked.
- - Saving the game is currently difficult depending on location. Do not close game or client when in peach castle or world 9.
+ - Saving the game is currently difficult depending on location. Do not close the game or client when in peach castle or world 9.
  - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).
 
