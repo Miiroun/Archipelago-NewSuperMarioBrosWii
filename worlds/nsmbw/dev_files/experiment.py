@@ -13,7 +13,7 @@ from geckolibs.geckocode import *
 
 import libWiiPy
 
-from worlds.nsmbw.NSMBW_client.NSMBWInterface import NSMBWInterface
+#from worlds.nsmbw.NSMBW_client.NSMBWInterface import NSMBWInterface
 
 #from NSMBW_client.NSMBWInterface import ROM_FILE_NAME
 
@@ -24,13 +24,21 @@ from worlds.nsmbw.NSMBW_client.NSMBWInterface import NSMBWInterface
 
 #tmd_file = open("title.tmd", "rb").read()
 
-logger = logging.getLogger("Client")
+#logger = logging.getLogger("Client")
 
 
-interface = NSMBWInterface(logger)
-interface.current_game = "US"
+#interface = NSMBWInterface(logger)
+#interface.current_game = "US"
 
-calc_func = interface.memory_offset_level_stats
+#calc_func = interface.memory_offset_level_stats
 
-print(calc_func(7,8)-calc_func(7,7))
+#print(calc_func(7,8)-calc_func(7,7))
+
+
+from worlds.nsmbw.NSMBW_client.wii_code_tools import *
+from worlds.nsmbw.NSMBW_client.wii_code_tools.map_address import *
+
+
+
+
 

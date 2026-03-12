@@ -6,6 +6,7 @@ Others that helped
 - Matgamer2575 (started project and found some memory addresses)
 - techmuse (helped with locating addresses)
 - React / jacob_x_x (helped with developing logic)
+- LuigiXRules (Fixed typos in documentation)
 
 
 \

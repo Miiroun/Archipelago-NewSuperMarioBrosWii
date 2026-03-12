@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from BaseClasses import ItemClassification, Location
+from BaseClasses import ItemClassification, Location, LocationProgressType
 
 from . import items
 
@@ -37,8 +37,7 @@ num_hintmovies = 65
 for i in range(1,num_hintmovies +1):
     LOCATION_NAME_TO_ID.update({f"Hintmovie{i}": 3000 + i})
 
-num_starter_items = 5
-for i in range(1,num_starter_items+1):
+for i in range(1,100+1):
     LOCATION_NAME_TO_ID.update({f"starter_location{i}": 4000 + i})
 
 
@@ -61,7 +60,15 @@ def get_location_names_with_ids(location_names: list[str]) -> dict[str, int | No
 
 def create_all_locations(world: NSMBWWorld) -> None:
     create_regular_locations(world)
+    make_locations_priority(world)
     create_events(world)
+
+def make_locations_priority(world: NSMBWWorld) -> None:
+    for world_num in range(1, 9+1):  # worlds
+        for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+            if world_num != 9:
+                world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
+                world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
 
 
 def create_regular_locations(world: NSMBWWorld) -> None:
@@ -74,9 +81,10 @@ def create_regular_locations(world: NSMBWWorld) -> None:
 
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-            for sc in range(1, 3+1):
-                level_location = get_location_names_with_ids([f"World{world_num}_level{level_num}_SC{sc}"])
-                regions[2*world_num-2].add_locations(level_location, NSMBWLocation)
+            if world.options.randomize_coins:
+                for sc in range(1, 3+1):
+                    level_location = get_location_names_with_ids([f"World{world_num}_level{level_num}_SC{sc}"])
+                    regions[2*world_num-2].add_locations(level_location, NSMBWLocation)
         # add location for beating castles and towers
         if world_num != 9:
             level_location = get_location_names_with_ids([f"World{world_num}_castle",f"World{world_num}_tower"])
@@ -89,12 +97,13 @@ def create_regular_locations(world: NSMBWWorld) -> None:
         regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
-    for i in range(1, num_hintmovies+1):
-        hintmovie_location = get_location_names_with_ids([f"Hintmovie{i}"])
-        regions[0].add_locations(hintmovie_location, NSMBWLocation)
+    if world.options.include_hintmovies:
+        for i in range(1, num_hintmovies+1):
+            hintmovie_location = get_location_names_with_ids([f"Hintmovie{i}"])
+            regions[0].add_locations(hintmovie_location, NSMBWLocation)
 
     # gives player starter location that automaticly checks
-    for i in range(1,num_starter_items+1):
+    for i in range(1,world.options.num_startloc+1):
        starter_location = get_location_names_with_ids([f"starter_location{i}"])
        menu_region.add_locations(starter_location, NSMBWLocation)
 

@@ -18,6 +18,12 @@ GAMES: Dict[str, Any] = {
 
         "map_world" : 0x8042A04B,
 
+
+        "game_recording_state" : 0x80315b98,
+
+
+
+
         #"powerup_state1" : 0x8154C897, #dont need 1, always changes to match 2
         "powerup_state2" : 0x8154CCE7, #not shure what diffens betwen these are
 

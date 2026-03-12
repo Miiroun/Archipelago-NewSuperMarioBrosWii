@@ -1,19 +1,17 @@
 ## Super shortterm
-- fix deathlink
-- Kill player if not in allowed world, skip deathlink
-- Read location doc to find commands like for early / late items
-  - placed_locked_item
-- For killing ask ai again
 - For death link in pipe: find player life counter: could probably check on_worldmap / worldmap_postion
-  - For killing ask ai again
-- Simplify item and location name
+- Make victory require option to acquire either #starcoin or #amountworldclears
+- Save location of rom to host.yaml
+
 
 ## Playtest
 - Unlock powerups (what happens when have powerup and get new one)
   - doesn't work
-- Test if savefile works
+  - If new powerupcode works ( progresion and big mario if not unlocked)
 - Receive deathlink
 - Playtest red switch
+- Find what doesnt work on other saves
+  - Test if savefile works
 
 
 
@@ -25,22 +23,23 @@
 
 
 ## Bugs to fix
-- Send world 1-1 starcoins on load
-  - problem self.status
 - deathlink trigger when in pipe
 - Sometimes invisible on worldmap
-- World unlock only works on savefile2
-- Code can't kill player
-- Only groundpound as move is locked
-- Mario's animation starts from back of world
+- Marios animation start from back of world
 - Unlock new move/powerup requires restart client
-- Peach's castle doesn't set powerup
+  - Somthing problemtic, also with unlock_everything?
+  - Think problem with how i run my commands: makes program crash
+- World map locks/unlocks doesnt work on other savefiles
+  - World unlock only works on savefile2
+- Some in level code runs on start menu, needs better check if client connected
+  - Send world 1-1 starcoins on load
+  - problem self.status
+- - fix so powerup correspond correctly against name of unlock
+- Grabing powerup as small mario sets you small not big
 
 
 
 ## Short term
-- Compile and send out alpha version to playtest
-- Set up gidha project (problem with jdk)
 - Make player start in their starter world
 - Make level completion real checks but preplace them
   - probably shouldn't do or ok if not added to item pool?
@@ -51,6 +50,7 @@
 - Add spin as check
 - Fix other movement randos
 - Update self.connectionstatus to be more accurate
+- add memory conversion code between version
 
 
 Tracker
@@ -65,16 +65,14 @@ Tracker
 
 
 ## Mid term
-- When game in good state, do a continuous single player play through to get a feel for the game
 - Implement graphics for Hintmovie shop
-- Create documentation for how to install
-- Randomize starting world
 - Create functions that are called at start/end of level instead of continuously? (to optimize code)
-- Implement so that option file does something
 - Found where to add ctx.username = yaml\[playername\]
 - Try to change hm menu to show which movies unlocks which items 
   - Look at source code, se if easy hm menu to modify (only 4 strings that are reused for each coin, not helpful)
 - Get playtest data on what doesn't work on eu version
+- Add option to disable mushroom and spin rando
+- Implement options that are theased in options.py
 
 ## Features
 - Disable unlock of final level until defeated x other worlds or have y starcoins
@@ -121,3 +119,7 @@ Tracker
 - Expand and complete tracker
 - Find GOOD memory address repository
 - Work on setting up patcher (do we need one?)
+
+
+## Notes to self
+- One of set world level / level world changes ingame level: can be used for level rando
