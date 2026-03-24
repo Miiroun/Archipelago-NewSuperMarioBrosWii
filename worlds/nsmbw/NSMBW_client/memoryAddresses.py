@@ -1,7 +1,11 @@
 from typing import Dict, Any
+from pathlib import Path
+from .wii_code_tools.lib_wii_code_tools import common
+from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
+from ...jakanddaxter.locs.orb_locations import create_address
 
 GAMES: Dict[str, Any] = {
-    "US": {
+    "______": {
         "game_id": b"SMNE01",
         "game_rev": 2,
         "SC_current_level" : 0x803741B0,
@@ -92,7 +96,84 @@ GAMES: Dict[str, Any] = {
         "address_hang_ground" : 0x80135810,
         "address_hang_water" : 0x801358E0,
 
-},"EU": {
-        "game_id": b"SMNP01" # EU partially supported
+
+        #0x42a260 	#[32-bit BE] [PAL] Last Mode loaded
+        #0x2=Title Screen/File Select
+        #0x6=Main Game
+        #0x22 and 0x26=Exiting Free-for-All
+        #0x32=Free-for-All Menu
+        #0x36=Free-forAll in-game
+        #0x42 and 0x46=Exiting Coin Battle
+        #0x52=Coin Battle Menu
+        #0x56=Coin Battle in-game
+
+        #0xc72260 	[32-bit BE] [NTSC,PAL] In stage flag 0x0=Outside stages 0x1=Inside stages
+
+
+        #0x154ba0c  [32-bit BE] [NTSC,PAL] Character Pointer Slot 1 (Not necessarily Player 1)
     }
 }
+
+
+class MemoryAddresses(object):
+    def __init__(self, this_version):
+        memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
+        with Path(memorymap_path).open('r', encoding='utf-8') as f:
+            self.mappers = lib_address_maps.load_address_map(f)
+        self.this_version = this_version
+
+
+        self.SC_current_level = self.map_between("E2",0x803741B0)
+
+        self.level_world = self.map_between("E2",0x80315B9F)
+        self.level_stat = self.map_between("E2",0x80C8084F)
+        self.inventory_items = self.map_between("E2",0x80C807E9)
+
+        self.world_level = self.map_between("E2",0x80315B9C)
+        self.level_level = self.map_between("E2",0x80315B9D)
+        self.hm_stats = self.map_between("E2",0x80C80EDC)
+        self.world_stats = self.map_between("E2",0x80C80812)
+
+        self.map_world = self.map_between("E2",0x8042A04B)
+        self.game_recording_state = self.map_between("E2",0x80315b98)
+
+
+        #self.powerup_state = self.map_between("E2",0x8154CCE7)
+        # memory map doesnt work for this for some reason
+        self.powerup_state = 0x8154CCE7
+
+        self.player_status = self.map_between("E2",0x8154CC5C)
+
+        self.on_map = self.map_between("E2",0x80424798)
+        #self.player1_pointer = self.map_between("E2",0x8015e4278)
+
+        self.red_switch_state = self.map_between("E2",0x80d253d4)
+        #self.time_left = self.map_between("E2",0x801547900)
+
+
+        self.savefile1_1_1 = self.map_between("E2",0x80c7fed3)
+
+        self.address_ground_pound = self.map_between("E2",0x8005E300)
+        self.address_wall_slide = self.map_between("E2",0x801284C0)
+        self.address_wall_jump = self.map_between("E2",0x801285D0)
+        self.address_crouch = self.map_between("E2",0x8012D490)
+        self.address_crouch_yoshi = self.map_between("E2",0x8014DBB0)
+        self.address_cary = self.map_between("E2",0x8013A150)
+        self.address_swing_up = self.map_between("E2",0x80136710)
+        self.address_swing_down = self.map_between("E2",0x801367E0)
+        self.address_hang_ground = self.map_between("E2",0x80135810)
+        self.address_hang_water = self.map_between("E2",0x801358E0)
+
+
+        self.death_address = self.map_between("E2",0x800555DC)
+
+
+
+    def map_between(self, ver_from, address):
+        mapper_from = self.mappers[ver_from]
+        mapper_to = self.mappers[self.this_version]
+        return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address)
+
+
+
+

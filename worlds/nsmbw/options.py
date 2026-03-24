@@ -126,6 +126,14 @@ class BowserCastleUnlock(Choice):
 
     default = option_off
 
+class DeathLink(Toggle):
+    """
+    Enable deathlink
+    """
+    display_name = "Death Link"
+    default = False
+
+
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName".
 @dataclass
@@ -140,6 +148,7 @@ class NSMBWOptions(PerGameCommonOptions):
     randomize_level_completion : RandomizeLevelCompletion
     num_startloc : AmountStartingItems
     bowser_unlock : BowserCastleUnlock
+    death_link : DeathLink
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
@@ -156,6 +165,7 @@ option_groups = [
             IncludeHintMovies,
             AmountStartingItems,
             BowserCastleUnlock,
+            DeathLink,
          ],
 
     ),
@@ -174,14 +184,6 @@ option_presets = {
         "include_hintmovies": True,
         "num_startloc" : 10,
         "bowser_unlock": BowserCastleUnlock.option_off,
+        "death_link" : False,
     }
 }
-
-
-
-class NSMBWSettings(settings.Group):
-    pass
-    #class Rom_path(settings.FilePath):
-    #    desciption = "ROM Path"
-    #    location = ""
-    #rom_path : Rom_path = None

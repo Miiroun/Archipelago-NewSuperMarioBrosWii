@@ -43,7 +43,7 @@ for i in range(len(MOVEMENT_UNLOCKS)):
 
 
 #order matters, what correct?
-POWERUP_UNLOCK = ["Super_Mushroom", "Propeller_Mushroom", "Fire_Flower", "Ice_Flower", "Penguin_Suit", "Mini_Mushroom"]
+POWERUP_UNLOCK = ["Super_Mushroom", "Fire_Flower", "Mini_Mushroom" ,"Propeller_Mushroom", "Penguin_Suit",  "Ice_Flower"]
 for i in range(len(POWERUP_UNLOCK)):
     ITEM_NAME_TO_ID.update({f"{POWERUP_UNLOCK[i]}" : 600 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{POWERUP_UNLOCK[i]}" : ItemClassification.progression})

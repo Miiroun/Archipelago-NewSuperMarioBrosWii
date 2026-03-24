@@ -28,6 +28,7 @@ Community projects used
 - NSMBW decompiler
 - Dolphin emulator
 - Dolphin memory engine
+- wii-code-tools (by RoadrunnerWMC)
 
 Orignal game
 - Nintendo

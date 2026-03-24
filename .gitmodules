@@ -1,0 +1,3 @@
+[submodule "worlds/nsmbw/NSMBW_client/wii-code-tools"]
+	path = worlds/nsmbw/NSMBW_client/wii-code-tools
+	url = https://github.com/RoadrunnerWMC/wii-code-tools

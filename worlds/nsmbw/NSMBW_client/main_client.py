@@ -1,10 +1,9 @@
 #import os
 #from typing import Any, Dict, Optional, cast
+from settings import get_settings
 import asyncio
 import multiprocessing
 import os
-
-
 import Utils
 
 

@@ -7,12 +7,11 @@ from worlds.AutoWorld import World
 
 from . import items, locations, regions, rules, web_world
 from . import options as nsmbw_option
+from . import settings as nsbmw_settings
 
 from Utils import visualize_regions
 
 from typing import ClassVar
-
-from .options import NSMBWSettings
 
 
 class NSMBWworld(World):
@@ -34,7 +33,7 @@ class NSMBWworld(World):
     options_dataclass = nsmbw_option.NSMBWOptions
     options: nsmbw_option.NSMBWOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
 
-    settings: NSMBWSettings
+    settings: nsbmw_settings.NSMBWSettings
 
     # Our world class must have a static location_name_to_id and item_name_to_id defined.
     # We define these in regions.py and items.py respectively, so we just set them here.

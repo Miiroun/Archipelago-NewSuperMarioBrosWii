@@ -1,7 +1,7 @@
 ## Super shortterm
 - For death link in pipe: find player life counter: could probably check on_worldmap / worldmap_postion
 - Make victory require option to acquire either #starcoin or #amountworldclears
-- Save location of rom to host.yaml
+- Powerup rando doesnt work on EU, what does?
 
 
 ## Playtest
@@ -51,15 +51,14 @@
 - Fix other movement randos
 - Update self.connectionstatus to be more accurate
 - add memory conversion code between version
+- Fix so automaticaly add to host.yaml
 
 
-Tracker
+## Tracker
 - Set map page index to autoupdate depending on area
 - Add images for power ups and moves
 - Set up counter for # starcoins recived
 - Make show list avalibe starcoins / level
-
-
 
 
 
@@ -73,6 +72,7 @@ Tracker
 - Get playtest data on what doesn't work on eu version
 - Add option to disable mushroom and spin rando
 - Implement options that are theased in options.py
+
 
 ## Features
 - Disable unlock of final level until defeated x other worlds or have y starcoins
@@ -97,6 +97,8 @@ Tracker
   - Add the goomba trap
   - Lose powerup in inventory
 - Disable 8-7 / make require 8-2
+- Movment
+  - Run?
 
 ## Enging
 - Write gecko code parser

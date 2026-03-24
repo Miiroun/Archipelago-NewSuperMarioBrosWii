@@ -14,8 +14,8 @@ from NetUtils import ClientStatus
 from ..items import MOVEMENT_UNLOCKS
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT_CANNON
-from ...oot.Messages import bytes_to_int
-
+#from ...oot.Messages import bytes_to_int
+from settings import get_settings
 tracker_loaded = False
 
 logger = logging.getLogger("Client")
@@ -30,6 +30,9 @@ except ModuleNotFoundError:
     from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
     print("Tracker was not found so is not loaded")
 
+
+def bytes_to_int(bytes, signed=False):
+    return int.from_bytes(bytes, byteorder='big', signed=signed)
 
 def int_to_bytes(num, width, signed=False):
     return int.to_bytes(num, width, byteorder='big', signed=signed)
@@ -196,8 +199,8 @@ class NSMBWContext(SuperContext):
     async def dolphin_sync_task_func(self):
         try:
             # This will not work if the client is running from source
-            # version = get_apworld_version()
-            version = "0.0.2"
+            #version = get_apworld_version()
+            version = "0.0.3"
             logger.info(f"Using nsmbw.apworld version: {version}")
         except:
             pass
@@ -590,16 +593,9 @@ class NSMBWContext(SuperContext):
     async def handle_unlocked_worlds(self, unlocked_worlds):
         for world_num in range(1, 9 + 1):
             if unlocked_worlds[world_num - 1] == 0:
-                pass
-                # TODO enable this once not debugging
                 self.game_interface.set_worldstats(world_num, b'\x00')
-            elif unlocked_worlds[world_num - 1] == 1:
+            elif unlocked_worlds[world_num - 1] >= 1:
                 self.game_interface.set_worldstats(world_num, b'\x01')
-
-            elif unlocked_worlds[world_num - 1] == 2:
-                self.game_interface.set_worldstats(world_num, b'\x01')
-            else:
-                print(f"Corrupted worldcount data {unlocked_worlds[world_num - 1]} for world {world_num}")
 
     
     
@@ -748,8 +744,10 @@ async def patch_and_run_game(apnsmbw_file: str):
     #base_name = os.path.splitext(apnsmbw_file)[0]
     output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
 
-    filetypes = (("Rom path", (".iso", ".wbfs")),)
-    input_iso_path = Utils.open_filename("Select Rom file", filetypes)
+    #filetypes = (("Rom path", (".iso", ".wbfs")),)
+    #Utils.open_filename("Select Rom file", filetypes)
+    input_iso_path = get_settings()["nsmbw.world_options"].iso_path
+    assert input_iso_path is not None, "Add a path to your ISO in host.yaml"
 
     if not os.path.exists(output_path):
 
@@ -782,8 +780,9 @@ async def run_game(romfile: str):
 
     if auto_start is True and dolphin_interface_client.assert_no_running_dolphin():
         import webbrowser
-        webbrowser.open(romfile)
 
+        if get_settings()["nsmbw.world_options"].auto_open:
+            webbrowser.open(romfile)
     elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
         subprocess.Popen(
             [str(auto_start), romfile],
