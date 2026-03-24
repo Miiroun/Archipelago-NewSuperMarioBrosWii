@@ -1,3 +1,7 @@
+# New Super Mario Bros Wii
+An archipelago implementation of a NSMBW randomizer. Check out worlds/nsmbw/docs for setup instructions.
+
+
 # [Archipelago](https://archipelago.gg) ![Discord Shield](https://discordapp.com/api/guilds/731205301247803413/widget.png?style=shield) | [Install](https://github.com/ArchipelagoMW/Archipelago/releases)
 
 Archipelago provides a generic framework for developing multiworld capability for game randomizers. In all cases,
@@ -85,6 +89,7 @@ Currently, the following games are supported:
 * APQuest
 * Satisfactory
 * EarthBound
+* Mega Man 3
 
 For setup and instructions check out our [tutorials page](https://archipelago.gg/tutorial/).
 Downloads can be found at [Releases](https://github.com/ArchipelagoMW/Archipelago/releases), including compiled

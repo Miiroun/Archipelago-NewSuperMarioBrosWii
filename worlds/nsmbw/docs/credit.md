@@ -6,19 +6,20 @@ Others that helped
 - Matgamer2575 (started project and found some memory addresses)
 - techmuse (helped with locating addresses)
 - React / jacob_x_x (helped with developing logic)
+- LuigiXRules (Fixed typos in documentation)
 
 
 \
-Communitys that helped
-- NSMBW thred in Archipelago dc server
+Communities that helped
+- NSMBW thread in Archipelago dc server
 - Archipelgo dc server worlddev help and documentation
-- Horizo discord server (for knowledge  about the game)
+- Horizo discord server (for knowledge about the game)
 
 \
 Code based on (Large snipets are just copy pasted but changed to work for nsmbw)
 - APquest
 - Metroid Prime
-- Mario cart wii
+- Mario kart wii
 
 
 \

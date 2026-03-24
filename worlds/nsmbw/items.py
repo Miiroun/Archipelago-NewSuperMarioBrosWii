@@ -38,16 +38,16 @@ MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "
             "triple_jump", "swim", "p-switch", "red-block", "swing"]
 # maybe in future "run", "spin",
 for i in range(len(MOVEMENT_UNLOCKS)):
-    ITEM_NAME_TO_ID.update({f"movment:{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"movment:{MOVEMENT_UNLOCKS[i]}" : ItemClassification.progression})
+    ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"{MOVEMENT_UNLOCKS[i]}" : ItemClassification.progression})
 
 
-#order matters, what coorect?
+#order matters, what correct?
 POWERUP_UNLOCK = ["Super_Mushroom", "Propeller_Mushroom", "Fire_Flower", "Ice_Flower", "Penguin_Suit", "Mini_Mushroom"]
 for i in range(len(POWERUP_UNLOCK)):
-    ITEM_NAME_TO_ID.update({f"powerup_state:{POWERUP_UNLOCK[i]}" : 600 + i + 1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"powerup_state:{POWERUP_UNLOCK[i]}" : ItemClassification.progression})
-DEFAULT_ITEM_CLASSIFICATIONS[f"movement:{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
+    ITEM_NAME_TO_ID.update({f"{POWERUP_UNLOCK[i]}" : 600 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"{POWERUP_UNLOCK[i]}" : ItemClassification.progression})
+DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
 
 
 
@@ -68,9 +68,15 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
     # IMPORTANT: Whenever you need to use a random generator, you must use world.random.
     # This ensures that generating with the same generator seed twice yields the same output.
     # DO NOT use a bare random object from Python's built-in random module.
+
+
+    filler_items = ["fill_inventory"]
+    filler_traps = ["Gomba trap", "Time trap"]
+
     if world.random.randint(0, 99) < world.options.trap_chance:
-        return "Gomba trap"
-    return "fill_inventory"
+        return filler_traps[world.random.randint(0, len(filler_traps)-1)]
+
+    return filler_items[world.random.randint(0, len(filler_items) - 1)]
 
 
 def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSMBWItem:
@@ -82,7 +88,11 @@ def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSM
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
 def create_all_items(world: NSMBWWorld) -> None:
-    starting_world_num = world.random.randint(1, 8)
+    starting_world_num = 1
+    if world.options.starting_world:
+        starting_world_num = world.random.randint(1, 8)
+
+
     # This is the function in which we will create all the items that this world submits to the multiworld item pool.
     # There must be exactly as many items as there are locations.
     # In our case, there are either six or seven locations.
@@ -94,17 +104,30 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     itempool: list[Item] = []
 
+
     for i in range(77*3):
-        itempool.append(world.create_item("Starcoin"))
+        if world.options.randomize_coins:
+            itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
         itempool.append(world.create_item(f"World{i}_unlock"))
         if (i != 9) and (i != starting_world_num):
             itempool.append(world.create_item(f"World{i}_unlock"))
-    for i in range(len(MOVEMENT_UNLOCKS)):
-        itempool.append(world.create_item(f"movment:{MOVEMENT_UNLOCKS[i]}"))
-    for i in range(len(POWERUP_UNLOCK)):
-        itempool.append(world.create_item(f"powerup_state:{POWERUP_UNLOCK[i]}"))
 
+    for i in range(len(MOVEMENT_UNLOCKS)):
+        if world.options.randomize_movement:
+            itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
+        else:
+            world.create_item(f"{MOVEMENT_UNLOCKS[i]}")
+    if world.options.randomize_movement:
+        world.multiworld.early_items[world.player][f"{'Spin'}"] = 1
+
+    for i in range(len(POWERUP_UNLOCK)):
+        if world.options.randomize_powerups:
+            itempool.append(world.create_item(f"{POWERUP_UNLOCK[i]}"))
+        else:
+            world.create_item(f"{POWERUP_UNLOCK[i]}")
+    if world.options.randomize_powerups:
+        world.multiworld.early_items[world.player][f"{'Super_Mushroom'}"] = 1
 
     #print(itempool)
         # Archipelago requires that each world submits as many locations as it submits items.

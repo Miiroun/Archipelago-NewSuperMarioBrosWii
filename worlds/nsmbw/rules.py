@@ -111,20 +111,20 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 
 def specific_level_requierments(world: NSMBWworld) -> List:
     # doesnt acount for secret exit
-    mushroom = rules.Has(f"powerup_state:{'Super_Mushroom'}")
+    mushroom = rules.Has(f"{'Super_Mushroom'}")
 
 
-    propeller = rules.Has(f"powerup_state:{'Propeller_Mushroom'}") & mushroom
-    ice_peng = (rules.Has(f"powerup_state:{'Ice_Flower'}") | rules.Has(f"powerup_state:{'Penguin_Suit'}")) & mushroom
-    mini = rules.Has(f"powerup_state:{'Mini_Mushroom'}") & mushroom
+    propeller = rules.Has(f"{'Propeller_Mushroom'}") & mushroom
+    ice_peng = (rules.Has(f"{'Ice_Flower'}") | rules.Has(f"{'Penguin_Suit'}")) & mushroom
+    mini = rules.Has(f"{'Mini_Mushroom'}") & mushroom
 
 
-    p_switch = rules.Has(f"movment:{'p-switch'}") | rules.True_()
-    red_block = rules.Has(f"movment:{'red-block'}") | rules.True_()
+    p_switch = rules.Has(f"{'p-switch'}") | rules.True_()
+    red_block = rules.Has(f"{'red-block'}") | rules.True_()
     yoshi = rules.True_()
     star = rules.True_()
 
-    gp = rules.Has(f"movment:{'ground_pound'}")
+    gp = rules.Has(f"{'ground_pound'}")
 
 
     requierments = []
@@ -201,8 +201,9 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 7-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
             [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -9 7-C
+            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
 
         ],
         [  # world 8
@@ -214,8 +215,9 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
-            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -9 8-A
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 8-C
+            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -9 8-A
+
         ],
         [  # world 9
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
@@ -271,6 +273,8 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 Airship
+
         ],
         [  # world 5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
@@ -291,6 +295,8 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 Airship
+
         ],
         [  # world 7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
@@ -299,8 +305,9 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 Ghosthous
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 1-C
         ],
         [  # world 8
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
@@ -309,8 +316,11 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 Airship
+
         ],
         [  # world 9
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
@@ -319,11 +329,115 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
         ],
     ]
     return requierments
+
+def get_levlel_connections():
+    connections = []
+    connections += [
+        [ # world 1
+            [], #-1
+            [1],#-2
+            [2],#-3
+            [7],#-4
+            [4],#-5
+            [4],#-6
+            [3],# -Tower
+            [6,7] # -Caslte
+        ],
+        [  # world 2
+            [],  # -1
+            [],  # -2
+            [1,2],  # -3
+            [7],  # -4
+            [4],  # -5
+            [4],  # -6
+            [3],  # -Tower
+            [5,6]  # -Caslte
+        ],
+        [  # world 3
+            [],  # -1
+            [1],  # -2
+            [2],  # -3
+            [7],  # -4
+            [4],  # -5
+            [2],  # -6
+            [2],  # -Tower
+            [5]  # -Caslte
+        ],
+        [  # world 4
+            [],  # -1
+            [1],  # -2
+            [1],  # -3
+            [7],  # -4
+            [6],  # -5
+            [4],  # -6
+            [2,3],  # -Tower
+            [5],  # -Caslte
+            [8] #airship
+        ],
+        [  # world 5
+            [],  # -1
+            [1],  # -2
+            [1],  # -3
+            [7],  # -4
+            [4],  # -5
+            [5],  # -6
+            [2,3],  # -Tower
+            [5,6]  # -Caslte
+        ],
+        [  # world 6
+            [],  # -1
+            [1],  # -2
+            [1],  # -3
+            [2],  # -4
+            [7],  # -5
+            [5],  # -6
+            [4],  # -Tower
+            [6],  # -Caslte
+            [8] # - airship
+        ],
+        [  # world 7
+            [],  # -1
+            [1],  # -2
+            [2],  # -3
+            [8],  # -4
+            [4],  # -5
+            [5],  # -6
+            [6], # - 7
+            [3],  # -Tower
+            [7]  # -Caslte
+        ],
+        [  # world 8
+            [],  # -1
+            [1],  # -2
+            [2],  # -3
+            [8],  # -4
+            [4],  # -5
+            [5],  # -6
+            [6], # -7
+            [3],  # -Tower
+            [10],  # -Caslte
+            [7] #- airship
+        ],
+        [  # world 9
+            [],  # -1
+            [],  # -2
+            [],  # -3
+            [],  # -4
+            [],  # -5
+            [],  # -6
+            [],  # -7
+            []  # -8
+        ]
+
+    ]
+
+
+    return connections
 
 def set_all_location_rules(world: NSMBWworld) -> None:
     #regions = []
@@ -332,6 +446,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     #    if i != 9:
     #        regions.append(world.get_region(f"World_{i}_2"))
     level_req = specific_level_requierments(world)
+    level_connections = get_levlel_connections()
 
     #sets basic rules for each level
     #
@@ -339,16 +454,18 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, levels_per_world[world_num - 1]+1):
             flagpole = world.get_location(f"World{world_num}_level{level_num}_flagpole")
+            connection_rules = rules.False_()
+            for connection in level_connections[world_num-1][level_num-1]:
+                connection_rules |= rules.Has(f"World{world_num}_level{connection}_cleared")
+            if connection_rules == rules.False_(): # maybe have to use ==, not sure
+                connection_rules = rules.Has(f"World{world_num}_unlock", count=1)
+            if level_num == 7 + (1 if world_num in  [7,8] else 0) and world_num != 9: #castle level :
+                connection_rules = connection_rules & rules.Has(f"World{world_num}_unlock", count=2)
+
             if world_num != 9:
-                if level_num == 1:
-                    world.set_rule(flagpole, rules.Has(f"World{world_num}_unlock", count=1) & level_req[world_num-1][level_num-1][0])
-                elif level_num == 4:
-                    world.set_rule(flagpole, rules.Has(f"World{world_num}_unlock", count=2) & rules.Has(f"World{world_num}_level{level_num-1}_cleared")& level_req[world_num-1][level_num-1][0])
-                else:
-                    # makes a level in logic if previous level is cleared
-                    world.set_rule(flagpole, (rules.Has(f"World{world_num}_level{level_num-1}_cleared") & level_req[world_num-1][level_num-1][0]))
+                world.set_rule(flagpole, connection_rules & level_req[world_num-1][level_num-1][0])
             if world_num == 9:
-                world.set_rule(flagpole,rules.Has("Starcoin",count=10*level_num) & rules.Has(f"World{world_num}_unlock", count=1) & level_req[world_num-1][level_num-1][0])
+                world.set_rule(flagpole,rules.Has("Starcoin",count=10*level_num) & connection_rules & level_req[world_num-1][level_num-1][0])
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared

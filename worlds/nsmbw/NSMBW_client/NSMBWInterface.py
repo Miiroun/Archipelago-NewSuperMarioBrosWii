@@ -1,9 +1,9 @@
 import asyncio
+import time
 from enum import Enum
 
 from typing import Dict, Optional
 
-from pony.utils import throw
 
 from .dolphin_interface_client import *
 from ..items import ITEM_NAME_TO_ID, POWERUP_UNLOCK
@@ -103,16 +103,18 @@ class NSMBWInterface():
             connected = self.dolphin_client.is_connected()
             if not connected or self.current_game is None:
                 return ConnectionState.DISCONNECTED
-            elif self.is_in_level():
-                return ConnectionState.IN_GAME
-            elif self.is_in_worldmap():
-                return ConnectionState.IN_WORLDMAP
             elif self.is_in_menu():
                 return ConnectionState.IN_MENU
+            elif self.is_in_worldmap():
+                return ConnectionState.IN_WORLDMAP
+            elif self.is_in_level():
+                return ConnectionState.IN_GAME
             else:
-                throw(ConnectionError)
+                raise ConnectionError("Faild to connect to server")
         except DolphinException:
             return ConnectionState.DISCONNECTED
+
+
     def is_in_level(self) -> bool:
         """Check if the player is in the actual game rather than the main menu"""
 
@@ -126,7 +128,8 @@ class NSMBWInterface():
         return 1 <= self.get_on_map()[0] <= 9
 
     def is_in_menu(self):
-        return self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02'
+        #print(f"record state {self.get_record_state()}")
+        return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
     def reset_relay_tracker_cache(self):
         self.relay_trackers = None
@@ -372,6 +375,9 @@ class NSMBWInterface():
     def get_map_world(self):
         address = GAMES[self.current_game]["map_world"]
         return self.dolphin_client.read_address(address,1)
+    def get_record_state(self):
+        address = GAMES[self.current_game]["game_recording_state"]+3 # beacuse 4byte number
+        return self.dolphin_client.read_address(address,1)
 
     def set_worldstats(self,world_num : int, status : bytes):
         address = GAMES[self.current_game]["Worldstats_selectmenu"] + (world_num-1)
@@ -393,8 +399,10 @@ class NSMBWInterface():
     def set_time_left(self, data):
         address = GAMES[self.current_game]["time_left"]
         self.dolphin_client.write_address(address,data)
-    def set_world_level(self,data):
+    def set_world(self,data):
         address = GAMES[self.current_game]["world_level"]
+        self.dolphin_client.write_address(address,data)
+        address = GAMES[self.current_game]["level_world"]
         self.dolphin_client.write_address(address,data)
 
     def update_inventory_items(self, type_num):
@@ -406,8 +414,15 @@ class NSMBWInterface():
 
     async def kill_player(self):
         death_addres = 0x800555DC
-        self.dolphin_client.write_address(death_addres, b'\60\x00\x00\x00')
-        await asyncio.sleep(0.1)
-        self.dolphin_client.write_address(death_addres, b'\x48\x00\x00\x28')
-
+        print("Set mario to death")
+        self.dolphin_client.write_address(death_addres, b'\x60\x00\x00\x00')
+        #await asyncio.sleep(1)
+        #time.sleep(2) # to much of wait?
+        #why doesnt asyncrio work here?????
+        # this could be moved to a chck if died
+    async def alive_player(self):
+        death_addres = 0x800555DC
+        if self.dolphin_client.read_address(death_addres,4) == b'\x60\x00\x00\x00':
+            print("Set mario to alive")
+            self.dolphin_client.write_address(death_addres, b'\x48\x00\x00\x28')
 
