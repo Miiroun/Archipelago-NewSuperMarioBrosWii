@@ -1,7 +1,7 @@
 ## Super shortterm
-- For death link in pipe: find player life counter: could probably check on_worldmap / worldmap_postion
-- Make victory require option to acquire either #starcoin or #amountworldclears
-- Powerup rando doesnt work on EU, what does?
+- Send playtest message in dc after bugfix
+- Turn SC into evenitems if dissabled
+- World set is diffrent depending savefile
 
 
 ## Playtest
@@ -10,16 +10,6 @@
   - If new powerupcode works ( progresion and big mario if not unlocked)
 - Receive deathlink
 - Playtest red switch
-- Find what doesnt work on other saves
-  - Test if savefile works
-
-
-
-## Thoughts / decisions
-- Maybe make items worth 3 starcoins and then fill up the rest with trash? Don't want too many useless checks
-- Why do I get bounded packets like every 30 sec? probably nothing to worry about
-- Could make most starcoins local
-
 
 
 ## Bugs to fix
@@ -36,7 +26,20 @@
   - problem self.status
 - - fix so powerup correspond correctly against name of unlock
 - Grabing powerup as small mario sets you small not big
+- Powerup rando doesnt work on EU, what does?
+- For death link in pipe: find player life counter: could probably check on_worldmap / worldmap_postion
 
+## From playtest
+- Hint movies doesn't send checks or show as unlocked
+- Gamestate: in level
+- Confused tower, castle and fortress??
+- Change the flag that checks which world you are in for world 9, doesn't work
+- Deathlink sends death when shouldn't: when entering or leaving level
+- Add level requirements for hint movies
+- Make progressive powerup be a yaml option
+- Do ap-test for all options
+- pack all of options in storge
+-  create code that reads the version from the manifest
 
 
 ## Short term
@@ -46,12 +49,10 @@
     - Make client have a save file of completed levels (so can overwrite)
 - Set swimspeed and yoshispeed = 0
 - Ask discord for help finding which text to edit for custom names in starcoin field
-- Fix how levels are organized so that if levels parallel logic doesn't require earlier
+- Fix so automaticaly add to host.yaml
+- Kamek
 - Add spin as check
 - Fix other movement randos
-- Update self.connectionstatus to be more accurate
-- add memory conversion code between version
-- Fix so automaticaly add to host.yaml
 
 
 ## Tracker
@@ -59,55 +60,42 @@
 - Add images for power ups and moves
 - Set up counter for # starcoins recived
 - Make show list avalibe starcoins / level
+- Make poptracker images into different files
 
 
 
 
 ## Mid term
 - Implement graphics for Hintmovie shop
+  - Try to change hm menu to show which movies unlocks which items 
+  - Need to incluc new messages.arc and some patch code
 - Create functions that are called at start/end of level instead of continuously? (to optimize code)
-- Found where to add ctx.username = yaml\[playername\]
-- Try to change hm menu to show which movies unlocks which items 
-  - Look at source code, se if easy hm menu to modify (only 4 strings that are reused for each coin, not helpful)
-- Get playtest data on what doesn't work on eu version
-- Add option to disable mushroom and spin rando
-- Implement options that are theased in options.py
+- Bases on death messages creat an ingame text message
+- Do fuzzer test to see if options work
+- Edit color of text client
+
+
+
 
 
 ## Features
 - Disable unlock of final level until defeated x other worlds or have y starcoins
 - Save toad / kill world enemy = hint
 - Disable swim, Yoshi
-- Force Mushroom to generate early
-- Secret exit location and logic (make so unlock send location but doesn't unlock canon)
-- Prioritise Castle and Tower defeat to have high quality items
-- Disable pipes and doors
-- Read player info from player.yaml
 - Setting for rom file path and if should auto open / close
 - CHEATS
   - Double jump
   - Auto collect checkpoint
   - Start with powerup
-- Option to make # of worlds / all worlds beaten to be able to access bowser
 - p-switch rando
 - Randomize toadhouses
 - Finding toad in level gives hint
 - TRAPS
-  - Lose current powerup
   - Add the goomba trap
-  - Lose powerup in inventory
 - Disable 8-7 / make require 8-2
-- Movment
-  - Run?
-
-## Enging
-- Write gecko code parser
-- Write powerpc parser
 - Features from gecko
   - Speedtrap
   - fall damage
-- make it load from symbols in address map
-
 
 ## Long term
 - Add support for other roms
@@ -118,10 +106,6 @@
 - Shrink Trap (revert to a no-powerup state) 
 - Time Travel Trap (removes half of the level's time, or just runs it at double speed.)
 - Non ap rando (enemy, level, entrance)
+  - One of set world level / level world changes ingame level: can be used for level rando
 - Expand and complete tracker
-- Find GOOD memory address repository
 - Work on setting up patcher (do we need one?)
-
-
-## Notes to self
-- One of set world level / level world changes ingame level: can be used for level rando

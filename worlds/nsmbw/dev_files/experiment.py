@@ -1,7 +1,10 @@
 # should not be included in build but is for testing writing python code that easier to test here
 #import os
 #import logging
-
+import importlib.resources
+import os
+import pathlib
+import pkgutil
 #from .. import NSMBW_client
 #from ..NSMBW_client import wii_code_tools
 #from geckolibs.geckocode import *
@@ -50,7 +53,7 @@ from ..NSMBW_client.wii_code_tools.lib_wii_code_tools import address_maps as lib
 
 #help(map_address.main())
 
-path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
+#path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
 #print(type(address_map_path))
 
 #path = r"C:\Users\Anton\Projekt\Programering\AP-development\Archipelago-NewSuperMarioBrosWii\worlds\nsmbw\NSMBW_client\wii_code_tools\address-map.txt"
@@ -59,16 +62,22 @@ path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "addre
 
 #new_address = map_address.main(args=[path,"P2","E2","803741B0"])
 
-with Path(path).open('r', encoding='utf-8') as f:
-    mappers = lib_address_maps.load_address_map(f)
+#with Path(path).open('r', encoding='utf-8') as f:
+#    mappers = lib_address_maps.load_address_map(f)
 
-mapper_from = mappers["P2"]
-mapper_to = mappers["E2"]
-address = 0x803741B0
-new_address = lib_address_maps.map_addr_from_to(mapper_from,mapper_to,address)
+#mapper_from = mappers["P2"]
+#mapper_to = mappers["E2"]
+#address = 0x803741B0
+#new_address = lib_address_maps.map_addr_from_to(mapper_from,mapper_to,address)
 
-print(hex(new_address))
+#print(hex(new_address))
 
 #print(map_address.main({'address_map': address_map_path }))#, 'US', 'EU', 0x80000000]))
 
+
+#path  =os.path.abspath(pathlib.Path()) + r"\worlds\nsmbw"
+#print(path)
+#print(pkgutil.get_data(path, "archipelago.json"))
+#inp_file = importlib.resources.read_text(path, r"archipelago.json")
+#print(inp_file)
 

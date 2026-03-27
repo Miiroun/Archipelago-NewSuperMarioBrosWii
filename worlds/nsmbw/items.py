@@ -12,8 +12,6 @@ if TYPE_CHECKING:
 # Even if an item doesn't exist on specific options, it must be present in this lookup.
 ITEM_NAME_TO_ID = {
     "Starcoin" : 101,
-    "Gomba trap" : 401,
-    "Time trap": 402,
     "fill_inventory" : 501,
 }
 
@@ -22,8 +20,6 @@ ITEM_NAME_TO_ID = {
 # In our case, we will make a dictionary from item name to classification.
 DEFAULT_ITEM_CLASSIFICATIONS = {
     "Starcoin" : ItemClassification.progression_deprioritized, #77 x 3 st
-    "Gomba trap" : ItemClassification.trap,
-    "Time trap" : ItemClassification.trap,
     "fill_inventory" : ItemClassification.filler, # onetime myshroom
 }
 
@@ -50,6 +46,13 @@ for i in range(len(POWERUP_UNLOCK)):
 DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
 
 
+TRAPS = ["Gomba_trap", "Time_trap", "Loose_powerup_trap"]
+for i in range(len(TRAPS)):
+    ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
+
+
+
 
 # Each Item instance must correctly report the "game" it belongs to.
 # To make this simple, it is common practice to subclass the basic Item class and override the "game" field.
@@ -71,10 +74,10 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
 
 
     filler_items = ["fill_inventory"]
-    filler_traps = ["Gomba trap", "Time trap"]
+
 
     if world.random.randint(0, 99) < world.options.trap_chance:
-        return filler_traps[world.random.randint(0, len(filler_traps)-1)]
+        return TRAPS[world.random.randint(0, len(TRAPS)-1)]
 
     return filler_items[world.random.randint(0, len(filler_items) - 1)]
 

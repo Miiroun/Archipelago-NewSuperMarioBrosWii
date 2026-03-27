@@ -89,12 +89,20 @@ class NSMBWworld(World):
     # slot_data is just a dictionary using basic types, that will be converted to json when sent to the client.
     def fill_slot_data(self) -> Mapping[str, Any]:
         # If you need access to the player's chosen options on the client side, there is a helper for that.
-        return self.options.as_dict("trap_chance")
+        return self.options.as_dict(
+            "randomize_powerups",
+            "randomize_movement",
+            "num_startloc",
+            "bowser_star_unlock",
+            "bowser_world_unlock",
+
+        )
+        pass
 
 
     # UT-tracket imlementation
-    def interpret_slot_data(self, slot_data: dict[str, Any]) -> None:
-        pass
+    def interpret_slot_data(self, slot_data: dict[str, Any]) -> dict[str, Any] | None:
+        return slot_data
 
     def get_logical_path(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         return []

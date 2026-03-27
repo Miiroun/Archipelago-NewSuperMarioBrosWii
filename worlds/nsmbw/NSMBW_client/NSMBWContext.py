@@ -1,9 +1,11 @@
+import importlib
 import json
 import os
 import traceback
 from typing import List
 
 import logging
+
 
 from . import dolphin_interface_client
 from .NSMBWInterface import *
@@ -14,7 +16,6 @@ from NetUtils import ClientStatus
 from ..items import MOVEMENT_UNLOCKS
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT_CANNON
-#from ...oot.Messages import bytes_to_int
 from settings import get_settings
 tracker_loaded = False
 
@@ -36,6 +37,12 @@ def bytes_to_int(bytes, signed=False):
 
 def int_to_bytes(num, width, signed=False):
     return int.to_bytes(num, width, byteorder='big', signed=signed)
+
+class ModifiedState(Enum):
+    UNMODIFIED = 0
+    MODWOLD1_8 = 1
+    MODALLWORLDS = 2
+
 
 class NSMBWCommandProcessor(ClientCommandProcessor):
     ctx: "NSMBWContext"
@@ -127,7 +134,7 @@ class NSMBWContext(SuperContext):
     items_handled = []
     locations_handled = []
     completed_levelstats = [[b"\x00" for _ in range(10)] for i in range(9)]
-    moded_levelstats = False
+    moded_levelstats = ModifiedState.UNMODIFIED
     prev_powerup = b'\x00'
     starcoin_count = 0
     completed_levels = [] # TODO make the game save this to file
@@ -160,6 +167,10 @@ class NSMBWContext(SuperContext):
             #print(args)
             #self.username = args["slot_info"][str(args["slot"])][0]
             #need to set username somewhere
+
+            self.slot_data = args["slot_data"]
+            self.death_link_enabled = self.slot_data["death_link"]
+
             if tracker_loaded:
                 args.setdefault("slot_data", dict())
             Utils.async_start(self.handle_load())
@@ -197,15 +208,22 @@ class NSMBWContext(SuperContext):
 
     
     async def dolphin_sync_task_func(self):
-        try:
-            # This will not work if the client is running from source
-            #version = get_apworld_version()
-            version = "0.0.3"
-            logger.info(f"Using nsmbw.apworld version: {version}")
-        except:
-            pass
-    
+        # This will not work if the client is running from source
+        #version = get_apworld_version()
+
         if self.apnsmbw_file:
+            text = ""
+
+            if Utils.is_frozen():
+                text = importlib.resources.read_text(self.apnsmbw_file, r"archipelago.json")
+            else:
+                with open(self.apnsmbw_file+r"\\archipelago.json", "r") as f:
+                    text = f.read()
+            manifest = json.loads(text)
+
+            version = manifest["world_version"]
+            logger.info(f"Using nsmbw.apworld version: {version}")
+
             Utils.async_start(patch_and_run_game(self.apnsmbw_file))
     
         logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
@@ -294,11 +312,12 @@ class NSMBWContext(SuperContext):
     
     async def handle_in_worldmap(self):
         await self.handle_check_goal_complete()
-        await  self.handle_receive_items()
-        #await self.handle_check_deathlink()
+        await self.handle_receive_items()
         await self.check_starter_locations()
         await self.check_starcoins()
         await self.game_interface.alive_player()
+        await self.check_hintmovies()
+
 
 
     async def handle_in_main_menu(self):
@@ -335,7 +354,7 @@ class NSMBWContext(SuperContext):
 
     
     async def handle_check_goal_complete(self):
-        if not self.moded_levelstats:
+        if self.moded_levelstats == ModifiedState.UNMODIFIED:
             level_bowcast_condit = self.game_interface.get_level_stats(8,9)
             #print(level_bowcast_condit)
             #stats_in_bytes = #level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
@@ -386,40 +405,46 @@ class NSMBWContext(SuperContext):
 
         #print(f"modded_levelstats {self.moded_levelstats}")
 
-        if not self.moded_levelstats:
-            for world_num in range(1,9+1):
-                for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
-                    level_status = self.game_interface.get_level_stats(world_num,level_num)[0]
+        world_nums = []
+        if self.moded_levelstats == ModifiedState.UNMODIFIED:
+            world_nums = range(1,9+1)
+        if self.moded_levelstats == ModifiedState.MODWOLD1_8:
+            world_nums = [9]
 
-                    #if level_status != 0:
-                    #    print(f"Levestatus {level_status} for {world_num}-{level_num}")
-                     #   print(level_status & 2, level_status &4)
+        for world_num in world_nums:
+            for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
+                level_status = self.game_interface.get_level_stats(world_num,level_num)[0]
 
-                    # check the diffrent bytes
-                    if level_status & 1 == 1:
-                        sc_num = 1
-                        location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                        if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                            #print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                            checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                            logger.info(f"Sent check from item{location_name}")
-                    if level_status & 2 == 2:
-                        sc_num = 2
-                        location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                        if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                            print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                            checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                            logger.info(f"Sent check from item{location_name}")
-                    if level_status & 4 == 4:
-                        sc_num = 3
-                        location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                        if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                            print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                            checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                            logger.info(f"Sent check from item{location_name}")
+                #if level_status != 0:
+                #    print(f"Levestatus {level_status} for {world_num}-{level_num}")
+                 #   print(level_status & 2, level_status &4)
 
+                # check the diffrent bytes
+                if level_status & 1 == 1:
+                    sc_num = 1
+                    location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
+                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                        #print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
+                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                        logger.info(f"Sent check from item{location_name}")
+                if level_status & 2 == 2:
+                    sc_num = 2
+                    location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
+                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                        print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
+                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                        logger.info(f"Sent check from item{location_name}")
+                if level_status & 4 == 4:
+                    sc_num = 3
+                    location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
+                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                        print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
+                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                        logger.info(f"Sent check from item{location_name}")
         self.locations_handled += checked_locations
         await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+
+
     async def check_hintmovies(self):
         if self.game_interface.get_level_world() == b'\x28':  # checks if in peach castle
             checked_locations = []
@@ -436,7 +461,7 @@ class NSMBWContext(SuperContext):
 
     async def check_starter_locations(self):
         checked_locations = []
-        num_starter_items = 5
+        num_starter_items = self.slot_data["num_startloc"]
         for i in range(1,num_starter_items+1):
             location_name = f"starter_location{i}"
             if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
@@ -448,7 +473,7 @@ class NSMBWContext(SuperContext):
 
 
     async def check_level_completion(self, unlocked_worlds):
-        if not self.moded_levelstats:
+        if self.moded_levelstats == ModifiedState.UNMODIFIED:
             checked_locations = []
 
             # secret exits
@@ -556,7 +581,8 @@ class NSMBWContext(SuperContext):
         await self.handle_unlocked_worlds(unlocked_worlds)
         await self.handle_is_world_unlocked(unlocked_worlds)
         await self.handle_set_sc_count(self.starcoin_count)
-        await self.game_interface.handle_unlocked_moves(unlocked_moves)
+        if self.slot_data["randomize_movement"] >= 1:
+            await self.game_interface.handle_unlocked_moves(unlocked_moves)
         await self.check_level_completion(unlocked_worlds)
         await self.handle_traps(traps)
 
@@ -565,29 +591,33 @@ class NSMBWContext(SuperContext):
 
     async def handle_unlocked_powerups(self, unlocked_powerups):
         # this if statement makes powerup progresive
-        if unlocked_powerups[0] == 0 and sum(unlocked_powerups) > 1:
-            unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
-            unlocked_powerups[0] = 1
+        if self.slot_data["randomize_powerups"] >=1:
+            if self.slot_data["randomize_powerups"] == 1:
+                unlocked_powerups[0] = 1
+            elif self.slot_data["randomize_powerups"] == 2:
+                if unlocked_powerups[0] == 0 and sum(unlocked_powerups) > 1:
+                    unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
+                    unlocked_powerups[0] = 1
 
-        current_powerup_state = self.game_interface.get_powerupstate()
-        if current_powerup_state != b'\x00': # check if small mario
-            if unlocked_powerups[bytes_to_int(current_powerup_state)-1] == 0:
+            current_powerup_state = self.game_interface.get_powerupstate()
+            if current_powerup_state != b'\x00': # check if small mario
+                if unlocked_powerups[bytes_to_int(current_powerup_state)-1] == 0:
 
-                # this runs if not powerup unlocked
-                if current_powerup_state != b'\x01': #check if istnt big mario
-                    self.game_interface.set_powerupstate(self.prev_powerup)  # currently makes you small mario, maybe better make
-                    current_powerup_state = self.prev_powerup
-                else: # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
-
-                    if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
-                        self.game_interface.set_powerupstate(b'\x00')
-                        current_powerup_state = b'\x00'
+                    # this runs if not powerup unlocked
+                    if current_powerup_state != b'\x01': #check if istnt big mario
+                        self.game_interface.set_powerupstate(self.prev_powerup)  # currently makes you small mario, maybe better make
+                        current_powerup_state = self.prev_powerup
                     else:
-                        self.game_interface.set_powerupstate(b'\x01')
-                        current_powerup_state = b'\x01'
+                        # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
+                        if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
+                            self.game_interface.set_powerupstate(b'\x00')
+                            current_powerup_state = b'\x00'
+                        else:
+                            self.game_interface.set_powerupstate(b'\x01')
+                            current_powerup_state = b'\x01'
 
 
-        self.prev_powerup = current_powerup_state
+            self.prev_powerup = current_powerup_state
 
 
     async def handle_unlocked_worlds(self, unlocked_worlds):
@@ -619,7 +649,7 @@ class NSMBWContext(SuperContext):
         #print(self.connection_state== ConnectionState.IN_GAME)
 
         if at_peach_worldmap:
-            self.moded_levelstats = True
+            self.moded_levelstats = ModifiedState.MODALLWORLDS
             i = 0
             for world_num in range(1, 9 + 1):
                 for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
@@ -632,38 +662,50 @@ class NSMBWContext(SuperContext):
                     else:
                         self.game_interface.set_level_stats(world_num,level_num, b'\x00')
                     i += 1
-        elif current_world_num != 9:
-            if self.moded_levelstats :
-                for world_num in range(1, 9 + 1):
-                    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                        data = self.completed_levelstats[world_num-1][level_num-1]
-                        self.game_interface.set_level_stats(world_num,level_num, data)
-                self.moded_levelstats = False
-            else:
-                for world_num in range(1,9+1):
-                    for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
-                        self.completed_levelstats[world_num-1][level_num-1] = self.game_interface.get_level_stats(world_num,level_num)
         elif current_world_num == 9:
-            if not self.moded_levelstats:
-                self.moded_levelstats = True
-
+            if self.moded_levelstats == ModifiedState.UNMODIFIED:
+                self.moded_levelstats = ModifiedState.MODWOLD1_8
                 for world_num in range(1, 8+1):
-                    for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1): # need to uppdate to reflect levels / world
-                        unlocked_level = self.starcoin_count > (world_num*10)
-                        data = b'\x07' if unlocked_level else b'\x00'
+                    unlocked_level = self.starcoin_count >= (world_num * 10)
+                    data = b'\x07' if unlocked_level else b'\x00'
+                    for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
                         self.game_interface.set_level_stats(world_num,level_num, data)
+        elif current_world_num != 9:
+            #this removes modification
+           if self.moded_levelstats != ModifiedState.UNMODIFIED:
+               world_nums = []
+               if self.moded_levelstats == ModifiedState.MODWOLD1_8:
+                   world_nums = range(1,8+1)
+               elif self.moded_levelstats == ModifiedState.MODALLWORLDS:
+                   world_nums = range(1,9+1)
+               for world_num in world_nums:
+                   for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+                       data = self.completed_levelstats[world_num - 1][level_num - 1]
+                       self.game_interface.set_level_stats(world_num, level_num, data)
+                       self.moded_levelstats = ModifiedState.UNMODIFIED
+           else:
+               #this saves data if game is modified in future
+               for world_num in range(1, 9 + 1):
+                   for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+                       self.completed_levelstats[world_num - 1][level_num - 1] = self.game_interface.get_level_stats(world_num,
+                                                                                                                  level_num)
         else:
-            print("this branch shouldnt happen")
+            print("this branch shouldn't happen")
 
 
 
     async def handle_traps(self, traps):
         for trap in traps:
-            if trap == "gooman_trap":
+            if trap == "Gomba_trap":
                 print("Imagin a gooma comes and attacs you")
-            if trap == "time_trap":
+            elif trap == "time_trap":
                 time_left = self.game_interface.get_time_left()
                 self.game_interface.set_time_left(time_left // 2)  #half times left
+            elif trap == "Loose_powerup_trap":
+                self.game_interface.set_powerupstate(b'\x00')
+            else:
+                print(f"Trap {trap} is not implemented")
+                raise Exception(f"Trap {trap} is not implemented")
 
 
     
@@ -779,10 +821,9 @@ async def run_game(romfile: str):
     auto_start = True
 
     if auto_start is True and dolphin_interface_client.assert_no_running_dolphin():
-        import webbrowser
 
         if get_settings()["nsmbw.world_options"].auto_open:
-            webbrowser.open(romfile)
+            Utils.open_file(romfile)
     elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
         subprocess.Popen(
             [str(auto_start), romfile],

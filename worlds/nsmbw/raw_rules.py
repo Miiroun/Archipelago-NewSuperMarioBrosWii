@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from rule_builder import rules
 
@@ -15,72 +15,71 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
         #starcoin cost, level requierment, generic requierment
         [3, (1,1), rules.True_()],   #01
         [5, (1,1), rule_completed_everything],  # 02 #find every normal goal in world1-9
-        [3, (1,1), rules.Has("Starcoin", count=5)],  # 03
-        [3, (1,1), rule_completed_everything],  # 04 #find every normal goal in world1-9
-        [5, (1,1), rules.Has("World1_level8_cleared")],  # 05
-        [5, (1,1), rules.Has("Starcoin", count=10)],  # 06
-        [5, (1,1), rules.Has("Starcoin", count=30)],  # 07
-        [0, (1,1), rules.Has("Starcoin", count=15)],  # 08
-        [3, (1,1), rules.Has("Starcoin", count=1)],  # 09
-        [0, (1,1), rules.Has("Starcoin", count=95)],  # 10
-        [3, (1,1), rules.Has("Starcoin", count=150)],  # 11
-        [5, (1,1), rules.Has("Starcoin", count=1)]  ,# 12
-        [5, (1,1), rule_completed_everything] , # 13 #find every normal adn secret goal in world1-9
-        [5, (1,1), rules.Has("World2_level8_cleared")],  # 14
-        [5, (1,1), rules.Has("Starcoin", count=215)],  # 15
-        [10, (1,1), rules.Has("Starcoin", count=25)],  # 16
-        [0, (1,1), rules.Has("Starcoin", count=65)] , # 17
-        [3, (1,1), rules.Has("Starcoin", count=35)] , # 18
-        [5, (1,1), rules.Has("Starcoin", count=165)] , # 19
-        [5, (1,1), rules.Has("Starcoin", count=190)]  ,# 20
-        [0, (1,1), rules.Has("Starcoin", count=140)] , # 21
-        [3, (1,1), rules.Has("World3_level8_cleared")],  # 22
-        [5, (1,1), rules.Has("Starcoin", count=195)] , # 23
-        [5, (1,1), rules.Has("Starcoin", count=140)],  # 24
-        [5, (1,1), rules.Has("Starcoin", count=130)] , # 25
-        [3, (1,1), rules.Has("Starcoin", count=45)]  ,# 26
-        [5, (1,1), rules.Has("Starcoin", count=175)] , # 27
-        [3, (1,1), rule_completed_everything],  # 28 # everything
-        [0, (1,1), rules.Has("Starcoin", count=125)],  # 29
-        [5, (1,1), rules.Has("World4_level8_cleared")],  # 30
-        [10, (1,1), rules.Has("Starcoin", count=70)],  # 31
-        [0, (1,1), rules.Has("Starcoin", count=50)],  # 32
-        [5, (1,1), rules.Has("Starcoin", count=69)],  # 33
-        [3, (1,1), rules.Has("Starcoin", count=145)],  # 34
-        [5, (1,1), rules.Has("Starcoin", count=105)],  # 35
-        [3, (1,1), rules.Has("Starcoin", count=55)],  # 36
-        [0, (1,1), rules.Has("Starcoin", count=75)],  # 37
-        [5, (1,1), rules.Has("World8_level8_cleared")],  # 38
-        [3, (1,1), rules.Has("World5_level8_cleared")],  # 39
-        [3, (1,1), rules.Has("Starcoin", count=80)],  # 40
-        [0, (1,1), rules.Has("Starcoin", count=135)],  # 41
-        [0, (1,1), rules.Has("Starcoin", count=85)] , # 42
-        [5, (1,1), rules.Has("Starcoin", count=205)],  # 43
-        [5, (1,1), rules.Has("Starcoin", count=90)] , # 44
-        [10, (1,1), rules.Has("Starcoin", count=100)] , # 45
-        [5, (1,1), rules.Has("World9_level6_cleared")],  # 46
-        [5, (1,1), rules.Has("World9_level7_cleared")],  # 47
-        [0, (1,1), rules.Has("Starcoin", count=170)],  # 48
-        [0, (1,1), rules.Has("Starcoin", count=160)],  # 49
-        [3, (1,1), rules.Has("Starcoin", count=120)],  # 50
-        [3, (1,1), rules.Has("Starcoin", count=231)],  # 51
-        [0, (1,1), rules.Has("Starcoin", count=115)],  # 52
-        [3, (1,1), rules.Has("World8_level8_cleared")],  # 53 #beat world 8 castle
-        [5, (1,1), rules.Has("Starcoin", count=180)],  # 54
-        [0, (1,1), rules.Has("Starcoin", count=110)],  # 55
-        [5, (1,1), rules.Has("Starcoin", count=155)],  # 56
-        [5, (1,1), rule_completed_everything],  # 57 #all secret goals
-        [5, (1,1), rules.Has("Starcoin", count=225)],  # 58
-        [5, (1,1), rules.Has("Starcoin", count=220)],  # 59
-        [5, (1,1), rules.Has("Starcoin", count=185)],  # 60
-        [5, (1,1), rules.Has("Starcoin", count=210)],  # 61
-        [0, (1,1), rule_completed_everything],  # 62 #all normal goals
-        [5, (1,1), rules.Has("Starcoin", count=230)],  # 63
-        [0, (1,1), rules.Has("Starcoin", count=200)],  # 64
-        [3, (1,1), rule_completed_everything]  # 65 # complete everything!!!!!!!!!!!!!!!!1
+        [3, (1,2), rules.Has("Starcoin", count=5)],  # 03
+        [3, (1,3), rule_completed_everything],  # 04 #find every normal goal in world1-9
+        [5, (1,3), rules.Has("World1_level8_cleared")],  # 05
+        [5, (1,7), rules.Has("Starcoin", count=10)],  # 06
+        [5, (1,5), rules.Has("Starcoin", count=30)],  # 07
+        [0, (2,1), rules.Has("Starcoin", count=15)],  # 08
+        [3, (2,1), rules.Has("Starcoin", count=1)],  # 09
+        [0, (2,2), rules.Has("Starcoin", count=95)],  # 10
+        [3, (2,2), rules.Has("Starcoin", count=150)],  # 11
+        [5, (2,3), rules.Has("Starcoin", count=1)]  ,# 12
+        [5, (2,4), rule_completed_everything] , # 13 #find every normal adn secret goal in world1-9
+        [5, (2,5), rules.Has("World2_level8_cleared")],  # 14
+        [5, (2,5), rules.Has("Starcoin", count=215)],  # 15
+        [10, (2,6), rules.Has("Starcoin", count=25)],  # 16
+        [0, (3,1), rules.Has("Starcoin", count=65)] , # 17
+        [3, (3,1), rules.Has("Starcoin", count=35)] , # 18
+        [5, (3,2), rules.Has("Starcoin", count=165)] , # 19
+        [5, (3,2), rules.Has("Starcoin", count=190)]  ,# 20
+        [0, (3,3), rules.Has("Starcoin", count=140)] , # 21
+        [3, (3,3), rules.Has("World3_level8_cleared")],  # 22
+        [5, (3,3), rules.Has("Starcoin", count=195)] , # 23
+        [5, (3,6), rules.Has("Starcoin", count=140)],  # 24
+        [5, (3,5), rules.Has("Starcoin", count=130)] , # 25
+        [3, (4,1), rules.Has("Starcoin", count=45)]  ,# 26
+        [5, (4,2), rules.Has("Starcoin", count=175)] , # 27
+        [3, (4,2), rule_completed_everything],  # 28 # everything
+        [0, (4,3), rules.Has("Starcoin", count=125)],  # 29
+        [5, (4,3), rules.Has("World4_level8_cleared")],  # 30
+        [10, (4,7), rules.Has("Starcoin", count=70)],  # 31
+        [0, (4,4), rules.Has("Starcoin", count=50)],  # 32
+        [5, (4,6), rules.Has("Starcoin", count=69)],  # 33
+        [3, (4,8), rules.Has("Starcoin", count=145)],  # 34
+        [5, (5,1), rules.Has("Starcoin", count=105)],  # 35
+        [3, (5,3), rules.Has("Starcoin", count=55)],  # 36
+        [0, (5,6), rules.Has("Starcoin", count=75)],  # 37
+        [5, (5,6), rules.Has("World8_level8_cleared")],  # 38
+        [3, (5,8), rules.Has("World5_level8_cleared")],  # 39
+        [3, (6,1), rules.Has("Starcoin", count=80)],  # 40
+        [0, (6,2), rules.Has("Starcoin", count=135)],  # 41
+        [0, (6,3), rules.Has("Starcoin", count=85)] , # 42
+        [5, (6,3), rules.Has("Starcoin", count=205)],  # 43
+        [5, (6,5), rules.Has("Starcoin", count=90)] , # 44
+        [10, (6,6), rules.Has("Starcoin", count=100)] , # 45
+        [5, (6,8), rules.Has("World9_level6_cleared")],  # 46
+        [5, (7,1), rules.Has("World9_level7_cleared")],  # 47
+        [0, (7,3), rules.Has("Starcoin", count=170)],  # 48
+        [0, (7,8), rules.Has("Starcoin", count=160)],  # 49
+        [3, (7,7), rules.Has("Starcoin", count=120)],  # 50
+        [3, (7,4), rules.Has("Starcoin", count=231)],  # 51
+        [0, (7,9), rules.Has("Starcoin", count=115)],  # 52
+        [3, (8,2), rules.Has("World8_level8_cleared")],  # 53 #beat world 8 castle
+        [5, (8,3), rules.Has("Starcoin", count=180)],  # 54
+        [0, (8,8), rules.Has("Starcoin", count=110)],  # 55
+        [5, (8,10), rules.Has("Starcoin", count=155)],  # 56
+        [5, (8,9), rule_completed_everything],  # 57 #all secret goals
+        [5, (9,1), rules.Has("Starcoin", count=225)],  # 58
+        [5, (9,2), rules.Has("Starcoin", count=220)],  # 59
+        [5, (9,3), rules.Has("Starcoin", count=185)],  # 60
+        [5, (9,3), rules.Has("Starcoin", count=210)],  # 61
+        [0, (9,4), rule_completed_everything],  # 62 #all normal goals
+        [5, (9,5), rules.Has("Starcoin", count=230)],  # 63
+        [0, (9,6), rules.Has("Starcoin", count=200)],  # 64
+        [3, (9,7), rule_completed_everything]  # 65 # complete everything!!!!!!!!!!!!!!!!1
     ]
     return requierments
-
 
 
 def specific_level_requierments(world: NSMBWworld) -> List:
@@ -93,18 +92,19 @@ def specific_level_requierments(world: NSMBWworld) -> List:
     mini = rules.Has(f"{'Mini_Mushroom'}") & mushroom
 
 
-    p_switch = rules.Has(f"{'p-switch'}") | rules.True_()
-    red_block = rules.Has(f"{'red-block'}") | rules.True_()
+    p_switch = rules.Has(f"{'p-switch'}")
+    red_block = rules.Has(f"{'red-block'}")
     yoshi = rules.True_()
     star = rules.True_()
 
     gp = rules.Has(f"{'ground_pound'}")
+    wj = rules.Has(f"{'wall_jump'}")
 
 
     requierments = []
     requierments += [ # normal compleation rules
         [  # world 1
-            [rules.True_(), [propeller | mini | star, rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [propeller | mini | star, wj | propeller, propeller]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -2
             [rules.True_(), [rules.True_(), mushroom | yoshi | mini, mushroom], rules.True_()],  # -3
             [rules.True_(), [rules.True_(), yoshi | propeller | mini, ice_peng]],  # -4
@@ -189,7 +189,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 8-C
+            [rules.Has("Starcoin", count=world.options.bowser_star_unlock.value) & rules.HasFromList(tuple([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ]), count=world.options.bowser_world_unlock.value), [rules.True_(), rules.True_(), rules.True_()]],  # -10 8-C
             [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -9 8-A
 
         ],
@@ -392,7 +392,7 @@ def get_levlel_connections():
             [8],  # -4
             [4],  # -5
             [5],  # -6
-            [6], # -7
+            [2], # -7
             [3],  # -Tower
             [10],  # -Caslte
             [7] #- airship

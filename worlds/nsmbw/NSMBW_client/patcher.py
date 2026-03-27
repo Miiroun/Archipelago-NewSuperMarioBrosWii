@@ -1,6 +1,7 @@
 import os
 import sys
 
+import Utils
 from .NSMBWInterface import ROM_FILE_NAME
 
 import shutil
@@ -12,7 +13,7 @@ except ImportError:
 
 import pycdlib
 
-RIIVOLUTION_PATH = os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\"
+RIIVOLUTION_PATH = Utils.get_settings()["NSMBW.options"].riivolution_path
 RANDO_PATH = RIIVOLUTION_PATH + r"\\NSMBW_AP_RANDO\\"
 
 
