@@ -1,4 +1,8 @@
+import io
+import zipfile
 from pathlib import Path
+
+import Utils
 from .wii_code_tools.lib_wii_code_tools import common
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 
@@ -110,9 +114,16 @@ from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 
 class MemoryAddresses(object):
     def __init__(self, this_version):
-        memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
-        with Path(memorymap_path).open('r', encoding='utf-8') as f:
-            self.mappers = lib_address_maps.load_address_map(f)
+        if Utils.is_frozen():
+            with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
+                #memorymap_path = zipfile.Path(zf) / "NSMBW_client" / "wii_code_tools" /"address-map.txt"
+                memory_path = r"nsmbw/NSMBW_client/wii_code_tools/address-map.txt"
+                with io.TextIOWrapper(zf.open(memory_path), encoding="utf-8") as f:
+                    self.mappers = lib_address_maps.load_address_map(f)
+        else:
+            memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
+            with Path(memorymap_path).open('r', encoding='utf-8') as f:
+                self.mappers = lib_address_maps.load_address_map(f)
         self.this_version = this_version
 
 
