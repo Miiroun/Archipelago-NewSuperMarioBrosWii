@@ -201,3 +201,6 @@ Thumbs.db
 [Dd]esktop.ini
 *wbfs
 *.iso
+/worlds/nsmbw/NSMBW_client/wii-code-tools/__init__.py
+/fuzz_output/
+/worlds/tracker/

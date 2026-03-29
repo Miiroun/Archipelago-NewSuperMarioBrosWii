@@ -95,7 +95,7 @@ class NSMBWworld(World):
             "num_startloc",
             "bowser_star_unlock",
             "bowser_world_unlock",
-
+            "death_link",
         )
         pass
 

@@ -33,9 +33,9 @@ def set_all_entrance_rules(world: NSMBWworld) -> None:
             enterances.append(world.get_entrance(f"World {i} internal connection"))  # rules.HasAll(f"World{i}_unlock")
 
     for i in range(1, 9 + 1):
-        world.set_rule(enterances[2*i-2], rules.Has(f"World{i}_unlock"))
+        world.set_rule(enterances[2*i-2], rules.Has(f"World{i}"))
         if i != 9:
-            world.set_rule(enterances[2*i+1-2], rules.HasAll(f"World{i}_unlock"))
+            world.set_rule(enterances[2*i+1-2], rules.HasAll(f"World{i}"))
 
 
 
@@ -60,9 +60,9 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             for connection in level_connections[world_num-1][level_num-1]:
                 connection_rules |= rules.Has(f"World{world_num}_level{connection}_cleared")
             if connection_rules == rules.False_(): # maybe have to use ==, not sure
-                connection_rules = rules.Has(f"World{world_num}_unlock", count=1)
+                connection_rules = rules.Has(f"World{world_num}", count=1)
             if level_num == 7 + (1 if world_num in  [7,8] else 0) and world_num != 9: #castle level :
-                connection_rules = connection_rules & rules.Has(f"World{world_num}_unlock", count=2)
+                connection_rules = connection_rules & rules.Has(f"World{world_num}", count=2)
 
             if world_num != 9:
                 world.set_rule(flagpole, connection_rules & level_req[world_num-1][level_num-1][0])
@@ -79,14 +79,19 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 world.set_rule(secret_exit, rules.Has(f"World{world_num}_level{level_num}_cleared") &
                                level_req[world_num - 1][level_num - 1][2])
 
+            if world.options.include_level_compleation:
+                completed_level = world.get_location(f"World{world_num}_level{level_num}_completed_level") # reel location
+                world.set_rule(completed_level, rules.Has(f"World{world_num}_level{level_num}_cleared")) #event location
+
     HM_COUNT = 65
     hm_req = specific_hintmovie_requierments(world)
     total_cost = 0
-    for hm_num in range(1,HM_COUNT+1):
-        location = world.get_location(f"Hintmovie{hm_num}")
-        #oftlogic for hm
-        total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-        world.set_rule(location, (rules.Has(f"Starcoin", count=total_cost) & hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") ) )
+    if world.options.include_hintmovies:
+        for hm_num in range(1,HM_COUNT+1):
+            location = world.get_location(f"Hintmovie{hm_num}")
+            #oftlogic for hm
+            total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
+            world.set_rule(location, (rules.Has(f"Starcoin", count=total_cost) & hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") ) )
 
 
 def set_completion_condition(world: NSMBWworld) -> None:

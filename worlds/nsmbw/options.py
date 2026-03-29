@@ -35,42 +35,25 @@ class TrapChance(Range):
 
 class RandomizeStarCoins(Toggle):
     """
+    Dissabling is not yet implented
     If enabled will include starcoins as checks and starcoins will be recived as items
     """
     display_name = "Randomize Star Coins"
     default = True
 
-class RandomizeLevelCompletion(Toggle):
-    """
-    Not implemented
-    If true the level completion will be sent as checks (tower and castle will still be the only locked ones
-    """
-    display_name = "Randomize Level Completion"
-    default = False
 
-class RandomizeMovment(Toggle):
+class RandomizeMovment(Choice):
     """
     Will disable some of marios moves until items checks are sent to reunlock them.
     """
     # should make spin a seperet option
     display_name = "Randomize Moves"
-    default = True
 
-class IncludeHintMovies(Toggle):
-    """
-    Generation currently false if disable because too few items
-    Makes the hint movies in peach castles into locations
-    """
-    display_name = "Include Hint Movies"
-    default = True
+    option_off = 0
+    option_on_except_spin = 1
+    option_on = 2
 
-class IncluedLevelCompletion(Toggle):
-    """
-    This makes completing a level a check
-    """
-    display_name = "Inclue Level Completion"
-    default = False
-
+    default = option_off
 
 class RandomizePowerups(Choice):
     """
@@ -83,6 +66,22 @@ class RandomizePowerups(Choice):
     option_on_progressive = 2
     option_on = 3
     default = option_on_progressive
+
+class IncludeHintMovies(Toggle):
+    """
+    Makes the hint movies in peach castles into locations
+    If remove this then compensate with starter locations to keep #locations > #items
+    """
+    display_name = "Include Hint Movies"
+    default = True
+
+class IncluedLevelCompletion(Toggle):
+    """
+    This makes completing a level a check
+    """
+    display_name = "Inclue Level Completion"
+    default = False
+
 
 class EnableSuperPowers(Toggle):
     """
@@ -112,19 +111,19 @@ class StartingWorld(Toggle):
 
 class AmountStartingItems(Range):
     """
-    This option is here to create a few free checks that helps with restrictive start error
-    Don.t change if you don.t know what your doing
+    This option is here to create a few free checks that helps with restrictive start error.
+    Put to at least ~ if you disable both check hintmovies and check level completion
     """
 
     display_name = "Amount Starting Items"
     range_start = 0
     range_end = 100
-    default = 10
+    default = 0
 
 class BowserCastleStarUnlock(Range):
     """
-    This setting applies requirements to unlock final level
-    Either in the form of a starcoin count or # of world cleared
+    This setting applies requirements of at least x starcoins to unlock final level
+    Recommended to have bellow ~ 200 to not get fill errors
     """
 
     display_name = "Bowser Castle Unlock Star"
@@ -164,7 +163,6 @@ class NSMBWOptions(PerGameCommonOptions):
     include_hintmovies : IncludeHintMovies
     randomize_movement : RandomizeMovment
     randomize_powerups : RandomizePowerups
-    randomize_level_completion : RandomizeLevelCompletion
     num_startloc : AmountStartingItems
     death_link : DeathLink
     bowser_star_unlock : BowserCastleStarUnlock

@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from rule_builder import rules
+from rule_builder.options import OptionFilter
+from .options import RandomizeMovment, RandomizePowerups
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -84,25 +86,35 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 
 def specific_level_requierments(world: NSMBWworld) -> List:
     # doesnt acount for secret exit
-    mushroom = rules.Has(f"{'Super_Mushroom'}")
+    filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
+    filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
+    filter_pow_on_no_mus = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_except_mushroom)
+    filter_pow = [filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
 
 
-    propeller = rules.Has(f"{'Propeller_Mushroom'}") & mushroom
-    ice_peng = (rules.Has(f"{'Ice_Flower'}") | rules.Has(f"{'Penguin_Suit'}")) & mushroom
-    mini = rules.Has(f"{'Mini_Mushroom'}") & mushroom
+    mushroom = rules.Has(f"{'Super_Mushroom'}", options=[filter_pow_on_prog,filter_pow_on], filtered_resolution=True)
 
 
-    p_switch = rules.Has(f"{'p-switch'}")
-    red_block = rules.Has(f"{'red-block'}")
+    propeller = rules.Has(f"{'Propeller_Mushroom'}", options=filter_pow, filtered_resolution=True) & mushroom
+    ice_peng = (rules.Has(f"{'Ice_Flower'}", options=filter_pow, filtered_resolution=True) | rules.Has(f"{'Penguin_Suit'}", options=filter_pow, filtered_resolution=True)) & mushroom
+    mini = rules.Has(f"{'Mini_Mushroom'}", options=filter_pow, filtered_resolution=True) & mushroom
+
+
+    filter_mov_on = OptionFilter(RandomizeMovment, RandomizeMovment.option_on)
+    filter_mov_on_spin = OptionFilter(RandomizeMovment, RandomizeMovment.option_on_except_spin)
+    filter_mov = [filter_mov_on,filter_mov_on_spin]
+
+    p_switch = rules.Has(f"{'p-switch'}", options=filter_mov, filtered_resolution=True)
+    red_block = rules.Has(f"{'red-block'}", options=filter_mov, filtered_resolution=True)
     yoshi = rules.True_()
     star = rules.True_()
 
-    gp = rules.Has(f"{'ground_pound'}")
-    wj = rules.Has(f"{'wall_jump'}")
+    gp = rules.Has(f"{'ground_pound'}", options=filter_mov, filtered_resolution=True)
+    wj = rules.Has(f"{'wall_jump'}", options=filter_mov, filtered_resolution=True)
 
+    bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
 
-    requierments = []
-    requierments += [ # normal compleation rules
+    hard_rules = [ # normal compleation rules
         [  # world 1
             [rules.True_(), [propeller | mini | star, wj | propeller, propeller]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -2
@@ -189,8 +201,8 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
-            [rules.Has("Starcoin", count=world.options.bowser_star_unlock.value) & rules.HasFromList(tuple([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ]), count=world.options.bowser_world_unlock.value), [rules.True_(), rules.True_(), rules.True_()]],  # -10 8-C
-            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -9 8-A
+            [rules.Has("Starcoin", count=world.options.bowser_star_unlock.value) & rules.HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value), [rules.True_(), rules.True_(), rules.True_()]],  # -9 8-C
+            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
 
         ],
         [  # world 9
@@ -206,12 +218,11 @@ def specific_level_requierments(world: NSMBWworld) -> List:
     ]
 
     #
-    #requierments += \
-    [ # difficult logic
+    easy_rules = [ # difficult logic
         [  # world 1
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -3
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
@@ -224,7 +235,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
         ],
@@ -234,7 +245,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
         ],
@@ -245,9 +256,9 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 Airship
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 Airship
 
         ],
         [  # world 5
@@ -256,7 +267,7 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
         ],
@@ -266,10 +277,10 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
-            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 Airship
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 Airship
 
         ],
         [  # world 7
@@ -307,6 +318,20 @@ def specific_level_requierments(world: NSMBWworld) -> List:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
         ],
     ]
+
+    requierments = hard_rules
+    if world.options.logic_difficulty.value == 0:
+        for world_num in range(len(easy_rules)):
+            for level_num in range(len(easy_rules[world_num])):
+                requierments[world_num][level_num][0] = hard_rules[world_num][level_num][0] & easy_rules[world_num][level_num][0]
+                for sc in range(3):
+                    requierments[world_num][level_num][1][sc] = hard_rules[world_num][level_num][1][sc] & \
+                                                            easy_rules[world_num][level_num][1][sc]
+                if len(requierments[world_num][level_num]) == 3:
+                    requierments[world_num][level_num][2] = hard_rules[world_num][level_num][2] & \
+                                                            easy_rules[world_num][level_num][2]
+    elif world.options.logic_difficulty.value == 1:
+        requierments = hard_rules
     return requierments
 
 def get_levlel_connections():

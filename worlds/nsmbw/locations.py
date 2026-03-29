@@ -42,7 +42,7 @@ for i in range(1,100+1):
 
 for world_num in range(1, 9 + 1):  # worlds
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-        flagpole = f"World{world_num}_level{level_num}_flagpole"
+        flagpole = f"World{world_num}_level{level_num}_completed_level"
         LOCATION_NAME_TO_ID.update({flagpole : 5000 + world_num*100 + level_num})
 
 # Each Location instance must correctly report the "game" it belongs to.
@@ -84,15 +84,16 @@ def create_regular_locations(world: NSMBWWorld) -> None:
 
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-            if world.options.randomize_coins:
-                for sc in range(1, 3+1):
-                    level_location = get_location_names_with_ids([f"World{world_num}_level{level_num}_SC{sc}"])
+            for sc in range(1, 3+1):
+                level_location = get_location_names_with_ids([f"World{world_num}_level{level_num}_SC{sc}"])
+                if world.options.randomize_coins:
                     regions[2*world_num-2].add_locations(level_location, NSMBWLocation)
-        # add location for beating castles and towers
+                else:
+                    regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", "Starcoin", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    # add location for beating castles and towers
         if world_num != 9:
             level_location = get_location_names_with_ids([f"World{world_num}_castle",f"World{world_num}_tower"])
             regions[2*world_num - 2+1].add_locations(level_location, NSMBWLocation)
-
     for secret_exit in SECRET_EXIT_CANNON:
         world_num = secret_exit[0]
         level_num = secret_exit[1]
@@ -104,13 +105,16 @@ def create_regular_locations(world: NSMBWWorld) -> None:
         for i in range(1, num_hintmovies+1):
             hintmovie_location = get_location_names_with_ids([f"Hintmovie{i}"])
             regions[0].add_locations(hintmovie_location, NSMBWLocation)
+    #else:
+    #    for i in range(1, num_hintmovies+1):
+    #        regions[0].add_event(f"Hintmovie{i}", "Starcoin" , location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
     if world.options.include_level_compleation:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                flagpole = f"World{world_num}_level{level_num}_flagpole"
+                flagpole = get_location_names_with_ids([f"World{world_num}_level{level_num}_completed_level"])
                 half_world = 0 if (level_num < 4 or world_num == 9) else 1
-                regions[world_num * 2 - 2 + half_world].add_locations(flagpole)
+                regions[world_num * 2 - 2 + half_world].add_locations(flagpole, NSMBWLocation)
 
     # gives player starter location that automaticly checks
     for i in range(1,world.options.num_startloc+1):

@@ -1,10 +1,10 @@
 # should not be included in build but is for testing writing python code that easier to test here
 #import os
 #import logging
-import importlib.resources
-import os
-import pathlib
-import pkgutil
+#import importlib.resources
+#import os
+#import pathlib
+#import pkgutil
 #from .. import NSMBW_client
 #from ..NSMBW_client import wii_code_tools
 #from geckolibs.geckocode import *
@@ -81,3 +81,6 @@ from ..NSMBW_client.wii_code_tools.lib_wii_code_tools import address_maps as lib
 #inp_file = importlib.resources.read_text(path, r"archipelago.json")
 #print(inp_file)
 
+
+_list = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
+print(_list)

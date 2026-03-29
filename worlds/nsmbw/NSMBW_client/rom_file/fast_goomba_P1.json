@@ -1,0 +1,21 @@
+{
+  "base-file": "C:\/Users\/Anton\/OneDrive\/Skrivbord\/Spel\/Dolphin Games\/New Super Mario Bros. Wii (Europe) (En,Fr,De,Es,It) (Rev 1).wbfs",
+  "display-name": "fast_goomba_P1",
+  "riivolution": {
+    "patches": [
+      {
+        "options": [
+          {
+            "choice": 1,
+            "option-id": "propelparts",
+            "section-name": "PropelParts"
+          }
+        ],
+        "root": "%appdata%\/Dolphin Emulator\/Load\/Riivolution\/",
+        "xml": "%appdata%\/Roaming\/Dolphin Emulator\/Load\/Riivolution\/riivolution\/fastgoomba.xml"
+      }
+    ]
+  },
+  "type": "dolphin-game-mod-descriptor",
+  "version": 1
+}

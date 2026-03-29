@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 # Even if an item doesn't exist on specific options, it must be present in this lookup.
 ITEM_NAME_TO_ID = {
     "Starcoin" : 101,
-    "fill_inventory" : 501,
 }
 
 
@@ -20,18 +19,17 @@ ITEM_NAME_TO_ID = {
 # In our case, we will make a dictionary from item name to classification.
 DEFAULT_ITEM_CLASSIFICATIONS = {
     "Starcoin" : ItemClassification.progression_deprioritized, #77 x 3 st
-    "fill_inventory" : ItemClassification.filler, # onetime myshroom
 }
 
 for i in range(1,9+1):
-    ITEM_NAME_TO_ID.update({f"World{i}_unlock" : 200 + i})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}_unlock" : ItemClassification.progression})
-DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}_unlock"] = ItemClassification.progression_skip_balancing
+    ITEM_NAME_TO_ID.update({f"World{i}" : 200 + i})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}" : ItemClassification.progression})
+DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}"] = ItemClassification.progression_skip_balancing
 
 
 # could add movement rando as checks
 MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "cary",
-            "triple_jump", "swim", "p-switch", "red-block", "swing"]
+            "triple_jump", "swim", "p-switch", "red_block", "swing"]
 # maybe in future "run", "spin",
 for i in range(len(MOVEMENT_UNLOCKS)):
     ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
@@ -51,7 +49,10 @@ for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
 
-
+FILLER = ["fill_inventory", "1ups"]
+for i in range(len(FILLER)):
+    ITEM_NAME_TO_ID.update({f"{FILLER[i]}" : 500 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({f"{FILLER[i]}" : ItemClassification.filler})
 
 
 # Each Item instance must correctly report the "game" it belongs to.
@@ -73,13 +74,12 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
     # DO NOT use a bare random object from Python's built-in random module.
 
 
-    filler_items = ["fill_inventory"]
 
 
     if world.random.randint(0, 99) < world.options.trap_chance:
         return TRAPS[world.random.randint(0, len(TRAPS)-1)]
 
-    return filler_items[world.random.randint(0, len(filler_items) - 1)]
+    return FILLER[world.random.randint(0, len(FILLER) - 1)]
 
 
 def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSMBWItem:
@@ -107,28 +107,21 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     itempool: list[Item] = []
 
-
-    for i in range(77*3):
-        if world.options.randomize_coins:
+    if world.options.randomize_coins:
+        for i in range(77*3):
             itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
-        itempool.append(world.create_item(f"World{i}_unlock"))
+        itempool.append(world.create_item(f"World{i}"))
         if (i != 9) and (i != starting_world_num):
-            itempool.append(world.create_item(f"World{i}_unlock"))
-
-    for i in range(len(MOVEMENT_UNLOCKS)):
-        if world.options.randomize_movement:
-            itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
-        else:
-            world.create_item(f"{MOVEMENT_UNLOCKS[i]}")
+            itempool.append(world.create_item(f"World{i}"))
     if world.options.randomize_movement:
+        for i in range(len(MOVEMENT_UNLOCKS)):
+            itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
         world.multiworld.early_items[world.player][f"{'Spin'}"] = 1
 
-    for i in range(len(POWERUP_UNLOCK)):
-        if world.options.randomize_powerups:
+    if world.options.randomize_powerups:
+        for i in range(len(POWERUP_UNLOCK)):
             itempool.append(world.create_item(f"{POWERUP_UNLOCK[i]}"))
-        else:
-            world.create_item(f"{POWERUP_UNLOCK[i]}")
     if world.options.randomize_powerups:
         world.multiworld.early_items[world.player][f"{'Super_Mushroom'}"] = 1
 
@@ -161,7 +154,7 @@ def create_all_items(world: NSMBWWorld) -> None:
     # Now, we just subtract the number of items from the number of locations to get the number of empty item slots.
 
     needed_number_of_filler_items = number_of_unfilled_locations - number_of_items
-    assert needed_number_of_filler_items >= 0, f"More items{number_of_items} than locations{number_of_unfilled_locations}"
+    assert needed_number_of_filler_items >= 0, f"More items ({number_of_items}) than locations ({number_of_unfilled_locations})"
 
 
     # Finally, we create that many filler items and add them to the itempool.
@@ -196,7 +189,7 @@ def create_all_items(world: NSMBWWorld) -> None:
     # Anyway. With our world's itempool finalized, we now need to submit it to the multiworld itempool.
     # This is how the generator actually knows about the existence of our items.
 
-    assert len(itempool) == number_of_unfilled_locations, f"Failed in filling itempool{len(itempool)} with filler items with unfilled locations {number_of_unfilled_locations}"
+    assert len(itempool) == number_of_unfilled_locations, f"Failed in filling itempool ({len(itempool)}) with filler items with unfilled locations ({number_of_unfilled_locations})"
 
     world.multiworld.itempool += itempool
 
@@ -214,7 +207,7 @@ def create_all_items(world: NSMBWWorld) -> None:
     #menu_world = world.create_item(f"Menu")
     #world.push_precollected(menu_world)
     #starter_world = world.create_item(f"World{world.options.starting_world}_unlock") # can randomiz starter world in fututure
-    starter_world = world.create_item(f"World{starting_world_num}_unlock") # can randomiz starter world in fututure
+    starter_world = world.create_item(f"World{starting_world_num}") # can randomiz starter world in fututure
     # will not make you start in world 9
 
     world.push_precollected(starter_world)
