@@ -13,7 +13,6 @@ from .NotificationManager import NotificationManager
 #from .patcher import patch_iso
 
 from NetUtils import ClientStatus
-from ..items import MOVEMENT_UNLOCKS
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT_CANNON
 from settings import get_settings
@@ -228,8 +227,9 @@ class NSMBWContext(SuperContext):
             try:
                 if Utils.is_frozen():
                     #text = importlib.resources.read_text(self.apnsmbw_file, r"archipelago.json")
-                    with importlib.resources.open_text(self.apnsmbw_file, r"archipelago.json") as f:
-                        text = f.read()
+                    with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
+                        path = zipfile.Path(zf, at=r"nsmbw/archipelago.json")
+                        text = path.read_text(encoding='UTF-8')
                 else:
                     with open(self.apnsmbw_file+r"\\archipelago.json", "r") as f:
                         text = f.read()
