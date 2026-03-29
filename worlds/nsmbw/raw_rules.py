@@ -1,0 +1,439 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
+
+from rule_builder import rules
+from rule_builder.options import OptionFilter
+from .options import RandomizeMovment, RandomizePowerups
+
+if TYPE_CHECKING:
+    from .world import NSMBWworld
+
+
+def specific_hintmovie_requierments(world: NSMBWworld) -> List:
+    # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
+    rule_completed_everything = rules.Has("World8_level9_cleared") # dont want to implement
+    requierments = [
+        #starcoin cost, level requierment, generic requierment
+        [3, (1,1), rules.True_()],   #01
+        [5, (1,1), rule_completed_everything],  # 02 #find every normal goal in world1-9
+        [3, (1,2), rules.Has("Starcoin", count=5)],  # 03
+        [3, (1,3), rule_completed_everything],  # 04 #find every normal goal in world1-9
+        [5, (1,3), rules.Has("World1_level8_cleared")],  # 05
+        [5, (1,7), rules.Has("Starcoin", count=10)],  # 06
+        [5, (1,5), rules.Has("Starcoin", count=30)],  # 07
+        [0, (2,1), rules.Has("Starcoin", count=15)],  # 08
+        [3, (2,1), rules.Has("Starcoin", count=1)],  # 09
+        [0, (2,2), rules.Has("Starcoin", count=95)],  # 10
+        [3, (2,2), rules.Has("Starcoin", count=150)],  # 11
+        [5, (2,3), rules.Has("Starcoin", count=1)]  ,# 12
+        [5, (2,4), rule_completed_everything] , # 13 #find every normal adn secret goal in world1-9
+        [5, (2,5), rules.Has("World2_level8_cleared")],  # 14
+        [5, (2,5), rules.Has("Starcoin", count=215)],  # 15
+        [10, (2,6), rules.Has("Starcoin", count=25)],  # 16
+        [0, (3,1), rules.Has("Starcoin", count=65)] , # 17
+        [3, (3,1), rules.Has("Starcoin", count=35)] , # 18
+        [5, (3,2), rules.Has("Starcoin", count=165)] , # 19
+        [5, (3,2), rules.Has("Starcoin", count=190)]  ,# 20
+        [0, (3,3), rules.Has("Starcoin", count=140)] , # 21
+        [3, (3,3), rules.Has("World3_level8_cleared")],  # 22
+        [5, (3,3), rules.Has("Starcoin", count=195)] , # 23
+        [5, (3,6), rules.Has("Starcoin", count=140)],  # 24
+        [5, (3,5), rules.Has("Starcoin", count=130)] , # 25
+        [3, (4,1), rules.Has("Starcoin", count=45)]  ,# 26
+        [5, (4,2), rules.Has("Starcoin", count=175)] , # 27
+        [3, (4,2), rule_completed_everything],  # 28 # everything
+        [0, (4,3), rules.Has("Starcoin", count=125)],  # 29
+        [5, (4,3), rules.Has("World4_level8_cleared")],  # 30
+        [10, (4,7), rules.Has("Starcoin", count=70)],  # 31
+        [0, (4,4), rules.Has("Starcoin", count=50)],  # 32
+        [5, (4,6), rules.Has("Starcoin", count=69)],  # 33
+        [3, (4,8), rules.Has("Starcoin", count=145)],  # 34
+        [5, (5,1), rules.Has("Starcoin", count=105)],  # 35
+        [3, (5,3), rules.Has("Starcoin", count=55)],  # 36
+        [0, (5,6), rules.Has("Starcoin", count=75)],  # 37
+        [5, (5,6), rules.Has("World8_level8_cleared")],  # 38
+        [3, (5,8), rules.Has("World5_level8_cleared")],  # 39
+        [3, (6,1), rules.Has("Starcoin", count=80)],  # 40
+        [0, (6,2), rules.Has("Starcoin", count=135)],  # 41
+        [0, (6,3), rules.Has("Starcoin", count=85)] , # 42
+        [5, (6,3), rules.Has("Starcoin", count=205)],  # 43
+        [5, (6,5), rules.Has("Starcoin", count=90)] , # 44
+        [10, (6,6), rules.Has("Starcoin", count=100)] , # 45
+        [5, (6,8), rules.Has("World9_level6_cleared")],  # 46
+        [5, (7,1), rules.Has("World9_level7_cleared")],  # 47
+        [0, (7,3), rules.Has("Starcoin", count=170)],  # 48
+        [0, (7,8), rules.Has("Starcoin", count=160)],  # 49
+        [3, (7,7), rules.Has("Starcoin", count=120)],  # 50
+        [3, (7,4), rules.Has("Starcoin", count=231)],  # 51
+        [0, (7,9), rules.Has("Starcoin", count=115)],  # 52
+        [3, (8,2), rules.Has("World8_level8_cleared")],  # 53 #beat world 8 castle
+        [5, (8,3), rules.Has("Starcoin", count=180)],  # 54
+        [0, (8,8), rules.Has("Starcoin", count=110)],  # 55
+        [5, (8,10), rules.Has("Starcoin", count=155)],  # 56
+        [5, (8,9), rule_completed_everything],  # 57 #all secret goals
+        [5, (9,1), rules.Has("Starcoin", count=225)],  # 58
+        [5, (9,2), rules.Has("Starcoin", count=220)],  # 59
+        [5, (9,3), rules.Has("Starcoin", count=185)],  # 60
+        [5, (9,3), rules.Has("Starcoin", count=210)],  # 61
+        [0, (9,4), rule_completed_everything],  # 62 #all normal goals
+        [5, (9,5), rules.Has("Starcoin", count=230)],  # 63
+        [0, (9,6), rules.Has("Starcoin", count=200)],  # 64
+        [3, (9,7), rule_completed_everything]  # 65 # complete everything!!!!!!!!!!!!!!!!1
+    ]
+    return requierments
+
+
+def specific_level_requierments(world: NSMBWworld) -> List:
+    # doesnt acount for secret exit
+    filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
+    filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
+    filter_pow_on_no_mus = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_except_mushroom)
+    filter_pow = [filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
+
+
+    mushroom = rules.Has(f"{'Super_Mushroom'}", options=[filter_pow_on_prog,filter_pow_on], filtered_resolution=True)
+
+
+    propeller = rules.Has(f"{'Propeller_Mushroom'}", options=filter_pow, filtered_resolution=True) & mushroom
+    ice_peng = (rules.Has(f"{'Ice_Flower'}", options=filter_pow, filtered_resolution=True) | rules.Has(f"{'Penguin_Suit'}", options=filter_pow, filtered_resolution=True)) & mushroom
+    mini = rules.Has(f"{'Mini_Mushroom'}", options=filter_pow, filtered_resolution=True) & mushroom
+
+
+    filter_mov_on = OptionFilter(RandomizeMovment, RandomizeMovment.option_on)
+    filter_mov_on_spin = OptionFilter(RandomizeMovment, RandomizeMovment.option_on_except_spin)
+    filter_mov = [filter_mov_on,filter_mov_on_spin]
+
+    p_switch = rules.Has(f"{'p-switch'}", options=filter_mov, filtered_resolution=True)
+    red_block = rules.Has(f"{'red-block'}", options=filter_mov, filtered_resolution=True)
+    yoshi = rules.True_()
+    star = rules.True_()
+
+    gp = rules.Has(f"{'ground_pound'}", options=filter_mov, filtered_resolution=True)
+    wj = rules.Has(f"{'wall_jump'}", options=filter_mov, filtered_resolution=True)
+
+    bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
+
+    hard_rules = [ # normal compleation rules
+        [  # world 1
+            [rules.True_(), [propeller | mini | star, wj | propeller, propeller]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -2
+            [rules.True_(), [rules.True_(), mushroom | yoshi | mini, mushroom], rules.True_()],  # -3
+            [rules.True_(), [rules.True_(), yoshi | propeller | mini, ice_peng]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), propeller | p_switch]],  # -8 1-C
+        ],
+        [  # world 2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), mini]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), propeller, propeller | mini]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()], rules.True_()],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 2-T
+            [ ice_peng | p_switch, [rules.True_(), mushroom, propeller | p_switch]],  # -8 2-C
+        ],
+        [  # world 3
+            [rules.True_(), [ice_peng, rules.True_(), ice_peng]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [red_block, [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), red_block, red_block]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  #-6    # 3-Ghosthous
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
+        ],
+        [  # world 4
+            [rules.True_(), [rules.True_(), ice_peng | propeller | mini, rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), mini]],  # -3
+            [ice_peng | mini | propeller, [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [ice_peng | p_switch, [rules.True_(), ice_peng | p_switch, rules.True_()],rules.True_()],  # -7 4-G
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 4-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 4-A
+
+        ],
+        [  # world 5
+            [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6 #5-Ghosthouse
+            [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -7 5-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 5-C
+        ],
+        [  # world 6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), mushroom | p_switch]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -3
+            [rules.True_(), [rules.True_(), yoshi | propeller | mini, rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 6-T
+            [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -8 6-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 6-A
+
+        ],
+        [  # world 7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
+            [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -9 7-C
+            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
+
+        ],
+        [  # world 8
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
+            [rules.Has("Starcoin", count=world.options.bowser_star_unlock.value) & rules.HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value), [rules.True_(), rules.True_(), rules.True_()]],  # -9 8-C
+            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
+
+        ],
+        [  # world 9
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), ice_peng]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), ice_peng | propeller]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
+        ],
+    ]
+
+    #
+    easy_rules = [ # difficult logic
+        [  # world 1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 Airship
+
+        ],
+        [  # world 5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+        ],
+        [  # world 6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()],rules.True_()],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 Airship
+
+        ],
+        [  # world 7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7 Ghosthous
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 1-C
+        ],
+        [  # world 8
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 1-T
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -9 1-C
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -10 Airship
+
+        ],
+        [  # world 9
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -1
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -2
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -3
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -4
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -5
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -6
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
+            [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8
+        ],
+    ]
+
+    requierments = hard_rules
+    if world.options.logic_difficulty.value == 0:
+        for world_num in range(len(easy_rules)):
+            for level_num in range(len(easy_rules[world_num])):
+                requierments[world_num][level_num][0] = hard_rules[world_num][level_num][0] & easy_rules[world_num][level_num][0]
+                for sc in range(3):
+                    requierments[world_num][level_num][1][sc] = hard_rules[world_num][level_num][1][sc] & \
+                                                            easy_rules[world_num][level_num][1][sc]
+                if len(requierments[world_num][level_num]) == 3:
+                    requierments[world_num][level_num][2] = hard_rules[world_num][level_num][2] & \
+                                                            easy_rules[world_num][level_num][2]
+    elif world.options.logic_difficulty.value == 1:
+        requierments = hard_rules
+    return requierments
+
+def get_levlel_connections():
+    connections = []
+    connections += [
+        [ # world 1
+            [], #-1
+            [1],#-2
+            [2],#-3
+            [7],#-4
+            [4],#-5
+            [4],#-6
+            [3],# -Tower
+            [6,7] # -Caslte
+        ],
+        [  # world 2
+            [],  # -1
+            [],  # -2
+            [1,2],  # -3
+            [7],  # -4
+            [4],  # -5
+            [4],  # -6
+            [3],  # -Tower
+            [5,6]  # -Caslte
+        ],
+        [  # world 3
+            [],  # -1
+            [1],  # -2
+            [2],  # -3
+            [7],  # -4
+            [4],  # -5
+            [2],  # -6
+            [2],  # -Tower
+            [5]  # -Caslte
+        ],
+        [  # world 4
+            [],  # -1
+            [1],  # -2
+            [1],  # -3
+            [7],  # -4
+            [6],  # -5
+            [4],  # -6
+            [2,3],  # -Tower
+            [5],  # -Caslte
+            [8] #airship
+        ],
+        [  # world 5
+            [],  # -1
+            [1],  # -2
+            [1],  # -3
+            [7],  # -4
+            [4],  # -5
+            [5],  # -6
+            [2,3],  # -Tower
+            [5,6]  # -Caslte
+        ],
+        [  # world 6
+            [],  # -1
+            [1],  # -2
+            [1],  # -3
+            [2],  # -4
+            [7],  # -5
+            [5],  # -6
+            [4],  # -Tower
+            [6],  # -Caslte
+            [8] # - airship
+        ],
+        [  # world 7
+            [],  # -1
+            [1],  # -2
+            [2],  # -3
+            [8],  # -4
+            [4],  # -5
+            [5],  # -6
+            [6], # - 7
+            [3],  # -Tower
+            [7]  # -Caslte
+        ],
+        [  # world 8
+            [],  # -1
+            [1],  # -2
+            [2],  # -3
+            [8],  # -4
+            [4],  # -5
+            [5],  # -6
+            [2], # -7
+            [3],  # -Tower
+            [10],  # -Caslte
+            [7] #- airship
+        ],
+        [  # world 9
+            [],  # -1
+            [],  # -2
+            [],  # -3
+            [],  # -4
+            [],  # -5
+            [],  # -6
+            [],  # -7
+            []  # -8
+        ]
+
+    ]
+
+
+    return connections

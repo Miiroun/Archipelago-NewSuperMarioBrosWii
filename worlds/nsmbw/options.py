@@ -35,34 +35,25 @@ class TrapChance(Range):
 
 class RandomizeStarCoins(Toggle):
     """
+    Dissabling is not yet implented
     If enabled will include starcoins as checks and starcoins will be recived as items
     """
     display_name = "Randomize Star Coins"
     default = True
 
-class RandomizeLevelCompletion(Toggle):
-    """
-    Not implemented
-    If true the level completion will be sent as checks (tower and castle will still be the only locked ones
-    """
-    display_name = "Randomize Level Completion"
-    default = False
 
-class RandomizeMovment(Toggle):
+class RandomizeMovment(Choice):
     """
     Will disable some of marios moves until items checks are sent to reunlock them.
     """
     # should make spin a seperet option
     display_name = "Randomize Moves"
-    default = True
 
-class IncludeHintMovies(Toggle):
-    """
-    Generation currently false if dissable beacuse too few items
-    Makes the hint movies in peach castles into locaitons
-    """
-    display_name = "Include Hint Movies"
-    default = True
+    option_off = 0
+    option_on_except_spin = 1
+    option_on = 2
+
+    default = option_off
 
 class RandomizePowerups(Choice):
     """
@@ -72,20 +63,37 @@ class RandomizePowerups(Choice):
     display_name = "Randomize Powerups"
     option_off = 0
     option_on_except_mushroom = 1
-    option_on = 2
-    default = option_on
+    option_on_progressive = 2
+    option_on = 3
+    default = option_on_progressive
+
+class IncludeHintMovies(Toggle):
+    """
+    Makes the hint movies in peach castles into locations
+    If remove this then compensate with starter locations to keep #locations > #items
+    """
+    display_name = "Include Hint Movies"
+    default = True
+
+class IncluedLevelCompletion(Toggle):
+    """
+    This makes completing a level a check
+    """
+    display_name = "Inclue Level Completion"
+    default = False
+
 
 class EnableSuperPowers(Toggle):
     """
     Not currently implemented
-    Adds extra powers like double jump to itempool
+    Adds extra powers like double jump to item pool
     """
     display_name = "Enable Super Powers"
     default = False
 
 class LogicDifficulty(Choice):
     """
-    If hard will make checks that require trecet skill to be in logic,
+    If hard will make checks that require glitches to be in logic,
     recommended to normal
     """
     display_name = "Logic Difficulty"
@@ -95,7 +103,7 @@ class LogicDifficulty(Choice):
 
 class StartingWorld(Toggle):
     """
-    If sould randomize starter world
+    A toggle if you should start with world 1 or random
     """
     display_name = "Starting World"
 
@@ -103,28 +111,46 @@ class StartingWorld(Toggle):
 
 class AmountStartingItems(Range):
     """
-    This option is here to create some amount of staring times that helps with restrictive start error
-    Dont change if you dont know what your doing
+    This option is here to create a few free checks that helps with restrictive start error.
+    Put to at least ~ if you disable both check hintmovies and check level completion
     """
 
     display_name = "Amount Starting Items"
     range_start = 0
     range_end = 100
-    default = 10
+    default = 0
 
-class BowserCastleUnlock(Choice):
+class BowserCastleStarUnlock(Range):
     """
-    Not currently implemented
-    This setting applies requirments to unlock final level
-    Either in the form of a starcoin count or # of world cleared
+    This setting applies requirements of at least x starcoins to unlock final level
+    Recommended to have bellow ~ 200 to not get fill errors
     """
 
-    display_name = "Bowser Castle Unlock"
-    option_off = 0
-    option_starcoins= 1
-    option_world_clear = 2
+    display_name = "Bowser Castle Unlock Star"
+    range_start = 0
+    range_end = 271
 
-    default = option_off
+    default = 0
+
+class BowserCastleWorldUnlock(Range):
+    """
+    This setting applies requirements to unlock final level
+    Set this to amount of worlds needed to beat the game
+    """
+
+    display_name = "Bowser Castle Unlock World"
+    range_start = 0
+    range_end = 7
+
+    default = 0
+
+class DeathLink(Toggle):
+    """
+    Enable death-link as default, can be toggled in client.
+    """
+    display_name = "Death Link"
+    default = False
+
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName".
@@ -137,51 +163,46 @@ class NSMBWOptions(PerGameCommonOptions):
     include_hintmovies : IncludeHintMovies
     randomize_movement : RandomizeMovment
     randomize_powerups : RandomizePowerups
-    randomize_level_completion : RandomizeLevelCompletion
     num_startloc : AmountStartingItems
-    bowser_unlock : BowserCastleUnlock
+    death_link : DeathLink
+    bowser_star_unlock : BowserCastleStarUnlock
+    bowser_world_unlock : BowserCastleWorldUnlock
+    include_level_compleation : IncluedLevelCompletion
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
-    OptionGroup(
-        "Gameplay Options",
-        [
-            TrapChance,
-            RandomizeStarCoins,
-            LogicDifficulty,
-            StartingWorld,
-            RandomizeLevelCompletion,
-            RandomizeMovment,
-            RandomizePowerups,
-            IncludeHintMovies,
-            AmountStartingItems,
-            BowserCastleUnlock,
-         ],
-
-    ),
+#    OptionGroup(
+#        "Gameplay Options",
+#        [
+#            TrapChance,
+#            RandomizeStarCoins,
+#            LogicDifficulty,
+#            StartingWorld,
+#            RandomizeLevelCompletion,
+#            RandomizeMovment,
+#            RandomizePowerups,
+#            IncludeHintMovies,
+#            AmountStartingItems,
+#            DeathLink,
+#            BowserCastleStarUnlock,
+#            BowserCastleWorldUnlock,
+#         ],
+#
+#    ),
 ]
 
 # Finally, we can define some option presets if we want the player to be able to quickly choose a specific "mode".
 option_presets = {
-    "standard": {
-        "trap_chance": 0,
-        "randomize_coins": True,
-        "logic_difficulty": LogicDifficulty.option_normal,
-        "starting_world": True,
-        "randomize_level_completion" : False,
-        "randomize_movement" : False,
-        "randomize_powerups" : 2,
-        "include_hintmovies": True,
-        "num_startloc" : 10,
-        "bowser_unlock": BowserCastleUnlock.option_off,
-    }
+#    "standard": {
+#        "trap_chance": 0,
+#        "randomize_coins": True,
+#        "logic_difficulty": LogicDifficulty.option_normal,
+#        "starting_world": True,
+#        "randomize_level_completion" : False,
+#        "randomize_movement" : False,
+#        "randomize_powerups" : 2,
+#        "include_hintmovies": True,
+#        "num_startloc" : 10,
+#        "death_link" : False,
+#    }
 }
-
-
-
-class NSMBWSettings(settings.Group):
-    pass
-    #class Rom_path(settings.FilePath):
-    #    desciption = "ROM Path"
-    #    location = ""
-    #rom_path : Rom_path = None

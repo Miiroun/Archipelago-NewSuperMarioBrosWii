@@ -1,0 +1,2 @@
+python configurate.py
+ninja

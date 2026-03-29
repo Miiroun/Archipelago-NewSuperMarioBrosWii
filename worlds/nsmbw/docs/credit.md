@@ -15,21 +15,36 @@ Communities that helped
 - Archipelgo dc server worlddev help and documentation
 - Horizo discord server (for knowledge about the game)
 
-\
-Code based on (Large snipets are just copy pasted but changed to work for nsmbw)
-- APquest
-- Metroid Prime
-- Mario kart wii
-
 
 \
 Community projects used
 - Archipelago
-- NSMBW decompiler
 - Dolphin emulator
 - Dolphin memory engine
+- retroachievements.org/codenotes.php?g=95
+- Archipelago fuzzer (by Eijebong)
+- Universal tracker 
+- mariowiki.com
+- NSMBW decompiler
 
-Orignal game
+
+\
+AP projects based on (have borrowed some code from the following ap-games)
+- APquest
+- Metroid Prime
+- Mario kart wii
+
+\
+NSMBW projects used
+- wii-code-tools (by RoadrunnerWMC)
+- Kamek + Ninja (NSMBW compiler)
+- Propeller parts
+- mkwcat/gecko-codes
+- nsmbw-pipe-randomizer
+- NSMBW randomizer (original, non ap)
+
+
+Original game
 - Nintendo
 
 \

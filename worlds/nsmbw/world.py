@@ -7,12 +7,11 @@ from worlds.AutoWorld import World
 
 from . import items, locations, regions, rules, web_world
 from . import options as nsmbw_option
+from . import settings as nsbmw_settings
 
 from Utils import visualize_regions
 
 from typing import ClassVar
-
-from .options import NSMBWSettings
 
 
 class NSMBWworld(World):
@@ -34,7 +33,7 @@ class NSMBWworld(World):
     options_dataclass = nsmbw_option.NSMBWOptions
     options: nsmbw_option.NSMBWOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
 
-    settings: NSMBWSettings
+    settings: nsbmw_settings.NSMBWSettings
 
     # Our world class must have a static location_name_to_id and item_name_to_id defined.
     # We define these in regions.py and items.py respectively, so we just set them here.
@@ -90,12 +89,20 @@ class NSMBWworld(World):
     # slot_data is just a dictionary using basic types, that will be converted to json when sent to the client.
     def fill_slot_data(self) -> Mapping[str, Any]:
         # If you need access to the player's chosen options on the client side, there is a helper for that.
-        return self.options.as_dict("trap_chance")
+        return self.options.as_dict(
+            "randomize_powerups",
+            "randomize_movement",
+            "num_startloc",
+            "bowser_star_unlock",
+            "bowser_world_unlock",
+            "death_link",
+        )
+        pass
 
 
     # UT-tracket imlementation
-    def interpret_slot_data(self, slot_data: dict[str, Any]) -> None:
-        pass
+    def interpret_slot_data(self, slot_data: dict[str, Any]) -> dict[str, Any] | None:
+        return slot_data
 
     def get_logical_path(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         return []

@@ -6,8 +6,8 @@ import argparse
 from pathlib import Path
 from typing import List, Optional
 
-from lib_wii_code_tools import common
-from lib_wii_code_tools import address_maps as lib_address_maps
+from .lib_wii_code_tools import common
+from .lib_wii_code_tools import address_maps as lib_address_maps
 
 
 def add_error_handler_args(parser: argparse.ArgumentParser) -> None:
