@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import time
 from enum import Enum
 
@@ -91,6 +92,9 @@ class NSMBWInterface():
                 self.current_game = game_id
                 self.game_rev = game_rev
                 version_name = _SUPPORTED_VERSIONS[(game_id, game_rev)]
+                if version_name != "E2":
+                    logging.error("The only playtested version is E2, play the others at your own risk. IF you find errors, please report them so they can be fixed.")
+
                 self.memory_addresses = MemoryAddresses(version_name)
 
 
@@ -213,22 +217,24 @@ class NSMBWInterface():
         #self.dolphin_client.write_address(
         #    GAMES[self.current_game]["HUD_MESSAGE_ADDRESS"], encoded_message
         #)
-    
+    def save_file_offset(self):
+        savefile_num = self.get_savefile_num()
+        address = 0
+        if savefile_num == 1:
+            address += -self.memory_addresses.savefile2_offset
+        elif savefile_num == 2:
+            pass
+        elif savefile_num == 3:
+            address += self.memory_addresses.savefile3_offset - self.memory_addresses.savefile2_offset
+        return address
     #my code-------------------------------------------------
     def memory_offset_level_stats(self, world_num,level_num):
         """" This function callculates the memory adress for the level stats of the given level"""
         #address = self.memory_addresses.savefile1_1_1
 
-        savefile_num = self.get_savefile_num()
-        savefile_num = b'\x01'
-
         address = self.memory_addresses.level_stat
-        if savefile_num == b'\x00':
-            address += -self.memory_addresses.savefile2_offset
-        elif savefile_num == b'\x01':
-            pass
-        elif savefile_num == b'\x02':
-            address += self.memory_addresses.savefile3_offset - self.memory_addresses.savefile2_offset
+
+        #address += self.save_file_offset()
 
 
         for i in range(1,world_num):
@@ -363,7 +369,19 @@ class NSMBWInterface():
             if "red_block" in unlocked_moves:
                 self.set_red_switch(b'\x00')  # reset red switch if not unlocked
 
-    
+            address_nostar = self.memory_addresses.yoshi_walk_speed
+            address_star = self.memory_addresses.yoshi_walk_star_speed
+            if "Yoshi" in unlocked_moves:
+                self.dolphin_client.write_address(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
+                self.dolphin_client.write_address(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
+
+            else:
+                self.dolphin_client.write_address(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                self.dolphin_client.write_address(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+        if slot_data == 2:
+            pass
+            # process spin
+
     # just created
     def get_sc(self):
         address = self.memory_addresses.sc_currentlevel
@@ -381,7 +399,7 @@ class NSMBWInterface():
         address = self.memory_addresses.inventory_items + type_num -1
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self):
-        address = self.memory_addresses.world_level
+        address = self.memory_addresses.world_level + self.save_file_offset()
         return self.dolphin_client.read_address(address,1)
     def get_level_level(self):
         address = self.memory_addresses.level_level
@@ -390,7 +408,7 @@ class NSMBWInterface():
         address = self.memory_addresses.hm_stats +hm_num
         return self.dolphin_client.read_address(address,1)
     def get_worldstats_selectmenu(self):
-        address = self.memory_addresses.world_stats
+        address = self.memory_addresses.world_stats + self.save_file_offset()
         return self.dolphin_client.read_address(address,1)
     def get_powerupstate(self):
         address = self.memory_addresses.powerup_state
@@ -401,7 +419,7 @@ class NSMBWInterface():
         return self.dolphin_client.read_address(address,1)
     def get_savefile_num(self):
         address = self.memory_addresses.savefile_num
-        return self.dolphin_client.read_address(address,1)
+        return self.dolphin_client.read_address(address,1)[0]+1
     def get_time_left(self):
         address = self.memory_addresses.time_left
         return self.dolphin_client.read_address(address,1)
@@ -423,7 +441,7 @@ class NSMBWInterface():
 
 
     def set_worldstats(self,world_num : int, status : bytes):
-        address = self.memory_addresses.world_stats + (world_num-1)
+        address = self.memory_addresses.world_stats + (world_num-1) + self.save_file_offset()
         self.dolphin_client.write_address(address, status)
     def set_powerupstate(self, powerup_state : bytes):
         address = self.memory_addresses.powerup_state
@@ -449,9 +467,9 @@ class NSMBWInterface():
         address = self.memory_addresses.mario_lifecount+3
         self.dolphin_client.write_address(address,data)
 
-    def update_inventory_items(self, type_num):
-        amount = self.get_inventory_items(type_num)
-        self.set_inventory_items(amount+b'x\01', type_num)
+    def update_inventory_items(self, type_num, increase):
+        amount = self.get_inventory_items(type_num)[0]
+        self.set_inventory_items( int.to_bytes((amount+ increase), 1, byteorder='big', signed=False), type_num)
 
 
 

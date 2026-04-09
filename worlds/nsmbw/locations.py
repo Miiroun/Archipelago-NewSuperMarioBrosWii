@@ -26,8 +26,9 @@ for world_num in range(1,9+1): # worlds
         LOCATION_NAME_TO_ID.update({f"World{world_num}_tower" : 2000+100*world_num + 2})
 
 
-SECRET_EXIT_CANNON = [(1, 3), (2, 6),(3,6), (4, 7), (5, 6), (6, 6)]
-for secret_exit in SECRET_EXIT_CANNON:
+# last num is if secret or normal exit 1== normal, 2==secret
+SECRET_EXIT = [(1, 3, 2), (2, 6, 2), (3, 6, 2), (4, 7, 2), (5, 6, 2), (6, 6, 2), (7, 6, 1), (8, 7, 1)]
+for secret_exit in SECRET_EXIT:
     world_num = secret_exit[0]
     level_num = secret_exit[1]
     LOCATION_NAME_TO_ID.update({f"Secret_exit{world_num}-{level_num}": 2000 + 100 * world_num + 5})
@@ -70,8 +71,9 @@ def make_locations_priority(world: NSMBWWorld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
-                world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
-                world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
+                pass
+                #world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
+                #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
 
 
 def create_regular_locations(world: NSMBWWorld) -> None:
@@ -86,22 +88,30 @@ def create_regular_locations(world: NSMBWWorld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             for sc in range(1, 3+1):
                 level_location = get_location_names_with_ids([f"World{world_num}_level{level_num}_SC{sc}"])
+                half_world = 0 if (level_num < 4 or world_num == 9) else 1
                 if world.options.randomize_coins:
-                    regions[2*world_num-2].add_locations(level_location, NSMBWLocation)
+                    regions[2*world_num-2+half_world].add_locations(level_location, NSMBWLocation)
                 else:
-                    regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", "Starcoin", location_type=NSMBWLocation, item_type=items.NSMBWItem)
-    # add location for beating castles and towers
+                    regions[2 * world_num - 2+half_world].add_locations(level_location, NSMBWLocation)
+                    location = world.get_location(f"World{world_num}_level{level_num}_SC{sc}")
+                    location.place_locked_item(world.create_item("Starcoin"))
+                    #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", "Starcoin", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+        # add location for beating castles and towers
         if world_num != 9:
-            level_location = get_location_names_with_ids([f"World{world_num}_castle",f"World{world_num}_tower"])
-            regions[2*world_num - 2+1].add_locations(level_location, NSMBWLocation)
-    for secret_exit in SECRET_EXIT_CANNON:
-        world_num = secret_exit[0]
-        level_num = secret_exit[1]
-        level_location = get_location_names_with_ids([f"Secret_exit{world_num}-{level_num}"])
-        regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
+            level_location = get_location_names_with_ids([f"World{world_num}_tower"])
+            regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
+            level_location = get_location_names_with_ids([f"World{world_num}_castle"])
+            regions[2 * world_num - 2 + 1].add_locations(level_location, NSMBWLocation)
+
+    if world.options.include_shortcuts.value == True:
+        for secret_exit in SECRET_EXIT:
+            world_num = secret_exit[0]
+            level_num = secret_exit[1]
+            level_location = get_location_names_with_ids([f"Secret_exit{world_num}-{level_num}"])
+            regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
-    if world.options.include_hintmovies:
+    if world.options.include_hintmovies.value == True:
         for i in range(1, num_hintmovies+1):
             hintmovie_location = get_location_names_with_ids([f"Hintmovie{i}"])
             regions[0].add_locations(hintmovie_location, NSMBWLocation)
@@ -109,7 +119,7 @@ def create_regular_locations(world: NSMBWWorld) -> None:
     #    for i in range(1, num_hintmovies+1):
     #        regions[0].add_event(f"Hintmovie{i}", "Starcoin" , location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
-    if world.options.include_level_compleation:
+    if world.options.include_level_compleation.value == True:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 flagpole = get_location_names_with_ids([f"World{world_num}_level{level_num}_completed_level"])
@@ -139,5 +149,5 @@ def create_events(world: NSMBWWorld) -> None:
 
     #events could be usefully for merging split paths
 
-    regions[2*8-1].add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    regions[2*(8-1)+1].add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 

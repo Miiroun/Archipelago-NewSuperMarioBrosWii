@@ -1,25 +1,28 @@
 import os
+from typing import Union
 
-import Utils
 import settings
 
 
 class NSMBWSettings(settings.Group):
     class IsoPath(settings.UserFilePath):
-        pass
+        """A path to your game file that ends with either .iso or .wbfs"""
+        required = False
 
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
 
-    class TrackerPackPath(settings.OptionalUserFilePath):
-        """Optional path for the tracker"""
+    class UTPackPath(settings.FilePath):
+        """Optional path to an external UTpack not yet created"""
+        required = False  # You can comment this to force users to have the poptracker map
+        ut_dialog_name = "Select Poptracker pack"  # Optional: customize the dialog message
 
     class RiivolutionPath(settings.OptionalUserFilePath):
         """Optional path for the riivolution"""
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
-    iso_path: IsoPath= r"/nsmbw/New Super Mario Bros. Wii (USA) (En,Fr,Es) (Rev 2).wbfs"
-    #Utils.open_filename("Select Rom file", filetypes)
+    iso_path: settings.Union[UTPackPath, str] = IsoPath()
+
     auto_open: AutoOpenGame | bool = True
-    tracker_pack_path: TrackerPackPath = r"/nsmbw/tracker_pack.zip"
+    ut_pack_path: Union[UTPackPath, str] = UTPackPath()
     riivolution_path: RiivolutionPath = os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\"

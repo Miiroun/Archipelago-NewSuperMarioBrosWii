@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING, List
 
 from rule_builder import rules
 from rule_builder.options import OptionFilter
-from .options import RandomizeMovment, RandomizePowerups
+from .locations import LEVELS_PER_WORLD
+from .options import RandomizeMovment, RandomizePowerups, LogicDifficulty
+from ..dkc3 import Rules
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -85,32 +87,35 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 
 
 def specific_level_requierments(world: NSMBWworld) -> List:
-    # doesnt acount for secret exit
     filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
     filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
     filter_pow_on_no_mus = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_except_mushroom)
-    filter_pow = [filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
+    filter_pow_off = OptionFilter(RandomizePowerups, RandomizePowerups.option_off)
+    filter_pow = [filter_pow_off] #[filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
 
 
-    mushroom = rules.Has(f"{'Super_Mushroom'}", options=[filter_pow_on_prog,filter_pow_on], filtered_resolution=True)
+    mushroom = rules.Has(f"{'Super_Mushroom'}") | filter_pow | filter_pow_on_no_mus
 
 
-    propeller = rules.Has(f"{'Propeller_Mushroom'}", options=filter_pow, filtered_resolution=True) & mushroom
-    ice_peng = (rules.Has(f"{'Ice_Flower'}", options=filter_pow, filtered_resolution=True) | rules.Has(f"{'Penguin_Suit'}", options=filter_pow, filtered_resolution=True)) & mushroom
-    mini = rules.Has(f"{'Mini_Mushroom'}", options=filter_pow, filtered_resolution=True) & mushroom
+    propeller = (rules.Has(f"{'Propeller_Mushroom'}") & mushroom) | filter_pow
+    ice_peng = ((rules.Has(f"{'Ice_Flower'}") | rules.Has(f"{'Penguin_Suit'}")) & mushroom) | filter_pow
+    mini = (rules.Has(f"{'Mini_Mushroom'}") & mushroom) | filter_pow
 
 
     filter_mov_on = OptionFilter(RandomizeMovment, RandomizeMovment.option_on)
     filter_mov_on_spin = OptionFilter(RandomizeMovment, RandomizeMovment.option_on_except_spin)
-    filter_mov = [filter_mov_on,filter_mov_on_spin]
+    filter_move_off = OptionFilter(RandomizeMovment, RandomizeMovment.option_off)
+    filter_mov = [filter_move_off] # [filter_mov_on,filter_mov_on_spin]
 
-    p_switch = rules.Has(f"{'p-switch'}", options=filter_mov, filtered_resolution=True)
-    red_block = rules.Has(f"{'red-block'}", options=filter_mov, filtered_resolution=True)
-    yoshi = rules.True_()
-    star = rules.True_()
+    p_switch = rules.Has(f"{'p-switch'}") | filter_mov
+    red_block = rules.Has(f"{'red_block'}")  | filter_mov
+    yoshi = rules.Has(f"{'Yoshi'}")  | filter_mov
+    star = rules.Has(f"{'Star'}") | filter_mov
 
-    gp = rules.Has(f"{'ground_pound'}", options=filter_mov, filtered_resolution=True)
-    wj = rules.Has(f"{'wall_jump'}", options=filter_mov, filtered_resolution=True)
+
+
+    gp = rules.Has(f"{'ground_pound'}")  | filter_mov
+    wj = rules.Has(f"{'wall_jump'}")  | filter_mov
 
     bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
 
@@ -319,18 +324,18 @@ def specific_level_requierments(world: NSMBWworld) -> List:
         ],
     ]
 
-    requierments = hard_rules
-    if world.options.logic_difficulty.value == 0:
-        for world_num in range(len(easy_rules)):
-            for level_num in range(len(easy_rules[world_num])):
+    requierments = hard_rules.copy()
+    if world.options.logic_difficulty.value == LogicDifficulty.option_normal:
+        for world_num in range(9):
+            for level_num in range(LEVELS_PER_WORLD[world_num]):
                 requierments[world_num][level_num][0] = hard_rules[world_num][level_num][0] & easy_rules[world_num][level_num][0]
                 for sc in range(3):
                     requierments[world_num][level_num][1][sc] = hard_rules[world_num][level_num][1][sc] & \
                                                             easy_rules[world_num][level_num][1][sc]
-                if len(requierments[world_num][level_num]) == 3:
+                if len(requierments[world_num][level_num]) >= 3:
                     requierments[world_num][level_num][2] = hard_rules[world_num][level_num][2] & \
                                                             easy_rules[world_num][level_num][2]
-    elif world.options.logic_difficulty.value == 1:
+    elif world.options.logic_difficulty.value == LogicDifficulty.option_difficult:
         requierments = hard_rules
     return requierments
 
@@ -408,7 +413,7 @@ def get_levlel_connections():
             [5],  # -6
             [6], # - 7
             [3],  # -Tower
-            [7]  # -Caslte
+            [6]  # -Caslte
         ],
         [  # world 8
             [],  # -1
@@ -420,7 +425,7 @@ def get_levlel_connections():
             [2], # -7
             [3],  # -Tower
             [10],  # -Caslte
-            [7] #- airship
+            [6] #- airship
         ],
         [  # world 9
             [],  # -1

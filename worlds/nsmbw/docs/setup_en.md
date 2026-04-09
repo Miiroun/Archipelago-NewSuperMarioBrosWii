@@ -5,14 +5,12 @@
 - [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest)
 - [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - [Dolphin emulator](https://dolphin-emu.org/download/)
-- A legally acquired copy of a New Super Mario Bros Wii (all editions should be supported)
+- A legally acquired copy of a New Super Mario Bros Wii (tested on US rev 2, all other versions will have bugs)
+- (Optionally) [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases)
 
-
-## OBS
-TO PLAY YOU NEED VERSION 0.6.7 of AP, this is not released at the time of writing (2026-03-24) so you will need to download the release candidate.
 
 ## Setup
-Download and install archipelago and Dolphin.
+Download and install archipelago (needs at least v0.6.7) and Dolphin.
 Download the apworld file from [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest), doubleclick it and it's installed.
 Then create a player yaml file, either from template or launcher. OBS the ap client is bundled with launcher.
 Inside the client press CONNECT and then enter your player name (from the yaml)

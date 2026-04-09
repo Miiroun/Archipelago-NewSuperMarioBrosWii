@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from BaseClasses import Item, ItemClassification
+from BaseClasses import Item, ItemClassification, MultiWorld
+from .options import RandomizeMovment, RandomizePowerups
 
 if TYPE_CHECKING:
     from .world import NSMBWWorld
@@ -29,7 +30,7 @@ DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}"] = ItemClassification.progression_skip_
 
 # could add movement rando as checks
 MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "cary",
-            "triple_jump", "swim", "p-switch", "red_block", "swing"]
+            "triple_jump", "swim", "swing", "p-switch", "red_block"]
 # maybe in future "run", "spin",
 for i in range(len(MOVEMENT_UNLOCKS)):
     ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
@@ -44,7 +45,7 @@ for i in range(len(POWERUP_UNLOCK)):
 DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
 
 
-TRAPS = ["Gomba_trap", "Time_trap", "Loose_powerup_trap"]
+TRAPS = ["Loose_powerup_trap"] #"Gomba_trap", "Time_trap",
 for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
@@ -78,8 +79,8 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
 
     if world.random.randint(0, 99) < world.options.trap_chance:
         return TRAPS[world.random.randint(0, len(TRAPS)-1)]
-
-    return FILLER[world.random.randint(0, len(FILLER) - 1)]
+    else:
+        return FILLER[world.random.randint(0, len(FILLER) - 1)]
 
 
 def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSMBWItem:
@@ -91,10 +92,10 @@ def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSM
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
 def create_all_items(world: NSMBWWorld) -> None:
-    starting_world_num = 1
-    if world.options.starting_world:
-        starting_world_num = world.random.randint(1, 8)
-
+    #starting_world_num = 1
+    #if world.options.starting_world:
+    #    starting_world_num = world.random.randint(1, 8)
+    starting_world_num = world.options.starting_world.value
 
     # This is the function in which we will create all the items that this world submits to the multiworld item pool.
     # There must be exactly as many items as there are locations.
@@ -107,22 +108,28 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     itempool: list[Item] = []
 
-    if world.options.randomize_coins:
+    if world.options.randomize_coins.value == True:
         for i in range(77*3):
             itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
-        itempool.append(world.create_item(f"World{i}"))
-        if (i != 9) and (i != starting_world_num):
+        if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
             itempool.append(world.create_item(f"World{i}"))
-    if world.options.randomize_movement:
-        for i in range(len(MOVEMENT_UNLOCKS)):
-            itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
-        world.multiworld.early_items[world.player][f"{'Spin'}"] = 1
+        if i != 9:
+            itempool.append(world.create_item(f"World{i}"))
 
-    if world.options.randomize_powerups:
+    if world.options.randomize_movement.value in [RandomizeMovment.option_on, RandomizeMovment.option_on_except_spin]:
+        for i in range(len(MOVEMENT_UNLOCKS)):
+            if (world.options.randomize_movement.value == RandomizeMovment.option_on) or (MOVEMENT_UNLOCKS[i] != f"{'Spin'}"):
+                itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
+                print(f"{MOVEMENT_UNLOCKS[i]}")
+        if world.options.randomize_movement.value == RandomizeMovment.option_on:
+            world.multiworld.early_items[world.player][f"{'Spin'}"] = 1
+
+    if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_except_mushroom, RandomizePowerups.option_on_progressive]:
         for i in range(len(POWERUP_UNLOCK)):
-            itempool.append(world.create_item(f"{POWERUP_UNLOCK[i]}"))
-    if world.options.randomize_powerups:
+            if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_progressive]  or MOVEMENT_UNLOCKS[i] != f"{'Super_Mushroom'}":
+                itempool.append(world.create_item(f"{POWERUP_UNLOCK[i]}"))
+    if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_progressive]:
         world.multiworld.early_items[world.player][f"{'Super_Mushroom'}"] = 1
 
     #print(itempool)

@@ -2,6 +2,8 @@ import io
 import zipfile
 from pathlib import Path
 
+import pandas
+
 import Utils
 from .wii_code_tools.lib_wii_code_tools import common
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
@@ -110,7 +112,19 @@ from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 
 # #0xc72260 	[32-bit BE] [NTSC,PAL] In stage flag 0x0=Outside stages 0x1=Inside stages
 
+class SymbolReader(object):
+    def __init__(self, _file):
+        self.symbol_db = pandas.read_table(_file,sep='\t')
 
+    def get_address_from_symbol(self, symbol_name):
+        index = self.symbol_db[0].index(symbol_name)
+        address = self.symbol_db[1][index]
+        return address
+def acount_added_code(address):
+    new_address = address
+    if address >= 0x00000000:
+        address += 0 # want to acount for size of loader etc
+    return new_address
 
 class MemoryAddresses(object):
     def __init__(self, this_version):
@@ -120,11 +134,18 @@ class MemoryAddresses(object):
                 memory_path = r"nsmbw/NSMBW_client/wii_code_tools/address-map.txt"
                 with io.TextIOWrapper(zf.open(memory_path), encoding="utf-8") as f:
                     self.mappers = lib_address_maps.load_address_map(f)
+                symbol_path = r"nsmbw/NSMBW_client/symbols_P1_rem_ghidra.map"
+                with io.TextIOWrapper(zf.open(symbol_path), encoding="utf-8") as f:
+                    self.symbol_reader = SymbolReader(f)
         else:
             memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
             with Path(memorymap_path).open('r', encoding='utf-8') as f:
                 self.mappers = lib_address_maps.load_address_map(f)
+            symbol_path = r"nsmbw/NSMBW_client/symbols_P1_rem_ghidra.map"
+            with Path(memorymap_path).open('r', encoding='utf-8') as f:
+                    self.symbol_reader = SymbolReader(f)
         self.this_version = this_version
+
 
 
         self.SC_current_level = self.map_between("E2",0x803741B0)
@@ -157,7 +178,7 @@ class MemoryAddresses(object):
 
 
         self.savefile1_1_1 = self.map_between("E2",0x80c7fed3)
-        self.savefile_num = self.map_between("P1",0x80c7f7c6)
+        self.savefile_num = self.map_between("E2",0x80c7f7c6)
         self.savefile2_offset = 0x860# = Save File 2 Offset
         self.savefile3_offset = 0x1300# = Save File 3 Offset
 
@@ -178,12 +199,28 @@ class MemoryAddresses(object):
 
         #0x154ba0c  [32-bit BE] [NTSC,PAL] Character Pointer Slot 1 (Not necessarily Player 1)
 
+        #self.yoshi_walk_speed = self.map_between("P1", 0x802ef1f0)
+        self.yoshi_walk_speed = self.map_between("E2", 0x802eeef0)
 
+        #self.yoshi_walk_speed  = self.map_from_symbol("yoshi_speeddata_nostar")
+        self.yoshi_walk_star_speed =self.map_between("P1", 0x802ef268)
+
+        # water movement speed
+        self.water_movement_speed  =self.map_between("P1", 0x80935b18)
 
     def map_between(self, ver_from, address):
         mapper_from = self.mappers[ver_from]
         mapper_to = self.mappers[self.this_version]
-        return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address)
+        return acount_added_code(lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address))
+
+    def map_from_symbol(self, symbol_name):
+        address = self.symbol_reader.get_address_from_symbol(symbol_name)
+
+        ver_from = "P1"
+        mapper_from = self.mappers[ver_from]
+        mapper_to = self.mappers[self.this_version]
+
+        return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address+1)-1
 
 
 

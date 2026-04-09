@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rule_builder import rules
-from .locations import SECRET_EXIT_CANNON
+from .locations import SECRET_EXIT
 from .raw_rules import *
 
 if TYPE_CHECKING:
@@ -74,14 +74,18 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 star_coin = world.get_location(f"World{world_num}_level{level_num}_SC{sc}")
                 world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & level_req[world_num - 1][level_num - 1][1][sc - 1] )
 
-            if (world_num,level_num) in SECRET_EXIT_CANNON: # currently for secret exit in logic requies
-                secret_exit = world.get_location(f"Secret_exit{world_num}-{level_num}")
-                world.set_rule(secret_exit, rules.Has(f"World{world_num}_level{level_num}_cleared") &
-                               level_req[world_num - 1][level_num - 1][2])
+
 
             if world.options.include_level_compleation:
                 completed_level = world.get_location(f"World{world_num}_level{level_num}_completed_level") # reel location
                 world.set_rule(completed_level, rules.Has(f"World{world_num}_level{level_num}_cleared")) #event location
+
+        if world_num != 9:
+            ofset = 1 if world_num in [7,8] else 0
+            loc_name = world.get_location(f"World{world_num}_tower")
+            world.set_rule(loc_name, rules.Has(f"World{world_num}_level{7+ofset}_cleared"))
+            loc_name = world.get_location(f"World{world_num}_castle")
+            world.set_rule(loc_name, rules.Has(f"World{world_num}_level{8+ofset}_cleared"))
 
     HM_COUNT = 65
     hm_req = specific_hintmovie_requierments(world)
@@ -92,6 +96,17 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
             world.set_rule(location, (rules.Has(f"Starcoin", count=total_cost) & hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") ) )
+
+    if world.options.include_shortcuts.value == True:
+        for secret_exit in SECRET_EXIT:
+            world_num = secret_exit[0]
+            level_num = secret_exit[1]
+            secret_exit_loc = world.get_location(f"Secret_exit{world_num}-{level_num}")
+            if secret_exit[2] == 2:
+                world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") &
+                               level_req[world_num - 1][level_num - 1][2])
+            elif secret_exit[2] == 1:
+                world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
 
 
 def set_completion_condition(world: NSMBWworld) -> None:

@@ -14,7 +14,7 @@ from .NotificationManager import NotificationManager
 
 from NetUtils import ClientStatus
 
-from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT_CANNON
+from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
 from settings import get_settings
 tracker_loaded = False
 
@@ -79,7 +79,7 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
 
     def _cmd_unlock_everything(self):
         """
-        Marks every level as completed, a cheat used for development
+        Marks every level as completed, a cheat used for development which marks all levels as complete.
         """
         #Utils.async_start(self.ctx.unlock_everything())
         self.ctx.unlock_everything()
@@ -187,9 +187,11 @@ class NSMBWContext(SuperContext):
             #handle_recived_items
             pass
         elif cmd == "Bounced":
-            print(args)
+            #print(args)
+            pass
         elif cmd == "PrintJSON":
-            print(args)
+            #print(args)
+            pass
         elif cmd == "Retrieved":
             #print("Packed Retrieved with the following argument")
             print(args)
@@ -493,35 +495,65 @@ class NSMBWContext(SuperContext):
 
 
     async def check_level_completion(self, unlocked_worlds):
+        checked_locations = []
+
+        # level compleation logic
+        # check if level is cleared
+        world_nums = []
         if self.moded_levelstats == ModifiedState.UNMODIFIED:
-            checked_locations = []
+            world_nums = range(1, 9 + 1)
+        if self.moded_levelstats == ModifiedState.MODWOLD1_8:
+            world_nums = [9]
+
+        for world_num in world_nums:
+            for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+                level_status = self.game_interface.get_level_stats(world_num, level_num)[0]
+                if level_status & 16 == 16:
+                    level_name = f"World{world_num}_level{level_num}_completed_level"
+                    if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
+                        checked_locations.append(LOCATION_NAME_TO_ID[level_name])
+                        logger.info(f"You collected a check for completing {level_name}")
+
+
+        if self.moded_levelstats == ModifiedState.UNMODIFIED:
 
             # secret exits
-            for secret_exit in SECRET_EXIT_CANNON:
+            for secret_exit in SECRET_EXIT:
                 world_num = secret_exit[0]
                 level_num = secret_exit[1]
                 exit_name =f"Secret_exit{world_num}-{level_num}"
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)
-                if level_stats[0] & 2*16== 2*16:
+
+                byte_to_check = 0
+                if secret_exit[2] == 1:
+                    byte_to_check = 0x10
+                elif secret_exit[2] == 2:
+                    byte_to_check = 0x20
+                else:
+                    raise ValueError("Somthing is wrong with SECRET_EXIT")
+
+
+                if level_stats[0] & byte_to_check == byte_to_check:
                     if not LOCATION_NAME_TO_ID[exit_name] in self.locations_handled:
                         checked_locations.append(LOCATION_NAME_TO_ID[exit_name])
-                        print(f"You collected a check for {exit_name}")
-                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] - 2*16,1))
+                        logger.info(f"You collected a check for {exit_name}, but the cannon/exit will be locked to make the randomizer more interesting.")
+                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] - byte_to_check,1))
 
-            for world_num in range(1,7+1):
+            for world_num in range(1,8+1):
+
                 #castle logc
                 level_name =f"World{world_num}_tower"
                 level_num = 7
                 level_num += 1 if world_num in  [7,8] else 0
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)
-                if level_stats[0] & 1*16== 1*16:
+                if level_stats[0] & 0x10== 0x10:
                     if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
                         checked_locations.append(LOCATION_NAME_TO_ID[level_name])
-                        print(f"You collected a check for {level_name}")
+                        logger.info(f"You collected a check for completing {level_name}, to unlock the rest of this world, receive its AP-item.")
                     if unlocked_worlds[world_num-1] <= 1:
                         if not (level_name in self.completed_levels):
                             self.completed_levels.append(level_name)
-                            self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] - 1*16,1))
+                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] - 1*16,1))
                 else:
                     if unlocked_worlds[world_num-1] >= 2:
                         if level_name in self.completed_levels:
@@ -530,49 +562,43 @@ class NSMBWContext(SuperContext):
                             # if reset this value then maybe will not move to next world
 
 
-                #tower logic
+                #castle logic
                 if world_num != 8:
                     level_name =f"World{world_num}_castle"
                     level_num = 8 # should make dynamic
                     level_num += 1 if world_num in  [4,6,7,8] else 0
                     level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
-                    if level_stats & 1*16== 1*16:
+                    if level_stats & 0x10== 0x10:
                         if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
                             checked_locations.append(LOCATION_NAME_TO_ID[level_name])
-                            print(f"You collected a check for {level_name}")
+                            logger.info(f"You collected a check for {level_name}, to unlock the next world, receive its AP-item.")
                         self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - 1 * 16, 1))
                         if not level_name in self.completed_levels:
                             self.completed_levels.append(level_name)
 
 
-            #level compleation logic
-            # check if level is cleared
-            world_nums = []
-            if self.moded_levelstats == ModifiedState.UNMODIFIED:
-                world_nums = range(1, 9 + 1)
-            if self.moded_levelstats == ModifiedState.MODWOLD1_8:
-                world_nums = [9]
 
-            for world_num in world_nums:
-                for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                    level_status = self.game_interface.get_level_stats(world_num, level_num)[0]
-                    if level_status & 16 == 16:
-                        level_name = f"World{world_num}_level{level_num}_completed_level"
-                        if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
-                            checked_locations.append(LOCATION_NAME_TO_ID[level_name])
-                            print(f"You collected a check for {level_name}")
 
-            completed_worlds = sum([(f"World{world_num}_castle" in self.completed_levels) for world_num in self.completed_levels])
+
+            # this code is for unlocking the final level
+            completed_worlds = sum([(f"World{world_num}_castle" in self.completed_levels) for world_num in range(1,7+1)])
             bowser_unlock = (self.starcoin_count >= self.slot_data["bowser_star_unlock"]) and (completed_worlds >= self.slot_data["bowser_world_unlock"])
             level_name = f"World{8}_level{10}_completed_level"
             level_stats = self.game_interface.get_level_stats(8,10)[0]
-            if bowser_unlock and (level_stats & 16 == 16):
+            # runns if to dissable bowsers castle if completed 8-arship and not comrehended unlock conditions
+            if  level_stats & 16 == 16 and (not bowser_unlock):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
-                    self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats - 1 * 16, 1))
-
-            self.locations_handled += checked_locations
-            await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+                    logger.info(f" Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data["bowser_star_unlock"]} star coins and you have {self.starcoin_count}, Require {self.slot_data["bowser_world_unlock"]} worlds completed and you have {completed_worlds}).")
+                self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats - 1 * 16, 1))
+            # if previously compled 8-arship and now unlocked bowser
+            if (not level_stats & 0x10 == 0x10) and (bowser_unlock):
+                if level_name in self.completed_levels:
+                    self.completed_levels.remove(level_name)
+                    logger.info("Bowsers castle is now unlocked")
+                    self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 1 * 16, 1))
+        self.locations_handled += checked_locations
+        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
 
 
     
@@ -592,8 +618,10 @@ class NSMBWContext(SuperContext):
                 if item_name is None:
                     continue
     
-                logger.info(
+                #logger.info(
+                print(
                     f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
+
                 if item_name == "Starcoin":
                     # implement read of starcoin count and increase by one
                     print(f"A starcoin was received")
@@ -698,14 +726,18 @@ class NSMBWContext(SuperContext):
             i = 0
             for world_num in range(1, 9 + 1):
                 for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+                    level_stats = self.game_interface.get_level_stats(world_num,level_num)[0]
+                    level_stats &= 0x30 # keeps level completion
                     if i * 3 < starcoin_count:
-                        self.game_interface.set_level_stats(world_num,level_num, b'\x07')
+                        level_stats += 0x07
                     elif 3 * i == starcoin_count - 2:
-                        self.game_interface.set_level_stats(world_num,level_num, b'\x03')
+                        level_stats += 0x03
                     elif 3 * i == starcoin_count - 1:
-                        self.game_interface.set_level_stats(world_num,level_num,b'\x01')
+                        level_stats += 0x01
                     else:
-                        self.game_interface.set_level_stats(world_num,level_num, b'\x00')
+                        level_stats += 0x00
+                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats, 1))
+
                     i += 1
         elif current_world_num == 9:
             if self.moded_levelstats == ModifiedState.UNMODIFIED:
@@ -735,20 +767,23 @@ class NSMBWContext(SuperContext):
                        self.completed_levelstats[world_num - 1][level_num - 1] = self.game_interface.get_level_stats(world_num,
                                                                                                                   level_num)
         else:
-            print("this branch shouldn't happen")
+            print("this branch of setting starcoin shouldn't happen")
 
 
 
     async def handle_traps(self, traps):
         for trap in traps:
             if trap == "Gomba_trap":
+                logger.info(f"Trap {trap} is not implemented")
                 print("Imaging a goomba comes and attacks you")
                 self.game_interface.dolphin_client.write_address( 0x80ad2870, int_to_bytes(0x40000000,4))# f2.0
                 self.game_interface.dolphin_client.write_address(0x80ad2874,  int_to_bytes(0xc0000000,4)) # f-2.0
             elif trap == "Time_trap":
+                logger.info(f"Trap {trap} is not implemented")
                 time_left = self.game_interface.get_time_left()[0]
                 self.game_interface.set_time_left(int_to_bytes(time_left // 2, 4))  #half times left
             elif trap == "Loose_powerup_trap":
+
                 self.game_interface.set_powerupstate(b'\x00')
             else:
                 print(f"Trap {trap} is not implemented")
@@ -761,14 +796,17 @@ class NSMBWContext(SuperContext):
                 print(f"fill_inventory was received ")
                 logger.info(f"10 fill_inventory was received ")
                 for i in range(POWERUP_COUNT):
-                    self.game_interface.update_inventory_items(i)
+                    self.game_interface.update_inventory_items(i, self.slot_data["amount_support_recived"])
 
 
             elif item_name == "1ups":
                 print(f"1ups was received ")
                 logger.info(f"10 1ups was received ")
                 lives = self.game_interface.get_lives_count()
-                self.game_interface.set_lives_count(int_to_bytes(lives + 10, 1))
+                new_lives = lives + self.slot_data["amount_support_recived"]
+                if new_lives >= 99:
+                    new_lives = 99
+                self.game_interface.set_lives_count(int_to_bytes(new_lives, 1))
 
 
     async def handle_check_deathlink(self):
@@ -794,16 +832,28 @@ class NSMBWContext(SuperContext):
                 self.is_pending_death_link_reset = False
 
     async def handle_is_world_unlocked(self, unlocked_worlds):
-        current_world = self.game_interface.get_world_level()[0]+1
+        recording_state = self.game_interface.get_record_state()  == b"\x00"#makes sure we are not on the tite screen
+        map_state = self.game_interface.get_on_map() == b"\x00"
+        level_state = self.game_interface.get_in_stage_flag() == b"\x01"
+        if recording_state and map_state and level_state:
+            current_world_level = self.game_interface.get_world_level()[0]+1
+            current_map_world = self.game_interface.get_map_world()[0] + 1
 
+            #if not  (current_world_level == current_map_world):
+            #    print( "The diffrent current world checks doesnt match doesnt match")
+            current_world = current_world_level
+            #current_world = current_map_world
 
-        if unlocked_worlds[current_world-1] == 0:
-            if sum(unlocked_worlds) >=1 : # this is a check for if recived items yet
-                lowest_unlocked = unlocked_worlds.index(1) # will give error if no world is at unlockstate 1
-                self.game_interface.set_world(int_to_bytes(lowest_unlocked-1,1))
-                print(f"World {current_world} is not unlocked")
-                logger.info(f"World {current_world} is not unlocked")
-                await self.game_interface.kill_player()
+            if not (current_world in range(0,9+1)):
+                print(f"Current world {current_world} is not well defined")
+            else:
+                if unlocked_worlds[current_world-1] == 0:
+                    if sum(unlocked_worlds) >=1 : # this is a check for if recived items yet
+                        lowest_unlocked = unlocked_worlds.index(1) # will give error if no world is at unlockstate 1
+                        self.game_interface.set_world(int_to_bytes(lowest_unlocked-1,1))
+                        print(f"World {current_world} is not unlocked")
+                        logger.info(f"World {current_world} is not unlocked")
+                        await self.game_interface.kill_player()
 
 
 
@@ -813,9 +863,6 @@ class NSMBWContext(SuperContext):
 
     
     def unlock_everything(self):
-        for i in range(50):
-            pass
-            #self.handle_increase_inventory()
         for world_num in range(1, 9 + 1):  # worlds
             self.game_interface.set_worldstats(world_num, b'\x01')
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
@@ -832,46 +879,36 @@ class NSMBWContext(SuperContext):
 
 
 async def patch_and_run_game(apnsmbw_file: str):
-    # copied strait from metroid prime, look into what want to patch
-
-    #apnsmbw_file = os.path.abspath(apnsmbw_file)
-    # set_obj = get_settings()
-    # input_iso_path = get_settings().nsmbw_options.file_path #why isnt it in nsmbw_options (doesnt exitst)
-    # print(f"path {input_iso_path}")
-
-    # try to get this info from options
-    current_path = os.path.dirname(os.path.abspath(__file__))
-
-    #input_iso_path = current_path + r"\\rom_file\\" + ROM_FILE_NAME
-    #base_name = os.path.splitext(apnsmbw_file)[0]
     output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
 
-    #filetypes = (("Rom path", (".iso", ".wbfs")),)
-    #Utils.open_filename("Select Rom file", filetypes)
     input_iso_path = get_settings()["nsmbw.world_options"].iso_path
     assert input_iso_path is not None, "Add a path to your ISO in host.yaml"
+    assert Path(input_iso_path).exists(), "Your ISO file path is invalid"
+
 
     if not os.path.exists(output_path):
 
-        try:
-            logger.info(f"Input ISO Path: {input_iso_path}")
-            logger.info(f"Output ISO Path: {output_path}")
+        if False: #game does not need a riivolution patch
+            try:
+                logger.info(f"Input ISO Path: {input_iso_path}")
+                logger.info(f"Output ISO Path: {output_path}")
 
-            logger.info("Patching ISO...")
+                logger.info("Patching ISO...")
 
+                patch_iso(input_iso_path, output_path)
+
+                logger.info("Patching Complete")
+
+            except BaseException as e:
+                logger.error(f"Failed to patch ISO: {e}")
+                # Delete the output file if it exists since it will be corrupted
+                if os.path.exists(output_path):
+                    os.remove(output_path)
+
+                raise RuntimeError(f"Failed to patch ISO: {e}")
+            logger.info("--------------")
+        else:
             output_path = input_iso_path
-            #patch_iso(input_iso_path, output_path)
-
-            logger.info("Patching Complete")
-
-        except BaseException as e:
-            logger.error(f"Failed to patch ISO: {e}")
-            # Delete the output file if it exists since it will be corrupted
-            if os.path.exists(output_path):
-                os.remove(output_path)
-
-            raise RuntimeError(f"Failed to patch ISO: {e}")
-        logger.info("--------------")
 
     Utils.async_start(run_game(output_path))
 

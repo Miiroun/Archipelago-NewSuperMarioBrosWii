@@ -35,8 +35,8 @@ class TrapChance(Range):
 
 class RandomizeStarCoins(Toggle):
     """
-    Dissabling is not yet implented
-    If enabled will include starcoins as checks and starcoins will be recived as items
+    If enabled will include starcoins as checks and starcoins will be recived as items.
+    If dissabed will still create the starcoins as ap items but place them in their vanilla locations.
     """
     display_name = "Randomize Star Coins"
     default = True
@@ -44,6 +44,7 @@ class RandomizeStarCoins(Toggle):
 
 class RandomizeMovment(Choice):
     """
+    WARNING! logic not implemented.
     Will disable some of marios moves until items checks are sent to reunlock them.
     """
     # should make spin a seperet option
@@ -54,6 +55,7 @@ class RandomizeMovment(Choice):
     option_on = 2
 
     default = option_off
+    #visibility  = Option.visibility.none
 
 class RandomizePowerups(Choice):
     """
@@ -79,9 +81,16 @@ class IncluedLevelCompletion(Toggle):
     """
     This makes completing a level a check
     """
-    display_name = "Inclue Level Completion"
+    display_name = "Include Level Completion"
     default = False
 
+class IncludeShortcuts(Toggle):
+    """
+    If true makes shortcuts like cannoncs and 7-6 and 8-7 turn into checks.
+    Even if option is off will still dissable shortcuts.
+    """
+    display_name = "Include Shortcuts"
+    default = True
 
 class EnableSuperPowers(Toggle):
     """
@@ -90,6 +99,7 @@ class EnableSuperPowers(Toggle):
     """
     display_name = "Enable Super Powers"
     default = False
+    visibility  = Option.visibility.none
 
 class LogicDifficulty(Choice):
     """
@@ -100,19 +110,23 @@ class LogicDifficulty(Choice):
     option_normal = 0
     option_difficult = 1
     default = option_normal
+    #visibility  = Option.visibility.none
 
-class StartingWorld(Toggle):
+class StartingWorld(Range):
     """
-    A toggle if you should start with world 1 or random
+    If enabled will randomize your staring world.
     """
     display_name = "Starting World"
+    range_start = 1
+    range_end = 8
 
-    default = True
+    default = random
 
 class AmountStartingItems(Range):
     """
+    Gives you an amount of free locations that are automatically checked.
     This option is here to create a few free checks that helps with restrictive start error.
-    Put to at least ~ if you disable both check hintmovies and check level completion
+    Put to at least ~25 if you disable both check hint movies and check level completion otherwise you can keep it at 0.
     """
 
     display_name = "Amount Starting Items"
@@ -122,7 +136,7 @@ class AmountStartingItems(Range):
 
 class BowserCastleStarUnlock(Range):
     """
-    This setting applies requirements of at least x starcoins to unlock final level
+    This setting applies requirements of at least x star coins to unlock final level
     Recommended to have bellow ~ 200 to not get fill errors
     """
 
@@ -151,44 +165,78 @@ class DeathLink(Toggle):
     display_name = "Death Link"
     default = False
 
+class AmountSupportRecived(Range):
+    """
+    This setting will set the amount of 1ups and powerups send to inventory when reciving their corresponding checks.
+    """
+    display_name = "Amount Support items recived from ap-items"
+    range_start = 1
+    range_end = 100
+
+    default = 5
+
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName".
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
-    trap_chance: TrapChance
-    randomize_coins: RandomizeStarCoins
-    logic_difficulty: LogicDifficulty
-    starting_world: StartingWorld
+    include_level_compleation : IncluedLevelCompletion
+    include_shortcuts : IncludeShortcuts
     include_hintmovies : IncludeHintMovies
+    randomize_coins: RandomizeStarCoins
+
     randomize_movement : RandomizeMovment
     randomize_powerups : RandomizePowerups
+
+    trap_chance: TrapChance
+    logic_difficulty: LogicDifficulty
+    starting_world: StartingWorld
     num_startloc : AmountStartingItems
     death_link : DeathLink
+    enable_superpowers : EnableSuperPowers
+    amount_support_recived : AmountSupportRecived
+
+
     bowser_star_unlock : BowserCastleStarUnlock
     bowser_world_unlock : BowserCastleWorldUnlock
-    include_level_compleation : IncluedLevelCompletion
+
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
-#    OptionGroup(
-#        "Gameplay Options",
-#        [
-#            TrapChance,
-#            RandomizeStarCoins,
-#            LogicDifficulty,
-#            StartingWorld,
-#            RandomizeLevelCompletion,
-#            RandomizeMovment,
-#            RandomizePowerups,
-#            IncludeHintMovies,
-#            AmountStartingItems,
-#            DeathLink,
-#            BowserCastleStarUnlock,
-#            BowserCastleWorldUnlock,
-#         ],
-#
-#    ),
+    OptionGroup(
+        "Locations ",
+        [
+            IncludeShortcuts,
+            IncluedLevelCompletion,
+            IncludeHintMovies,
+            RandomizeStarCoins,
+         ],
+    ),
+    OptionGroup(
+        "Items",
+        [
+            RandomizeMovment,
+            RandomizePowerups
+        ],
+    ),
+    OptionGroup(
+        "Clear condition",
+        [
+            BowserCastleStarUnlock,
+            BowserCastleWorldUnlock,
+        ],
+    ),
+    OptionGroup(
+        "Other",
+        [
+            TrapChance,
+            AmountStartingItems,
+            DeathLink,
+            LogicDifficulty,
+            EnableSuperPowers,
+            AmountSupportRecived,
+        ],
+    ),
 ]
 
 # Finally, we can define some option presets if we want the player to be able to quickly choose a specific "mode".
@@ -206,3 +254,17 @@ option_presets = {
 #        "death_link" : False,
 #    }
 }
+
+
+def adjust_options(world):
+
+    if (world.options.include_hintmovies.value == False) and (world.options.include_level_compleation.value == False):
+        if world.options.num_startloc.value <= 20:
+            world.options.num_startloc.value = 20
+            print("If you dissable hint movies and level completion have at least 20 free starting locaitions")
+        #raise OptionError("IncludeHintMovies or IncludeLevelCompletion to have enough locations")
+    #if world.options.randomize_coins == False:
+    #    raise OptionError("RandomizeStarCoins is not implemented to be turned off")
+    if world.options.bowser_star_unlock.value >200:
+        world.options.bowser_star_unlock.value = 200
+        print("Generation fails when star req for reaching bowser is >200")

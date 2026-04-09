@@ -72,7 +72,7 @@ def launch_NSMBW_client(*args):
     )
 
 async def shutdown():
-    if True: # should make option to auto close
+    if get_settings()["nsmbw.world_options"].auto_open:
         os.system("taskkill /im Dolphin.exe")
         await asyncio.sleep(3)
         os.system("taskkill /im Dolphin.exe")

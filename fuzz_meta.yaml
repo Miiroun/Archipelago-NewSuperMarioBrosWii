@@ -1,11 +1,10 @@
 null:
   progression_balancing: 50
 NSMBW:
+  progression_balancing: 50
 
-  num_startloc:
-    20 : 50
 
-  bowser_star_unlock:
-    random-range-0-200: 50 # random value between 0 and 271
+
+
 
 
