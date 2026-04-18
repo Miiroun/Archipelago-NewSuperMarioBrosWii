@@ -1,0 +1,30 @@
+{
+  // this the manifest for you pack
+  // it contains basic information about your pack
+  // for more info on the manifest check: https://github.com/black-sliver/PopTracker/blob/master/doc/PACKS.md#manifest
+  "name": "PopTracker pack for New Super Mario Bros Wii",
+  "game_name": "NSMBW",
+  "package_version": "0.0.0.1",
+  "package_uid": "template_pack",
+  "platform": "wii",
+  "author": "Miiroun",
+  "min_poptracker_version": "0.25.9",
+  // put the version you tested against here!
+  "target_poptracker_version": "0.32.0",
+  "variants": {
+    "standard": {
+      "display_name": "Map Tracker",
+      "flags": [
+        // enables AP autotracking interface - remove if not needed
+        "ap"
+      ]
+    },
+    "var_itemsonly": {
+      "display_name": "Items Only",
+      "flags": [
+        // enables AP autotracking interface - remove if not needed
+        "ap"
+      ]
+    }
+  }
+}

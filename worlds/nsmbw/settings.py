@@ -25,4 +25,4 @@ class NSMBWSettings(settings.Group):
 
     auto_open: AutoOpenGame | bool = True
     ut_pack_path: Union[UTPackPath, str] = UTPackPath()
-    riivolution_path: RiivolutionPath = os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\"
+    riivolution_path: RiivolutionPath = "" # os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\"

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Set
 
 from BaseClasses import Item, ItemClassification, MultiWorld
 from .options import RandomizeMovment, RandomizePowerups
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 ITEM_NAME_TO_ID = {
     "Starcoin" : 101,
 }
-
+ITEM_NAME_GROUPS = {}
 
 # Items should have a defined default classification.
 # In our case, we will make a dictionary from item name to classification.
@@ -26,16 +26,16 @@ for i in range(1,9+1):
     ITEM_NAME_TO_ID.update({f"World{i}" : 200 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}" : ItemClassification.progression})
 DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}"] = ItemClassification.progression_skip_balancing
-
+ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 
 # could add movement rando as checks
-MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "Yoshi", "cary",
-            "triple_jump", "swim", "swing", "p-switch", "red_block"]
+MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "yoshi", "cary",
+            "triple_jump", "swim", "swing", "p-switch", "red_block", "pow", "star"]
 # maybe in future "run", "spin",
 for i in range(len(MOVEMENT_UNLOCKS)):
     ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{MOVEMENT_UNLOCKS[i]}" : ItemClassification.progression})
-
+ITEM_NAME_GROUPS.update({"MOVEMENT" : set(f"{MOVEMENT_UNLOCKS[i]}" for i in range(len(MOVEMENT_UNLOCKS)))})
 
 #order matters, what correct?
 POWERUP_UNLOCK = ["Super_Mushroom", "Fire_Flower", "Mini_Mushroom" ,"Propeller_Mushroom", "Penguin_Suit",  "Ice_Flower"]
@@ -43,17 +43,21 @@ for i in range(len(POWERUP_UNLOCK)):
     ITEM_NAME_TO_ID.update({f"{POWERUP_UNLOCK[i]}" : 600 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{POWERUP_UNLOCK[i]}" : ItemClassification.progression})
 DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
+ITEM_NAME_GROUPS.update({"Powerups" : set(f"{POWERUP_UNLOCK[i]}" for i in range(len(POWERUP_UNLOCK)))})
 
 
 TRAPS = ["Loose_powerup_trap"] #"Gomba_trap", "Time_trap",
 for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
+ITEM_NAME_GROUPS.update({"Traps" : set(f"{TRAPS[i]}" for i in range(len(TRAPS)))})
+
 
 FILLER = ["fill_inventory", "1ups"]
 for i in range(len(FILLER)):
     ITEM_NAME_TO_ID.update({f"{FILLER[i]}" : 500 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{FILLER[i]}" : ItemClassification.filler})
+ITEM_NAME_GROUPS.update({"Filler" : set(f"{FILLER[i]}" for i in range(len(FILLER)))})
 
 
 # Each Item instance must correctly report the "game" it belongs to.
@@ -121,7 +125,6 @@ def create_all_items(world: NSMBWWorld) -> None:
         for i in range(len(MOVEMENT_UNLOCKS)):
             if (world.options.randomize_movement.value == RandomizeMovment.option_on) or (MOVEMENT_UNLOCKS[i] != f"{'Spin'}"):
                 itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
-                print(f"{MOVEMENT_UNLOCKS[i]}")
         if world.options.randomize_movement.value == RandomizeMovment.option_on:
             world.multiworld.early_items[world.player][f"{'Spin'}"] = 1
 

@@ -2,11 +2,13 @@ import asyncio
 import logging
 import time
 from enum import Enum
+import keyboard
 
 from typing import Dict, Optional
 
-
+from .PowerPCInstructions import *
 from .dolphin_interface_client import *
+from ..Utils import bytes_to_int, int_to_bytes
 from ..items import ITEM_NAME_TO_ID, POWERUP_UNLOCK
 from ..locations import LEVELS_PER_WORLD
 
@@ -47,6 +49,7 @@ _SUPPORTED_VERSIONS = {
 GAMELEVELS_PER_WORLD = LEVELS_PER_WORLD
 
 
+logger = logging.getLogger("Client")
 
 class NSMBWInterface():
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with Metroid Prime"""
@@ -62,7 +65,7 @@ class NSMBWInterface():
     relay_trackers: Optional[Dict[Any, Any]]
 
     memory_addresses: MemoryAddresses
-    deathtimer : float
+    deathtimer : float = time.time()
     
     def __init__(self, logger: Logger) -> None:
         self.logger = logger
@@ -150,18 +153,21 @@ class NSMBWInterface():
     def is_in_level(self) -> bool:
         """Check if the player is in the actual game rather than the main menu"""
 
-        player_status = self.get_on_map()[0]
+        player_status = self.get_record_state()[0]
         worlmap_status = self.get_on_map()[0]
         #return player_status == b'\x00' or player_status == b'\x01'
         #print(f"status {worlmap_status}")
 
-        in_stage_flag = self.get_in_stage_flag()[3]
+        in_stage_flag = self.get_in_stage_flag()[3] == 1
+        is_not_on_world_map = worlmap_status != 1
+        is_normal_record = player_status == 0
+
 
         #return worlmap_status == 0)
-        return in_stage_flag == 1
+        return in_stage_flag and is_not_on_world_map and is_normal_record
 
     def is_in_worldmap(self) -> bool:
-        return 1 <= self.get_on_map()[0] <= 9
+        return 1 == self.get_on_map()[0]
 
     def is_in_menu(self):
         return True
@@ -262,40 +268,74 @@ class NSMBWInterface():
             address += -4
 
         return address
+    def clear_cache(self):
+        if self.is_in_level() or self.is_in_worldmap():
+            logger.info("Clearing JIT cache by loading savestate")
+            wait_long = 0.2
+            wait_short = 0.1
+            time.sleep(wait_short)
+            keyboard.press("shift")
+            time.sleep(wait_short)
+            keyboard.press("F8")
+            time.sleep(wait_short)
+            keyboard.release("F8")
+            time.sleep(wait_short)
+            keyboard.release("shift")
+            time.sleep(wait_long)
+            #asyncio.sleep(1)
+
+            keyboard.press("F8")
+            time.sleep(wait_short)
+            keyboard.release("F8")
+            time.sleep(wait_long)
+            #asyncio.sleep(1)
+
+
+
+
+    def write_instruction(self, address: int, data: bytes, clear : bool=False) -> bool:
+        current_value = self.dolphin_client.read_address(address, len(data))
+        if current_value != data:
+            self.dolphin_client.write_address(address, data)
+            #logger.info("Instruction changed")
+            if clear:
+                self.clear_cache()
+            return True
+        else:
+            return False
+
 
     async def handle_unlocked_moves(self, unlocked_moves, slot_data):
         if slot_data >= 1:
-
+            should_clear = 0
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
             address = self.memory_addresses.address_ground_pound
-            if "ground_pound" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+            if not "ground_pound" in unlocked_moves:
+                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00'+instru_return)
             else:
                 # this doesnt get called, why? renamed groundpound?
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xF0'+b'\x7C\x08\x02\xA6')
 
             # walljump ?
             # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
             # _ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
 
             address = self.memory_addresses.address_wall_slide
-            if "wall_jump" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+            if not "wall_jump" in unlocked_moves:
+                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+
             else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             address = self.memory_addresses.address_wall_jump
-            if "wall_jump" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+            if not "wall_jump" in unlocked_moves:
+                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+
             else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xE0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xE0')
+                should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
 
 
@@ -303,81 +343,106 @@ class NSMBWInterface():
             # _ZN9daYoshi_c11checkCrouchEv    0x8014DBB0
 
             address = self.memory_addresses.address_crouch
-            if "crouch" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+            if not "crouch" in unlocked_moves:
+                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00')
+                should_clear += self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
             else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
             address = self.memory_addresses.address_crouch_yoshi
-            if "crouch" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+            if not "crouch" in unlocked_moves:
+                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+
             else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xF0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+                self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             # _ZN7dAcPy_c16checkEnableThrowEv 0x8012E6E0      f
             # _ZN7dAcPy_c15checkCarryThrowEv  0x8012E760      f
             # _ZN7dAcPy_c15checkCarryActorEP7dAcPy_c 0x8013A150
             address = self.memory_addresses.address_cary
-            if "" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
+            if not "cary" in unlocked_moves:
+                should_clear += self.write_instruction(address, instru_return)
+
             else:
-                self.dolphin_client.write_address(address, b'\x80\xA3\x2A\x78')
-                self.dolphin_client.write_address(address + 4, b'\x80\x04\x00\x00')
+                should_clear += self.write_instruction(address, b'\x94\x21\xff\xf0')
 
             # _ZN7dAcPy_c17checkStartSwingUpEv 0x80136710
             # _ZN7dAcPy_c19checkStartSwingDownEv 0x801367E0
             address = self.memory_addresses.address_swing_up
-            if "cary" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
-            else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xE0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
-            address = self.memory_addresses.address_swing_down
-            if "cary" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
-            else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xD0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+            #if not "swing" in unlocked_moves:
+            #    should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+            #else:
+            #    should_clear += self.write_instruction(address, b'\x94\x21\xFF\xE0')
+            #    should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+            #address = self.memory_addresses.address_swing_down
+            #if not "swing" in unlocked_moves:
+            #    should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+
+            #else:
+            #    should_clear += self.write_instruction(address, b'\x94\x21\xFF\xD0')
+            #    should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             # _ZN7dAcPy_c24checkCliffHangFootGroundEv 0x80135810 f
             # _ZN7dAcPy_c19checkCliffHangWaterEv 0x801358E0   f
 
-            address = self.memory_addresses.address_hang_ground
-            if "hanging" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
-            else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xD0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
-            address = self.memory_addresses.address_hang_water
-            if "hanging" in unlocked_moves:
-                self.dolphin_client.write_address(address, b'\x38\x60\x00\x00')
-                self.dolphin_client.write_address(address + 4, b'\x4E\x80\x00\x20')
-            else:
-                self.dolphin_client.write_address(address, b'\x94\x21\xFF\xC0')
-                self.dolphin_client.write_address(address + 4, b'\x7C\x08\x02\xA6')
+            #address = self.memory_addresses.address_hang_ground
+            #if not "hanging" in unlocked_moves:
+            #    should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+
+            #else:
+            #    should_clear += self.write_instruction(address, b'\x94\x21\xFF\xD0')
+            #    should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+            #address = self.memory_addresses.address_hang_water
+            #if not "hanging" in unlocked_moves:
+            #    should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + instru_return)
+            #else:
+            #    should_clear += self.write_instruction(address, b'\x94\x21\xFF\xC0')
+            #    should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             # _ZN10daPlBase_c16checkJumpTriggerEv 0x80057AD0
 
             # red switch
-            if "red_block" in unlocked_moves:
+            if not "red_block" in unlocked_moves:
                 self.set_red_switch(b'\x00')  # reset red switch if not unlocked
 
             address_nostar = self.memory_addresses.yoshi_walk_speed
             address_star = self.memory_addresses.yoshi_walk_star_speed
-            if "Yoshi" in unlocked_moves:
-                self.dolphin_client.write_address(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
-                self.dolphin_client.write_address(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
-
+            if not "yoshi" in unlocked_moves:
+                should_clear += self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                should_clear += self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
             else:
-                self.dolphin_client.write_address(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-                self.dolphin_client.write_address(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                should_clear += self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
+                should_clear += self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
+
+            if not "swim" in unlocked_moves:
+                if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
+                    await self.kill_player()
+                    self.set_water_state(int_to_bytes(0,4))
+                else:
+                    pass
+                    #print(bytes_to_int(self.get_water_state()))
+            if not "swing" in unlocked_moves:
+                if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
+                    await self.kill_player()
+                else:
+                    pass
+
+            address = self.memory_addresses.address_new_hang
+            if not "hang" in unlocked_moves:
+                should_clear += self.write_instruction(address, instru_load_im+b'\x00\x00' + instru_return)
+            else:
+                should_clear += self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
+
+            if not "p-switch" in unlocked_moves:
+                self.set_p_switch_timer(int_to_bytes(0,4))
+
+            if not "star" in unlocked_moves:
+                self.set_star_timer(int_to_bytes(0,4))
+
+
+            if should_clear >= 1:
+                self.clear_cache()
         if slot_data == 2:
             pass
             # process spin
@@ -438,7 +503,9 @@ class NSMBWInterface():
     def get_lives_count(self):
         address = self.memory_addresses.mario_lifecount+3
         return self.dolphin_client.read_address(address,1)[0]
-
+    def get_water_state(self):
+        address = self.memory_addresses.water_speed_if_in
+        return self.dolphin_client.read_address(address,4)
 
     def set_worldstats(self,world_num : int, status : bytes):
         address = self.memory_addresses.world_stats + (world_num-1) + self.save_file_offset()
@@ -459,13 +526,24 @@ class NSMBWInterface():
         address = self.memory_addresses.time_left
         self.dolphin_client.write_address(address,data)
     def set_world(self,data):
-        address = self.memory_addresses.world_level
+        #address = self.memory_addresses.world_level
+        #self.dolphin_client.write_address(address,data)
+        address = self.memory_addresses.map_world
         self.dolphin_client.write_address(address,data)
         #address = self.memory_addresses.level_world
         #self.dolphin_client.write_address(address,data)
     def set_lives_count(self, data):
         address = self.memory_addresses.mario_lifecount+3
         self.dolphin_client.write_address(address,data)
+    def set_water_state(self,data):
+        address = self.memory_addresses.water_speed_if_in
+        self.dolphin_client.write_address(address, data)
+    def set_p_switch_timer(self, data):
+        address = self.memory_addresses.address_p_switch
+        self.dolphin_client.write_address(address, data)
+    def set_star_timer(self, data):
+        address = self.memory_addresses.address_star
+        self.dolphin_client.write_address(address, data)
 
     def update_inventory_items(self, type_num, increase):
         amount = self.get_inventory_items(type_num)[0]
@@ -475,8 +553,8 @@ class NSMBWInterface():
 
     async def kill_player(self):
         address = self.memory_addresses.death_address
-        print("Set mario to death")
-        self.dolphin_client.write_address(address, b'\x60\x00\x00\x00')
+        if self.write_instruction(address, b'\x60\x00\x00\x00', clear=True):
+            logger.info("Kill player")
         #await asyncio.sleep(1)
         #time.sleep(2) # to much of wait?
         #why doesnt asyncrio work here?????
@@ -484,7 +562,7 @@ class NSMBWInterface():
         self.deathtimer = time.time()
     async def alive_player(self):
         address = self.memory_addresses.death_address
-        if self.dolphin_client.read_address(address,4) == b'\x60\x00\x00\x00' and time.time() - self.deathtimer >= 2:
-            print("Set mario to alive")
-            self.dolphin_client.write_address(address, b'\x48\x00\x00\x28')
+        if time.time() - self.deathtimer >= 2:
+            if self.write_instruction(address, b'\x48\x00\x00\x28', clear=True):
+                print("Set mario to alive")
 

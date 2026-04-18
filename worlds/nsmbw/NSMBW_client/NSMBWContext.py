@@ -1,10 +1,8 @@
-import importlib
 import json
 import os
 import traceback
 from typing import List
 
-import logging
 
 
 from . import dolphin_interface_client
@@ -13,6 +11,7 @@ from .NotificationManager import NotificationManager
 #from .patcher import patch_iso
 
 from NetUtils import ClientStatus
+from ..Utils import int_to_bytes, bytes_to_int
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
 from settings import get_settings
@@ -31,11 +30,7 @@ except ModuleNotFoundError:
     print("Tracker was not found so is not loaded")
 
 
-def bytes_to_int(bytes, signed=False):
-    return int.from_bytes(bytes, byteorder='big', signed=signed)
 
-def int_to_bytes(num, width, signed=False):
-    return int.to_bytes(num, width, byteorder='big', signed=signed)
 
 class ModifiedState(Enum):
     UNMODIFIED = 0
@@ -72,17 +67,17 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
 
     def _cmd_reapply_checks(self):
         """
-        Do this command if some checks haven't been applied because bug
+        Do this command if some checks haven't been applied because of wrong cache.
         """
         self.ctx.items_handled = []
         self.ctx.locations_handled = []
 
-    def _cmd_unlock_everything(self):
-        """
-        Marks every level as completed, a cheat used for development which marks all levels as complete.
-        """
-        #Utils.async_start(self.ctx.unlock_everything())
-        self.ctx.unlock_everything()
+    #def _cmd_unlock_everything(self):
+    #    """
+    #    Marks every level as completed, a cheat used for development which marks all levels as complete.
+    #    """
+    #    #Utils.async_start(self.ctx.unlock_everything())
+    #    self.ctx.unlock_everything()
 
     def _cmd_save(self):
         """
@@ -100,11 +95,27 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
 
     def _cmd_starcoin_count(self):
         """
-        Returns the amount of star coin items sent to client
+        Returns the amount of star coin items sent to client.
         """
-        print(f"Starcoin count {self.ctx.starcoin_count}")
         logger.info(f"Star coin count {self.ctx.starcoin_count}")
 
+    def _cmd_completed_worlds(self):
+        """
+        Returns the amount of worlds that are considered completed.
+        """
+        completed_worlds = sum([(f"World{world_num}_castle" in self.ctx.completed_levels) for world_num in range(1, 7 + 1)])
+        logger.info(f"You have completed {completed_worlds} worlds.")
+
+    def _cmd_kill(self):
+        """
+        A command that kills mario. Useful if you get stuck.
+        """
+        Utils.async_start(self.ctx.game_interface.kill_player())
+    def _cmd_refresh(self):
+        """
+        Refreshes the JIT cashe (by save and load savestate). Usefull if something like moves are not updating.
+        """
+        self.ctx.game_interface.clear_cache()
 
 
 
@@ -220,12 +231,8 @@ class NSMBWContext(SuperContext):
 
     
     async def dolphin_sync_task_func(self):
-        # This will not work if the client is running from source
-        #version = get_apworld_version()
-
         if self.apnsmbw_file:
-            text = ""
-
+            text : str
             try:
                 if Utils.is_frozen():
                     #text = importlib.resources.read_text(self.apnsmbw_file, r"archipelago.json")
@@ -260,6 +267,7 @@ class NSMBWContext(SuperContext):
                     #print(f"connection state: {connection_state}")
 
                     #print(f"Connection state is {connection_state}")
+
                     if connection_state == ConnectionState.IN_GAME:
                         await self.handle_in_level()
                     elif connection_state == ConnectionState.IN_WORLDMAP:
@@ -321,10 +329,10 @@ class NSMBWContext(SuperContext):
         await self.handle_check_deathlink()
 
         self.notification_manager.handle_notifications()
+
+        await self.patch_game_from_memory()
         await asyncio.sleep(0.1)
 
-    
-    
     async def handle_in_worldmap(self):
         await self.handle_check_goal_complete()
         await self.handle_receive_items()
@@ -333,7 +341,7 @@ class NSMBWContext(SuperContext):
         await self.game_interface.alive_player()
         await self.handle_check_deathlink()
 
-
+        await self.patch_game_from_memory()
         await asyncio.sleep(0.1)
 
 
@@ -343,7 +351,11 @@ class NSMBWContext(SuperContext):
         await self.check_starter_locations()
         await self.game_interface.alive_player()
 
+        await self.patch_game_from_memory()
         await asyncio.sleep(0.1)
+        #print(self.game_interface.get_record_state())
+        #self.game_interface.set_world(b'\x05')
+
 
 
 
@@ -356,6 +368,7 @@ class NSMBWContext(SuperContext):
             with open(Utils.user_path() + f"/nsmbw/nsmbw_saves/{self.seed_name}.json", "w") as file_name:
                 json.dump(data, file_name)
             print("Saved to file")
+            logger.info("Saved to file")
 
     async def handle_load(self):
         if self.seed_name != "" and not (self.seed_name is None):
@@ -368,6 +381,7 @@ class NSMBWContext(SuperContext):
                 self.death_link_enabled = data["deathlink_enabled"]
 
                 print("Loaded from file")
+                logger.info("Loaded from file")
 
             except FileNotFoundError:
                 print("Couldnt load save data")
@@ -385,7 +399,6 @@ class NSMBWContext(SuperContext):
             bowser_death = (level_bowcast_condit[0] & 0x10) == 0x10
             #print(f"boser castle {level_bowcast_condit}")
 
-            # TODO implement a check to look if we havent temporararly overwrithen the data
             if bowser_death:
                 print("You goaled, congratulations")
                 await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
@@ -672,7 +685,7 @@ class NSMBWContext(SuperContext):
             if self.slot_data["randomize_powerups"] == 1:
                 unlocked_powerups[0] = 1
             elif self.slot_data["randomize_powerups"] == 2:
-                if unlocked_powerups[0] == 0 and sum(unlocked_powerups) >= 1:
+                if (unlocked_powerups[0] == 0) and (sum(unlocked_powerups) >= 1):
                     unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
                     unlocked_powerups[0] = 1
 
@@ -795,7 +808,7 @@ class NSMBWContext(SuperContext):
             if item_name == "fill_inventory":
                 print(f"fill_inventory was received ")
                 logger.info(f"10 fill_inventory was received ")
-                for i in range(POWERUP_COUNT):
+                for i in range(POWERUP_COUNT+1):
                     self.game_interface.update_inventory_items(i, self.slot_data["amount_support_recived"])
 
 
@@ -832,30 +845,41 @@ class NSMBWContext(SuperContext):
                 self.is_pending_death_link_reset = False
 
     async def handle_is_world_unlocked(self, unlocked_worlds):
-        recording_state = self.game_interface.get_record_state()  == b"\x00"#makes sure we are not on the tite screen
-        map_state = self.game_interface.get_on_map() == b"\x00"
-        level_state = self.game_interface.get_in_stage_flag() == b"\x01"
-        if recording_state and map_state and level_state:
-            current_world_level = self.game_interface.get_world_level()[0]+1
-            current_map_world = self.game_interface.get_map_world()[0] + 1
+        current_map_world = self.game_interface.get_map_world()[0] + 1
 
-            #if not  (current_world_level == current_map_world):
-            #    print( "The diffrent current world checks doesnt match doesnt match")
-            current_world = current_world_level
-            #current_world = current_map_world
+        current_world = current_map_world
+        if sum(unlocked_worlds) >= 1:  # this is a check for if recived items yet
 
-            if not (current_world in range(0,9+1)):
-                print(f"Current world {current_world} is not well defined")
+            lowest_unlocked = unlocked_worlds.index(1)  # will give error if no world is at unlockstate 1
+
+            if not (current_world in range(0, 9)):
+                #print(f"Current world {current_world} is not well defined")
+                #self.game_interface.set_world(int_to_bytes(lowest_unlocked, 1))
+                pass
             else:
-                if unlocked_worlds[current_world-1] == 0:
-                    if sum(unlocked_worlds) >=1 : # this is a check for if recived items yet
-                        lowest_unlocked = unlocked_worlds.index(1) # will give error if no world is at unlockstate 1
-                        self.game_interface.set_world(int_to_bytes(lowest_unlocked-1,1))
-                        print(f"World {current_world} is not unlocked")
-                        logger.info(f"World {current_world} is not unlocked")
-                        await self.game_interface.kill_player()
+                if unlocked_worlds[current_world - 1] == 0:
+                    self.game_interface.set_world(int_to_bytes(lowest_unlocked, 1))
+                    print(f"World {current_world+1} is not unlocked")
+                    #logger.info(f"World {current_world} is not unlocked")
+                    #await self.game_interface.kill_player()
 
 
+
+    async def patch_game_from_memory(self):
+        """
+        ALl this code should be moved to a riivolution patch
+        should also only be run ones
+        """
+        # code from NSMBWerPlus
+
+        #  - name: RemoveOpeningCS
+        #    type: nop_insn
+        #    area_pal: [0x809191C8, 0x809191D8]
+
+        #adddress = self.game_interface.memory_addresses.map_between("P1", 0x809191C8)
+        #self.game_interface.dolphin_client.write_address( adddress, instru_noop)
+        #adddress = self.game_interface.memory_addresses.map_between("P1", 0x809191D8)
+        #self.game_interface.dolphin_client.write_address( adddress, instru_noop)
 
 
     # util functions------------------------------------------------
@@ -869,6 +893,7 @@ class NSMBWContext(SuperContext):
                 self.game_interface.set_level_stats(world_num, level_num, b'\x37\x00\x00\x00')
                 if world_num==8 and level_num==9:
                     self.game_interface.set_level_stats(world_num, level_num, b'\x00\x00\x00\x00')
+
 
 #end of class
 

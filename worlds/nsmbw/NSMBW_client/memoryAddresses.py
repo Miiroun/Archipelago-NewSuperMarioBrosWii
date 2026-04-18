@@ -2,8 +2,6 @@ import io
 import zipfile
 from pathlib import Path
 
-import pandas
-
 import Utils
 from .wii_code_tools.lib_wii_code_tools import common
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
@@ -114,13 +112,36 @@ from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 
 class SymbolReader(object):
     def __init__(self, _file):
-        self.symbol_db = pandas.read_table(_file,sep='\t')
+        #self.symbol_db = pandas.read_table(_file,sep=r"\s+", names=["symbol", "address", "type"], dtype = {"symbol" : str, "address" : str, "type" : str})
+        self.db_address = []
+        self.db_symbols = []
+        for line in _file.readlines():
 
-    def get_address_from_symbol(self, symbol_name):
-        index = self.symbol_db[0].index(symbol_name)
-        address = self.symbol_db[1][index]
+            split_line = line.split(" ")
+            while len(split_line) > 3:
+                split_line.pop(split_line.index(''))
+            symbol, address, _type = split_line
+            self.db_symbols.append(symbol)
+            self.db_address.append(int(address,16))
+
+
+
+    def get_address_from_symbol(self, symbol_name : str) -> int:
+        #pair = self.symbol_db[self.symbol_db.symbol==symbol_name]
+        #address_list =pair["address"]
+        #if len(address_list) != 1:
+        #    raise ValueError(f"Symbol {symbol_name} not in symbol map. len(address) = {len(address_list)}")
+        #address_hex = int(address_list.to_numpy()[0], 16)
+        #print(f"address = {hex(address)}")
+
+        index = self.db_symbols.index(symbol_name)
+        address = self.db_address[index]
+
+
         return address
-def acount_added_code(address):
+
+
+def acount_added_code(address : int) -> int:
     new_address = address
     if address >= 0x00000000:
         address += 0 # want to acount for size of loader etc
@@ -141,8 +162,8 @@ class MemoryAddresses(object):
             memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
             with Path(memorymap_path).open('r', encoding='utf-8') as f:
                 self.mappers = lib_address_maps.load_address_map(f)
-            symbol_path = r"nsmbw/NSMBW_client/symbols_P1_rem_ghidra.map"
-            with Path(memorymap_path).open('r', encoding='utf-8') as f:
+            symbol_path = Path(__file__).parent.parent / "NSMBW_client" / "symbols_P1_rem_ghidra.map"
+            with Path(symbol_path).open('r', encoding='utf-8') as f:
                     self.symbol_reader = SymbolReader(f)
         self.this_version = this_version
 
@@ -187,11 +208,16 @@ class MemoryAddresses(object):
         self.address_wall_jump = self.map_between("E2",0x801285D0)
         self.address_crouch = self.map_between("E2",0x8012D490)
         self.address_crouch_yoshi = self.map_between("E2",0x8014DBB0)
-        self.address_cary = self.map_between("E2",0x8013A150)
+        self.address_cary = self.map_between("P1",0x8012e330)
         self.address_swing_up = self.map_between("E2",0x80136710)
         self.address_swing_down = self.map_between("E2",0x801367E0)
         self.address_hang_ground = self.map_between("E2",0x80135810)
-        self.address_hang_water = self.map_between("E2",0x801358E0)
+        self.address_hang_water = self.map_from_symbol("_ZN7dAcPy_c19checkCliffHangWaterEv")
+
+        self.address_new_hang = self.map_between("E2", 0x80072180)
+        self.address_vine = self.map_between("E2", 0x8154C818) # 43=hang vine, 45= normal
+        self.address_p_switch = self.map_between("E2", 0x815E4338)
+        self.address_star = self.map_between("E2", 0x8154C874)
 
 
         self.death_address = self.map_between("E2",0x800555DC)
@@ -199,28 +225,33 @@ class MemoryAddresses(object):
 
         #0x154ba0c  [32-bit BE] [NTSC,PAL] Character Pointer Slot 1 (Not necessarily Player 1)
 
-        #self.yoshi_walk_speed = self.map_between("P1", 0x802ef1f0)
-        self.yoshi_walk_speed = self.map_between("E2", 0x802eeef0)
-
+        self.yoshi_walk_speed = self.map_between("P1", 0x802ef1f0)
+        #self.yoshi_walk_speed = self.map_between("E2", 0x802eeef0)
         #self.yoshi_walk_speed  = self.map_from_symbol("yoshi_speeddata_nostar")
+
         self.yoshi_walk_star_speed =self.map_between("P1", 0x802ef268)
 
         # water movement speed
-        self.water_movement_speed  =self.map_between("P1", 0x80935b18)
+        #self.water_movement_speed  =self.map_between("P1", 0x80935b18)
+        self.water_speed_if_in = 0x8154C8DA #self.map_between("P1", 0x8154C8DA)
 
-    def map_between(self, ver_from, address):
+    def map_between(self, ver_from : str, address : int) -> int:
         mapper_from = self.mappers[ver_from]
         mapper_to = self.mappers[self.this_version]
-        return acount_added_code(lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address))
+        new_address = lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address)
+        if new_address is None:
+            raise ValueError("Address not found")
+        ported_address = acount_added_code(new_address)
+        return ported_address
 
-    def map_from_symbol(self, symbol_name):
+    def map_from_symbol(self, symbol_name : str) -> int:
         address = self.symbol_reader.get_address_from_symbol(symbol_name)
 
         ver_from = "P1"
         mapper_from = self.mappers[ver_from]
         mapper_to = self.mappers[self.this_version]
 
-        return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address+1)-1
+        return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address-1)+1
 
 
 

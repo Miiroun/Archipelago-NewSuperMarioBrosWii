@@ -44,6 +44,8 @@
 #from ..NSMBW_client.wii_code_tools import map_address
 from pathlib import Path
 
+from ..NSMBW_client import memoryAddresses
+from ..NSMBW_client.memoryAddresses import MemoryAddresses
 #from .wii_code_tools.map_address import *
 #from worlds.nsmbw.NSMBW_client.wii_code_tools import map_address
 
@@ -82,5 +84,11 @@ from ..NSMBW_client.wii_code_tools.lib_wii_code_tools import address_maps as lib
 #print(inp_file)
 
 
-_list = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
-print(_list)
+#_list = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
+#print(_list)
+
+
+mem_add = MemoryAddresses("E2")
+
+print(hex(mem_add.address_hang_water))
+

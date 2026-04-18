@@ -47,7 +47,26 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     #    regions.append(world.get_region(f"World_{i}_1"))
     #    if i != 9:
     #        regions.append(world.get_region(f"World_{i}_2"))
-    level_req = specific_level_requierments(world)
+
+    # this is transcribing raw ruels-------------------------------------
+    easy_rules, hard_rules = specific_level_requierments(world)
+    requierments = hard_rules.copy()
+    if world.options.logic_difficulty.value == LogicDifficulty.option_normal:
+        for world_num in range(9):
+            for level_num in range(LEVELS_PER_WORLD[world_num]):
+                requierments[world_num][level_num][0] = hard_rules[world_num][level_num][0] & easy_rules[world_num][level_num][0]
+                for sc in range(3):
+                    requierments[world_num][level_num][1][sc] = hard_rules[world_num][level_num][1][sc] & \
+                                                            easy_rules[world_num][level_num][1][sc]
+                if len(requierments[world_num][level_num]) >= 3:
+                    requierments[world_num][level_num][2] = hard_rules[world_num][level_num][2] & \
+                                                            easy_rules[world_num][level_num][2]
+    elif world.options.logic_difficulty.value == LogicDifficulty.option_difficult:
+        requierments = hard_rules
+    level_req = requierments
+    # transcribing ends--------------------------------
+
+
     level_connections = get_levlel_connections()
 
     #sets basic rules for each level

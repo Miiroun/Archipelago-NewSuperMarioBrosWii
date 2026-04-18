@@ -1,4 +1,3 @@
-import settings
 from Options import *
 
 
@@ -76,6 +75,7 @@ class IncludeHintMovies(Toggle):
     """
     display_name = "Include Hint Movies"
     default = True
+    visibility = Option.visibility.complex_ui
 
 class IncluedLevelCompletion(Toggle):
     """
@@ -120,7 +120,7 @@ class StartingWorld(Range):
     range_start = 1
     range_end = 8
 
-    default = random
+    default = "random"
 
 class AmountStartingItems(Range):
     """

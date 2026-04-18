@@ -1,22 +1,42 @@
 ## Super shortterm
 - Work on movement rando
-- IS_world_unlocked check is broken
-- Implement item and location groups
-- test wii code tools localy if they are wrong or ive implemented wrong
-- fix dolphin cashing issue with existing movement (or write instructuion to say restart)
-
+  - tripple jump
+  - climb : the grid from 3-c
+  - hang  growing vines from 2- secret exit
+  - swing vines : from 5-1
+  - Sneak : 6-1
+  - pow : hope discord answer
+    - daLightBlock_c::powBlockActivate
+    - daPowBlock_c::executeState_Shock
+  - shell carry
+  - titling platform as move : seaSwing ?
+- Fix problem with reading external pack wrong
+  - set up poptracker pack on my github
+- Try flushing instruction cash from ap python -> no savestate
+- Ask for playtest help: when have working moves
+- Work on writing updated docs
+- Remove item handled logger
+- Debug why ap won't launch??
+- Move tower and castle completion to correct when enters peach Castle
+- Rename world item?
+- Fixa have everything starcoin logic
+- rework raw_rules and add new movement
 
 ## Movement rando
-- Shipp with riivolution patch??
 - Add spin as check
-- Set swimspeed and yoshispeed = 0
-- Disable swim, Yoshi
-- could also kill if touch water
 - best if make statechange if tries to climb/hang / siwing
 - For carry should look at the gecko code mod
 - tripple jump = find check and dissable
 - spin = dissable button?
+- p-switch
+- p-switch and star should jave countdown timers
+- running
 
+## Future moves:
+- pow
+- run
+- Maybe normal jump for super weird playthrough
+- spin
 
 ## Playtest
 - Playtest red switch
@@ -27,6 +47,9 @@
 - Deathlink receiving doesn't work
 - Test so work with starcoins dissabled
 - Check to see if completing castle completion still gives level completion
+- Ap: playtest if hint movies unlockes correctly
+- Water kills
+- Test if world 9 can send items: problem with sending completion
 
 
 ## Bugs to fix
@@ -34,19 +57,15 @@
   - Marios animation start from back of world
 - Saving to file doesnt work
 - Sometimes (1/1000) random fill error
-- Add fix for death on title screen
-- STARCOIN LOGIC BROKEN (something wrong with new system)
+  - fuzzer fails ca 0.5% of times
 - Problem with dolphi cashing instructions (move dissable)
   - Wall jump isn't reunlocked
 - Freez on worldmap
-- STARCOIN LOGIC BROKEN (something wrong with new system)
-  - esp 6-3sc3
 - Somehow messes with mini and penguin amount when not received star coins
-- - World final Castle are in logic when shouldn't
-- World unlock seems to be of by 1?
-  - needs to fix so doesn't spot out errors
-- Doesn't send castle completion check (for world 9)??
 - Making castle and tower checks priority causes fill errors ca 2 out of 1000 times
+- Starts playing ending sequence when new file
+- loading secret exist from 1-3 freezes game
+- carry can carry coppa shell
 
 ## Docs update
 - Documentation: better setup instructions, be extra clear around when press conect and backup save file
@@ -54,6 +73,15 @@
 - clearify that star coins are not collected until level completed
 - Explain new setup and supported options
 - inclued ~ location amount
+- trubelshooting tips
+  - Name debug launcher in pins and GitHub
+  - restart launcher, computer
+  - savefile 2, us rev2
+  - dont have dolphin open
+- refer to optioncreator from setup guide
+- link to UT
+- Add location amount to options and docs
+
 
 ## Important features (asked after a lot)
 - World enemies
@@ -65,8 +93,6 @@
   - exists specific memory location
 - Star power-up
 - Movement
-- Yoshi
-  - set yoshispeed 0
 - Swim
   - set swimspeed 0
 
@@ -75,9 +101,6 @@
 
 ## Short term
 - World map locks/unlocks doesnt work on other savefiles
-- implenet starcoin setting in client
-  - maybe just precollect in world
-  - Pre_fil : place items: starcoins (if they are dissabled)
 - Fix so traps work
 - Add more options to how world 9 levels are unlocked
 - Turn traps into individual options
@@ -86,14 +109,11 @@
 - Lock star as powerup
 - Have yoshi and star as separate options?
 - Update item and location names: ask in discord to get recommendation for names
-- Change which checks are logic wise put in region 2, castle needs to be in 1
-- Remove having too loop  though all checks each frame?
 - For hint-movie reasons proberbly need to mark that castle levels are completed in game
-
+- Try to get EU conversion to work
 
 ## Filler link
 - Have a feture that on compleation sends out filler/trap items to the MW when complete repeatable checks
-- 
 
 ## Broken versions
 # EU 2
@@ -104,8 +124,8 @@
 # US 1
 - Somthing doesnt work
 
+
 ## Tracker
-- Fix ability to load external packs.
 - Add auto-tabbing
 
 
@@ -116,10 +136,13 @@
   - Need to incluc new messages.arc and some patch code
 - Create functions that are called at start/end of level instead of continuously? (to optimize code)
 - Bases on death messages creat an ingame text message
-- Edit color of text client
 - Support different savefiles
-- Skipp cutscreens
+- Skipp cutscenes
 - Create option presets
+- Remove having to loop  though all checks each frame?
+- Convert memory patches to riivolution
+- Support none windows
+- Allow for filtered messages
 
 
 ## Features
@@ -136,15 +159,27 @@
   - Sandstrom
   - Shrink Trap (revert to a no-powerup state) 
   - Time Travel Trap (removes half of the level's time, or just runs it at double speed.)
+  - litterature trap
+  - P-switch
+- FILLER 
+  - 1 normal coin
+  - star timer 
+  - yoshi : appears
+  - random powerup : gain
+  - short amount star power
 - Disable 8-7 / make require 8-2
 - Features from gecko
   - Speedtrap
   - fall damage
+- Pipe, door, bosdor rando: Detect if player state=1 and not dead
 
 
 ## Long term
-- Difficult logic
-- Multiplayer suport
+- Multiplayer support
 - Non ap rando (enemy, level, entrance)
   - One of set world level / level world changes ingame level: can be used for level rando
+- Button rando (disables buttons until unlocked)
 
+## Features I (Miiroun) will not implement
+- Consol support
+- Randomized ?-blocks

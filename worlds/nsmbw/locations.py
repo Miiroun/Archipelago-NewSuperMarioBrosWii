@@ -1,29 +1,42 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Set
 
 from BaseClasses import ItemClassification, Location, LocationProgressType
 
 from . import items
 
 if TYPE_CHECKING:
-    from .world import NSMBWWorld
+    from .world import NSMBWworld
 
 # Every location must have a unique integer ID associated with it.
 # We will have a lookup from location name to ID here that, in world.py, we will import and bind to the world class.
 # Even if a location doesn't exist on specific options, it must be present in this lookup.
 LOCATION_NAME_TO_ID = {}
+LOCATION_NAME_GROUPS = {}
 
 # Starcoins and level clear
 LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
+world_set = set()
 for world_num in range(1,9+1): # worlds
+    level_set = set()
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
         for sc in range(1,3+1):
             LOCATION_NAME_TO_ID.update({f"World{world_num}_level{level_num}_SC{sc}":10000+1000*world_num+10*level_num+sc})
+        sc_set = set(f"World{world_num}_level{level_num}_SC{sc}" for sc in range(1, 3+1))
+        LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}_Level{level_num}": sc_set})
+        level_set |= sc_set
+    LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}": level_set})
+    world_set |= level_set
+
     # add location for beating castles and towers
     if world_num != 9:
         LOCATION_NAME_TO_ID.update({f"World{world_num}_castle" : 2000+100*world_num + 1})
         LOCATION_NAME_TO_ID.update({f"World{world_num}_tower" : 2000+100*world_num + 2})
+LOCATION_NAME_GROUPS.update({"Starcoins" : world_set })
+LOCATION_NAME_GROUPS.update({"Castles" : set(f"World{world_num}_castle"for world_num in range(1,8+1)) })
+LOCATION_NAME_GROUPS.update({"Towers" : set(f"World{world_num}_tower" for world_num in range(1,8+1)) })
+
 
 
 # last num is if secret or normal exit 1== normal, 2==secret
@@ -32,19 +45,28 @@ for secret_exit in SECRET_EXIT:
     world_num = secret_exit[0]
     level_num = secret_exit[1]
     LOCATION_NAME_TO_ID.update({f"Secret_exit{world_num}-{level_num}": 2000 + 100 * world_num + 5})
+LOCATION_NAME_GROUPS.update({"Secret_exits" : set(f"Secret_exit{world_num}-{level_num}" for world_num, level_num, _ in SECRET_EXIT) })
 
 #hint movies
 num_hintmovies = 65
 for i in range(1,num_hintmovies +1):
     LOCATION_NAME_TO_ID.update({f"Hintmovie{i}": 3000 + i})
+LOCATION_NAME_GROUPS.update({"Hintmovies" : set(f"Hintmovie{i}" for  i in range(1,num_hintmovies +1)) })
+
 
 for i in range(1,100+1):
     LOCATION_NAME_TO_ID.update({f"starter_location{i}": 4000 + i})
+LOCATION_NAME_GROUPS.update({"Starter_locations" : set(f"starter_location{i}" for i in range(1,100+1)) })
 
+world_set = set()
 for world_num in range(1, 9 + 1):  # worlds
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
         flagpole = f"World{world_num}_level{level_num}_completed_level"
         LOCATION_NAME_TO_ID.update({flagpole : 5000 + world_num*100 + level_num})
+    level_set = set(f"World{world_num}_level{level_num}_completed_level" for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
+    world_set |= level_set
+    LOCATION_NAME_GROUPS.update({f"Level_completion_world{world_num}": level_set})
+LOCATION_NAME_GROUPS.update({"Level_completion" : world_set })
 
 # Each Location instance must correctly report the "game" it belongs to.
 # To make this simple, it is common practice to subclass the basic Location class and override the "game" field.

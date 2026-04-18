@@ -3,8 +3,6 @@ from typing import Any
 import dolphin_memory_engine  # type: ignore
 import subprocess
 
-import sys
-sys.path.append(r'C:\Users\Anton\Projekt\Programering\AP-development\Archipelago-main')
 import Utils
 
 # game constants
@@ -97,6 +95,9 @@ class DolphinClient:
         self.__assert_connected()
         result = self.dolphin.write_bytes(address, data)
         return result
+
+    #nsbmw adition
+
 
 
 def assert_no_running_dolphin() -> bool:
