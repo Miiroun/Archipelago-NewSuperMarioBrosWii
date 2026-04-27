@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 def specific_hintmovie_requierments(world: NSMBWworld) -> List:
     # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
-    rule_completed_everything = rules.Has("World8_level9_cleared") # dont want to implement
+    rule_completed_everything = rules.Has("Starcoin", count=231)  & rules.Has("Victory")# dont want to implement complex, just deprioritize
     requierments = [
         #starcoin cost, level requierment, generic requierment
         [3, (1,1), rules.True_()],   #01
@@ -87,6 +87,11 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 
 
 def specific_level_requierments(world: NSMBWworld) -> tuple:
+    # Logic checked by:
+    # REACT : powerups, all levels
+
+
+
     filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
     filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
     filter_pow_on_no_mus = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_except_mushroom)
@@ -111,7 +116,15 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     red_block = rules.Has(f"{'red_block'}")  | filter_mov
     yoshi = rules.Has(f"{'Yoshi'}")  | filter_mov
     star = rules.Has(f"{'Star'}") | filter_mov
-
+    swim = rules.Has(f"{'Swim'}") | filter_mov
+    cary_blocks = rules.Has(f"{'cary_blocks'}") | filter_mov
+    climb_pole = rules.Has(f"{'climb_pole'}") | filter_mov
+    crouch = rules.Has(f"{'crouch'}") | filter_mov
+    climb_ladders = rules.Has(f"{'climb_ladders'}") | filter_mov
+    climb_vine = rules.Has("climb_vine") | filter_mov
+    swing_vine = rules.Has("swing_vine") | filter_mov
+    question_switch = rules.Has("?-switch") | filter_mov
+    door = rules.Has("door") | filter_mov
 
 
     gp = rules.Has(f"{'ground_pound'}")  | filter_mov

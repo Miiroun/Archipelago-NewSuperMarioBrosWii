@@ -15,6 +15,28 @@ if TYPE_CHECKING:
 LOCATION_NAME_TO_ID = {}
 LOCATION_NAME_GROUPS = {}
 
+def mod_level_name(worldnum : int, levelnum : int) -> str:
+    shift = 1 if worldnum in [7,8] else 0
+    new_level = levelnum - shift
+    if (worldnum, levelnum) in [(3,6),(5,6),(7,7)]:
+        return "G"
+    if worldnum !=9:
+        if new_level == 7:
+            return "T"
+        elif new_level == 8:
+            return "C"
+        elif new_level == 9:
+            return "A"
+    return str(levelnum)
+
+
+def get_level_name(worldnum : int, levelnum : int) -> str:
+    return f"{worldnum}-{mod_level_name(worldnum,levelnum)}_clear"
+
+def get_starcoin_name(worldnum : int, levelnum : int, scnum : int) -> str:
+    return f"{worldnum}-{mod_level_name(worldnum,levelnum)}_sc{scnum}"
+
+
 # Starcoins and level clear
 LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 world_set = set()
@@ -22,8 +44,8 @@ for world_num in range(1,9+1): # worlds
     level_set = set()
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
         for sc in range(1,3+1):
-            LOCATION_NAME_TO_ID.update({f"World{world_num}_level{level_num}_SC{sc}":10000+1000*world_num+10*level_num+sc})
-        sc_set = set(f"World{world_num}_level{level_num}_SC{sc}" for sc in range(1, 3+1))
+            LOCATION_NAME_TO_ID.update({get_starcoin_name(world_num, level_num, sc):10000+1000*world_num+10*level_num+sc})
+        sc_set = set(get_starcoin_name(world_num, level_num, sc) for sc in range(1, 3+1))
         LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}_Level{level_num}": sc_set})
         level_set |= sc_set
     LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}": level_set})
@@ -61,9 +83,9 @@ LOCATION_NAME_GROUPS.update({"Starter_locations" : set(f"starter_location{i}" fo
 world_set = set()
 for world_num in range(1, 9 + 1):  # worlds
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-        flagpole = f"World{world_num}_level{level_num}_completed_level"
+        flagpole = get_level_name(world_num,level_num)
         LOCATION_NAME_TO_ID.update({flagpole : 5000 + world_num*100 + level_num})
-    level_set = set(f"World{world_num}_level{level_num}_completed_level" for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
+    level_set = set(get_level_name(world_num,level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
     world_set |= level_set
     LOCATION_NAME_GROUPS.update({f"Level_completion_world{world_num}": level_set})
 LOCATION_NAME_GROUPS.update({"Level_completion" : world_set })
@@ -84,12 +106,12 @@ def get_location_names_with_ids(location_names: list[str]) -> dict[str, int | No
     return {location_name: LOCATION_NAME_TO_ID[location_name] for location_name in location_names}
 
 
-def create_all_locations(world: NSMBWWorld) -> None:
+def create_all_locations(world: NSMBWworld) -> None:
     create_regular_locations(world)
     make_locations_priority(world)
     create_events(world)
 
-def make_locations_priority(world: NSMBWWorld) -> None:
+def make_locations_priority(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
@@ -98,7 +120,7 @@ def make_locations_priority(world: NSMBWWorld) -> None:
                 #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
 
 
-def create_regular_locations(world: NSMBWWorld) -> None:
+def create_regular_locations(world: NSMBWworld) -> None:
     regions = []
     for i in range(1, 9+1):
         regions.append(world.get_region(f"World_{i}_1"))
@@ -109,13 +131,13 @@ def create_regular_locations(world: NSMBWWorld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             for sc in range(1, 3+1):
-                level_location = get_location_names_with_ids([f"World{world_num}_level{level_num}_SC{sc}"])
+                level_location = get_location_names_with_ids([get_starcoin_name(world_num, level_num, sc)])
                 half_world = 0 if (level_num < 4 or world_num == 9) else 1
                 if world.options.randomize_coins:
                     regions[2*world_num-2+half_world].add_locations(level_location, NSMBWLocation)
                 else:
                     regions[2 * world_num - 2+half_world].add_locations(level_location, NSMBWLocation)
-                    location = world.get_location(f"World{world_num}_level{level_num}_SC{sc}")
+                    location = world.get_location(get_starcoin_name(world_num, level_num, sc))
                     location.place_locked_item(world.create_item("Starcoin"))
                     #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", "Starcoin", location_type=NSMBWLocation, item_type=items.NSMBWItem)
         # add location for beating castles and towers
@@ -144,7 +166,7 @@ def create_regular_locations(world: NSMBWWorld) -> None:
     if world.options.include_level_compleation.value == True:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                flagpole = get_location_names_with_ids([f"World{world_num}_level{level_num}_completed_level"])
+                flagpole = get_location_names_with_ids([get_level_name(world_num,level_num)])
                 half_world = 0 if (level_num < 4 or world_num == 9) else 1
                 regions[world_num * 2 - 2 + half_world].add_locations(flagpole, NSMBWLocation)
 
@@ -153,7 +175,7 @@ def create_regular_locations(world: NSMBWWorld) -> None:
        starter_location = get_location_names_with_ids([f"starter_location{i}"])
        menu_region.add_locations(starter_location, NSMBWLocation)
 
-def create_events(world: NSMBWWorld) -> None:
+def create_events(world: NSMBWworld) -> None:
     regions = []
     for i in range(1, 9+1):
         regions.append(world.get_region(f"World_{i}_1"))
@@ -161,13 +183,11 @@ def create_events(world: NSMBWWorld) -> None:
             regions.append(world.get_region(f"World_{i}_2"))
 
 
-    #if not world.options.include_level_compleation:
-    if True: # problematic to add double location?
-        for world_num in range(1, 9+1):  # worlds
-            for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                flagpole = f"World{world_num}_level{level_num}_flagpole"
-                half_world = 0 if (level_num < 4 or world_num == 9) else 1
-                regions[world_num*2 - 2 + half_world].add_event(flagpole,f"World{world_num}_level{level_num}_cleared", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    for world_num in range(1, 9+1):  # worlds
+        for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+            flagpole = f"World{world_num}_level{level_num}_flagpole"
+            half_world = 0 if (level_num < 4 or world_num == 9) else 1
+            regions[world_num*2 - 2 + half_world].add_event(flagpole,f"World{world_num}_level{level_num}_cleared", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
     #events could be usefully for merging split paths
 

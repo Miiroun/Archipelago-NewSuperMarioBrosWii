@@ -184,9 +184,9 @@ class MemoryAddresses(object):
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
 
-        #self.powerup_state = self.map_between("E2",0x8154CCE7)
+        self.powerup_state = self.map_between("E2",0x8154CCE7)
         # memory map doesnt work for this for some reason
-        self.powerup_state = 0x8154CCE7
+        #self.powerup_state = 0x8154CCE7
 
         self.player_status = self.map_between("E2",0x8154CC5C)
         self.mario_lifecount = self.map_between("E2",0x80354E90)
@@ -214,10 +214,22 @@ class MemoryAddresses(object):
         self.address_hang_ground = self.map_between("E2",0x80135810)
         self.address_hang_water = self.map_from_symbol("_ZN7dAcPy_c19checkCliffHangWaterEv")
 
-        self.address_new_hang = self.map_between("E2", 0x80072180)
+        self.address_hang_pole = self.map_between("E2", 0x80072180)
+        self.address_hang_ladder = self.map_between(f"E2", 0x800d1dc0)
         self.address_vine = self.map_between("E2", 0x8154C818) # 43=hang vine, 45= normal
         self.address_p_switch = self.map_between("E2", 0x815E4338)
         self.address_star = self.map_between("E2", 0x8154C874)
+        self.address_climb_vine_still = self.map_between("E2", 0x80132c70)
+        self.address_climb_vine_fall = self.map_between("E2", 0x801327f0)
+        self.address_tarzan_vine = self.map_between("E2", 0x80137320)
+        self.address_door = self.map_between("E2",0x8002b2a4)
+        self.address_question_switch = self.map_between("E2", 0x811B452A)
+
+        self.address_spinjump = self.map_between("P1", 0x8005e780)
+        self.address_kani_walk = self.map_between("P1", 0x80135670)
+        self.address_kani_hang = self.map_between("P1", 0x80135b00)
+        self.address_carry_shell = self.map_between("P1", 0x8005e680)
+        self.address_pipe = self.map_between("P1", 0x8004f300)
 
 
         self.death_address = self.map_between("E2",0x800555DC)

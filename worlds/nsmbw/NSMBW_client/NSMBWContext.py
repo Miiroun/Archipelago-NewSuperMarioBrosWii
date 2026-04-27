@@ -13,7 +13,7 @@ from .NotificationManager import NotificationManager
 from NetUtils import ClientStatus
 from ..Utils import int_to_bytes, bytes_to_int
 
-from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
+from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT, get_level_name, get_starcoin_name
 from settings import get_settings
 tracker_loaded = False
 
@@ -72,12 +72,12 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         self.ctx.items_handled = []
         self.ctx.locations_handled = []
 
-    #def _cmd_unlock_everything(self):
-    #    """
-    #    Marks every level as completed, a cheat used for development which marks all levels as complete.
-    #    """
-    #    #Utils.async_start(self.ctx.unlock_everything())
-    #    self.ctx.unlock_everything()
+    def _cmd_unlock_everything(self):
+        """
+        Marks every level as completed and unlocks all worlds, a cheat used for development which marks all levels as complete.
+        """
+        #Utils.async_start(self.ctx.unlock_everything())
+        self.ctx.unlock_everything()
 
     def _cmd_save(self):
         """
@@ -450,32 +450,18 @@ class NSMBWContext(SuperContext):
             for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
                 level_status = self.game_interface.get_level_stats(world_num,level_num)[0]
 
-                #if level_status != 0:
-                #    print(f"Levestatus {level_status} for {world_num}-{level_num}")
-                 #   print(level_status & 2, level_status &4)
-
-                # check the diffrent bytes
+                def send_sc_check(sc_num=0):
+                    location_name = get_starcoin_name(world_num, level_num, sc_num)
+                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                        print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
+                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                        logger.info(f"Sent check from item{location_name}")
                 if level_status & 1 == 1:
-                    sc_num = 1
-                    location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                        #print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                        logger.info(f"Sent check from item{location_name}")
+                    send_sc_check(sc_num=1)
                 if level_status & 2 == 2:
-                    sc_num = 2
-                    location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                        print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                        logger.info(f"Sent check from item{location_name}")
+                    send_sc_check(sc_num=2)
                 if level_status & 4 == 4:
-                    sc_num = 3
-                    location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                        print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                        logger.info(f"Sent check from item{location_name}")
+                    send_sc_check(sc_num=3)
         self.locations_handled += checked_locations
         await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
 
@@ -522,7 +508,7 @@ class NSMBWContext(SuperContext):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 level_status = self.game_interface.get_level_stats(world_num, level_num)[0]
                 if level_status & 16 == 16:
-                    level_name = f"World{world_num}_level{level_num}_completed_level"
+                    level_name = get_level_name(world_num, level_num)
                     if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
                         checked_locations.append(LOCATION_NAME_TO_ID[level_name])
                         logger.info(f"You collected a check for completing {level_name}")
@@ -691,6 +677,7 @@ class NSMBWContext(SuperContext):
 
             current_powerup_state = self.game_interface.get_powerupstate()
             if current_powerup_state != b'\x00': # check if small mario
+                assert (0 < current_powerup_state < len(POWERUP_UNLOCK) ) and type(current_powerup_state) == int, "Something is wrong with reading powerup state"
                 if unlocked_powerups[bytes_to_int(current_powerup_state)-1] == 0:
                     # this runs if not powerup unlocked
 
@@ -808,7 +795,7 @@ class NSMBWContext(SuperContext):
             if item_name == "fill_inventory":
                 print(f"fill_inventory was received ")
                 logger.info(f"10 fill_inventory was received ")
-                for i in range(POWERUP_COUNT+1):
+                for i in range(POWERUP_COUNT+1+1):
                     self.game_interface.update_inventory_items(i, self.slot_data["amount_support_recived"])
 
 

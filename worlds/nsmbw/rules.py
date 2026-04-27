@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rule_builder import rules
-from .locations import SECRET_EXIT
+from .locations import SECRET_EXIT, get_level_name, get_starcoin_name
 from .raw_rules import *
 
 if TYPE_CHECKING:
@@ -36,7 +36,6 @@ def set_all_entrance_rules(world: NSMBWworld) -> None:
         world.set_rule(enterances[2*i-2], rules.Has(f"World{i}"))
         if i != 9:
             world.set_rule(enterances[2*i+1-2], rules.HasAll(f"World{i}"))
-
 
 
 
@@ -90,13 +89,13 @@ def set_all_location_rules(world: NSMBWworld) -> None:
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
-                star_coin = world.get_location(f"World{world_num}_level{level_num}_SC{sc}")
+                star_coin = world.get_location(get_starcoin_name(world_num,level_num,sc))
                 world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & level_req[world_num - 1][level_num - 1][1][sc - 1] )
 
 
 
             if world.options.include_level_compleation:
-                completed_level = world.get_location(f"World{world_num}_level{level_num}_completed_level") # reel location
+                completed_level = world.get_location(get_level_name(world_num,level_num)) # reel location
                 world.set_rule(completed_level, rules.Has(f"World{world_num}_level{level_num}_cleared")) #event location
 
         if world_num != 9:

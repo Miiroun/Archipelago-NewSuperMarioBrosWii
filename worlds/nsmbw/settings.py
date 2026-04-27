@@ -21,7 +21,7 @@ class NSMBWSettings(settings.Group):
         """Optional path for the riivolution"""
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
-    iso_path: settings.Union[UTPackPath, str] = IsoPath()
+    iso_path: settings.Union[IsoPath, str] = IsoPath()
 
     auto_open: AutoOpenGame | bool = True
     ut_pack_path: Union[UTPackPath, str] = UTPackPath()

@@ -1,55 +1,53 @@
-## Super shortterm
+## Super short term
 - Work on movement rando
-  - tripple jump
-  - climb : the grid from 3-c
-  - hang  growing vines from 2- secret exit
-  - swing vines : from 5-1
-  - Sneak : 6-1
-  - pow : hope discord answer
-    - daLightBlock_c::powBlockActivate
-    - daPowBlock_c::executeState_Shock
-  - shell carry
-  - titling platform as move : seaSwing ?
+  - work on fence : search chain ghidra
+  - update ?-switch
+    - use memory watch to find whitch function sets it
+    - try searching for pointer with correct memory address 0x811B452A, on US rev2
+  - update sneak
+    - set speeds to 0
+  - search dAcPy_c & Snake
+  - Hang action
 - Fix problem with reading external pack wrong
   - set up poptracker pack on my github
 - Try flushing instruction cash from ap python -> no savestate
 - Ask for playtest help: when have working moves
 - Work on writing updated docs
 - Remove item handled logger
-- Debug why ap won't launch??
 - Move tower and castle completion to correct when enters peach Castle
 - Rename world item?
-- Fixa have everything starcoin logic
-- rework raw_rules and add new movement
+- Fix have everything starcoin logic : or make it at least deprioritesed 
+- Implement code feedback
+- Double check star coins logic works correctly
+- UT yamless
+- Clarify tacker= UT : in docs
+- make levels unlock from start of world
+- Add warring if playing on other savefile
+- add items for geting powerups to inventory
+- fix so levels are completed in peach castle
+- Maybe add manual movement
+- Inform manager of bad manifest
 
-## Movement rando
-- Add spin as check
-- best if make statechange if tries to climb/hang / siwing
-- For carry should look at the gecko code mod
-- tripple jump = find check and dissable
-- spin = dissable button?
-- p-switch
-- p-switch and star should jave countdown timers
-- running
-
-## Future moves:
-- pow
-- run
-- Maybe normal jump for super weird playthrough
-- spin
 
 ## Playtest
 - Playtest red switch
 - test if bowser unlock does work now
   - Starcoin completion doesn't work with 0 SC 0 world comp
 - Test so hintmovie 3 is unlocked
-- World unlock only works on savefile2
 - Deathlink receiving doesn't work
 - Test so work with starcoins dissabled
 - Check to see if completing castle completion still gives level completion
 - Ap: playtest if hint movies unlockes correctly
-- Water kills
 - Test if world 9 can send items: problem with sending completion
+- test so completing castle sends its check
+- Test world 9 sends level completion
+- Playtest so hint movies work correctly
+- Doublecheck so bowser unlock works correctly
+- Test that generation time is reasonable
+- Does it work to connect to a EU version?
+- test if rocket pipe is disabled
+- Check p-switch works all levels
+- CHeck so all movments are dissabled
 
 
 ## Bugs to fix
@@ -65,7 +63,14 @@
 - Making castle and tower checks priority causes fill errors ca 2 out of 1000 times
 - Starts playing ending sequence when new file
 - loading secret exist from 1-3 freezes game
-- carry can carry coppa shell
+- World unlock only works on savefile2
+- bug that requires me to beat tower/castle levels twice for level progression?
+- Debug why ap won't launch??
+- ?-dissable donsnt work on 8-4 or 2-2, proberbly only works on 6-3, vill proberbly have to manuly check all levels
+- Something doesnt work with creating a new file
+- sends death link on connect
+- Somehow starting world doesnt work correctly?
+- First yellow pipe in world7 doesnt work
 
 ## Docs update
 - Documentation: better setup instructions, be extra clear around when press conect and backup save file
@@ -81,6 +86,9 @@
 - refer to optioncreator from setup guide
 - link to UT
 - Add location amount to options and docs
+- Call out 1-7 1-8 in docs
+- Add to docs: don't savestate in peach Castle or world 9
+- Docs: add list item& location names
 
 
 ## Important features (asked after a lot)
@@ -91,11 +99,6 @@
   - or use specific pointer
 - Rescue toad on world map
   - exists specific memory location
-- Star power-up
-- Movement
-- Swim
-  - set swimspeed 0
-
 
 
 
@@ -143,6 +146,7 @@
 - Convert memory patches to riivolution
 - Support none windows
 - Allow for filtered messages
+- Change how world9 and peach function for better savestates
 
 
 ## Features
@@ -151,7 +155,7 @@
   - Double jump
   - Auto collect checkpoint
   - Start with powerup
-- p-switch rando
+  - Moon jump
 - Randomize toadhouses
 - Finding toad in level gives hint
 - TRAPS
@@ -161,6 +165,7 @@
   - Time Travel Trap (removes half of the level's time, or just runs it at double speed.)
   - litterature trap
   - P-switch
+  - Death trap
 - FILLER 
   - 1 normal coin
   - star timer 
@@ -171,15 +176,18 @@
 - Features from gecko
   - Speedtrap
   - fall damage
-- Pipe, door, bosdor rando: Detect if player state=1 and not dead
-
+- Pipe rando : pipes as unlockable item
+- Movement
+  - Se items for unimplemented changes
 
 ## Long term
 - Multiplayer support
 - Non ap rando (enemy, level, entrance)
   - One of set world level / level world changes ingame level: can be used for level rando
 - Button rando (disables buttons until unlocked)
+- Do something with coin battles?
 
 ## Features I (Miiroun) will not implement
 - Consol support
 - Randomized ?-blocks
+- Coin sanity

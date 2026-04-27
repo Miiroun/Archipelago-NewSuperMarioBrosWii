@@ -29,15 +29,22 @@ DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}"] = ItemClassification.progression_skip_
 ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 
 # could add movement rando as checks
-MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb", "hanging", "yoshi", "cary",
-            "triple_jump", "swim", "swing", "p-switch", "red_block", "pow", "star"]
-# maybe in future "run", "spin",
+MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb_pole", "yoshi", "cary_blocks",
+                    "swim", "p-switch", "red_block", "star", "climb_ladders", "climb_vine", "swing_vine"
+                    , "door", "?-switch", "spin", "cary_shell", "pipe"]
+# to do
+#"climb_fens", tilting platforms (motion control), Bone ride, "Snake blocks"
+#dont even want to try
+# [ "climb_rocky_wall, "run", "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove), "noteblock" (daEnWhiteBlock_c::makesBounce_maybe), "jump" (dAcPyKey_c::buttonJump(void)), "Spring" (jumpDai)]
+# temporarily given up on
+# ["pow", "hold_rope" (3-G)]
+
 for i in range(len(MOVEMENT_UNLOCKS)):
     ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{MOVEMENT_UNLOCKS[i]}" : ItemClassification.progression})
 ITEM_NAME_GROUPS.update({"MOVEMENT" : set(f"{MOVEMENT_UNLOCKS[i]}" for i in range(len(MOVEMENT_UNLOCKS)))})
 
-#order matters, what correct?
+
 POWERUP_UNLOCK = ["Super_Mushroom", "Fire_Flower", "Mini_Mushroom" ,"Propeller_Mushroom", "Penguin_Suit",  "Ice_Flower"]
 for i in range(len(POWERUP_UNLOCK)):
     ITEM_NAME_TO_ID.update({f"{POWERUP_UNLOCK[i]}" : 600 + i + 1})
@@ -46,7 +53,7 @@ DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progres
 ITEM_NAME_GROUPS.update({"Powerups" : set(f"{POWERUP_UNLOCK[i]}" for i in range(len(POWERUP_UNLOCK)))})
 
 
-TRAPS = ["Loose_powerup_trap"] #"Gomba_trap", "Time_trap",
+TRAPS = ["Loose_powerup_trap", "Gomba_trap"] #, "Time_trap",
 for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
