@@ -34,7 +34,7 @@ class TrapChance(Range):
 
 class RandomizeStarCoins(Toggle):
     """
-    If enabled will include starcoins as checks and starcoins will be recived as items.
+    If enabled will include 231 starcoins as checks and starcoins will be recived as items.
     If dissabed will still create the starcoins as ap items but place them in their vanilla locations.
     """
     display_name = "Randomize Star Coins"
@@ -50,11 +50,18 @@ class RandomizeMovment(Choice):
     display_name = "Randomize Moves"
 
     option_off = 0
-    option_on_except_spin = 1
     option_on = 2
 
     default = option_off
     #visibility  = Option.visibility.none
+
+class DontRandoMovement(OptionSet):
+    """
+    Put movement items here if you want to play with movement except curtain once like spin
+    """
+
+    display_name = "Dont Rando these Movements"
+
 
 class RandomizePowerups(Choice):
     """
@@ -70,8 +77,8 @@ class RandomizePowerups(Choice):
 
 class IncludeHintMovies(Toggle):
     """
-    Makes the hint movies in peach castles into locations
-    If remove this then compensate with starter locations to keep #locations > #items
+    Makes the hint movies in peach castles into locations, adds 65 locations.
+    If remove this then compensate with starter locations to keep #locations > #items.
     """
     display_name = "Include Hint Movies"
     default = True
@@ -79,15 +86,15 @@ class IncludeHintMovies(Toggle):
 
 class IncluedLevelCompletion(Toggle):
     """
-    This makes completing a level a check
+    This makes completing a level into a location, adds 231 locations.
     """
     display_name = "Include Level Completion"
     default = False
 
 class IncludeShortcuts(Toggle):
     """
-    If true makes shortcuts like cannoncs and 7-6 and 8-7 turn into checks.
-    Even if option is off will still dissable shortcuts.
+    If true makes shortcuts like cannons and 7-6 and 8-7 turn into locations.
+    Even if option is off will still disable shortcuts.
     """
     display_name = "Include Shortcuts"
     default = True
@@ -103,8 +110,8 @@ class EnableSuperPowers(Toggle):
 
 class LogicDifficulty(Choice):
     """
-    If hard will make checks that require glitches to be in logic,
-    recommended to normal
+    If hard will make locations that require glitches to be in logic,
+    recommended to normal.
     """
     display_name = "Logic Difficulty"
     option_normal = 0
@@ -133,6 +140,15 @@ class AmountStartingItems(Range):
     range_start = 0
     range_end = 100
     default = 0
+
+class NumberInventoryItems(Range):
+    """
+    A location that gets collected when you collect a powerup to your inventory, e.g. from a toad house or beating overworld enemy.
+    """
+    display_name = "Number Inventory Items"
+    range_start = 0
+    range_end = 999
+    default = 20
 
 class BowserCastleStarUnlock(Range):
     """
@@ -186,6 +202,7 @@ class NSMBWOptions(PerGameCommonOptions):
     randomize_coins: RandomizeStarCoins
 
     randomize_movement : RandomizeMovment
+    dont_rando_move : DontRandoMovement
     randomize_powerups : RandomizePowerups
 
     trap_chance: TrapChance
@@ -195,6 +212,7 @@ class NSMBWOptions(PerGameCommonOptions):
     death_link : DeathLink
     enable_superpowers : EnableSuperPowers
     amount_support_recived : AmountSupportRecived
+    num_inventory_powerups : NumberInventoryItems
 
 
     bowser_star_unlock : BowserCastleStarUnlock
@@ -215,8 +233,9 @@ option_groups = [
     OptionGroup(
         "Items",
         [
+            RandomizePowerups,
             RandomizeMovment,
-            RandomizePowerups
+            DontRandoMovement
         ],
     ),
     OptionGroup(
@@ -235,6 +254,7 @@ option_groups = [
             LogicDifficulty,
             EnableSuperPowers,
             AmountSupportRecived,
+            NumberInventoryItems,
         ],
     ),
 ]
@@ -268,3 +288,8 @@ def adjust_options(world):
     if world.options.bowser_star_unlock.value >200:
         world.options.bowser_star_unlock.value = 200
         print("Generation fails when star req for reaching bowser is >200")
+
+    from .items import MOVEMENT_UNLOCKS
+    for _item in world.options.dont_rando_move.value:
+        if not (_item in MOVEMENT_UNLOCKS):
+            print(f"Text {_item} is not a valid movement.")

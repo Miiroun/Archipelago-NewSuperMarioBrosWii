@@ -7,6 +7,10 @@ intru_stwu      : bytes = b"\x94\x21"
 instru_check_eq : bytes = b"\x2c\x03"
 intru_lbz_r3    : bytes = b"\x88\x63"
 intru_b         : bytes = b"\x4b\xff"
+instru_bne      : bytes = b"\x40\x82" #branch if not equal
+instru_beq      : bytes = b"\x41\x82" #branch if equal
+instru_lhz      : bytes = b"\xA0"
+
 
 reg_r0     : bytes = b'\x00\x00'
 #reg_sp    : bytes = b'\xff\xf0'

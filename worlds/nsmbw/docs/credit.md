@@ -21,7 +21,7 @@ Community projects used
 - Archipelago
 - Dolphin emulator
 - Dolphin memory engine
-- [retroachievements] (retroachievements.org/codenotes.php?g=95)
+- [retroachievements](retroachievements.org/codenotes.php?g=95)
 - Archipelago fuzzer (by Eijebong)
 - Universal tracker
 - [mariowiki.com](https://www.mariowiki.com/New_Super_Mario_Bros._Wii)

@@ -3,8 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rule_builder import rules
-from .locations import SECRET_EXIT, get_level_name, get_starcoin_name
-from .raw_rules import *
+from .locations import SECRET_EXIT, get_level_name, get_starcoin_name, LEVELS_PER_WORLD
+from .raw_rules import DEPRIO_HM, specific_hintmovie_requierments, specific_level_requierments, get_levlel_connections
+from .options import LogicDifficulty
+
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -82,15 +84,17 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             if level_num == 7 + (1 if world_num in  [7,8] else 0) and world_num != 9: #castle level :
                 connection_rules = connection_rules & rules.Has(f"World{world_num}", count=2)
 
+            clear_rule = level_req[world_num-1][level_num-1][0] | (rules.Has("glitched_logic") & hard_rules[world_num-1][level_num-1][0])
             if world_num != 9:
-                world.set_rule(flagpole, connection_rules & level_req[world_num-1][level_num-1][0])
+                world.set_rule(flagpole, connection_rules & clear_rule)
             if world_num == 9:
-                world.set_rule(flagpole,rules.Has("Starcoin",count=10*level_num) & connection_rules & level_req[world_num-1][level_num-1][0])
+                world.set_rule(flagpole,rules.Has("Starcoin",count=10*level_num) & clear_rule)
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
                 star_coin = world.get_location(get_starcoin_name(world_num,level_num,sc))
-                world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & level_req[world_num - 1][level_num - 1][1][sc - 1] )
+                sc_logic = level_req[world_num - 1][level_num - 1][1][sc - 1] | (rules.Has("glitched_logic") & hard_rules[world_num - 1][level_num - 1][1][sc - 1])
+                world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & sc_logic )
 
 
 
@@ -125,7 +129,13 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                                level_req[world_num - 1][level_num - 1][2])
             elif secret_exit[2] == 1:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
-
+    for i in range(1,world.options.num_inventory_powerups+1):
+        invent_pow = world.get_location(f"Inventory_powerup_{i}")
+        worlds_list = list(f"World{j}" for j in range(1,9+1))
+        worlds_list += worlds_list
+        worlds_list.pop(9*2-1)
+        world.set_rule(invent_pow, rules.HasFromList(*worlds_list, count=((world.options.num_inventory_powerups)//15)+2))
+        # soft logic, gain access when have new worlds
 
 def set_completion_condition(world: NSMBWworld) -> None:
     # Finally, we need to set a completion condition for our world, defining what the player needs to win the game.

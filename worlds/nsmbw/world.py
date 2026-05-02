@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Dict
 
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
@@ -16,8 +16,7 @@ from typing import ClassVar
 
 class NSMBWworld(World):
     """
-    NSMBW world
-    copy past from ap-quest
+    The ap-world for new super mario bros. wii
     """
 
     # The docstring should contain a description of the game, to be displayed on the WebHost.
@@ -55,6 +54,9 @@ class NSMBWworld(World):
 
     topology_present = True
 
+    ut_can_gen_without_yaml = True
+    glitches_item_name = "glitched_logic"
+
 
     def create_regions(self) -> None:
         regions.create_and_connect_regions(self)
@@ -66,6 +68,14 @@ class NSMBWworld(World):
         #visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
 
     def generate_early(self) -> None:
+        if hasattr(self.multiworld, "re_gen_passthrough"):
+            if self.game in self.multiworld.re_gen_passthrough:
+                slot_data: dict[str, Any] = self.multiworld.re_gen_passthrough[self.game]
+                if (slot_data["version"][0] != self.world_version[0]) or (slot_data["version"][1] != self.world_version[1]) or (slot_data["version"][2] != self.world_version[2]):
+                    err_string: str = f"NSMBW APWorld version mismatch. Multiworld generated with " \
+                                     f"{slot_data['version']}; local install using {self.world_version}"
+                    raise ValueError(err_string)
+                self.overwrite_options(self.multiworld.re_gen_passthrough[self.game])
         nsmbw_option.adjust_options(self)
 
 
@@ -93,21 +103,56 @@ class NSMBWworld(World):
     # slot_data is just a dictionary using basic types, that will be converted to json when sent to the client.
     def fill_slot_data(self) -> Mapping[str, Any]:
         # If you need access to the player's chosen options on the client side, there is a helper for that.
-        return self.options.as_dict(
+
+        slot_data = self.options.as_dict(
             "randomize_powerups",
             "randomize_movement",
             "num_startloc",
             "bowser_star_unlock",
             "bowser_world_unlock",
             "death_link",
-            "amount_support_recived"
+            "amount_support_recived",
+            "include_level_compleation",
+            "include_shortcuts",
+            "include_hintmovies",
+            "randomize_coins",
+            "trap_chance",
+            "logic_difficulty",
+            "starting_world",
+            "enable_superpowers",
+            "num_inventory_powerups",
+            "dont_rando_move"
         )
-        pass
+        slot_data["version"]  = self.world_version
+        return slot_data
+
 
 
     # UT-tracket imlementation
-    def interpret_slot_data(self, slot_data: dict[str, Any]) -> dict[str, Any] | None:
+
+    def overwrite_options(self, slot_data: dict[str, Any]):
+        self.options.randomize_powerups.value = slot_data["randomize_powerups"]
+        self.options.randomize_movement.value = slot_data["randomize_movement"]
+        self.options.num_startloc.value = slot_data["num_startloc"]
+        self.options.bowser_star_unlock.value = slot_data["bowser_star_unlock"]
+        self.options.bowser_world_unlock.value = slot_data["bowser_world_unlock"]
+        self.options.amount_support_recived.value = slot_data["amount_support_recived"]
+        self.options.include_level_compleation.value = slot_data["include_level_compleation"]
+        self.options.include_shortcuts.value = slot_data["include_shortcuts"]
+        self.options.include_hintmovies.value = slot_data["include_hintmovies"]
+        self.options.randomize_coins.value = slot_data["randomize_coins"]
+        self.options.trap_chance.value = slot_data["trap_chance"]
+        self.options.logic_difficulty.value = slot_data["logic_difficulty"]
+        self.options.starting_world.value = slot_data["starting_world"]
+        self.options.enable_superpowers.value = slot_data["enable_superpowers"]
+        self.options.num_inventory_powerups.value = slot_data["num_inventory_powerups"]
+        self.options.dont_rando_move.value = slot_data["dont_rando_move"]
+
+
+    @staticmethod
+    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
         return slot_data
+
 
     def get_logical_path(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         return []
@@ -116,9 +161,10 @@ class NSMBWworld(World):
         return []
 
     tracker_world: ClassVar = {
-        "external_pack_key": "ut_pack_path",                                                                                                                                                                              "map_page_folder": "tracker",
         "map_page_maps": "maps/maps.json",
         "map_page_locations" : "locations/locations.json",
+        "external_pack_key": "ut_pack_path",
+        #"map_page_folder": "tracker",
         #"map_page_setting_key" : <optional tag that informs which data storage key will be watched for auto tabbing>
         #"map_page_index" : <optional function that will control the auto tabbing>
         #"poptracker_name_mapping" : <optional Dict that maps the poptracker pack names to the location id as they exist in the datapackage >

@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING, List
 
 from rule_builder import rules
 from rule_builder.options import OptionFilter
-from .locations import LEVELS_PER_WORLD
-from .options import RandomizeMovment, RandomizePowerups, LogicDifficulty
-from ..dkc3 import Rules
+from .options import RandomizeMovment, RandomizePowerups
+
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
 
-
+DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
 def specific_hintmovie_requierments(world: NSMBWworld) -> List:
     # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
     rule_completed_everything = rules.Has("Starcoin", count=231)  & rules.Has("Victory")# dont want to implement complex, just deprioritize
@@ -87,10 +86,13 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 
 
 def specific_level_requierments(world: NSMBWworld) -> tuple:
-    # Logic checked by:
+    # Logic done by:
     # REACT : powerups, all levels
 
-
+    # this is option filters, turn options to true if not enabled
+    filter_mov_on = OptionFilter(RandomizeMovment, RandomizeMovment.option_on)
+    filter_move_off = OptionFilter(RandomizeMovment, RandomizeMovment.option_off)
+    filter_mov = [filter_move_off] # [filter_mov_on,filter_mov_on_spin]
 
     filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
     filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
@@ -99,42 +101,51 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     filter_pow = [filter_pow_off] #[filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
 
 
-    mushroom = rules.Has(f"{'Super_Mushroom'}") | filter_pow | filter_pow_on_no_mus
+    # create rules that are true if their option filters are off or if have its item
+    button_right = rules.Has("button_right") | filter_mov
+    button_left = rules.Has("button_left") | filter_mov
+    button_up = rules.Has("button_up") | filter_mov
+    button_down = rules.Has("button_down") | filter_mov
+    big_jump = rules.Has(f"big_jump")  | filter_mov
+    run = rules.Has(f"run") | filter_mov
 
-
-    propeller = (rules.Has(f"{'Propeller_Mushroom'}") & mushroom) | filter_pow
-    ice_peng = ((rules.Has(f"{'Ice_Flower'}") | rules.Has(f"{'Penguin_Suit'}")) & mushroom) | filter_pow
-    mini = (rules.Has(f"{'Mini_Mushroom'}") & mushroom) | filter_pow
-
-
-    filter_mov_on = OptionFilter(RandomizeMovment, RandomizeMovment.option_on)
-    filter_mov_on_spin = OptionFilter(RandomizeMovment, RandomizeMovment.option_on_except_spin)
-    filter_move_off = OptionFilter(RandomizeMovment, RandomizeMovment.option_off)
-    filter_mov = [filter_move_off] # [filter_mov_on,filter_mov_on_spin]
-
-    p_switch = rules.Has(f"{'p-switch'}") | filter_mov
-    red_block = rules.Has(f"{'red_block'}")  | filter_mov
-    yoshi = rules.Has(f"{'Yoshi'}")  | filter_mov
-    star = rules.Has(f"{'Star'}") | filter_mov
-    swim = rules.Has(f"{'Swim'}") | filter_mov
-    cary_blocks = rules.Has(f"{'cary_blocks'}") | filter_mov
-    climb_pole = rules.Has(f"{'climb_pole'}") | filter_mov
-    crouch = rules.Has(f"{'crouch'}") | filter_mov
-    climb_ladders = rules.Has(f"{'climb_ladders'}") | filter_mov
+    ground_pound = (rules.Has(f"ground_pound")  & button_down)| filter_mov
+    wall_jump = rules.Has(f"wall_jump")  | filter_mov
+    p_switch = rules.Has(f"p-switch") | filter_mov
+    red_block = rules.Has(f"red-switch")  | filter_mov
+    yoshi = rules.Has(f"Yoshi")  | filter_mov
+    star = rules.Has(f"Star") | filter_mov
+    swim = rules.Has(f"swim") | filter_mov
+    cary_blocks = rules.Has(f"cary_blocks") | filter_mov
+    climb_pole = rules.Has(f"climb_pole") | filter_mov
+    crouch = (rules.Has(f"crouch") & button_down)| filter_mov
+    climb_ladders = rules.Has(f"climb_ladders") | filter_mov
     climb_vine = rules.Has("climb_vine") | filter_mov
     swing_vine = rules.Has("swing_vine") | filter_mov
     question_switch = rules.Has("?-switch") | filter_mov
-    door = rules.Has("door") | filter_mov
+    door = (rules.Has("door") & button_up) | filter_mov
+    spin = rules.Has("spin") | filter_mov
+    cary_shell = rules.Has("cary_shell") | filter_mov
+    pipe = rules.Has("pipe") | filter_mov
 
 
-    gp = rules.Has(f"{'ground_pound'}")  | filter_mov
-    wj = rules.Has(f"{'wall_jump'}")  | filter_mov
+    # Complex rules ( made of previous)
+    pow = ground_pound | cary_blocks
+
+
+    # powerups
+    mushroom = rules.Has(f"Super_Mushroom") | filter_pow | filter_pow_on_no_mus
+    propeller = (rules.Has(f"Propeller_Mushroom") & mushroom & spin) | filter_pow
+    ice_peng = ((rules.Has(f"Ice_Flower") | rules.Has(f"Penguin_Suit")) & mushroom) | filter_pow
+    mini = (rules.Has(f"Mini_Mushroom") & mushroom) | filter_pow
+    fire = (rules.Has(f"Fire_Flower") & mushroom) | filter_pow
+
 
     bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
 
     hard_rules = [ # normal compleation rules
         [  # world 1
-            [rules.True_(), [propeller | mini | star, wj | propeller, propeller]],  # -1
+            [rules.True_(), [propeller | mini | star, wall_jump | propeller, propeller]],  # -1
             [rules.True_(), [rules.True_(), rules.True_(), mushroom]],  # -2
             [rules.True_(), [rules.True_(), mushroom | yoshi | mini, mushroom], rules.True_()],  # -3
             [rules.True_(), [rules.True_(), yoshi | propeller | mini, ice_peng]],  # -4
@@ -207,7 +218,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
             [rules.True_(), [mushroom, rules.True_(), rules.True_()]],  # -9 7-C
-            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
+            [ground_pound, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
 
         ],
         [  # world 8
@@ -220,7 +231,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -7
             [rules.True_(), [rules.True_(), rules.True_(), rules.True_()]],  # -8 8-T
             [rules.Has("Starcoin", count=world.options.bowser_star_unlock.value) & rules.HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value), [rules.True_(), rules.True_(), rules.True_()]],  # -9 8-C
-            [gp, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
+            [ground_pound, [rules.True_(), rules.True_(), propeller | mini]],  # -10 8-A
 
         ],
         [  # world 9

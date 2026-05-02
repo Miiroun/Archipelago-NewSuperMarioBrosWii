@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Set
 from BaseClasses import ItemClassification, Location, LocationProgressType
 
 from . import items
+from .raw_rules import DEPRIO_HM
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -90,6 +91,10 @@ for world_num in range(1, 9 + 1):  # worlds
     LOCATION_NAME_GROUPS.update({f"Level_completion_world{world_num}": level_set})
 LOCATION_NAME_GROUPS.update({"Level_completion" : world_set })
 
+for i in range(1,1000):
+    LOCATION_NAME_TO_ID.update({f"Inventory_powerup_{i}" : 6000+i})
+LOCATION_NAME_GROUPS.update({"Inventory_powerups" : set(f"Inventory_powerup_{i}" for i in range(1,1000))})
+
 # Each Location instance must correctly report the "game" it belongs to.
 # To make this simple, it is common practice to subclass the basic Location class and override the "game" field.
 class NSMBWLocation(Location):
@@ -116,8 +121,11 @@ def make_locations_priority(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
                 pass
-                #world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
-                #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
+                world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
+                world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
+    for i in DEPRIO_HM:
+        hm = world.get_location(f"Hintmovie{i}")
+        hm.progress_type = LocationProgressType.EXCLUDED
 
 
 def create_regular_locations(world: NSMBWworld) -> None:
@@ -174,6 +182,10 @@ def create_regular_locations(world: NSMBWworld) -> None:
     for i in range(1,world.options.num_startloc+1):
        starter_location = get_location_names_with_ids([f"starter_location{i}"])
        menu_region.add_locations(starter_location, NSMBWLocation)
+
+    for i in range(1,world.options.num_inventory_powerups+1):
+        inventory_loc = get_location_names_with_ids([f"Inventory_powerup_{i}"])
+        menu_region.add_locations(inventory_loc, NSMBWLocation)
 
 def create_events(world: NSMBWworld) -> None:
     regions = []

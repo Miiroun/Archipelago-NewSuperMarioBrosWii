@@ -1,4 +1,5 @@
 import io
+import typing
 import zipfile
 from pathlib import Path
 
@@ -155,14 +156,14 @@ class MemoryAddresses(object):
                 memory_path = r"nsmbw/NSMBW_client/wii_code_tools/address-map.txt"
                 with io.TextIOWrapper(zf.open(memory_path), encoding="utf-8") as f:
                     self.mappers = lib_address_maps.load_address_map(f)
-                symbol_path = r"nsmbw/NSMBW_client/symbols_P1_rem_ghidra.map"
+                symbol_path = r"nsmbw/NSMBW_client/SYMBOL_MAP_P1_SHORTENED.map"
                 with io.TextIOWrapper(zf.open(symbol_path), encoding="utf-8") as f:
                     self.symbol_reader = SymbolReader(f)
         else:
             memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
             with Path(memorymap_path).open('r', encoding='utf-8') as f:
                 self.mappers = lib_address_maps.load_address_map(f)
-            symbol_path = Path(__file__).parent.parent / "NSMBW_client" / "symbols_P1_rem_ghidra.map"
+            symbol_path = Path(__file__).parent.parent / "NSMBW_client" / "SYMBOL_MAP_P1_SHORTENED.map"
             with Path(symbol_path).open('r', encoding='utf-8') as f:
                     self.symbol_reader = SymbolReader(f)
         self.this_version = this_version
@@ -184,7 +185,7 @@ class MemoryAddresses(object):
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
 
-        self.powerup_state = self.map_between("E2",0x8154CCE7)
+        self.powerup_state = self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})
         # memory map doesnt work for this for some reason
         #self.powerup_state = 0x8154CCE7
 
@@ -198,7 +199,7 @@ class MemoryAddresses(object):
         self.time_left = 0x80000000 #self.map_between("E2",0x801547900)
 
 
-        self.savefile1_1_1 = self.map_between("E2",0x80c7fed3)
+        self.savefile1_1_1 = self.hard_code({"E2" : 0x80c7fed3})
         self.savefile_num = self.map_between("E2",0x80c7f7c6)
         self.savefile2_offset = 0x860# = Save File 2 Offset
         self.savefile3_offset = 0x1300# = Save File 3 Offset
@@ -223,13 +224,23 @@ class MemoryAddresses(object):
         self.address_climb_vine_fall = self.map_between("E2", 0x801327f0)
         self.address_tarzan_vine = self.map_between("E2", 0x80137320)
         self.address_door = self.map_between("E2",0x8002b2a4)
-        self.address_question_switch = self.map_between("E2", 0x811B452A)
+        self.address_question_switch = self.map_between("E2", 0x8042A078) #pointer, other guess 0x8042A1D8
 
         self.address_spinjump = self.map_between("P1", 0x8005e780)
         self.address_kani_walk = self.map_between("P1", 0x80135670)
         self.address_kani_hang = self.map_between("P1", 0x80135b00)
         self.address_carry_shell = self.map_between("P1", 0x8005e680)
         self.address_pipe = self.map_between("P1", 0x8004f300)
+
+        #80057650 removes both walk and run speed
+        # 8042bb20 # speed mult value
+        self.address_big_jump = self.map_between("P1", 0x8005e758)
+        self.address_run = self.map_between("P1",0x8005e610)
+        self.address_button_left = self.map_between("P1", 0x8005e510)
+        self.address_button_right = self.map_between("P1", 0x8005e520)
+        self.address_button_up = self.map_between("P1", 0x8005e4f0)
+        self.address_button_down = self.map_between("P1", 0x8005e500)
+
 
 
         self.death_address = self.map_between("E2",0x800555DC)
@@ -264,6 +275,12 @@ class MemoryAddresses(object):
         mapper_to = self.mappers[self.this_version]
 
         return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address-1)+1
+
+    def hard_code(self, mem_addresses : typing.Dict[str, int], default : str ="E2" ) -> int:
+        if self.this_version in mem_addresses.keys():
+            return mem_addresses[self.this_version]
+        else:
+            return mem_addresses[default]
 
 
 

@@ -24,7 +24,7 @@ class ConnectionState(Enum):
 HUD_MESSAGE_DURATION = 7.0
 HUD_MAX_MESSAGE_SIZE = 194
 
-STARCOIN_COUNT = 65
+HINTMOVIE_COUNT = 65
 LEVEL_COUNT = 77
 POWERUP_COUNT = len(POWERUP_UNLOCK)
 ITEM_ID_TO_NAME = {v: k for k, v in ITEM_NAME_TO_ID.items()}
@@ -94,7 +94,7 @@ class NSMBWInterface():
                 self.game_rev = game_rev
                 version_name = _SUPPORTED_VERSIONS[(game_id, game_rev)]
                 if version_name != "E2":
-                    logging.error("The only playtested version is E2, play the others at your own risk. IF you find errors, please report them so they can be fixed.")
+                    logger.error("The only playtested version is E2 (US rev2) and this is not the version of your game. Play the others at your own risk.When you find errors, please report them so they might be fixed.")
 
                 self.memory_addresses = MemoryAddresses(version_name)
 
@@ -298,23 +298,24 @@ class NSMBWInterface():
             #logger.info("Instruction changed")
             if clear:
                 self.clear_cache()
+            self.should_clear += 1
             return True
         else:
             return False
 
 
     async def handle_unlocked_moves(self, unlocked_moves, slot_data):
-        should_clear = 0
+        self.should_clear = 0
         if slot_data >= 1:
 
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
             address = self.memory_addresses.address_ground_pound
             if not "ground_pound" in unlocked_moves:
-                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
             else:
                 # this doesnt get called, why? renamed groundpound?
-                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xF0'+b'\x7C\x08\x02\xA6')
+                self.write_instruction(address, b'\x94\x21\xFF\xF0'+b'\x7C\x08\x02\xA6')
 
             # walljump ?
             # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
@@ -322,19 +323,19 @@ class NSMBWInterface():
 
             address = self.memory_addresses.address_wall_slide
             if not "wall_jump" in unlocked_moves:
-                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
             else:
-                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+                self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             address = self.memory_addresses.address_wall_jump
             if not "wall_jump" in unlocked_moves:
-                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
             else:
-                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xE0')
-                should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+                self.write_instruction(address, b'\x94\x21\xFF\xE0')
+                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
 
 
@@ -343,14 +344,14 @@ class NSMBWInterface():
 
             address = self.memory_addresses.address_crouch
             if not "crouch" in unlocked_moves:
-                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00')
-                should_clear += self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
+                self.write_instruction(address, b'\x38\x60\x00\x00')
+                self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
             else:
-                should_clear += self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                should_clear += self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+                self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
             address = self.memory_addresses.address_crouch_yoshi
             if not "crouch" in unlocked_moves:
-                should_clear += self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
             else:
                 self.write_instruction(address, b'\x94\x21\xFF\xF0')
@@ -365,10 +366,10 @@ class NSMBWInterface():
 
             address = self.memory_addresses.address_cary
             if not "cary_blocks" in unlocked_moves:
-                should_clear += self.write_instruction(address, PowerPCInstructions.instru_return)
+                self.write_instruction(address, PowerPCInstructions.instru_return)
 
             else:
-                should_clear += self.write_instruction(address, b'\x94\x21\xff\xf0')
+                self.write_instruction(address, b'\x94\x21\xff\xf0')
 
             # red switch
             if not "red_block" in unlocked_moves:
@@ -377,11 +378,11 @@ class NSMBWInterface():
             address_nostar = self.memory_addresses.yoshi_walk_speed
             address_star = self.memory_addresses.yoshi_walk_star_speed
             if not "yoshi" in unlocked_moves:
-                should_clear += self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-                should_clear += self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
             else:
-                should_clear += self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
-                should_clear += self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
+                self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
+                self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
 
             if not "swim" in unlocked_moves:
                 if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
@@ -398,9 +399,9 @@ class NSMBWInterface():
 
             address = self.memory_addresses.address_hang_pole
             if not "climb_pole" in unlocked_moves:
-                should_clear += self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
+                self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
             else:
-                should_clear += self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
+                self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
 
             if not "p-switch" in unlocked_moves:
                 self.set_p_switch_timer(int_to_bytes(0,4))
@@ -461,14 +462,51 @@ class NSMBWInterface():
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffc0)
 
-        if slot_data == 2:
+
+            address = self.memory_addresses.address_big_jump
+            if not "big_jump" in unlocked_moves:
+                self.write_instruction(address, PowerPCInstructions.instru_bne)
+            else:
+                self.write_instruction(address, PowerPCInstructions.instru_beq)
+
+            button_off_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x00'
+            button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
+
+
+            address = self.memory_addresses.address_run
+            if not "run" in unlocked_moves:
+                self.write_instruction(address, PowerPCInstructions.instru_lhz + b'\x03\xff\xff')
+            else:
+                self.write_instruction(address, button_on_instru)
+
+            address = self.memory_addresses.address_button_right
+            if not "button_right" in unlocked_moves:
+                self.write_instruction(address, button_off_instru)
+            else:
+                self.write_instruction(address, button_on_instru)
+            address = self.memory_addresses.address_button_left
+            if not "button_left" in unlocked_moves:
+                self.write_instruction(address, button_off_instru)
+            else:
+                self.write_instruction(address, button_on_instru)
+            address = self.memory_addresses.address_button_up
+            if not "button_up" in unlocked_moves:
+                self.write_instruction(address, button_off_instru)
+            else:
+                self.write_instruction(address, button_on_instru)
+            address = self.memory_addresses.address_button_down
+            if not "button_down" in unlocked_moves:
+                self.write_instruction(address, button_off_instru)
+            else:
+                self.write_instruction(address, button_on_instru)
+
             address = self.memory_addresses.address_spinjump
             if not "spin" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0000)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0017)
 
-        if should_clear >= 1:
+        if self.should_clear >= 1:
             self.clear_cache()
 
     # just created
@@ -481,10 +519,10 @@ class NSMBWInterface():
     def get_level_world(self):
         address = self.memory_addresses.level_world
         return self.dolphin_client.read_address(address,1)
-    def get_level_stats(self, world_num,level_num): # should make this take in world as paramiter
+    def get_level_stats(self, world_num,level_num) -> bytes: # should make this take in world as paramiter
         address = self.memory_offset_level_stats(world_num,level_num)
         return self.dolphin_client.read_address(address,4)
-    def get_inventory_items(self, type_num):
+    def get_inventory_items(self, type_num : int):
         address = self.memory_addresses.inventory_items + type_num -1
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self):
@@ -570,9 +608,11 @@ class NSMBWInterface():
         self.dolphin_client.write_address(address, data)
     def set_question_switch_timer(self,data):
         address = self.memory_addresses.address_question_switch
-        self.dolphin_client.write_address(address, data)
+        self.dolphin_client.write_pointer(address,0x0488, data)
     def update_inventory_items(self, type_num, increase):
         amount = self.get_inventory_items(type_num)[0]
+        if amount >99:
+            amount = 99
         self.set_inventory_items( int.to_bytes((amount+ increase), 1, byteorder='big', signed=False), type_num)
 
 

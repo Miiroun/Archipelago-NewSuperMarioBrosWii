@@ -19,7 +19,7 @@ ITEM_NAME_GROUPS = {}
 # Items should have a defined default classification.
 # In our case, we will make a dictionary from item name to classification.
 DEFAULT_ITEM_CLASSIFICATIONS = {
-    "Starcoin" : ItemClassification.progression_deprioritized, #77 x 3 st
+    "Starcoin" : ItemClassification.progression_deprioritized_skip_balancing, #77 x 3 st
 }
 
 for i in range(1,9+1):
@@ -30,19 +30,20 @@ ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 
 # could add movement rando as checks
 MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb_pole", "yoshi", "cary_blocks",
-                    "swim", "p-switch", "red_block", "star", "climb_ladders", "climb_vine", "swing_vine"
-                    , "door", "?-switch", "spin", "cary_shell", "pipe"]
+                    "swim", "p-switch", "red-switch", "star", "climb_ladders", "climb_vine", "swing_vine"
+                    , "door", "?-switch", "spin", "cary_shell", "pipe", "big_jump", "run", "button_left",
+                    "button_right", "button_up", "button_down"]
 # to do
-#"climb_fens", tilting platforms (motion control), Bone ride, "Snake blocks"
+#
 #dont even want to try
-# [ "climb_rocky_wall, "run", "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove), "noteblock" (daEnWhiteBlock_c::makesBounce_maybe), "jump" (dAcPyKey_c::buttonJump(void)), "Spring" (jumpDai)]
+# [ "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove), "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai)]
 # temporarily given up on
-# ["pow", "hold_rope" (3-G)]
+# ["pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)]
 
 for i in range(len(MOVEMENT_UNLOCKS)):
     ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{MOVEMENT_UNLOCKS[i]}" : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"MOVEMENT" : set(f"{MOVEMENT_UNLOCKS[i]}" for i in range(len(MOVEMENT_UNLOCKS)))})
+ITEM_NAME_GROUPS.update({"Movement" : set(f"{MOVEMENT_UNLOCKS[i]}" for i in range(len(MOVEMENT_UNLOCKS)))})
 
 
 POWERUP_UNLOCK = ["Super_Mushroom", "Fire_Flower", "Mini_Mushroom" ,"Propeller_Mushroom", "Penguin_Suit",  "Ice_Flower"]
@@ -53,7 +54,7 @@ DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progres
 ITEM_NAME_GROUPS.update({"Powerups" : set(f"{POWERUP_UNLOCK[i]}" for i in range(len(POWERUP_UNLOCK)))})
 
 
-TRAPS = ["Loose_powerup_trap", "Gomba_trap"] #, "Time_trap",
+TRAPS = ["Loose_powerup_trap", "Goomba_trap", "Death_trap"] #, "Time_trap",
 for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
@@ -128,12 +129,10 @@ def create_all_items(world: NSMBWWorld) -> None:
         if i != 9:
             itempool.append(world.create_item(f"World{i}"))
 
-    if world.options.randomize_movement.value in [RandomizeMovment.option_on, RandomizeMovment.option_on_except_spin]:
+    if world.options.randomize_movement.value in [RandomizeMovment.option_on]:
         for i in range(len(MOVEMENT_UNLOCKS)):
-            if (world.options.randomize_movement.value == RandomizeMovment.option_on) or (MOVEMENT_UNLOCKS[i] != f"{'Spin'}"):
-                itempool.append(world.create_item(f"{MOVEMENT_UNLOCKS[i]}"))
-        if world.options.randomize_movement.value == RandomizeMovment.option_on:
-            world.multiworld.early_items[world.player][f"{'Spin'}"] = 1
+            if not (MOVEMENT_UNLOCKS[i]  in world.options.dont_rando_move.value):
+                itempool.append(world.create_item(MOVEMENT_UNLOCKS[i]))
 
     if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_except_mushroom, RandomizePowerups.option_on_progressive]:
         for i in range(len(POWERUP_UNLOCK)):
@@ -228,3 +227,17 @@ def create_all_items(world: NSMBWWorld) -> None:
     # will not make you start in world 9
 
     world.push_precollected(starter_world)
+    extera_start_items = {4 : "swim", 5 : "swing_vine", 6 : "sneak", 8 : "pipe"}
+    if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
+        world.push_precollected(world.create_item("button_right"))
+        if world.random.randint(0,1) == 0:
+            world.push_precollected(world.create_item("spin"))
+        else:
+            world.push_precollected(world.create_item("big_jump"))
+
+        if starting_world_num in extera_start_items:
+            extera_start_item = world.create_item(extera_start_items[starting_world_num])
+            world.push_precollected(extera_start_item)
+
+        for _item in world.options.dont_rando_move.value:
+            world.push_precollected(_item)

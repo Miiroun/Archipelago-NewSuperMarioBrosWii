@@ -1,5 +1,5 @@
-def bytes_to_int(bytes, signed=False):
-    return int.from_bytes(bytes, byteorder='big', signed=signed)
+def bytes_to_int(byte : bytes, signed=False) -> int:
+    return int.from_bytes(byte, byteorder='big', signed=signed)
 
-def int_to_bytes(num, width, signed=False):
+def int_to_bytes(num : int, width, signed=False) -> bytes:
     return int.to_bytes(num, width, byteorder='big', signed=signed)
