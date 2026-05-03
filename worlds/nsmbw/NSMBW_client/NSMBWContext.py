@@ -13,7 +13,8 @@ from .NotificationManager import NotificationManager
 from NetUtils import ClientStatus
 from ..Utils import int_to_bytes, bytes_to_int
 
-from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT, get_level_name, get_starcoin_name
+from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT, get_level_name, get_starcoin_name, \
+    mod_level_name
 from settings import get_settings
 tracker_loaded = False
 
@@ -543,7 +544,7 @@ class NSMBWContext(SuperContext):
             for secret_exit in SECRET_EXIT:
                 world_num = secret_exit[0]
                 level_num = secret_exit[1]
-                exit_name =f"Secret_exit{world_num}-{level_num}"
+                exit_name = f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}"
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)
 
                 byte_to_check = 0
@@ -786,7 +787,7 @@ class NSMBWContext(SuperContext):
                             level_stats |= 0x30
                     if f"World{8}_level{10}_completed_level" in self.completed_levels:
                        level_stats |= 0x30
-                    if f"Secret_exit{world_num}-{level_num}" in self.completed_levels:
+                    if f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}" in self.completed_levels:
                         level_stats |= 0x30
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats, 1))
                     i += 1

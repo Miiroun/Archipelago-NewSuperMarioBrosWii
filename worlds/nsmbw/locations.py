@@ -63,12 +63,13 @@ LOCATION_NAME_GROUPS.update({"Towers" : set(f"World{world_num}_tower" for world_
 
 
 # last num is if secret or normal exit 1== normal, 2==secret
-SECRET_EXIT = [(1, 3, 2), (2, 6, 2), (3, 6, 2), (4, 7, 2), (5, 6, 2), (6, 6, 2), (7, 6, 1), (8, 7, 1)]
+SECRET_EXIT = [(1, 3, 2), (2, 4, 2), (2, 6, 2), (3, 5, 2), (3, 6, 2), (4, 6, 2),
+               (4, 7, 2), (5, 6, 2), (6, 5, 2), (6, 6, 2), (7, 6, 1), (7, 7, 2), (8, 7, 1)]
 for secret_exit in SECRET_EXIT:
     world_num = secret_exit[0]
     level_num = secret_exit[1]
-    LOCATION_NAME_TO_ID.update({f"Secret_exit{world_num}-{level_num}": 2000 + 100 * world_num + 5})
-LOCATION_NAME_GROUPS.update({"Secret_exits" : set(f"Secret_exit{world_num}-{level_num}" for world_num, level_num, _ in SECRET_EXIT) })
+    LOCATION_NAME_TO_ID.update({f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}": 7000 + 100 * world_num + level_num})
+LOCATION_NAME_GROUPS.update({"Secret_exits" : set(f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}" for world_num, level_num, _ in SECRET_EXIT) })
 
 #hint movies
 num_hintmovies = 65
@@ -159,7 +160,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit[0]
             level_num = secret_exit[1]
-            level_location = get_location_names_with_ids([f"Secret_exit{world_num}-{level_num}"])
+            level_location = get_location_names_with_ids([f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}"])
             regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies

@@ -20,23 +20,19 @@ config file.
   - Move unlocks (needs to be unlocked before can be used)
     - button up/down/right/left
     - run
-    - spin
-    - big_jump
+    - spin jump
+    - jump
     - ground pound
     - wall jump
     - crouch
-    - climb pole
     - yoshi
-    - cary blocks 
-    - cary shell
+    - carry
     - swim
     - p-switch
     - red-switch
     - ?-switch
     - star
-    - climb_ladders
-    - climb_vine
-    - swing_vine
+    - climb ( pole, ladders, ledge and vines)
     - door
     - pipe
 - Filler items

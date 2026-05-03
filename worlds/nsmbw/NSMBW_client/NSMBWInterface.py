@@ -363,9 +363,9 @@ class NSMBWInterface():
             # _ZN7dAcPy_c15checkCarryActorEP7dAcPy_c 0x8013A150
 
 
-
+            #cary_blocks
             address = self.memory_addresses.address_cary
-            if not "cary_blocks" in unlocked_moves:
+            if not "carry" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
 
             else:
@@ -391,14 +391,17 @@ class NSMBWInterface():
                 else:
                     pass
                     #print(bytes_to_int(self.get_water_state()))
-            if not "swing" in unlocked_moves:
-                if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
-                    await self.kill_player()
-                else:
-                    pass
 
+            #swing
+            #if not "climb" in unlocked_moves:
+            #    if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
+            #        await self.kill_player()
+            #    else:
+            #        pass
+
+            #climb_pole
             address = self.memory_addresses.address_hang_pole
-            if not "climb_pole" in unlocked_moves:
+            if not "climb" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
@@ -409,23 +412,26 @@ class NSMBWInterface():
             if not "star" in unlocked_moves:
                 self.set_star_timer(int_to_bytes(0,4))
 
+            #climb_ladders
             address = self.memory_addresses.address_hang_ladder
-            if not "climb_ladders" in unlocked_moves:
+            if not "climb" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, b"\x2c\x05" + PowerPCInstructions.reg_r0)
 
+            #climb_vine
             address_stand_still = self.memory_addresses.address_climb_vine_still
             address_fall = self.memory_addresses.address_climb_vine_fall
-            if not "climb_vine" in unlocked_moves:
+            if not "climb" in unlocked_moves:
                 self.write_instruction(address_stand_still, PowerPCInstructions.instru_return)
                 self.write_instruction(address_fall, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address_stand_still, PowerPCInstructions.intru_stwu + b"\xff\xc0")
                 self.write_instruction(address_fall, PowerPCInstructions.intru_stwu + b"\xff\xc0")
 
+            #swing_vine
             address = self.memory_addresses.address_tarzan_vine
-            if not "swing_vine" in unlocked_moves:
+            if not "climb" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_stwu + b"\xff\xc0")
@@ -436,22 +442,23 @@ class NSMBWInterface():
             else:
                 self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
 
-            if not "question_switch" in unlocked_moves:
+            if not "?-switch" in unlocked_moves:
                 self.set_question_switch_timer(int_to_bytes(0,4))
 
 
-
+            # sneak
             address_sneak_walk = self.memory_addresses.address_kani_walk
             address_sneak_hang = self.memory_addresses.address_kani_hang
-            if not "sneak" in unlocked_moves:
+            if not "climb" in unlocked_moves:
                 self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
                 self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address_sneak_walk, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffe0)
                 self.write_instruction(address_sneak_hang, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffd0)
 
+            #cary_shell
             address = self.memory_addresses.address_carry_shell
-            if not "cary_shell" in unlocked_moves:
+            if not "carry" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_b + b'\xff\x50')
@@ -464,7 +471,7 @@ class NSMBWInterface():
 
 
             address = self.memory_addresses.address_big_jump
-            if not "big_jump" in unlocked_moves:
+            if not "jump" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_bne)
             else:
                 self.write_instruction(address, PowerPCInstructions.instru_beq)

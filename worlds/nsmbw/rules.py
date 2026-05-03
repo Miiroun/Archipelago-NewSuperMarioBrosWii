@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rule_builder import rules
-from .locations import SECRET_EXIT, get_level_name, get_starcoin_name, LEVELS_PER_WORLD
+from .locations import SECRET_EXIT, get_level_name, get_starcoin_name, LEVELS_PER_WORLD, mod_level_name
 from .raw_rules import DEPRIO_HM, specific_hintmovie_requierments, specific_level_requierments, get_levlel_connections
 from .options import LogicDifficulty
 
@@ -123,7 +123,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit[0]
             level_num = secret_exit[1]
-            secret_exit_loc = world.get_location(f"Secret_exit{world_num}-{level_num}")
+            secret_exit_loc = world.get_location(f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}")
             if secret_exit[2] == 2:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") &
                                level_req[world_num - 1][level_num - 1][2])

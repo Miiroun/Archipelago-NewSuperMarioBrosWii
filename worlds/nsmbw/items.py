@@ -29,9 +29,9 @@ DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}"] = ItemClassification.progression_skip_
 ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 
 # could add movement rando as checks
-MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb_pole", "yoshi", "cary_blocks",
-                    "swim", "p-switch", "red-switch", "star", "climb_ladders", "climb_vine", "swing_vine"
-                    , "door", "?-switch", "spin", "cary_shell", "pipe", "big_jump", "run", "button_left",
+MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch",  "yoshi",
+                    "swim", "p-switch", "red-switch", "star", "climb", "carry",
+                    "door", "?-switch", "spin_jump", "cary_shell", "pipe", "jump", "run", "button_left",
                     "button_right", "button_up", "button_down"]
 # to do
 #
@@ -39,6 +39,9 @@ MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch", "climb_pole", "yoshi"
 # [ "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove), "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai)]
 # temporarily given up on
 # ["pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)]
+
+# re purposed (merged)
+#, "climb_ladders", "climb_vine", "swing_vine", "climb_pole", "sneak",  "cary_blocks",
 
 for i in range(len(MOVEMENT_UNLOCKS)):
     ITEM_NAME_TO_ID.update({f"{MOVEMENT_UNLOCKS[i]}" : 300 + i + 1})
