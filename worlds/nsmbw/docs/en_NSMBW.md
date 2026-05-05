@@ -48,7 +48,7 @@ config file.
 - Completing normal levels and collecting their star coins. (77 levels and 231 star coins) e.g. 1-1_clear, 1-1_sc1
 - Buying hint movies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if you need help with unlocking them. Hintmovie1
 - Completing towers, castles and secret exits that unlock cannons ( 8 towers, 8 castles and 8 secret exits) World1_tower, Secret_exit1-3
-- Getting powerups to inventory
+- Getting powerups to inventory (from toad-houses or rescuing toad)
 
 ## Options
 - Starting world is selectable in option
@@ -56,11 +56,12 @@ config file.
 
 ## Known quirks
 - Starting a new save plays then ending animation instead of the starting one. This is just a visual glitch, if you enter the created savefile agin it should work.
+- You will always start in world 1, and will have to manually move to a world that you have unlocked with the worldmap.
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
 - For some features (death link and move rando) the game will overwrite savestate 8 in dolphin. (It does this to clear the JIT cache).
 - If you have movement rando selected, you will be given some movement abilities to start out with to be able to grab your checks. You will always have button_right and either spin or big_jump.
 - The client will ask for a pop-tracker pack, you can ignore it for now as it is still in development.
-
+- With movement rando on and not having the item climb will cause a soft lock if you encounter a ledge (like in 6-1). You are free from the softlock if you do /kill.
 
 ## Client commands
 - /toogle_deathlink

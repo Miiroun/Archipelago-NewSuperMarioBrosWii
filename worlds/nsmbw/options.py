@@ -34,8 +34,8 @@ class TrapChance(Range):
 
 class RandomizeStarCoins(Toggle):
     """
-    If enabled will include 231 starcoins as checks and starcoins will be recived as items.
-    If dissabed will still create the starcoins as ap items but place them in their vanilla locations.
+    If enabled will include 231 star coins as checks and star coins will be received as items.
+    If disabled will still create the star coins as ap items but place them in their vanilla locations.
     """
     display_name = "Randomize Star Coins"
     default = True
@@ -44,9 +44,8 @@ class RandomizeStarCoins(Toggle):
 class RandomizeMovment(Choice):
     """
     WARNING! logic not implemented.
-    Will disable some of marios moves until items checks are sent to reunlock them.
+    Will disable some of mario's moves until items checks are sent to reunlock them.
     """
-    # should make spin a seperet option
     display_name = "Randomize Moves"
 
     option_off = 0
@@ -67,7 +66,6 @@ class RandomizePowerups(Choice):
     """
     Will make power ups not unlockable until items check are sent to reunlock them.
     """
-    # should make mushroom a seperet option
     display_name = "Randomize Powerups"
     option_off = 0
     option_on_except_mushroom = 1
@@ -82,9 +80,9 @@ class IncludeHintMovies(Toggle):
     """
     display_name = "Include Hint Movies"
     default = True
-    visibility = Option.visibility.complex_ui
+    #visibility = Option.visibility.complex_ui
 
-class IncluedLevelCompletion(Toggle):
+class IncludeLevelCompletion(Toggle):
     """
     This makes completing a level into a location, adds 231 locations.
     """
@@ -158,7 +156,7 @@ class BowserCastleStarUnlock(Range):
 
     display_name = "Bowser Castle Unlock Star"
     range_start = 0
-    range_end = 271
+    range_end = 231
 
     default = 0
 
@@ -181,7 +179,7 @@ class DeathLink(Toggle):
     display_name = "Death Link"
     default = False
 
-class AmountSupportRecived(Range):
+class AmountSupportReceived(Range):
     """
     This setting will set the amount of 1ups and powerups send to inventory when reciving their corresponding checks.
     """
@@ -196,7 +194,7 @@ class AmountSupportRecived(Range):
 # This is in the format "option_name_in_snake_case: OptionClassName".
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
-    include_level_compleation : IncluedLevelCompletion
+    include_level_completion : IncludeLevelCompletion
     include_shortcuts : IncludeShortcuts
     include_hintmovies : IncludeHintMovies
     randomize_coins: RandomizeStarCoins
@@ -208,10 +206,10 @@ class NSMBWOptions(PerGameCommonOptions):
     trap_chance: TrapChance
     logic_difficulty: LogicDifficulty
     starting_world: StartingWorld
-    num_startloc : AmountStartingItems
+    num_starting_locations : AmountStartingItems
     death_link : DeathLink
     enable_superpowers : EnableSuperPowers
-    amount_support_recived : AmountSupportRecived
+    amount_support_received : AmountSupportReceived
     num_inventory_powerups : NumberInventoryItems
 
 
@@ -225,7 +223,7 @@ option_groups = [
         "Locations ",
         [
             IncludeShortcuts,
-            IncluedLevelCompletion,
+            IncludeLevelCompletion,
             IncludeHintMovies,
             RandomizeStarCoins,
          ],
@@ -253,7 +251,7 @@ option_groups = [
             DeathLink,
             LogicDifficulty,
             EnableSuperPowers,
-            AmountSupportRecived,
+            AmountSupportReceived,
             NumberInventoryItems,
         ],
     ),
@@ -270,7 +268,7 @@ option_presets = {
 #        "randomize_movement" : False,
 #        "randomize_powerups" : 2,
 #        "include_hintmovies": True,
-#        "num_startloc" : 10,
+#        "num_starting_locations" : 10,
 #        "death_link" : False,
 #    }
 }
@@ -278,10 +276,10 @@ option_presets = {
 
 def adjust_options(world):
 
-    if (world.options.include_hintmovies.value == False) and (world.options.include_level_compleation.value == False):
-        if world.options.num_startloc.value <= 20:
-            world.options.num_startloc.value = 20
-            print("If you dissable hint movies and level completion have at least 20 free starting locaitions")
+    if (world.options.include_hintmovies.value == False) and (world.options.include_level_completion.value == False):
+        if world.options.num_starting_locations.value <= 20:
+            world.options.num_starting_locations.value = 20
+            print("If you disable hint movies and level completion have at least 20 free starting locations")
         #raise OptionError("IncludeHintMovies or IncludeLevelCompletion to have enough locations")
     #if world.options.randomize_coins == False:
     #    raise OptionError("RandomizeStarCoins is not implemented to be turned off")

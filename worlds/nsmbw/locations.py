@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Set
+from typing import TYPE_CHECKING
 
 from BaseClasses import ItemClassification, Location, LocationProgressType
 
@@ -122,11 +122,12 @@ def make_locations_priority(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
                 pass
-                world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
-                world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
-    for i in DEPRIO_HM:
-        hm = world.get_location(f"Hintmovie{i}")
-        hm.progress_type = LocationProgressType.EXCLUDED
+                #world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
+                #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
+    if world.options.include_hintmovies.value == True:
+        for i in DEPRIO_HM:
+            hm = world.get_location(f"Hintmovie{i}")
+            hm.progress_type = LocationProgressType.EXCLUDED
 
 
 def create_regular_locations(world: NSMBWworld) -> None:
@@ -172,7 +173,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
     #    for i in range(1, num_hintmovies+1):
     #        regions[0].add_event(f"Hintmovie{i}", "Starcoin" , location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
-    if world.options.include_level_compleation.value == True:
+    if world.options.include_level_completion.value == True:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 flagpole = get_location_names_with_ids([get_level_name(world_num,level_num)])
@@ -180,7 +181,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
                 regions[world_num * 2 - 2 + half_world].add_locations(flagpole, NSMBWLocation)
 
     # gives player starter location that automaticly checks
-    for i in range(1,world.options.num_startloc+1):
+    for i in range(1,world.options.num_starting_locations+1):
        starter_location = get_location_names_with_ids([f"starter_location{i}"])
        menu_region.add_locations(starter_location, NSMBWLocation)
 

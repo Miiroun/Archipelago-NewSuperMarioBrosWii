@@ -1,5 +1,10 @@
 ## Super short term
 - Pin docs in dc
+- Wait on logic getting made
+- Playtest
+- -> make release
+- Add info to ap-wiki
+- Change starting world into a choice instead of range
 
 
 ## Playtest
@@ -17,7 +22,8 @@
 - test if rocket pipe is disabled
 - Playtest so powerups from toad houses are checks
 - Test hint movies unlock correctly from castles / towers
-- Deathlink
+- Death link
+- Does direction-lock impact world map?
 
 
 ## Bugs to fix
@@ -27,7 +33,7 @@
 - World unlock only works on savefile2, same with goal completion
 - sends death link on connect
 - Sneak freezes game
-
+- 7-6 freezes when clear?
 
 
 ## Important features (asked after a lot)
@@ -42,15 +48,19 @@
 - Add more options to how world 9 levels are unlocked
 - Turn traps into individual options : set that starts filled out
 - Option for #amount filler
-- add some cashing for received checks, so doesnt double count already accounted for items when relogs
+- add some cashing for received checks, so doesn't double count already accounted for items when relogs
 - Try to get EU conversion to work
 - Add unit test
 - UT
   - Auto tabbing
+- Protocol
+  - Grouped death-link
+  - Damage-link
+  - Filler link
 
 
 ## Filler link
-- Have a feture that on compleation sends out filler/trap items to the MW when complete repeatable checks
+- Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
 
 
 ## Broken versions

@@ -107,12 +107,12 @@ class NSMBWworld(World):
         slot_data = self.options.as_dict(
             "randomize_powerups",
             "randomize_movement",
-            "num_startloc",
+            "num_starting_locations",
             "bowser_star_unlock",
             "bowser_world_unlock",
             "death_link",
-            "amount_support_recived",
-            "include_level_compleation",
+            "amount_support_received",
+            "include_level_completion",
             "include_shortcuts",
             "include_hintmovies",
             "randomize_coins",
@@ -133,11 +133,11 @@ class NSMBWworld(World):
     def overwrite_options(self, slot_data: dict[str, Any]):
         self.options.randomize_powerups.value = slot_data["randomize_powerups"]
         self.options.randomize_movement.value = slot_data["randomize_movement"]
-        self.options.num_startloc.value = slot_data["num_startloc"]
+        self.options.num_starting_locations.value = slot_data["num_starting_locations"]
         self.options.bowser_star_unlock.value = slot_data["bowser_star_unlock"]
         self.options.bowser_world_unlock.value = slot_data["bowser_world_unlock"]
-        self.options.amount_support_recived.value = slot_data["amount_support_recived"]
-        self.options.include_level_compleation.value = slot_data["include_level_compleation"]
+        self.options.amount_support_received.value = slot_data["amount_support_received"]
+        self.options.include_level_completion.value = slot_data["include_level_completion"]
         self.options.include_shortcuts.value = slot_data["include_shortcuts"]
         self.options.include_hintmovies.value = slot_data["include_hintmovies"]
         self.options.randomize_coins.value = slot_data["randomize_coins"]

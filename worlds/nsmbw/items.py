@@ -111,6 +111,21 @@ def create_all_items(world: NSMBWWorld) -> None:
     #if world.options.starting_world:
     #    starting_world_num = world.random.randint(1, 8)
     starting_world_num = world.options.starting_world.value
+    excluded_items : set = set()
+    excluded_items.update({f"World{starting_world_num}"})
+    extera_start_items = {4 : {"swim"}, 5 : {"climb"}, 6 : {"climb"}, 8 : {"pipe"}}
+    if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
+        excluded_items.update({"button_right"})
+        if not ("spin_jump" in excluded_items) or ( "jump" in excluded_items):
+            if world.random.randint(0,1) == 0:
+                excluded_items.update({"spin_jump"})
+            else:
+                excluded_items.update({"jump"})
+
+        if starting_world_num in extera_start_items:
+            excluded_items.update(extera_start_items[starting_world_num])
+
+        excluded_items.update(world.options.dont_rando_move.value)
 
     # This is the function in which we will create all the items that this world submits to the multiworld item pool.
     # There must be exactly as many items as there are locations.
@@ -124,7 +139,7 @@ def create_all_items(world: NSMBWWorld) -> None:
     itempool: list[Item] = []
 
     if world.options.randomize_coins.value == True:
-        for i in range(77*3):
+        for _ in range(77*3):
             itempool.append(world.create_item("Starcoin"))
     for i in range(1, 9+1):
         if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
@@ -134,7 +149,7 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     if world.options.randomize_movement.value in [RandomizeMovment.option_on]:
         for i in range(len(MOVEMENT_UNLOCKS)):
-            if not (MOVEMENT_UNLOCKS[i]  in world.options.dont_rando_move.value):
+            if not (MOVEMENT_UNLOCKS[i]  in excluded_items):
                 itempool.append(world.create_item(MOVEMENT_UNLOCKS[i]))
 
     if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_except_mushroom, RandomizePowerups.option_on_progressive]:
@@ -226,21 +241,11 @@ def create_all_items(world: NSMBWWorld) -> None:
     #menu_world = world.create_item(f"Menu")
     #world.push_precollected(menu_world)
     #starter_world = world.create_item(f"World{world.options.starting_world}_unlock") # can randomiz starter world in fututure
-    starter_world = world.create_item(f"World{starting_world_num}") # can randomiz starter world in fututure
+    #starter_world = ) # can randomiz starter world in fututure
     # will not make you start in world 9
 
-    world.push_precollected(starter_world)
-    extera_start_items = {4 : "swim", 5 : "swing_vine", 6 : "sneak", 8 : "pipe"}
-    if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
-        world.push_precollected(world.create_item("button_right"))
-        if world.random.randint(0,1) == 0:
-            world.push_precollected(world.create_item("spin"))
-        else:
-            world.push_precollected(world.create_item("big_jump"))
+    #print(f" excluded movements: {excluded_items}")
+    for _item in excluded_items:
+        world.push_precollected(world.create_item(_item))
 
-        if starting_world_num in extera_start_items:
-            extera_start_item = world.create_item(extera_start_items[starting_world_num])
-            world.push_precollected(extera_start_item)
 
-        for _item in world.options.dont_rando_move.value:
-            world.push_precollected(_item)

@@ -506,7 +506,7 @@ class NSMBWContext(SuperContext):
 
     async def check_starter_locations(self):
         checked_locations = []
-        num_starter_items = self.slot_data["num_startloc"]
+        num_starter_items = self.slot_data["num_starting_locations"]
         for i in range(1,num_starter_items+1):
             location_name = f"starter_location{i}"
             if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
@@ -608,13 +608,13 @@ class NSMBWContext(SuperContext):
             bowser_unlock = (self.starcoin_count >= self.slot_data["bowser_star_unlock"]) and (completed_worlds >= self.slot_data["bowser_world_unlock"])
             level_name = f"World{8}_level{10}_completed_level"
             level_stats = self.game_interface.get_level_stats(8,10)[0]
-            # runns if to dissable bowsers castle if completed 8-arship and not comrehended unlock conditions
+            # runs if to disable bowsers castle if completed 8-arship and not comprehended unlock conditions
             if  level_stats & 16 == 16 and (not bowser_unlock):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
                     logger.info(f" Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data["bowser_star_unlock"]} star coins and you have {self.starcoin_count}, Require {self.slot_data["bowser_world_unlock"]} worlds completed and you have {completed_worlds}).")
                 self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats - 1 * 16, 1))
-            # if previously compled 8-arship and now unlocked bowser
+            # if previously completed 8-arship and now unlocked bowser
             if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
                 if level_name in self.completed_levels:
                     self.completed_levels.remove(level_name)
@@ -853,7 +853,7 @@ class NSMBWContext(SuperContext):
                 print(f"fill_inventory was received ")
                 logger.info(f"10 fill_inventory was received ")
                 for i in range(POWERUP_COUNT+1+1):
-                    self.game_interface.update_inventory_items(i, self.slot_data["amount_support_recived"])
+                    self.game_interface.update_inventory_items(i, self.slot_data["amount_support_received"])
                 for i in range(POWERUP_COUNT+1+1):
                     self.previous_inventory.append(bytes_to_int(self.game_interface.get_inventory_items(i)))
 
@@ -861,7 +861,7 @@ class NSMBWContext(SuperContext):
                 print(f"1ups was received ")
                 logger.info(f"10 1ups was received ")
                 lives = self.game_interface.get_lives_count()
-                new_lives = lives + self.slot_data["amount_support_recived"]
+                new_lives = lives + self.slot_data["amount_support_received"]
                 if new_lives >= 99:
                     new_lives = 99
                 self.game_interface.set_lives_count(int_to_bytes(new_lives, 1))
@@ -920,7 +920,7 @@ class NSMBWContext(SuperContext):
         # code from NSMBWerPlus
 
         #  - name: RemoveOpeningCS
-        #    type: nop_insn
+        #    type: #nop_insn
         #    area_pal: [0x809191C8, 0x809191D8]
 
         #adddress = self.game_interface.memory_addresses.map_between("P1", 0x809191C8)

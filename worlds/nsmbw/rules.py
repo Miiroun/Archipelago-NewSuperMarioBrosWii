@@ -98,7 +98,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
 
 
 
-            if world.options.include_level_compleation:
+            if world.options.include_level_completion:
                 completed_level = world.get_location(get_level_name(world_num,level_num)) # reel location
                 world.set_rule(completed_level, rules.Has(f"World{world_num}_level{level_num}_cleared")) #event location
 
@@ -117,7 +117,8 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             location = world.get_location(f"Hintmovie{hm_num}")
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-            world.set_rule(location, (rules.Has(f"Starcoin", count=total_cost) & hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") ) )
+            hm_rule = ((rules.Has(f"Starcoin", count=total_cost)|(rules.Has("glitched_logic") & rules.Has(f"Starcoin", count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") )
+            world.set_rule(location, hm_rule)
 
     if world.options.include_shortcuts.value == True:
         for secret_exit in SECRET_EXIT:
@@ -129,12 +130,14 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                                level_req[world_num - 1][level_num - 1][2])
             elif secret_exit[2] == 1:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
-    for i in range(1,world.options.num_inventory_powerups+1):
+    for i in range(1,world.options.num_inventory_powerups.value+1):
         invent_pow = world.get_location(f"Inventory_powerup_{i}")
         worlds_list = list(f"World{j}" for j in range(1,9+1))
         worlds_list += worlds_list
-        worlds_list.pop(9*2-1)
-        world.set_rule(invent_pow, rules.HasFromList(*worlds_list, count=((world.options.num_inventory_powerups)//15)+2))
+        worlds_list.pop()
+        req_world_com = min(8*2, (i // 5)+1)
+        invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic")
+        world.set_rule(invent_pow, invent_rule)
         # soft logic, gain access when have new worlds
 
 def set_completion_condition(world: NSMBWworld) -> None:
