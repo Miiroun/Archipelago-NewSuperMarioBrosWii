@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from typing import Any, Dict
 
-from BaseClasses import CollectionState
+from BaseClasses import CollectionState, ItemClassification
 from NetUtils import JSONMessagePart
 from worlds.AutoWorld import World
 
@@ -12,6 +12,8 @@ from . import settings as nsbmw_settings
 from Utils import visualize_regions
 
 from typing import ClassVar
+
+from .items import NSMBWItem
 
 
 class NSMBWworld(World):
@@ -39,8 +41,8 @@ class NSMBWworld(World):
     location_name_to_id = locations.LOCATION_NAME_TO_ID
     item_name_to_id = items.ITEM_NAME_TO_ID
 
-    location_name_groups = locations.LOCATION_NAME_GROUPS
-    item_name_groups  = items.ITEM_NAME_GROUPS
+    #location_name_groups = locations.LOCATION_NAME_GROUPS
+    #item_name_groups  = items.ITEM_NAME_GROUPS
 
 
     # There is always one region that the generator starts from & assumes you can always go back to.
@@ -88,6 +90,8 @@ class NSMBWworld(World):
     # Our world class must also have a create_item function that can create any one of our items by name at any time.
     # We also put this in a different file, the same one that create_items is in.
     def create_item(self, name: str) -> items.NSMBWItem:
+        if name == self.glitches_item_name:
+            return NSMBWItem(name, ItemClassification.progression, None, self.player)
         return items.create_item_with_correct_classification(self, name)
 
     # For features such as item links and panic-method start inventory, AP may ask your world to create extra filler.
@@ -99,8 +103,8 @@ class NSMBWworld(World):
         return items.get_random_filler_item_name(self)
 
     # There may be data that the game client will need to modify the behavior of the game.
-    # This is what slot_data exists for. Upon every client connection, the slot's slot_data is sent to the client.
-    # slot_data is just a dictionary using basic types, that will be converted to json when sent to the client.
+    # This is what slot_data_movement exists for. Upon every client connection, the slot's slot_data_movement is sent to the client.
+    # slot_data_movement is just a dictionary using basic types, that will be converted to json when sent to the client.
     def fill_slot_data(self) -> Mapping[str, Any]:
         # If you need access to the player's chosen options on the client side, there is a helper for that.
 
@@ -121,15 +125,16 @@ class NSMBWworld(World):
             "starting_world",
             "enable_superpowers",
             "num_inventory_powerups",
-            "dont_rando_move"
+            "dont_rando_move",
+            "filler_items",
+            "trap_items"
         )
-        slot_data["version"]  = self.world_version
+        #slot_data["version"]  = self.world_version
         return slot_data
 
 
 
     # UT-tracket imlementation
-
     def overwrite_options(self, slot_data: dict[str, Any]):
         self.options.randomize_powerups.value = slot_data["randomize_powerups"]
         self.options.randomize_movement.value = slot_data["randomize_movement"]
@@ -146,7 +151,10 @@ class NSMBWworld(World):
         self.options.starting_world.value = slot_data["starting_world"]
         self.options.enable_superpowers.value = slot_data["enable_superpowers"]
         self.options.num_inventory_powerups.value = slot_data["num_inventory_powerups"]
-        self.options.dont_rando_move.value = slot_data["dont_rando_move"]
+        self.options.dont_rando_move.value = set(slot_data["dont_rando_move"])
+        self.options.filler_items.value = set(slot_data["filler_items"])
+        self.options.trap_items.value = set(slot_data["trap_items"])
+
 
 
     @staticmethod
@@ -160,10 +168,18 @@ class NSMBWworld(World):
     def explain_rule(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         return []
 
+    def map_page_index(data: Any) -> int:
+        try:
+            return int(data)-1
+        except ValueError:
+            return 0
+
     tracker_world: ClassVar = {
         "map_page_maps": "maps/maps.json",
         "map_page_locations" : "locations/locations.json",
         "external_pack_key": "ut_pack_path",
+        "map_page_setting_key": "{player}_{team}_UT_MAP",
+        "map_page_index": map_page_index,
         #"map_page_folder": "tracker",
         #"map_page_setting_key" : <optional tag that informs which data storage key will be watched for auto tabbing>
         #"map_page_index" : <optional function that will control the auto tabbing>

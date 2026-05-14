@@ -71,7 +71,7 @@ class DolphinClient:
         address += offset
         return self.read_address(address, byte_count)
 
-    def read_address(self, address: int, bytes_to_read: int) -> Any:
+    def read_address(self, address: int, bytes_to_read: int) -> bytes:
         self.__assert_connected()
         self.verify_target_address(address, bytes_to_read)
         result = self.dolphin.read_bytes(address, bytes_to_read)

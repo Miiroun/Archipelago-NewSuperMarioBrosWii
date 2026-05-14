@@ -29,7 +29,7 @@ config file.
     - carry
     - swim
     - p-switch
-    - red-switch
+    - !-switch
     - ?-switch
     - star
     - climb ( pole, ladders, ledge and vines)
@@ -54,7 +54,7 @@ config file.
 - Starting world is selectable in option
 
 
-## Known quirks
+## Known quirks / bugs
 - Starting a new save plays then ending animation instead of the starting one. This is just a visual glitch, if you enter the created savefile agin it should work.
 - You will always start in world 1, and will have to manually move to a world that you have unlocked with the worldmap.
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
@@ -62,6 +62,12 @@ config file.
 - If you have movement rando selected, you will be given some movement abilities to start out with to be able to grab your checks. You will always have button_right and either spin or big_jump.
 - The client will ask for a pop-tracker pack, you can ignore it for now as it is still in development.
 - With movement rando on and not having the item climb will cause a soft lock if you encounter a ledge (like in 6-1). You are free from the softlock if you do /kill.
+- Disabling 7-6 causes the game to freez, so it just isn't.
+- Sometimes mario is invisible on the worldmap
+- Only save file 2 will work to play on.
+- Deathlink is sometimes sent on connect.
+- If you dev for this game and run from source (not frozen), generate locally, you wont be able to host on https://archipelago.gg since the server errors out
+
 
 ## Client commands
 - /toogle_deathlink
@@ -80,6 +86,8 @@ config file.
   - Kills mario, run this if you get softlocked.
 - /refresh
   - Clears the JIT cache, run if you don't recive a move or get stuck in death loop.
+- /reconnect_dolphin
+  - A debug command that trys to rehook dolphin.
 
 ## FAQ
 - What is not randomized currently?

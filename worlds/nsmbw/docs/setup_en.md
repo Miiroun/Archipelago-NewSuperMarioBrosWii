@@ -22,6 +22,7 @@
 - When game booted select savefile 2.
 - Make savestates in emulator, saving the game doesn't currently work.
 - After you have entered the world map press CONNECT in the client.
+- Open the in game world select menu and move to a world you have unlocked
 - See the quirks section in en_NSMBW.md for quirks with the implementation.
 
 

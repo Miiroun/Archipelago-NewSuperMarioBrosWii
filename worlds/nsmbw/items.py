@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Set
+from typing import TYPE_CHECKING
 
-from BaseClasses import Item, ItemClassification, MultiWorld
+from BaseClasses import Item, ItemClassification
 from .options import RandomizeMovment, RandomizePowerups
 
 if TYPE_CHECKING:
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 # Even if an item doesn't exist on specific options, it must be present in this lookup.
 ITEM_NAME_TO_ID = {
     "Starcoin" : 101,
+    "glitched_logic" : 199
 }
 ITEM_NAME_GROUPS = {}
 
@@ -30,8 +31,8 @@ ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 
 # could add movement rando as checks
 MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch",  "yoshi",
-                    "swim", "p-switch", "red-switch", "star", "climb", "carry",
-                    "door", "?-switch", "spin_jump", "cary_shell", "pipe", "jump", "run", "button_left",
+                    "swim", "p-switch", "!-switch", "star", "climb", "carry",
+                    "door", "?-switch", "spin_jump", "pipe", "jump", "run", "button_left",
                     "button_right", "button_up", "button_down"]
 # to do
 #
@@ -56,15 +57,13 @@ for i in range(len(POWERUP_UNLOCK)):
 DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
 ITEM_NAME_GROUPS.update({"Powerups" : set(f"{POWERUP_UNLOCK[i]}" for i in range(len(POWERUP_UNLOCK)))})
 
-
-TRAPS = ["Loose_powerup_trap", "Goomba_trap", "Death_trap"] #, "Time_trap",
+from .Utils import TRAPS
 for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
 ITEM_NAME_GROUPS.update({"Traps" : set(f"{TRAPS[i]}" for i in range(len(TRAPS)))})
 
-
-FILLER = ["fill_inventory", "1ups"]
+from .Utils import FILLER
 for i in range(len(FILLER)):
     ITEM_NAME_TO_ID.update({f"{FILLER[i]}" : 500 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{FILLER[i]}" : ItemClassification.filler})
@@ -93,10 +92,9 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
 
 
     if world.random.randint(0, 99) < world.options.trap_chance:
-        return TRAPS[world.random.randint(0, len(TRAPS)-1)]
+        return str( world.random.choice(list(world.options.trap_items.value)) )
     else:
-        return FILLER[world.random.randint(0, len(FILLER) - 1)]
-
+        return str( world.random.choice(list(world.options.filler_items.value)) )
 
 def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSMBWItem:
 
@@ -156,8 +154,19 @@ def create_all_items(world: NSMBWWorld) -> None:
         for i in range(len(POWERUP_UNLOCK)):
             if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_progressive]  or MOVEMENT_UNLOCKS[i] != f"{'Super_Mushroom'}":
                 itempool.append(world.create_item(f"{POWERUP_UNLOCK[i]}"))
-    if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_progressive]:
-        world.multiworld.early_items[world.player][f"{'Super_Mushroom'}"] = 1
+
+
+
+    # handle important items
+    important_items = {"Spin_jump", "jump", "Super_mushroom", f"button_left", f"button_right"}
+    itempool_names = []
+    for item in itempool:
+        itempool_names.append(item.name)
+
+    for item in important_items:
+        if item in itempool_names:
+            world.multiworld.early_items[world.player][item] = 1
+
 
     #print(itempool)
         # Archipelago requires that each world submits as many locations as it submits items.

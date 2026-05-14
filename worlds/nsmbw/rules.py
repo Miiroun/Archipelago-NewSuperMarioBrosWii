@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rule_builder import rules
+from rule_builder.options import OptionFilter
 from .locations import SECRET_EXIT, get_level_name, get_starcoin_name, LEVELS_PER_WORLD, mod_level_name
 from .raw_rules import DEPRIO_HM, specific_hintmovie_requierments, specific_level_requierments, get_levlel_connections
-from .options import LogicDifficulty
+from .options import LogicDifficulty, RandomizePowerups, RandomizeMovment
 
 
 if TYPE_CHECKING:
@@ -59,7 +60,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 for sc in range(3):
                     requierments[world_num][level_num][1][sc] = hard_rules[world_num][level_num][1][sc] & \
                                                             easy_rules[world_num][level_num][1][sc]
-                if len(requierments[world_num][level_num]) >= 3:
+                if (world_num+1,level_num+1, 2) in SECRET_EXIT:
                     requierments[world_num][level_num][2] = hard_rules[world_num][level_num][2] & \
                                                             easy_rules[world_num][level_num][2]
     elif world.options.logic_difficulty.value == LogicDifficulty.option_difficult:
@@ -73,6 +74,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     #sets basic rules for each level
     #
     levels_per_world = [8, 8, 8, 9, 8, 9, 9, 10, 8]
+    first_level_second_half = [4,4,4,4,4,5,4,4]
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, levels_per_world[world_num - 1]+1):
             flagpole = world.get_location(f"World{world_num}_level{level_num}_flagpole")
@@ -81,14 +83,14 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 connection_rules |= rules.Has(f"World{world_num}_level{connection}_cleared")
             if connection_rules == rules.False_(): # maybe have to use ==, not sure
                 connection_rules = rules.Has(f"World{world_num}", count=1)
-            if level_num == 7 + (1 if world_num in  [7,8] else 0) and world_num != 9: #castle level :
-                connection_rules = connection_rules & rules.Has(f"World{world_num}", count=2)
+            if world_num != 9:
+                if level_num == first_level_second_half[world_num-1]:
+                    connection_rules &= rules.Has(f"World{world_num}", count=2)
+            elif world_num == 9:
+                clear_rule &= rules.Has("Starcoin",count=10*level_num)
 
             clear_rule = level_req[world_num-1][level_num-1][0] | (rules.Has("glitched_logic") & hard_rules[world_num-1][level_num-1][0])
-            if world_num != 9:
-                world.set_rule(flagpole, connection_rules & clear_rule)
-            if world_num == 9:
-                world.set_rule(flagpole,rules.Has("Starcoin",count=10*level_num) & clear_rule)
+            world.set_rule(flagpole, connection_rules & clear_rule)
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
@@ -114,7 +116,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     total_cost = 0
     if world.options.include_hintmovies:
         for hm_num in range(1,HM_COUNT+1):
-            location = world.get_location(f"Hintmovie{hm_num}")
+            location = world.get_location(f"Hintmovie{hm_num:02}")
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
             hm_rule = ((rules.Has(f"Starcoin", count=total_cost)|(rules.Has("glitched_logic") & rules.Has(f"Starcoin", count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") )
@@ -131,12 +133,13 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             elif secret_exit[2] == 1:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
     for i in range(1,world.options.num_inventory_powerups.value+1):
-        invent_pow = world.get_location(f"Inventory_powerup_{i}")
+        invent_pow = world.get_location(f"Inventory_powerup_{i:03}")
         worlds_list = list(f"World{j}" for j in range(1,9+1))
         worlds_list += worlds_list
         worlds_list.pop()
-        req_world_com = min(8*2, (i // 5)+1)
-        invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic")
+        req_world_com = min(8*2, (i // 5)+2)
+        # hades soft logic thats ored with glitched logic, but also make sure you have climb
+        invent_rule = (rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic") ) & (rules.Has("climb")  | [OptionFilter(RandomizeMovment, RandomizeMovment.option_off)])
         world.set_rule(invent_pow, invent_rule)
         # soft logic, gain access when have new worlds
 

@@ -62,7 +62,7 @@ class NSMBWInterface():
     game_rev : int
     relay_trackers: Optional[Dict[Any, Any]]
 
-    memory_addresses: MemoryAddresses
+    memory_addresses : MemoryAddresses
     deathtimer : float = time.time()
     
     def __init__(self, logger: Logger) -> None:
@@ -123,8 +123,8 @@ class NSMBWInterface():
 
             if self.current_game:
                 self.logger.info(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}")
-        except DolphinException:
-            print("An excpetion happend when connecting to dolphin")
+        except DolphinException as e:
+            logger.error(f"An excpetion {e} happend when connecting to dolphin")
 
 
     def disconnect_from_game(self):
@@ -287,6 +287,7 @@ class NSMBWInterface():
             keyboard.release("F8")
             time.sleep(wait_long)
             #asyncio.sleep(1)
+        logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the JIT cache (JIT -> clear chache).")
 
 
 
@@ -304,9 +305,9 @@ class NSMBWInterface():
             return False
 
 
-    async def handle_unlocked_moves(self, unlocked_moves, slot_data):
+    async def handle_unlocked_moves(self, unlocked_moves, slot_data_movement):
         self.should_clear = 0
-        if slot_data >= 1:
+        if slot_data_movement >= 1:
 
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
@@ -372,7 +373,7 @@ class NSMBWInterface():
                 self.write_instruction(address, b'\x94\x21\xff\xf0')
 
             # red switch
-            if not "red_block" in unlocked_moves:
+            if not "!-switch" in unlocked_moves:
                 self.set_red_switch(b'\x00')  # reset red switch if not unlocked
 
             address_nostar = self.memory_addresses.yoshi_walk_speed
@@ -418,23 +419,29 @@ class NSMBWInterface():
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, b"\x2c\x05" + PowerPCInstructions.reg_r0)
+            #return
 
+
+            # this causes game to crash / freez when climb fence
             #climb_vine
-            address_stand_still = self.memory_addresses.address_climb_vine_still
-            address_fall = self.memory_addresses.address_climb_vine_fall
-            if not "climb" in unlocked_moves:
-                self.write_instruction(address_stand_still, PowerPCInstructions.instru_return)
-                self.write_instruction(address_fall, PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address_stand_still, PowerPCInstructions.intru_stwu + b"\xff\xc0")
-                self.write_instruction(address_fall, PowerPCInstructions.intru_stwu + b"\xff\xc0")
+            #address_stand_still = self.memory_addresses.address_climb_vine_still
+            #address_fall = self.memory_addresses.address_climb_vine_fall
+            #if not "climb" in unlocked_moves:
+            #    self.write_instruction(address_stand_still, PowerPCInstructions.instru_return)
+            #    self.write_instruction(address_fall, PowerPCInstructions.instru_return)
+            #else:
+            #    self.write_instruction(address_stand_still, PowerPCInstructions.intru_stwu + b"\xff\xc0")
+            #    self.write_instruction(address_fall, PowerPCInstructions.intru_stwu + b"\xff\xc0")
 
+            #return
             #swing_vine
             address = self.memory_addresses.address_tarzan_vine
             if not "climb" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_stwu + b"\xff\xc0")
+
+            #return
 
             address = self.memory_addresses.address_door
             if not "door" in unlocked_moves:
@@ -447,14 +454,15 @@ class NSMBWInterface():
 
 
             # sneak
-            address_sneak_walk = self.memory_addresses.address_kani_walk
-            address_sneak_hang = self.memory_addresses.address_kani_hang
-            if not "climb" in unlocked_moves:
-                self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
-                self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address_sneak_walk, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffe0)
-                self.write_instruction(address_sneak_hang, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffd0)
+            # causes game to freez
+            #address_sneak_walk = self.memory_addresses.address_kani_walk
+            #address_sneak_hang = self.memory_addresses.address_kani_hang
+            #if not "climb" in unlocked_moves:
+            #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
+            #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
+            #else:
+            #    self.write_instruction(address_sneak_walk, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffe0)
+            #    self.write_instruction(address_sneak_hang, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffd0)
 
             #cary_shell
             address = self.memory_addresses.address_carry_shell
@@ -508,7 +516,7 @@ class NSMBWInterface():
                 self.write_instruction(address, button_on_instru)
 
             address = self.memory_addresses.address_spinjump
-            if not "spin" in unlocked_moves:
+            if not "spin_jump" in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0000)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0017)
@@ -520,7 +528,7 @@ class NSMBWInterface():
     def get_sc(self):
         address = self.memory_addresses.sc_currentlevel
         return self.dolphin_client.read_address(address,4*3)
-    def starcoin_stockage(self):
+    def get_starcoin_stockage(self):
         address = self.memory_addresses.sc_stockage
         return self.dolphin_client.read_address(address,1)
     def get_level_world(self):
@@ -585,7 +593,7 @@ class NSMBWInterface():
     def set_inventory_items(self, value, type_num):
         address = self.memory_addresses.inventory_items + type_num -1
         self.dolphin_client.write_address(address, value)
-    def set_level_stats(self, world_num, level_num, data):
+    def set_level_stats(self, world_num, level_num, data : bytes):
         address = self.memory_offset_level_stats(world_num,level_num)
         self.dolphin_client.write_address(address,data)
     def set_red_switch(self, data):

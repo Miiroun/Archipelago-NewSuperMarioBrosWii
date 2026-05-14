@@ -178,7 +178,7 @@ class MemoryAddresses(object):
 
         self.world_level = self.map_between("E2",0x80315B9C)
         self.level_level = self.map_between("E2",0x80315B9D)
-        self.hm_stats = self.map_between("E2",0x80C80EDC)
+        self.hm_stats = self.hard_code({"E2" : 0x80C80EDC})
         self.world_stats = self.map_between("E2",0x80C80812)
 
         self.map_world = self.map_between("E2",0x8042A04B)
@@ -244,7 +244,7 @@ class MemoryAddresses(object):
 
 
         self.death_address = self.map_between("E2",0x800555DC)
-        self.in_stage_flag = self.map_between("E2",0x80c72260)
+        self.in_stage_flag = self.hard_code({ "E2" : 0x80c72260})
 
         #0x154ba0c  [32-bit BE] [NTSC,PAL] Character Pointer Slot 1 (Not necessarily Player 1)
 
@@ -276,11 +276,15 @@ class MemoryAddresses(object):
 
         return lib_address_maps.map_addr_from_to(mapper_from, mapper_to, address-1)+1
 
-    def hard_code(self, mem_addresses : typing.Dict[str, int], default : str ="E2" ) -> int:
+    def hard_code(self, mem_addresses : typing.Dict[str, int], default : str = "E2" ) -> int:
+        val : int
         if self.this_version in mem_addresses.keys():
-            return mem_addresses[self.this_version]
+            val = mem_addresses[self.this_version]
         else:
-            return mem_addresses[default]
+            val = mem_addresses[default]
+
+        assert 0x80000000 <= val <= 0x82000000
+        return val
 
 
 

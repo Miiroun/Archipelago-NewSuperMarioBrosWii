@@ -1,39 +1,15 @@
 ## Super short term
-- Pin docs in dc
-- Wait on logic getting made
 - Playtest
+- Wait on logic getting made
 - -> make release
-- Add info to ap-wiki
-- Change starting world into a choice instead of range
+- Pin docs in dc
 
 
 ## Playtest
-- Playtest red switch
-- test if bowser unlock does work now
-- Test so hint movie 3 is unlocked
-- Check to see if completing castle completion still gives level completion
-- Ap: playtest if hint movies unlocks correctly
-- Test if world 9 can send items: problem with sending completion
-- test so completing castle sends its check
-- Test world 9 sends level completion
-- Playtest so hint movies work correctly
-- Double check so bowser unlock works correctly
-- Test that generation time is reasonable
-- test if rocket pipe is disabled
-- Playtest so powerups from toad houses are checks
-- Test hint movies unlock correctly from castles / towers
-- Death link
-- Does direction-lock impact world map?
+- Try hosting on website and see if that causes problems
 
 
 ## Bugs to fix
-- Sometimes invisible on worldmap
-  - Marios animation start from back of world
-- Starts playing ending sequence when new file
-- World unlock only works on savefile2, same with goal completion
-- sends death link on connect
-- Sneak freezes game
-- 7-6 freezes when clear?
 
 
 ## Important features (asked after a lot)
@@ -46,17 +22,25 @@
 ## Short term
 - World map locks/unlocks doesn't work on other savefiles
 - Add more options to how world 9 levels are unlocked
-- Turn traps into individual options : set that starts filled out
-- Option for #amount filler
 - add some cashing for received checks, so doesn't double count already accounted for items when relogs
 - Try to get EU conversion to work
 - Add unit test
-- UT
-  - Auto tabbing
 - Protocol
   - Grouped death-link
   - Damage-link
   - Filler link
+- change to option of collects star coin on level completion or when you get them
+- Multiplayer support
+  - Add support for powerups
+  - find other player pointers
+  - Kill when in water
+- Have a vote in discord about if riivolution patch
+- Try debuging about intro cutceens : look at patch in ghidra
+- Us pipe rando patches : always movd next world -> never
+- Look at pipe rando code for diffrent patches : always move to next world seems useful
+- fix UT-autotab
+- World unlock only works on savefile2, same with goal completion
+- Try moving the things that version specific to the pointer referencing them instead, might work
 
 
 ## Filler link
@@ -66,27 +50,39 @@
 ## Broken versions
 # EU 2
 - World unlocks
+  - Look up address in ghidra
 - is in level check
 - star coin and level completed checks
 - hint movies
 # US 1
-- Somthing doesnt work
-
+- Sending hint movies
+- Sending level checks
 
 ## Mid term
 - Implement graphics for Hint movie shop
   - Try to change hm menu to show which movies unlocks which items 
   - Need to include new messages.arc and some patch code
 - Create functions that are called at start/end of level instead of continuously? (to optimize code)
-- Bases on death messages creat an ingame text message
+  - Remove having to loop though all checks each frame?
+- Bases on death messages create an ingame text message
 - Support different savefiles
 - Skipp cutscenes
 - Create option presets
-- Remove having to loop  though all checks each frame?
 - Allow for filtered messages
 - Change how world9 and peach function for better savestates
 - make all levels unlock from start of world
 - create unit test for logic
+- Add info to ap-wiki
+- Riivolution patch that changes world map unlock order and which level required to leave
+
+## Difficult small bugs to fix
+- Sometimes invisible on worldmap
+  - Marios animation start from back of world
+- Starts playing ending sequence when new file
+- Sneak freezes game
+- 7-6 freezes when clear?, is temporarily removed
+- Hint movies that requires all level completion don't work in game
+
 
 ## Features
 - Save toad / kill world enemy = hint/check
@@ -113,7 +109,6 @@
 
 
 ## Long term
-- Multiplayer support
 - Non ap rando (enemy, level, entrance)
   - One of set world level / level world changes ingame level: can be used for level rando
 - Do something with coin battles?

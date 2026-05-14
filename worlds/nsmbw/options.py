@@ -21,7 +21,6 @@ from Options import *
 
 class TrapChance(Range):
     """
-    Traps are not currently implemented
     Percentage chance that any given filler item will be replaced with traps.
     """
 
@@ -29,7 +28,7 @@ class TrapChance(Range):
 
     range_start = 0
     range_end = 100
-    default = 0
+    default = 30
 
 
 class RandomizeStarCoins(Toggle):
@@ -60,6 +59,7 @@ class DontRandoMovement(OptionSet):
     """
 
     display_name = "Dont Rando these Movements"
+    default = {"run", "button_left"}
 
 
 class RandomizePowerups(Choice):
@@ -87,7 +87,7 @@ class IncludeLevelCompletion(Toggle):
     This makes completing a level into a location, adds 231 locations.
     """
     display_name = "Include Level Completion"
-    default = False
+    default = True
 
 class IncludeShortcuts(Toggle):
     """
@@ -117,20 +117,25 @@ class LogicDifficulty(Choice):
     default = option_normal
     #visibility  = Option.visibility.none
 
-class StartingWorld(Range):
+class StartingWorld(Choice):
     """
-    If enabled will randomize your staring world.
+    Select the world you want to start with, or keep it at random.
     """
     display_name = "Starting World"
-    range_start = 1
-    range_end = 8
-
+    option_world1 = 1
+    option_world2 = 2
+    option_world3 = 3
+    option_world4 = 4
+    option_world5 = 5
+    option_world6 = 6
+    option_world7 = 7
+    option_world8 = 8
     default = "random"
 
 class AmountStartingItems(Range):
     """
     Gives you an amount of free locations that are automatically checked.
-    This option is here to create a few free checks that helps with restrictive start error.
+    This option is here to create a few free checks that helps with restrictive start errors.
     Put to at least ~25 if you disable both check hint movies and check level completion otherwise you can keep it at 0.
     """
 
@@ -146,7 +151,7 @@ class NumberInventoryItems(Range):
     display_name = "Number Inventory Items"
     range_start = 0
     range_end = 999
-    default = 20
+    default = 40
 
 class BowserCastleStarUnlock(Range):
     """
@@ -158,7 +163,7 @@ class BowserCastleStarUnlock(Range):
     range_start = 0
     range_end = 231
 
-    default = 0
+    default = 100
 
 class BowserCastleWorldUnlock(Range):
     """
@@ -170,24 +175,40 @@ class BowserCastleWorldUnlock(Range):
     range_start = 0
     range_end = 7
 
-    default = 0
+    default = 4
 
 class DeathLink(Toggle):
     """
     Enable death-link as default, can be toggled in client.
     """
     display_name = "Death Link"
-    default = False
+    default = True
 
 class AmountSupportReceived(Range):
     """
-    This setting will set the amount of 1ups and powerups send to inventory when reciving their corresponding checks.
+    This setting will set the amount of 1ups and powerups send to inventory when receiving their corresponding items.
     """
-    display_name = "Amount Support items recived from ap-items"
+    display_name = "Amount Support items received from ap-items"
     range_start = 1
     range_end = 100
 
     default = 5
+
+class FillerItems(OptionSet):
+    """
+    Select which filler items you want to have be possible to generate.
+    """
+    display_name = "Filler Items"
+    from .Utils import FILLER
+    default = set(FILLER)
+
+class TrapItems(OptionSet):
+    """
+    Select which filler items you want to have be possible to generate.
+    """
+    display_name = "Trap Items"
+    from .Utils import TRAPS
+    default = set(TRAPS)
 
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
@@ -211,6 +232,8 @@ class NSMBWOptions(PerGameCommonOptions):
     enable_superpowers : EnableSuperPowers
     amount_support_received : AmountSupportReceived
     num_inventory_powerups : NumberInventoryItems
+    filler_items : FillerItems
+    trap_items : TrapItems
 
 
     bowser_star_unlock : BowserCastleStarUnlock
@@ -226,7 +249,9 @@ option_groups = [
             IncludeLevelCompletion,
             IncludeHintMovies,
             RandomizeStarCoins,
-         ],
+            NumberInventoryItems,
+            AmountStartingItems,
+        ],
     ),
     OptionGroup(
         "Items",
@@ -246,13 +271,13 @@ option_groups = [
     OptionGroup(
         "Other",
         [
-            TrapChance,
-            AmountStartingItems,
             DeathLink,
             LogicDifficulty,
             EnableSuperPowers,
+            FillerItems,
+            TrapItems,
+            TrapChance,
             AmountSupportReceived,
-            NumberInventoryItems,
         ],
     ),
 ]
@@ -278,16 +303,30 @@ def adjust_options(world):
 
     if (world.options.include_hintmovies.value == False) and (world.options.include_level_completion.value == False):
         if world.options.num_starting_locations.value <= 20:
-            world.options.num_starting_locations.value = 20
-            print("If you disable hint movies and level completion have at least 20 free starting locations")
+            pass
+            #world.options.num_starting_locations.value = 20
+            #print("If you disable hint movies and level completion have at least 20 free starting locations")
         #raise OptionError("IncludeHintMovies or IncludeLevelCompletion to have enough locations")
     #if world.options.randomize_coins == False:
     #    raise OptionError("RandomizeStarCoins is not implemented to be turned off")
     if world.options.bowser_star_unlock.value >200:
         world.options.bowser_star_unlock.value = 200
-        print("Generation fails when star req for reaching bowser is >200")
+        print("Generation fails when star req for reaching bowser is > 200")
 
     from .items import MOVEMENT_UNLOCKS
-    for _item in world.options.dont_rando_move.value:
-        if not (_item in MOVEMENT_UNLOCKS):
-            print(f"Text {_item} is not a valid movement.")
+    movement_set = set(MOVEMENT_UNLOCKS)
+    if len(world.options.dont_rando_move.value - movement_set) > 0:
+        print(f"Texts {world.options.dont_rando_move.value - movement_set} is not a valid movement.")
+        world.options.dont_rando_move.value &= movement_set
+
+    from .items import FILLER
+    filler_set = set(FILLER)
+    if len(world.options.filler_items.value - filler_set) > 0:
+        print(f"Texts {world.options.filler_items.value - filler_set} are not a valid filler item.")
+        world.options.filler_items.value &= filler_set
+
+    from .items import TRAPS
+    trap_set = set(TRAPS)
+    if len(world.options.trap_items.value - trap_set) > 0:
+        print(f"Texts {world.options.trap_items.value - trap_set} are not a valid trap item.")
+        world.options.filler_items.value &= trap_set

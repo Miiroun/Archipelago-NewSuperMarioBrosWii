@@ -1,6 +1,7 @@
 import os
 from typing import Union
 
+import Utils
 import settings
 
 
@@ -11,6 +12,9 @@ class NSMBWSettings(settings.Group):
 
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
+
+    class SaveFileLocation(settings.FolderPath):
+        """A path that the nsmbw client uses to store data about saves"""
 
     class UTPackPath(settings.FilePath):
         """Optional path to an external UTpack not yet created"""
@@ -26,3 +30,4 @@ class NSMBWSettings(settings.Group):
     auto_open: AutoOpenGame | bool = True
     ut_pack_path: Union[UTPackPath, str] = UTPackPath()
     #riivolution_path: RiivolutionPath = "" # os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\"
+    save_file_path : SaveFileLocation = Utils.user_path() + f"\\nsmbw\\nsmbw_saves"
