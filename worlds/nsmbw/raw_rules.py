@@ -162,7 +162,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
         ],
         [  # world 2
             [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), mini]],  # -2
+            [normal_move, [True_(), p_switch & pipe, mini]],  # -2
             [normal_move, [True_(), True_(), True_()]],  # -3
             [normal_move, [True_(), propeller, propeller | mini], True_()],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
@@ -173,10 +173,10 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
         [  # world 3
             [normal_move, [ice_peng, True_(), ice_peng]],  # -1
             [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), True_()]],  # -3
+            [normal_move, [True_(), True_(), ice_peng | propeller]],  # -3
             [normal_move & red_block, [True_(), True_(), True_()]],  # -4
             [normal_move, [True_(), red_block, red_block], True_()],  # -5
-            [normal_move, [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthous
+            [normal_move & door & climb, [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthous
             [normal_move & door, [True_(), True_(), True_()]],  # -7
             [normal_move & door, [True_(), True_(), True_()]],  # -8
         ],
@@ -255,7 +255,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     #
     easy_rules = [ # difficult logic
         [  # world 1
-            [True_(), [True_(), True_(), True_()]],  # -1
+            [True_(), [propeller | mini, True_(), True_()]],  # -1
             [True_(), [True_(), True_(), True_()]],  # -2
             [True_(), [True_(), True_(), True_()],True_()],  # -3
             [True_(), [True_(), True_(), True_()]],  # -4
@@ -275,8 +275,8 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [True_(), [True_(), True_(), True_()]],  # -8 1-C
         ],
         [  # world 3
-            [True_(), [True_(), True_(), True_()]],  # -1
-            [True_(), [True_(), True_(), True_()]],  # -2
+            [True_(), [True_(), ice_peng, True_()]],  # -1
+            [True_(), [True_(), propeller | mini, True_()]],  # -2
             [True_(), [True_(), True_(), True_()]],  # -3
             [True_(), [True_(), True_(), True_()]],  # -4
             [True_(), [True_(), True_(), True_()], True_()],  # -5

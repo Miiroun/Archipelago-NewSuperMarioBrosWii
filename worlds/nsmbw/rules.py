@@ -143,6 +143,12 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         world.set_rule(invent_pow, invent_rule)
         # soft logic, gain access when have new worlds
 
+    # sets logic for completion condition location
+    bowser_defeat_loc = world.get_location("Bowser Defeated")
+    reach_bowser_rule = rules.Has(f"World{8}_level{9}_cleared")
+    world.set_rule(bowser_defeat_loc, reach_bowser_rule)
+
+
 def set_completion_condition(world: NSMBWworld) -> None:
     # Finally, we need to set a completion condition for our world, defining what the player needs to win the game.
     # You can just set a completion condition directly like any other condition, referencing items the player receives:
@@ -150,6 +156,7 @@ def set_completion_condition(world: NSMBWworld) -> None:
 
     # In our case, we went for the Victory event design pattern (see create_events() in locations.py).
     # So lets undo what we just did, and instead set the completion condition to:
+
     world.set_completion_rule(rules.Has("Victory"))
 
 #rules to json exists

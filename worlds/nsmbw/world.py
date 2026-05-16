@@ -73,10 +73,10 @@ class NSMBWworld(World):
         if hasattr(self.multiworld, "re_gen_passthrough"):
             if self.game in self.multiworld.re_gen_passthrough:
                 slot_data: dict[str, Any] = self.multiworld.re_gen_passthrough[self.game]
-                if (slot_data["version"][0] != self.world_version[0]) or (slot_data["version"][1] != self.world_version[1]) or (slot_data["version"][2] != self.world_version[2]):
-                    err_string: str = f"NSMBW APWorld version mismatch. Multiworld generated with " \
-                                     f"{slot_data['version']}; local install using {self.world_version}"
-                    raise ValueError(err_string)
+                #if (slot_data["version"][0] != self.world_version[0]) or (slot_data["version"][1] != self.world_version[1]) or (slot_data["version"][2] != self.world_version[2]):
+                #    err_string: str = f"NSMBW APWorld version mismatch. Multiworld generated with " \
+                #                     f"{slot_data['version']}; local install using {self.world_version}"
+                #    raise ValueError(err_string)
                 self.overwrite_options(self.multiworld.re_gen_passthrough[self.game])
         nsmbw_option.adjust_options(self)
 
@@ -103,8 +103,8 @@ class NSMBWworld(World):
         return items.get_random_filler_item_name(self)
 
     # There may be data that the game client will need to modify the behavior of the game.
-    # This is what slot_data_movement exists for. Upon every client connection, the slot's slot_data_movement is sent to the client.
-    # slot_data_movement is just a dictionary using basic types, that will be converted to json when sent to the client.
+    # This is what slot_data exists for. Upon every client connection, the slot's slot_data is sent to the client.
+    # slot_data is just a dictionary using basic types, that will be converted to json when sent to the client.
     def fill_slot_data(self) -> Mapping[str, Any]:
         # If you need access to the player's chosen options on the client side, there is a helper for that.
 

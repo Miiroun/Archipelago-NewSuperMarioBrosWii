@@ -17,4 +17,11 @@
 - forward to apworld-news
 
 # General weirdness
-- For some reason generate from source
+- Why sometimes invisible world map
+
+# Tips to devs
+- Have 2 branches when working on new big feature, so can put out smaller bugfixes until its finished.
+
+# Playtesting
+- Only developed on Windows
+- Have test on WSL (Windows subsystem linux) and at-least boots

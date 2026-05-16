@@ -6,3 +6,6 @@ def int_to_bytes(num : int, width, signed=False) -> bytes:
 
 TRAPS = ["Loose_powerup_trap", "Goomba_trap", "Death_trap"] #, "Time_trap",
 FILLER = ["fill_inventory", "1ups"]
+
+
+SUPPORTED_VERSIONS = ["E2"]

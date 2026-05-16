@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from . import keyboard
 from . import PowerPCInstructions
 from .dolphin_interface_client import *
-from ..Utils import bytes_to_int, int_to_bytes
+from ..Utils import bytes_to_int, int_to_bytes, SUPPORTED_VERSIONS
 from ..items import ITEM_NAME_TO_ID, POWERUP_UNLOCK
 from ..locations import LEVELS_PER_WORLD
 
@@ -29,7 +29,7 @@ LEVEL_COUNT = 77
 POWERUP_COUNT = len(POWERUP_UNLOCK)
 ITEM_ID_TO_NAME = {v: k for k, v in ITEM_NAME_TO_ID.items()}
 
-_SUPPORTED_VERSIONS = {
+GAME_VERSIONS = {
     (b"SMNP01", 1) : "P1",
     (b"SMNE01", 1) : "E1",
     (b"SMNJ01", 1) : "J1",
@@ -88,12 +88,11 @@ class NSMBWInterface():
             #print("seraching for game rev")
             #print((game_id, game_rev))
             self.current_game = None
-            if (game_id, game_rev) in _SUPPORTED_VERSIONS:
-                #print("Game revison found")
+            if (game_id, game_rev) in GAME_VERSIONS:
                 self.current_game = game_id
                 self.game_rev = game_rev
-                version_name = _SUPPORTED_VERSIONS[(game_id, game_rev)]
-                if version_name != "E2":
+                version_name = GAME_VERSIONS[(game_id, game_rev)]
+                if version_name not in SUPPORTED_VERSIONS:
                     logger.error("The only playtested version is E2 (US rev2) and this is not the version of your game. Play the others at your own risk.When you find errors, please report them so they might be fixed.")
 
                 self.memory_addresses = MemoryAddresses(version_name)
@@ -101,7 +100,7 @@ class NSMBWInterface():
 
             # The first read of the address will be null if the client is faster than the emulator
             #self.current_game = None
-            #for version in _SUPPORTED_VERSIONS:
+            #for version in GAME_VERSIONS:
             #    if (
             #        game_id == GAMES[version]["game_id"]
             #        and game_rev == GAMES[version]["game_rev"]

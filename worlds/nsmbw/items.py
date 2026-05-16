@@ -158,12 +158,13 @@ def create_all_items(world: NSMBWWorld) -> None:
 
 
     # handle important items
-    important_items = {"Spin_jump", "jump", "Super_mushroom", f"button_left", f"button_right"}
+    important_items = {"Spin_jump", "jump", "Super_Mushroom", f"button_left", f"button_right"}
     itempool_names = []
     for item in itempool:
         itempool_names.append(item.name)
 
     for item in important_items:
+        assert item in ITEM_NAME_TO_ID.keys(), f"Invalid item name {item} in important_items"
         if item in itempool_names:
             world.multiworld.early_items[world.player][item] = 1
 

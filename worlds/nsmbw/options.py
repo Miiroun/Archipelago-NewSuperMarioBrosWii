@@ -71,7 +71,7 @@ class RandomizePowerups(Choice):
     option_on_except_mushroom = 1
     option_on_progressive = 2
     option_on = 3
-    default = option_on_progressive
+    default = option_on_except_mushroom
 
 class IncludeHintMovies(Toggle):
     """
@@ -234,7 +234,6 @@ class NSMBWOptions(PerGameCommonOptions):
     num_inventory_powerups : NumberInventoryItems
     filler_items : FillerItems
     trap_items : TrapItems
-
 
     bowser_star_unlock : BowserCastleStarUnlock
     bowser_world_unlock : BowserCastleWorldUnlock

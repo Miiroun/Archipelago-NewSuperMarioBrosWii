@@ -16,7 +16,7 @@ from ..items import MOVEMENT_UNLOCKS
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT, get_level_name, get_starcoin_name, \
     mod_level_name
 from settings import get_settings
-
+from ..options import RandomizeMovment
 
 tracker_loaded = False
 
@@ -73,6 +73,7 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         """
         self.ctx.items_handled = []
         self.ctx.locations_handled = []
+        self.ctx.prossesed_inventory_powerup_locations = 0
 
     if not is_frozen():
         def _cmd_dev(self, key: str = ""):
@@ -82,20 +83,22 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
             #Utils.async_start(self.ctx.unlock_everything())
             if key == "":
                 self.ctx.unlock_everything()
-            else:
+            elif len(key.split("-")) == 2:
                 world_num,level_num = key.split("-")
                 self.ctx.game_interface.set_level_stats(int(world_num), int(level_num), b'\x37')
+            else:
+                logger.info(r"Error in key for /dev")
 
     def _cmd_save(self):
         """
-        Load the client savefile for completed levels
+        Load save file for client memory.
         """
         Utils.async_start(self.ctx.handle_save())
         #self.ctx.handle_save()
 
     def _cmd_load(self):
         """
-        Save data of completed levels to a local savefile
+        Save data of client memeory to a local save file.
         """
         Utils.async_start(self.ctx.handle_load())
         #self.ctx.handle_load()
@@ -115,7 +118,7 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
 
     def _cmd_kill(self):
         """
-        A command that kills mario. Useful if you get stuck.
+        A command that kills mario. Useful if you get soft-locked.
         """
         time.sleep(1)
         Utils.async_start(self.ctx.game_interface.kill_player())
@@ -134,8 +137,11 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         """
         Gives you a list of which movement you have and have not unlocked
         """
-        logger.info(f"You currently have {self.ctx.unlocked_moves}")
-        logger.info(f"And you are missing {set(MOVEMENT_UNLOCKS) - set(self.ctx.unlocked_moves)}")
+        if self.ctx.slot_data["randomize_movement"] != RandomizeMovment.option_off:
+            logger.info(f"You currently have {self.ctx.unlocked_moves}")
+            logger.info(f"And you are missing {set(MOVEMENT_UNLOCKS) - set(self.ctx.unlocked_moves)}")
+        else:
+            logger.info("It appears you dont have movement rando enabled.")
 
 
 
@@ -153,7 +159,7 @@ class NSMBWContext(SuperContext):
     tags = {"AP"}#CommonContext.tags
     game = 'NSMBW'  # empty matches any game since 0.3.2
     items_handling = 0b111  # receive all items for /received
-    want_slot_data = True  # Can't use game specific slot_data_movement
+    want_slot_data = True  # Can't use game specific slot_data
     game_interface: NSMBWInterface
     connection_state = ConnectionState.DISCONNECTED
     last_error_message: Optional[str] = None
@@ -209,11 +215,11 @@ class NSMBWContext(SuperContext):
             #self.username = args["slot_info"][str(args["slot"])][0]
             #need to set username somewhere
 
-            self.slot_data = args["slot_data_movement"]
+            self.slot_data = args["slot_data"]
             self.death_link_enabled = self.slot_data["death_link"]
 
             if tracker_loaded:
-                args.setdefault("slot_data_movement", dict())
+                args.setdefault("slot_data", dict())
             Utils.async_start(self.handle_load())
         elif cmd == "RoomInfo":
             self.seed_name = args["seed_name"]
@@ -428,12 +434,11 @@ class NSMBWContext(SuperContext):
                 logger.info("Loaded from file")
 
             except FileNotFoundError:
-                print("Couldnt load save data")
                 logger.info("Did not find save file to load from")
         else:
             logger.info("Failed to initiate load of data")
 
-    #print("--------------------------- Code started ---------------------------------------------")
+    #print("--------------------------- Main Code started ---------------------------------------------")
 
     
     async def handle_check_goal_complete(self):
@@ -458,30 +463,30 @@ class NSMBWContext(SuperContext):
         await self.check_inventory_location()
 
     # this code is for checking if the star coin was in level, but it was buggy so changed to on world collect
-    #async def check_starcoins(self):
-    #    sc_statuses = self.game_interface.get_sc()
-    #    checked_locations = []
-    #    for n in range(0, 3):
-    #        sc_status = sc_statuses[3 + 4 * n]
-    #        # print(sc_status)
-    #         # print(sc_statuses)
-    #        sc_num = n + 1
-    #       if sc_status == 0:  # becomes 0 if collected
-    #            world_num = int.from_bytes(self.game_interface.get_world_level(), "big") + 1
-    #            level_num = int.from_bytes(self.game_interface.get_level_level(), "big") + 1
-    #
-    #            print(f"Levelnum: {level_num}")
-    #            if level_num > 10: level_num += -10
-    #
-    #            location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-    #if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+    # THIS IS NOT CURRENLY RUN
+    async def check_starcoins_in_level(self):
+        sc_statuses = self.game_interface.get_sc()
+        checked_locations = []
+        for n in range(0, 3):
+            sc_status = sc_statuses[3 + 4 * n]
+            # print(sc_status)
+            # print(sc_statuses)
+            sc_num = n + 1
+            if sc_status == 0:  # becomes 0 if collected
+                world_num = int.from_bytes(self.game_interface.get_world_level(), "big") + 1
+                level_num = int.from_bytes(self.game_interface.get_level_level(), "big") + 1
 
-    #                print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-    #                checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-    #                logger.info(f"Sent check from item{location_name}")
-    #
-    #    self.locations_handled += checked_locations
-    #    await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+                print(f"Levelnum: {level_num}")
+                if level_num > 10: level_num += -10
+
+                location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
+                if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                    print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
+                    checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                    logger.info(f"Sent check from item{location_name}")
+
+        self.locations_handled += checked_locations
+        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
 
     async def check_starcoins(self):
         checked_locations = []
@@ -885,8 +890,9 @@ class NSMBWContext(SuperContext):
                 logger.info(f"Fill inventory x{self.slot_data["amount_support_received"]} was received ")
                 for i in range(POWERUP_COUNT+1+1):
                     self.game_interface.update_inventory_items(i, self.slot_data["amount_support_received"])
-                for i in range(POWERUP_COUNT+1+1):
-                    self.previous_inventory.append(bytes_to_int(self.game_interface.get_inventory_items(i)))
+                if len(self.previous_inventory) == POWERUP_COUNT+1+1:
+                    for i in range(POWERUP_COUNT+1+1):
+                        self.previous_inventory[i] = bytes_to_int(self.game_interface.get_inventory_items(i))
 
             elif item_name == "1ups":
                 logger.info(f"1ups x{self.slot_data["amount_support_received"]} was received ")
@@ -1010,47 +1016,45 @@ class NSMBWContext(SuperContext):
 
 
 async def patch_and_run_game(apnsmbw_file: str):
-    output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
+    auto_start : bool = get_settings()["nsmbw.world_options"].auto_open
+    if auto_start:
+        output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
 
-    input_iso_path = get_settings()["nsmbw.world_options"].game_file_path
-    assert input_iso_path is not None, "Add a path to your game file in host.yaml"
-    assert Path(input_iso_path).exists(), "Your game file path is invalid"
+        input_iso_path = get_settings()["nsmbw.world_options"].game_file_path
+        assert input_iso_path is not None, "Add a path to your game file in host.yaml"
+        assert Path(input_iso_path).exists(), "Your game file path is invalid"
 
 
-    if not os.path.exists(output_path):
+        if not os.path.exists(output_path):
 
-        if False: #game does not need a riivolution patch
-            try:
-                logger.info(f"Input ISO Path: {input_iso_path}")
-                logger.info(f"Output ISO Path: {output_path}")
+            if False: #game does not need a riivolution patch
+                try:
+                    logger.info(f"Input ISO Path: {input_iso_path}")
+                    logger.info(f"Output ISO Path: {output_path}")
 
-                logger.info("Patching ISO...")
+                    logger.info("Patching ISO...")
 
-                patch_iso(input_iso_path, output_path)
+                    patch_iso(input_iso_path, output_path)
 
-                logger.info("Patching Complete")
+                    logger.info("Patching Complete")
 
-            except BaseException as e:
-                logger.error(f"Failed to patch ISO: {e}")
-                # Delete the output file if it exists since it will be corrupted
-                if os.path.exists(output_path):
-                    os.remove(output_path)
+                except BaseException as e:
+                    logger.error(f"Failed to patch ISO: {e}")
+                    # Delete the output file if it exists since it will be corrupted
+                    if os.path.exists(output_path):
+                        os.remove(output_path)
 
-                raise RuntimeError(f"Failed to patch ISO: {e}")
-            logger.info("--------------")
-        else:
-            output_path = input_iso_path
+                    raise RuntimeError(f"Failed to patch ISO: {e}")
+                logger.info("--------------")
+            else:
+                output_path = input_iso_path
 
-    Utils.async_start(run_game(output_path))
+        Utils.async_start(run_game(output_path))
 
 
 async def run_game(romfile: str):
-    # auto_start: bool = Utils.get_options()["nsmbw_options"].get("rom_start", True)
-    auto_start = True
-
-    if auto_start is True and dolphin_interface_client.assert_no_running_dolphin():
-
-        if get_settings()["nsmbw.world_options"].auto_open:
+    auto_start : bool = get_settings()["nsmbw.world_options"].auto_open
+    if  dolphin_interface_client.assert_no_running_dolphin() and auto_start:
             Utils.open_file(romfile)
     elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
         subprocess.Popen(

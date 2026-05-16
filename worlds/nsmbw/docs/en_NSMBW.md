@@ -52,6 +52,8 @@ config file.
 
 ## Options
 - Starting world is selectable in option
+- Most locations and items can be turned on/off in options
+- You can select your requirement for reaching bowser in your goal
 
 
 ## Known quirks / bugs
@@ -74,8 +76,8 @@ config file.
   - Adds or removes the death link tag.
 - /reapply_checks
   - Run this if you have not sent a level location that you have completed.
-- /dev
-  - A developer cheat command that is helpful for debugging features.
+- /dev [level]
+  - A developer cheat command for unlocking levels. Only works when running from source.
 - /save
   - Saves some of the client memory to a file. Can be helpful to run if the client craches.
 - /starcoin_count
@@ -88,15 +90,17 @@ config file.
   - Clears the JIT cache, run if you don't recive a move or get stuck in death loop.
 - /reconnect_dolphin
   - A debug command that trys to rehook dolphin.
+- /movements
+  - Gives you a list of all movements you have and have not received
 
 ## FAQ
 - What is not randomized currently?
   - Levels (order), enemies, powerups, pipes
 - Deathlink?
-  - Deathlink is implemented. Toggel it with command in client or with setting in yaml.
-- What is diffrent from vannila
+  - Deathlink is implemented. Toggle it with command in client or with setting in your yaml.
+- What is different from vanilla
   - Can't unlock canons
-  - The unlocks from world 9 requies 10 starcoin items / world number  to unlock
+  - The unlocks from world 9 requires 10 starcoin items / world number  to unlock
 - Multiplayer?
   - Multiplayer is currently not supported
   - You can play but only mario will be restricted to some of the unlocks
@@ -116,8 +120,8 @@ config file.
 
 ## Debug tips
 - Restart launcher and computer after installing if the client doesn't show up in launcher or something doesn't work.
-- Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2.
+- Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2 and are playing on save file 2.
 - Do not have another client open when you start client.
 - Connect to the server from the client after you are on the world map in game if you have problems on the title screen.
-- Try running the client commands the clear caches.
-- If you can not solve your problem, run the debug launcher (found inside your archipelago directory) and send a screenshot in the nsmbw thread in the archipelago discord server.
+- Try running the client commands /refresh, /reapply_checks and /reconnect_dolphin. Also try making a save-state and load it to clear the JIT cache.
+- If you can not solve your problem, run the debug launcher (found inside your archipelago directory) and send a screenshot of the client in the nsmbw thread in the archipelago discord server.

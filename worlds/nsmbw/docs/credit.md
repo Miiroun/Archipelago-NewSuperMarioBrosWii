@@ -3,17 +3,16 @@ Coded by and main developer
 
 \
 Others that helped
+- React / jacob_x_x (Done most of logic)
 - Matgamer2575 (started project and found some memory addresses)
 - techmuse (helped with locating addresses)
-- React / jacob_x_x (helped with developing logic)
 - LuigiXRules (Fixed typos in documentation)
-
 
 \
 Communities that helped
 - NSMBW thread in Archipelago dc server (for feature requests and playtesting)
-- Archipelgo dc server (worlddev help and documentation)
-- Horizo & NSMBW Hacking Depo discord servers (for knowledge about the game)
+- Archipelago dc server (worlddev help and documentation)
+- Horizon & NSMBW Hacking Depo discord servers (for knowledge about the game)
 
 
 \

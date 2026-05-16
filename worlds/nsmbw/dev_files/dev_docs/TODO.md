@@ -1,13 +1,13 @@
 ## Super short term
-- Playtest
 - Wait on logic getting made
 - -> make release
 - Pin docs in dc
+  - make new GitHub branch
 
 
 ## Playtest
-- Try hosting on website and see if that causes problems
-
+- Verify bowser unlock logic wise
+- Make sure inventory updates correctly
 
 ## Bugs to fix
 
@@ -24,7 +24,6 @@
 - Add more options to how world 9 levels are unlocked
 - add some cashing for received checks, so doesn't double count already accounted for items when relogs
 - Try to get EU conversion to work
-- Add unit test
 - Protocol
   - Grouped death-link
   - Damage-link
@@ -35,12 +34,13 @@
   - find other player pointers
   - Kill when in water
 - Have a vote in discord about if riivolution patch
-- Try debuging about intro cutceens : look at patch in ghidra
-- Us pipe rando patches : always movd next world -> never
-- Look at pipe rando code for diffrent patches : always move to next world seems useful
+- Try debuging about intro cutscene : look at patch in ghidra
+- Us pipe rando patches : always move next world -> never
+- Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab
 - World unlock only works on savefile2, same with goal completion
 - Try moving the things that version specific to the pointer referencing them instead, might work
+- fix unit tests
 
 
 ## Filler link
@@ -54,6 +54,8 @@
 - is in level check
 - star coin and level completed checks
 - hint movies
+- Probably 
+
 # US 1
 - Sending hint movies
 - Sending level checks
@@ -71,7 +73,6 @@
 - Allow for filtered messages
 - Change how world9 and peach function for better savestates
 - make all levels unlock from start of world
-- create unit test for logic
 - Add info to ap-wiki
 - Riivolution patch that changes world map unlock order and which level required to leave
 
@@ -98,11 +99,9 @@
   - Shrink Trap (revert to a no-powerup state) 
   - Time Travel Trap (removes half of the level's time, or just runs it at double speed.)
   - literature trap
-  - Death trap
 - FILLER 
   - 1 normal coin
   - random powerup : gain
-  - short amount star power
 - Features from gecko
   - Speed trap
   - fall damage
@@ -112,8 +111,9 @@
 - Non ap rando (enemy, level, entrance)
   - One of set world level / level world changes ingame level: can be used for level rando
 - Do something with coin battles?
+  - Maybe have location for collecting at least % in levels, each level is an item
 
 ## Features I (Miiroun) will not implement
-- Consol support
+- Native wii support
 - Randomized ?-blocks
 - Coin sanity
