@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+from enum import IntEnum
 from typing import List
 
 from Utils import is_frozen
@@ -10,7 +11,7 @@ from .NotificationManager import NotificationManager
 #from .patcher import patch_iso
 
 from NetUtils import ClientStatus
-from ..Utils import int_to_bytes, bytes_to_int
+from ..Utils import int_to_bytes, bytes_to_int, map_nd
 from ..items import MOVEMENT_UNLOCKS
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT, get_level_name, get_starcoin_name, \
@@ -34,7 +35,7 @@ logger = logging.getLogger("Client")
 
 
 
-class ModifiedState(Enum):
+class ModifiedState(IntEnum):
     UNMODIFIED = 0
     MODWOLD1_8 = 1
     MODALLWORLDS = 2
@@ -50,7 +51,7 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         """Send a message to the game interface."""
         self.ctx.notification_manager.queue_notification(" ".join(map(str, args)))
 
-    def _cmd_status(self, *args: List[Any]):
+    def _cmd_status(self):
         """Display the current dolphin connection status."""
         logger.info(f"Connection status: {status_messages[self.ctx.connection_state]}")
 
@@ -175,14 +176,14 @@ class NSMBWContext(SuperContext):
     #Created for NSMBW
     items_handled = []
     locations_handled = []
-    completed_levelstats : List[List[bytes]] = [[b"\x00" for _ in range(10)] for i in range(9)]
-    moded_levelstats = ModifiedState.UNMODIFIED
-    prev_powerup = b'\x00'
+    completed_levelstats : List[List[bytes]]
+    moded_levelstats : ModifiedState = ModifiedState.UNMODIFIED
+    prev_powerup : List[bytes]
     starcoin_count : int = 0
-    completed_levels : list= []
-    prev_lifecount : int = -1
+    completed_levels : list
+    prev_lifecount : List[int]
     prossesed_inventory_powerup_locations : int = 0
-    previous_inventory : List[int] = []
+    previous_inventory : List[int]
     previous_mapid : int = 0
     has_complained_about_world : int = 0
 
@@ -195,6 +196,15 @@ class NSMBWContext(SuperContext):
         self.items_handled = []
         self.locations_handled = []
         self.command_processor.ctx = self
+
+        self.completed_levels = []
+        self.previous_inventory = list([99 for _ in range(POWERUP_COUNT+1)])
+        self.prev_lifecount = list([-1 for _ in range(PLAYER_COUNT)])
+        self.prev_powerup = list([b'\x00' for _ in range(PLAYER_COUNT)])
+
+        self.completed_levelstats = list([list([b"\x00" for _ in range(LEVELS_PER_WORLD[i])]) for i in range(9)])
+        self.moded_levelstats = ModifiedState.UNMODIFIED
+
 
     async def server_auth(self, password_requested: bool = False):
         #try:
@@ -414,11 +424,14 @@ class NSMBWContext(SuperContext):
             #data.update({"completed_levelstats" : list(map(lambda x : x, list(map(bytes_to_int, self.completed_levelstats))))})
             data.update({"deathlink_enabled": self.death_link_enabled})
             data.update({"prossesed_inventory_powerup_locations" : self.prossesed_inventory_powerup_locations})
+            data.update({"completed_levelstats" : map_nd(self.completed_levelstats, bytes_to_int)})
+            data.update({"moded_levelstats" : self.moded_levelstats})
             with open(f"{path}\\{self.seed_name}.json", "w+") as file_name:
                 json.dump(data, file_name)
             logger.info("Saved to file")
         else:
             logger.info("Failed to initiate save of data")
+        self.game_interface.clear_cache()
 
     async def handle_load(self):
         if self.seed_name != "" and (not (self.seed_name is None)):
@@ -430,6 +443,9 @@ class NSMBWContext(SuperContext):
                 #self.completed_levelstats = list(map(lambda x : x, map(lambda x : int_to_bytes(x,1), data["completed_levelstats"])))
                 self.death_link_enabled = data["deathlink_enabled"]
                 self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
+
+                self.completed_levelstats = map_nd(data["completed_levelstats"], lambda  x : int_to_bytes(x, 1))
+                self.moded_levelstats = data["moded_levelstats"]
 
                 logger.info("Loaded from file")
 
@@ -580,7 +596,7 @@ class NSMBWContext(SuperContext):
                 exit_name = f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}"
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)
 
-                byte_to_check = 0
+                byte_to_check : int
                 if secret_exit[2] == 1:
                     byte_to_check = 0x10
                 elif secret_exit[2] == 2:
@@ -744,34 +760,35 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_unlocked_powerups(self, unlocked_powerups : list):
-        # this if statement makes powerup progresive
-        if self.slot_data["randomize_powerups"] >=1:
-            if self.slot_data["randomize_powerups"] == 1:
-                unlocked_powerups[0] = 1
-            elif self.slot_data["randomize_powerups"] == 2:
-                if (unlocked_powerups[0] == 0) and (sum(unlocked_powerups) >= 1):
-                    unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
+        for player_num in range(PLAYER_COUNT):
+            # this if statement makes powerup progresive
+            if self.slot_data["randomize_powerups"] >=1:
+                if self.slot_data["randomize_powerups"] == 1:
                     unlocked_powerups[0] = 1
+                elif self.slot_data["randomize_powerups"] == 2:
+                    if (unlocked_powerups[0] == 0) and (sum(unlocked_powerups) >= 1):
+                        unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
+                        unlocked_powerups[0] = 1
 
-            current_powerup_state = self.game_interface.get_powerupstate()
-            if current_powerup_state != b'\x00': # check if small mario
-                current_pow_index = bytes_to_int(current_powerup_state) - 1
-                if 0 <= current_pow_index < len(POWERUP_UNLOCK): #, "Something is wrong with reading powerup state"
-                    if unlocked_powerups[current_pow_index] == 0:
-                        logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
-                        # this runs if not powerup unlocked
+                current_powerup_state = self.game_interface.get_powerupstate(player_num)
+                if current_powerup_state != b'\x00': # check if small mario
+                    current_pow_index = bytes_to_int(current_powerup_state) - 1
+                    if 0 <= current_pow_index < len(POWERUP_UNLOCK): #, "Something is wrong with reading powerup state"
+                        if unlocked_powerups[current_pow_index] == 0:
+                            logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
+                            # this runs if not powerup unlocked
 
-                        if self.prev_powerup != b'\x00': #check if wasnt  mario
-                            self.game_interface.set_powerupstate(self.prev_powerup)  # currently makes you small mario, maybe better make
-                        else:
-                            # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
-                            if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
-                                self.game_interface.set_powerupstate(b'\x00')
+                            if self.prev_powerup[player_num] != b'\x00': #check if wasnt  mario
+                                self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)  # currently makes you small mario, maybe better make
                             else:
-                                self.game_interface.set_powerupstate(b'\x01')
-                else:
-                    print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
-            self.prev_powerup = self.game_interface.get_powerupstate()
+                                # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
+                                if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
+                                    self.game_interface.set_powerupstate(b'\x00', player_num)
+                                else:
+                                    self.game_interface.set_powerupstate(b'\x01', player_num)
+                    else:
+                        print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
+                self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
 
     async def handle_unlocked_worlds(self, unlocked_worlds):
         for world_num in range(1, 9 + 1):
@@ -782,7 +799,7 @@ class NSMBWContext(SuperContext):
 
     
     
-    async def handle_set_sc_count(self, starcoin_count: Optional[int]):
+    async def handle_set_sc_count(self, starcoin_count :  int):
         # maybe isnt regestry for starcoin?
     
         #check if in peach castle, then overwrite all starcoins
@@ -874,7 +891,8 @@ class NSMBWContext(SuperContext):
                 self.game_interface.set_time_left(int_to_bytes(time_left // 2, 4))  #half times left
 
             elif trap == "Loose_powerup_trap":
-                self.game_interface.set_powerupstate(b'\x00')
+                for player_num in range(PLAYER_COUNT):
+                    self.game_interface.set_powerupstate(b'\x00', player_num)
 
             elif trap == "Death_trap":
                 await self.game_interface.kill_player()
@@ -896,36 +914,38 @@ class NSMBWContext(SuperContext):
 
             elif item_name == "1ups":
                 logger.info(f"1ups x{self.slot_data["amount_support_received"]} was received ")
-                lives = self.game_interface.get_lives_count()
-                new_lives = lives + self.slot_data["amount_support_received"]
-                if new_lives >= 99:
-                    new_lives = 99
-                self.game_interface.set_lives_count(int_to_bytes(new_lives, 1))
+                for player_num in range(PLAYER_COUNT):
+                    lives = self.game_interface.get_lives_count(player_num)
+                    new_lives = lives + self.slot_data["amount_support_received"]
+                    if new_lives >= 99:
+                        new_lives = 99
+                    self.game_interface.set_lives_count(int_to_bytes(new_lives, 1), player_num)
             else:
                 logger.info(f"Filler {item_name} is not implemented")
                 raise Exception(f"Filler {item_name} is not implemented")
 
     async def handle_check_deathlink(self):
         if self.death_link_enabled:
-            #this doesnt work since in_stage changes after playerstatus is set to 1
-            #is_dead = (self.game_interface.get_player_status() == b'\x01') and (self.game_interface.get_in_stage_flag()[3] == 0)
-            is_dead = self.game_interface.get_lives_count() < self.prev_lifecount
-            self.prev_lifecount = self.game_interface.get_lives_count()
-            if is_dead:
-                print("player is dead")
-                #logger.info("You died and sent death link")
-            #player1_pointer =  0x80354ED0 # 0x80354E50
-            #player1_addres = int.from_bytes(self.game_interface.dolphin_client.read_address(player1_pointer,1), "big")
-            #player1_addres = 0x80354C20
-            #print(player1_addres)
-            #adress_is_alive_offset = 0x1148
-            #print(self.dolphin_client.read_pointer(player1_pointer, adress_is_alive_offset, 1))
+            for player_num in range(PLAYER_COUNT):
+                #this doesnt work since in_stage changes after playerstatus is set to 1
+                #is_dead = (self.game_interface.get_player_status() == b'\x01') and (self.game_interface.get_in_stage_flag()[3] == 0)
+                is_dead = self.game_interface.get_lives_count(player_num) < self.prev_lifecount[player_num]
+                self.prev_lifecount[player_num] = self.game_interface.get_lives_count(player_num)
+                if is_dead:
+                    print("player is dead")
+                    #logger.info("You died and sent death link")
+                #player1_pointer =  0x80354ED0 # 0x80354E50
+                #player1_addres = int.from_bytes(self.game_interface.dolphin_client.read_address(player1_pointer,1), "big")
+                #player1_addres = 0x80354C20
+                #print(player1_addres)
+                #adress_is_alive_offset = 0x1148
+                #print(self.dolphin_client.read_pointer(player1_pointer, adress_is_alive_offset, 1))
 
-            if is_dead and self.is_pending_death_link_reset == False and self.slot:
-                await self.send_death(self.player_names[self.slot] + " ran into a goomba.")
-                self.is_pending_death_link_reset = True
-            elif (not is_dead) and self.is_pending_death_link_reset == True:
-                self.is_pending_death_link_reset = False
+                if is_dead and self.is_pending_death_link_reset == False and self.slot:
+                    await self.send_death(self.player_names[self.slot] + " ran into a goomba.")
+                    self.is_pending_death_link_reset = True
+                elif (not is_dead) and self.is_pending_death_link_reset == True:
+                    self.is_pending_death_link_reset = False
 
     async def handle_is_world_unlocked(self, unlocked_worlds : list):
         # this function currenly does nothing since it should now be imposible to be in a world you dont have access to
@@ -1026,46 +1046,48 @@ async def patch_and_run_game(apnsmbw_file: str):
 
 
         if not os.path.exists(output_path):
+            output_path = input_iso_path
+            pass
+            #if False: #game does not need a riivolution patch
+                #try:
+                #    logger.info(f"Input ISO Path: {input_iso_path}")
+                #    logger.info(f"Output ISO Path: {output_path}")
 
-            if False: #game does not need a riivolution patch
-                try:
-                    logger.info(f"Input ISO Path: {input_iso_path}")
-                    logger.info(f"Output ISO Path: {output_path}")
+                #    logger.info("Patching ISO...")
 
-                    logger.info("Patching ISO...")
+                #    patch_iso(input_iso_path, output_path)
 
-                    patch_iso(input_iso_path, output_path)
+                #    logger.info("Patching Complete")
 
-                    logger.info("Patching Complete")
+                #except BaseException as e:
+                #    logger.error(f"Failed to patch ISO: {e}")
+                #    # Delete the output file if it exists since it will be corrupted
+                #    if os.path.exists(output_path):
+                #        os.remove(output_path)
 
-                except BaseException as e:
-                    logger.error(f"Failed to patch ISO: {e}")
-                    # Delete the output file if it exists since it will be corrupted
-                    if os.path.exists(output_path):
-                        os.remove(output_path)
-
-                    raise RuntimeError(f"Failed to patch ISO: {e}")
-                logger.info("--------------")
-            else:
-                output_path = input_iso_path
-
+                #    raise RuntimeError(f"Failed to patch ISO: {e}")
+                #logger.info("--------------")
+            #else:
+            #    output_path = input_iso_path
         Utils.async_start(run_game(output_path))
 
 
-async def run_game(romfile: str):
+async def run_game(gamefile: str):
     auto_start : bool = get_settings()["nsmbw.world_options"].auto_open
     if  dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-            Utils.open_file(romfile)
+            Utils.open_file(gamefile)
     elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
         subprocess.Popen(
-            [str(auto_start), romfile],
+            [str(auto_start), gamefile],
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
 
 
-def get_in_logic(ctx, items=[], locations=[]):
+def get_in_logic(ctx, items=None, locations=None):
+    if items is None:
+        items = []
     ctx.items_received = [(item,) for item in items]  # to account for the list being ids and not Items
     ctx.missing_locations = locations
     updateTracker(ctx)

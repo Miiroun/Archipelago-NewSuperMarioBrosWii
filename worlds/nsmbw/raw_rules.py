@@ -142,7 +142,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
 
 
     # Complex rules ( made of previous)
-    pow = ground_pound | carry
+    pow_block = ground_pound | carry
     break_blocks = mushroom | propeller | ice_peng | mini | fire
     normal_move = button_right & (spin_jump | jump)
 
@@ -152,8 +152,8 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     hard_rules = [ # normal compleation rules
         [  # world 1
             [normal_move, [propeller | mini | star, wall_jump | propeller, propeller]],  # -1
-            [normal_move, [True_(), True_(), mushroom]],  # -2
-            [normal_move, [True_(), mushroom | yoshi | mini, mushroom], True_()],  # -3
+            [normal_move, [True_(), True_(), break_blocks & pow_block]],  # -2
+            [normal_move, [True_(), break_blocks | yoshi | mini, break_blocks], True_()],  # -3
             [normal_move, [True_(), yoshi | propeller | mini, ice_peng]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), True_()]],  # -6
@@ -168,7 +168,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [normal_move, [True_(), True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), True_()], True_()],  # -6
             [normal_move & door, [True_(), True_(), True_()]],  # -7 2-T
-            [ normal_move & (ice_peng | p_switch) & door, [True_(), mushroom, propeller | p_switch]],  # -8 2-C
+            [ normal_move & (ice_peng | p_switch) & door, [True_(), break_blocks, propeller | p_switch]],  # -8 2-C
         ],
         [  # world 3
             [normal_move, [ice_peng, True_(), ice_peng]],  # -1
@@ -193,24 +193,24 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
 
         ],
         [  # world 5
-            [normal_move, [mushroom, True_(), True_()]],  # -1
+            [normal_move, [break_blocks, True_(), True_()]],  # -1
             [normal_move, [True_(), True_(), True_()]],  # -2
             [normal_move, [True_(), True_(), True_()]],  # -3
             [normal_move, [True_(), True_(), True_()]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), True_()],True_()],  # -6 #5-Ghosthouse
-            [normal_move& door, [True_(), True_(), mushroom]],  # -7 5-T
+            [normal_move& door, [True_(), True_(), break_blocks]],  # -7 5-T
             [normal_move& door, [True_(), True_(), True_()]],  # -8 5-C
         ],
         [  # world 6
             [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), mushroom | p_switch]],  # -2
-            [normal_move, [True_(), True_(), mushroom]],  # -3
+            [normal_move, [True_(), True_(), break_blocks | p_switch]],  # -2
+            [normal_move, [True_(), True_(), break_blocks]],  # -3
             [normal_move, [True_(), yoshi | propeller | mini, True_()]],  # -4
             [normal_move, [True_(), True_(), True_()], True_()],  # -5
             [normal_move, [True_(), True_(), True_()],True_()],  # -6
             [normal_move & wall_jump & jump & door & button_down, [True_(), True_(), True_()]],  # -7 6-T
-            [normal_move& door, [mushroom, True_(), True_()]],  # -8 6-C
+            [normal_move& door, [break_blocks, True_(), True_()]],  # -8 6-C
             [normal_move, [True_(), True_(), True_()]],  # -9 6-A
 
         ],
@@ -223,7 +223,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [normal_move, [True_(), True_(), True_()], True_()],  # -6
             [normal_move, [True_(), True_(), True_()], True_()],  # -7
             [normal_move & door, [True_(), True_(), True_()]],  # -8 8-T
-            [normal_move & door, [mushroom, True_(), True_()]],  # -9 7-C
+            [normal_move & door, [break_blocks, True_(), True_()]],  # -9 7-C
             [normal_move & ground_pound, [True_(), True_(), propeller | mini]],  # -10 8-A
 
         ],

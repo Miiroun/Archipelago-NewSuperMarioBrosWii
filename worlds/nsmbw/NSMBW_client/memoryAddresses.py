@@ -4,8 +4,8 @@ import zipfile
 from pathlib import Path
 
 import Utils
-from .wii_code_tools.lib_wii_code_tools import common
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
+from ..Utils import PLAYER_COUNT
 
 
 # "game_id": b"SMNE01",
@@ -185,12 +185,15 @@ class MemoryAddresses(object):
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
 
-        self.powerup_state = self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})
+        self.powerup_state = [self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})]
+        assert len(self.powerup_state) == PLAYER_COUNT, f"Powerup_state address list is of wrong size {len(self.powerup_state)}"
+
         # memory map doesnt work for this for some reason
         #self.powerup_state = 0x8154CCE7
 
         self.player_status = self.map_between("E2",0x8154CC5C)
-        self.mario_lifecount = self.map_between("E2",0x80354E90)
+        self.mario_lifecount = [self.map_between("E2",0x80354E90)]
+        assert len(self.mario_lifecount) == PLAYER_COUNT, f"Mario life count address list is of wrong size {len(self.mario_lifecount)}"
 
         self.on_map = self.map_between("E2",0x80424798)
         #self.player1_pointer = self.map_between("E2",0x8015e4278)

@@ -15,7 +15,10 @@ class TestRawRules(NSMBWWorld):
 
     def test_inventory(self):
         """Test Inventory powerups inventory"""
-        self.assertFalse(self.world.get_location("Inventory_powerup_001").can_reach(self.multiworld.state))
+        self.assertTrue(self.world.get_location("Inventory_powerup_001").can_reach(self.multiworld.state))
+        self.assertFalse(self.world.get_location("Inventory_powerup_006").can_reach(self.multiworld.state))
+
+
 
     def test_1_1(self) -> None:
         """Test some of 1-1"""

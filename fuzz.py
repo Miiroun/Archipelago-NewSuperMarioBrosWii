@@ -1,4 +1,4 @@
-__version__ = "0.5.1"
+__version__ = "0.6.2"
 
 import sys
 import os
@@ -433,6 +433,68 @@ def generate_random_yaml(world_name, meta):
     return res
 
 
+_UNSUPPORTED = object()
+
+
+def _extract_schema_properties(option):
+    schema_obj = getattr(option, "schema", None)
+    if schema_obj is None:
+        return {}, [], []
+
+    js = schema_obj.json_schema("")
+    properties = js.get("properties", {})
+    required = [k for k in js.get("required", []) if k in properties]
+    optional = [k for k in properties if k not in required]
+    return properties, required, optional
+
+
+def _random_value_for_property(prop, fallback_min, fallback_max):
+    if "enum" in prop:
+        choices = prop["enum"]
+        return random.choice(choices) if choices else _UNSUPPORTED
+
+    if "anyOf" in prop:
+        return _random_value_for_property(random.choice(prop["anyOf"]), fallback_min, fallback_max)
+
+    types = prop.get("type")
+    if isinstance(types, list):
+        type_ = random.choice(types)
+    else:
+        type_ = types
+
+    if type_ == "integer":
+        lo = prop.get("minimum", fallback_min)
+        hi = prop.get("maximum", fallback_max)
+        if lo > hi:
+            return _UNSUPPORTED
+        return random.randint(lo, hi)
+
+    if type_ == "number":
+        lo = prop.get("minimum", fallback_min)
+        hi = prop.get("maximum", fallback_max)
+        if lo > hi:
+            return _UNSUPPORTED
+        return random.uniform(lo, hi)
+
+    if type_ == "boolean":
+        return random.choice([True, False])
+
+    if type_ == "string":
+        # we can't reasonably generate random strings with a format/regex
+        if "pattern" in prop or "format" in prop:
+            return _UNSUPPORTED
+        lo = prop.get("minLength", 0)
+        hi = prop.get("maxLength", max(lo, 10))
+        if lo > hi:
+            return _UNSUPPORTED
+        return "".join(random.choice(string.ascii_lowercase) for _ in range(random.randint(lo, hi)))
+
+    if type_ == "null":
+        return None
+
+    return _UNSUPPORTED
+
+
 def get_random_value(name, option):
     if name == "item_links":
         # Let's not fuck with item links right now, I'm scared
@@ -448,16 +510,33 @@ def get_random_value(name, option):
 
     if issubclass(option, OptionCounter):
         # ItemDict subclasses like StartInventory might not have valid_keys and
-        # instead rely on verify_item_name for runtime validation against world.item_names
-        if not option.valid_keys:
-            return option.default
-        selected_keys = random.sample(
-            list(option.valid_keys),
-            k=random.randint(0, len(option.valid_keys))
-        )
+        # instead rely on verify_item_name for runtime validation against world.item_names.
+        # Some OptionCounter subclasses define a
+        # schema.Schema({...}) instead, from which we can extract the allowed keys from.
         min_val = option.min if option.min is not None else 0
         max_val = option.max if option.max is not None else 1000
-        return {key: random.randint(min_val, max_val) for key in selected_keys}
+        if option.valid_keys:
+            keys = list(option.valid_keys)
+            selected_keys = random.sample(keys, k=random.randint(0, len(keys)))
+            return {key: random.randint(min_val, max_val) for key in selected_keys}
+
+        properties, required, optional = _extract_schema_properties(option)
+        if not properties:
+            return option.default
+
+        picked_optional = random.sample(optional, k=random.randint(0, len(optional)))
+        result = {}
+        for key in required + picked_optional:
+            value = _random_value_for_property(properties[key], min_val, max_val)
+            if value is _UNSUPPORTED:
+                has_default = isinstance(option.default, dict) and key in option.default
+                if not has_default and key in required:
+                    return option.default
+                if has_default:
+                    result[key] = option.default[key]
+                continue
+            result[key] = value
+        return result
 
     if issubclass(option, OptionDict):
         # This is for example factorio's start_items and worldgen settings. I don't think it's worth randomizing those as I'm not expecting the generation outcome to change from them.
@@ -533,6 +612,7 @@ def call_generate(yaml_path, args, output_path):
             "csv_output": False,
             "log_time": False,
             "spoiler_only": False,
+            "allow_quantity" : False
         }
     )
     for hook in MP_HOOKS:
@@ -568,6 +648,10 @@ def gen_wrapper(yaml_path, apworld_name, i, args, queue, tmp):
                         hook = find_hook(hook_class_path)
                         hook.setup_worker(args)
                         MP_HOOKS.append(hook)
+
+                # Since 74f41e37, Generate.main no longer calls init_logging
+                # when imported as a module, so we have to do it ourselves.
+                patched_init_logging("Fuzzer")
 
                 if timer:
                     timer.start()
@@ -746,7 +830,7 @@ def print_status():
     print("Timeouts:", TIMEOUTS)
     print("Ignored:", OPTION_ERRORS)
     print()
-    print("Time taken:{:.2f}s".format(time.perf_counter() - START))
+    print("Time taken: {:.2f}s".format(time.perf_counter() - START))
 
 
 def find_hook(hook_path):
@@ -832,18 +916,27 @@ if __name__ == "__main__":
     def main(p, args, tmp):
         global SUBMITTED
 
-        apworld_name = args.game
+        if args.sample_from:
+            if args.game:
+                raise Exception(
+                    "--sample-from is incompatible with -g/--game"
+                )
+            if args.meta:
+                raise Exception(
+                    "--sample-from is incompatible with -m/--meta"
+                )
+
         if args.meta:
             with open(args.meta, "r", encoding='utf-8-sig') as fd:
                 meta = yaml.safe_load(fd.read())
         else:
             meta = {}
 
-        if apworld_name is not None:
-            world = world_from_apworld_name(apworld_name)
-            if world is None:
+        apworld_names = list(dict.fromkeys(args.game))
+        for apworld in apworld_names:
+            if world_from_apworld_name(apworld) is None:
                 raise Exception(
-                    f"Failed to resolve apworld from apworld name: {apworld_name}"
+                    f"Failed to resolve apworld from apworld name: {apworld}"
                 )
 
         if os.path.exists(OUT_DIR):
@@ -887,6 +980,30 @@ if __name__ == "__main__":
                 with open(path, "r", encoding='utf-8-sig') as fd:
                     static_yamls.append(fd.read())
 
+        sample_yamls = []
+        if args.sample_from:
+            for yaml_file in os.listdir(args.sample_from):
+                path = os.path.join(args.sample_from, yaml_file)
+                if not os.path.isfile(path):
+                    continue
+                with open(path, "r", encoding='utf-8-sig') as fd:
+                    raw = fd.read()
+                try:
+                    docs = list(yaml.safe_load_all(raw))
+                except yaml.YAMLError as e:
+                    raise Exception(f"Failed to parse {path}: {e}") from e
+                for doc in docs:
+                    if isinstance(doc, dict) and 'name' in doc:
+                        doc['name'] = 'Player{number}'
+                sample_yamls.append((yaml_file, yaml.safe_dump_all(docs, sort_keys=False)))
+            if not sample_yamls:
+                raise Exception(
+                    f"--sample-from directory {args.sample_from!r} contains no YAML files"
+                )
+            if yamls_per_run_bounds[-1] > len(sample_yamls):
+                raise Exception(
+                    f"--sample-from has {len(sample_yamls)} YAML(s) but -n requests up to {yamls_per_run_bounds[-1]}"
+                )
 
         global MANAGER
         MANAGER = multiprocessing.Manager()
@@ -918,11 +1035,6 @@ if __name__ == "__main__":
         timeout_handler.start()
 
         while i < args.runs:
-            if apworld_name is None:
-                actual_apworld = random.choice(valid_worlds)
-            else:
-                actual_apworld = apworld_name
-
             if len(yamls_per_run_bounds) == 1:
                 yamls_this_run = yamls_per_run_bounds[0]
             else:
@@ -931,9 +1043,31 @@ if __name__ == "__main__":
                     yamls_per_run_bounds[0], yamls_per_run_bounds[1] + 1
                 )
 
-            random_yamls = [
-                generate_random_yaml(actual_apworld, meta) for _ in range(yamls_this_run)
-            ]
+            if args.sample_from:
+                actual_apworld = "sample"
+                yamls_to_write = [
+                    (f"sample-{i}-{nb}-{orig_name}", content)
+                    for nb, (orig_name, content) in enumerate(
+                        random.sample(sample_yamls, yamls_this_run)
+                    )
+                ]
+            else:
+                if not apworld_names:
+                    games_this_run = [random.choice(valid_worlds)]
+                else:
+                    games_this_run = apworld_names
+
+                if len(games_this_run) == 1:
+                    actual_apworld = games_this_run[0]
+                else:
+                    actual_apworld = "multi"
+
+                yamls_to_write = [
+                    (f"{i}-{nb}.yaml", generate_random_yaml(game, meta))
+                    for nb, game in enumerate(
+                        g for g in games_this_run for _ in range(yamls_this_run)
+                    )
+                ]
 
             if i % 100 == 0:
                 clear_abc_caches()
@@ -941,8 +1075,8 @@ if __name__ == "__main__":
             SUBMITTED += 1
 
             yamls_dir = tempfile.mkdtemp(prefix="apfuzz", dir=tmp)
-            for nb, yaml_content in enumerate(random_yamls):
-                yaml_path = os.path.join(yamls_dir, f"{i}-{nb}.yaml")
+            for name, yaml_content in yamls_to_write:
+                yaml_path = os.path.join(yamls_dir, name)
                 open(yaml_path, "wb").write(yaml_content.encode("utf-8"))
 
             for nb, yaml_content in enumerate(static_yamls):
@@ -968,7 +1102,8 @@ if __name__ == "__main__":
             time.sleep(0.05)
 
     parser = ArgumentParser(prog="apfuzz")
-    parser.add_argument("-g", "--game", default=None)
+    parser.add_argument("-g", "--game", default=[], action="append",
+                        help="Restrict to a given apworld. Can be passed multiple times to fuzz several games together; each generation will include N (see -n) YAMLs for each listed game.")
     parser.add_argument("-j", "--jobs", default=10, type=int)
     parser.add_argument("-r", "--runs", type=int, required=True)
     parser.add_argument("-n", "--yamls_per_run", default="1", type=str)
@@ -976,6 +1111,8 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--meta", default=None, type=None)
     parser.add_argument("--dump-ignored", default=False, action="store_true")
     parser.add_argument("--with-static-worlds", default=None)
+    parser.add_argument("--sample-from", default=None,
+                        help="Directory of YAML files to sample from instead of generating random YAMLs. Each generation picks N (see -n) random files from the directory. Incompatible with -g and -m")
     parser.add_argument("--hook", action="append", default=[])
     parser.add_argument("--skip-output", default=False, action="store_true")
 

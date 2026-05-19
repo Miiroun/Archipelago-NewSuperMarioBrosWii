@@ -1,24 +1,6 @@
 from Options import *
 
 
-# In this file, we define the options the player can pick.
-# The most common types of options are Toggle, Range and Choice.
-
-# Options will be in the game's template yaml.
-# They will be represented by checkboxes, sliders etc. on the game's options page on the website.
-# (Note: Options can also be made invisible from either of these places by overriding Option.visibility.
-#  APQuest doesn't have an example of this, but this can be used for secret / hidden / advanced options.)
-
-# For further reading on options, you can also read the Options API Document:
-# https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/options%20api.md
-
-
-# The first type of Option we'll discuss is the Toggle.
-# A toggle is an option that can either be on or off. This will be represented by a checkbox on the website.
-# The default for a toggle is "off".
-# If you want a toggle to be on by default, you can use the "DefaultOnToggle" class instead of the "Toggle" class.
-
-
 class TrapChance(Range):
     """
     Percentage chance that any given filler item will be replaced with traps.
@@ -136,7 +118,8 @@ class AmountStartingItems(Range):
     """
     Gives you an amount of free locations that are automatically checked.
     This option is here to create a few free checks that helps with restrictive start errors.
-    Put to at least ~25 if you disable both check hint movies and check level completion otherwise you can keep it at 0.
+    Put to at least ~25 if you disable both check hint movies and check level completion and have NumberInventoryItems = 0
+    otherwise you can keep it at 0.
     """
 
     display_name = "Amount Starting Items"
@@ -281,7 +264,6 @@ option_groups = [
     ),
 ]
 
-# Finally, we can define some option presets if we want the player to be able to quickly choose a specific "mode".
 option_presets = {
 #    "standard": {
 #        "trap_chance": 0,
@@ -299,33 +281,57 @@ option_presets = {
 
 
 def adjust_options(world):
+    # This section tests if to many location options are turned off and tries to compensate for it.
+    req_start_loc = -10
+    req_start_loc_max = 10
+    if (world.options.include_hintmovies.value == False):
+        print(f"(NSMBW generation error) Turning off include_hintmovies can cause fill errors with a low amount of num_starting_locations.")
+        req_start_loc += 5
+    if (world.options.include_level_completion.value == False):
+            print(f"(NSMBW generation error) Turning off include_level_completion can cause fill errors with a low amount of num_starting_locations.")
+            req_start_loc += 30
+            req_start_loc_max += 15
+    if (world.options.randomize_coins.value == False):
+        print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
+        req_start_loc += 15
+    if (world.options.include_shortcuts.value == False):
+        print(f"(NSMBW generation error) Turning off include_shortcuts can cause fill errors with a low amount of num_starting_locations.")
+        req_start_loc += 5
 
-    if (world.options.include_hintmovies.value == False) and (world.options.include_level_completion.value == False):
-        if world.options.num_starting_locations.value <= 20:
-            pass
-            #world.options.num_starting_locations.value = 20
-            #print("If you disable hint movies and level completion have at least 20 free starting locations")
-        #raise OptionError("IncludeHintMovies or IncludeLevelCompletion to have enough locations")
-    #if world.options.randomize_coins == False:
-    #    raise OptionError("RandomizeStarCoins is not implemented to be turned off")
-    if world.options.bowser_star_unlock.value >200:
-        world.options.bowser_star_unlock.value = 200
-        print("Generation fails when star req for reaching bowser is > 200")
+    if world.options.num_starting_locations.value <= req_start_loc:
+        print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
+        world.options.num_starting_locations.value = min(req_start_loc, req_start_loc_max)
+
+
+    MAX_ALLOWED_BOWSER_SC = 190
+    if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
+        world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
+        print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}")
 
     from .items import MOVEMENT_UNLOCKS
     movement_set = set(MOVEMENT_UNLOCKS)
     if len(world.options.dont_rando_move.value - movement_set) > 0:
-        print(f"Texts {world.options.dont_rando_move.value - movement_set} is not a valid movement.")
+        print(f"(NSMBW generation error) Texts {world.options.dont_rando_move.value - movement_set} is not a valid movement.")
         world.options.dont_rando_move.value &= movement_set
+
 
     from .items import FILLER
     filler_set = set(FILLER)
     if len(world.options.filler_items.value - filler_set) > 0:
-        print(f"Texts {world.options.filler_items.value - filler_set} are not a valid filler item.")
+        print(f"(NSMBW generation error) Texts {world.options.filler_items.value - filler_set} are not a valid filler item.")
         world.options.filler_items.value &= filler_set
+    if world.options.trap_chance.value != 100:
+        if len(world.options.filler_items.value) == 0:
+            print("(NSMBW generation error) You need to have at least one filler item.")
+            world.options.filler_items.value = filler_set
+
 
     from .items import TRAPS
     trap_set = set(TRAPS)
     if len(world.options.trap_items.value - trap_set) > 0:
-        print(f"Texts {world.options.trap_items.value - trap_set} are not a valid trap item.")
+        print(f"(NSMBW generation error) Texts {world.options.trap_items.value - trap_set} are not a valid trap item.")
         world.options.filler_items.value &= trap_set
+    if world.options.trap_chance.value != 0:
+        if len(world.options.trap_items.value) == 0:
+            print("(NSMBW generation error) You need to have at least one trap item.")
+            world.options.trap_items.value = trap_set

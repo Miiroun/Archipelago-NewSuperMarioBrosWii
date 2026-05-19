@@ -89,11 +89,11 @@ class NSMBWInterface():
             #print((game_id, game_rev))
             self.current_game = None
             if (game_id, game_rev) in GAME_VERSIONS:
-                self.current_game = game_id
-                self.game_rev = game_rev
+                self.current_game = str(game_id)
+                self.game_rev = int(game_rev)
                 version_name = GAME_VERSIONS[(game_id, game_rev)]
                 if version_name not in SUPPORTED_VERSIONS:
-                    logger.error("The only playtested version is E2 (US rev2) and this is not the version of your game. Play the others at your own risk.When you find errors, please report them so they might be fixed.")
+                    logger.error("The only playtested version is E2 (US rev2) and this is not the version of your game. Play the others at your own risk. When you find errors, please report them so they might be fixed.")
 
                 self.memory_addresses = MemoryAddresses(version_name)
 
@@ -266,26 +266,26 @@ class NSMBWInterface():
 
         return address
     def clear_cache(self):
-        if self.is_in_level() or self.is_in_worldmap():
-            logger.info("Clearing JIT cache by loading savestate")
-            wait_long = 0.2
-            wait_short = 0.1
-            time.sleep(wait_short)
-            keyboard.press("shift")
-            time.sleep(wait_short)
-            keyboard.press("F8")
-            time.sleep(wait_short)
-            keyboard.release("F8")
-            time.sleep(wait_short)
-            keyboard.release("shift")
-            time.sleep(wait_long)
-            #asyncio.sleep(1)
+        #if self.is_in_level() or self.is_in_worldmap():
+        logger.info("Clearing JIT cache by loading savestate")
+        wait_long = 0.2
+        wait_short = 0.1
+        time.sleep(wait_short)
+        keyboard.press("shift")
+        time.sleep(wait_short)
+        keyboard.press("F8")
+        time.sleep(wait_short)
+        keyboard.release("F8")
+        time.sleep(wait_short)
+        keyboard.release("shift")
+        time.sleep(wait_long)
+        #asyncio.sleep(1)
 
-            keyboard.press("F8")
-            time.sleep(wait_short)
-            keyboard.release("F8")
-            time.sleep(wait_long)
-            #asyncio.sleep(1)
+        keyboard.press("F8")
+        time.sleep(wait_short)
+        keyboard.release("F8")
+        time.sleep(wait_long)
+        #asyncio.sleep(1)
         logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the JIT cache (JIT -> clear chache).")
 
 
@@ -551,8 +551,8 @@ class NSMBWInterface():
     def get_worldstats_selectmenu(self):
         address = self.memory_addresses.world_stats + self.save_file_offset()
         return self.dolphin_client.read_address(address,1)
-    def get_powerupstate(self):
-        address = self.memory_addresses.powerup_state
+    def get_powerupstate(self, player_num):
+        address = self.memory_addresses.powerup_state[player_num]
         powerup_state = self.dolphin_client.read_address(address,1)
         return powerup_state
     def get_player_status(self):
@@ -576,8 +576,8 @@ class NSMBWInterface():
     def get_in_stage_flag(self):
         address = self.memory_addresses.in_stage_flag
         return self.dolphin_client.read_address(address,4)
-    def get_lives_count(self):
-        address = self.memory_addresses.mario_lifecount+3
+    def get_lives_count(self, playey_num):
+        address = self.memory_addresses.mario_lifecount[playey_num]+3
         return self.dolphin_client.read_address(address,1)[0]
     def get_water_state(self):
         address = self.memory_addresses.water_speed_if_in
@@ -586,8 +586,8 @@ class NSMBWInterface():
     def set_worldstats(self,world_num : int, status : bytes):
         address = self.memory_addresses.world_stats + (world_num-1) + self.save_file_offset()
         self.dolphin_client.write_address(address, status)
-    def set_powerupstate(self, powerup_state : bytes):
-        address = self.memory_addresses.powerup_state
+    def set_powerupstate(self, powerup_state : bytes, player_num):
+        address = self.memory_addresses.powerup_state[player_num]
         self.dolphin_client.write_address(address, powerup_state)
     def set_inventory_items(self, value, type_num):
         address = self.memory_addresses.inventory_items + type_num -1
@@ -608,8 +608,8 @@ class NSMBWInterface():
         self.dolphin_client.write_address(address,data)
         #address = self.memory_addresses.level_world
         #self.dolphin_client.write_address(address,data)
-    def set_lives_count(self, data):
-        address = self.memory_addresses.mario_lifecount+3
+    def set_lives_count(self, data, player_num):
+        address = self.memory_addresses.mario_lifecount[player_num]+3
         self.dolphin_client.write_address(address,data)
     def set_water_state(self,data):
         address = self.memory_addresses.water_speed_if_in

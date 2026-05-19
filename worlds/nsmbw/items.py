@@ -158,7 +158,7 @@ def create_all_items(world: NSMBWWorld) -> None:
 
 
     # handle important items
-    important_items = {"Spin_jump", "jump", "Super_Mushroom", f"button_left", f"button_right"}
+    important_items = {"spin_jump", "jump", "Super_Mushroom", f"button_left", f"button_right"}
     itempool_names = []
     for item in itempool:
         itempool_names.append(item.name)

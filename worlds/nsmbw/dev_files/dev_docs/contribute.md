@@ -2,10 +2,7 @@
 # Playtesting
 * Check out the playtest list in TODO.md on the dev branch (NSMBW_miiroun_dev) to see want needs playtested
 * Here is a shortened list
-  - Deathlink (make sure it functions properly, ie sends and receives when it should)
   - None US rev 2 (please report everything that doesnt function)
-  - Hintmovies (That they unlock when they should)
-  - Test so nothing brakes with starcoins disabled
   - Test if works to install on linux
 * Report issues that are found in the AP-discord thread (or GitHub)
 

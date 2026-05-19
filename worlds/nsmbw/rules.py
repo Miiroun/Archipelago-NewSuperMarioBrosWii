@@ -137,9 +137,11 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         worlds_list = list(f"World{j}" for j in range(1,9+1))
         worlds_list += worlds_list
         worlds_list.pop()
-        req_world_com = min(8*2, (i // 5)+2)
+        req_world_com = min(17-2, (i // 5)+1)
         # hades soft logic thats ored with glitched logic, but also make sure you have climb
-        invent_rule = (rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic") ) & (rules.Has("climb")  | [OptionFilter(RandomizeMovment, RandomizeMovment.option_off)])
+        invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic")
+        if i < 5:
+            invent_rule &= rules.Has("climb")  | [OptionFilter(RandomizeMovment, RandomizeMovment.option_off)]
         world.set_rule(invent_pow, invent_rule)
         # soft logic, gain access when have new worlds
 

@@ -3,11 +3,15 @@
 - -> make release
 - Pin docs in dc
   - make new GitHub branch
+- Write more clearly: need us rev2
 
 
 ## Playtest
 - Verify bowser unlock logic wise
 - Make sure inventory updates correctly
+- Make sure fill_inventory doesn't trigger powerup location
+- Make sure powerups, 1ups, deathlink function properly
+- Verify saving not broken : test if can save in world 9 
 
 ## Bugs to fix
 
@@ -35,13 +39,13 @@
   - Kill when in water
 - Have a vote in discord about if riivolution patch
 - Try debuging about intro cutscene : look at patch in ghidra
-- Us pipe rando patches : always move next world -> never
+- Us pipe rando patches : always move next world → never
 - Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab
 - World unlock only works on savefile2, same with goal completion
 - Try moving the things that version specific to the pointer referencing them instead, might work
 - fix unit tests
-
+- Work on multiplayer support
 
 ## Filler link
 - Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
@@ -75,6 +79,7 @@
 - make all levels unlock from start of world
 - Add info to ap-wiki
 - Riivolution patch that changes world map unlock order and which level required to leave
+- Use data_storage for save file data instead of creating files?
 
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap

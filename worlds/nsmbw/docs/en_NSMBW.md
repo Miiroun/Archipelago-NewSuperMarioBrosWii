@@ -114,6 +114,8 @@ config file.
   - yes, e.g. Powerups, Movement, Hintmovies, Starcoins, Starcoins_World1, Starcoins_World1_Level1, Level_completion_world1, Level_completion
 - Why are not cannons unlocked?
   - All cannons are locked and turned into locations, they can not be unlocked. Same with completing 7-6 and 8-7.
+- Game versions
+  - Game is developed on US rev2 of NSMBW. The client doesn't error out on other editions but will be unplayable because of bugs, it has difficulty sending locations etc.
 - Bugs?
   - Expect bugs, it is still in development.
   - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).
@@ -124,4 +126,5 @@ config file.
 - Do not have another client open when you start client.
 - Connect to the server from the client after you are on the world map in game if you have problems on the title screen.
 - Try running the client commands /refresh, /reapply_checks and /reconnect_dolphin. Also try making a save-state and load it to clear the JIT cache.
+  - If you have trouble with moves unlocking, death-link etc it probably issue with JIT_chache. The client automaticly makes savestate by pressing shirt+F8 and them F8. Make sure you have these button combos mapped to save-states in dolphoin.
 - If you can not solve your problem, run the debug launcher (found inside your archipelago directory) and send a screenshot of the client in the nsmbw thread in the archipelago discord server.

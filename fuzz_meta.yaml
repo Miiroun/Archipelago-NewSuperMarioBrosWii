@@ -6,3 +6,4 @@ NSMBW:
   ################
   progression_balancing: 50
   accessibility: full
+  num_starting_locations: 0

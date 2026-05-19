@@ -8,9 +8,10 @@
 - Forgot location_name_to_id when trying to send check : really difficult to test
 
 
-# Before making release
+# How to make release
 - Playtest
 - Run generic unit test
+- Run fuzzer with at least 1000 iterations on none seeded yaml
 - Build
 - Git-Hub release
 - Publish in nsmbw thread
@@ -25,3 +26,7 @@
 # Playtesting
 - Only developed on Windows
 - Have test on WSL (Windows subsystem linux) and at-least boots
+
+# Fill errors
+- Are cause my magical deamons
+- Free starting locations tends to alleviate issues, with current setup it clears 10_000 generations of fuzzer without fail if it can add starting locations when some options are turned off.
