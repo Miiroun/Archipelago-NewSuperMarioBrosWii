@@ -13,6 +13,7 @@ from Utils import visualize_regions
 
 from typing import ClassVar
 
+from .Common import *
 from .items import NSMBWItem
 
 
@@ -24,7 +25,7 @@ class NSMBWworld(World):
     # The docstring should contain a description of the game, to be displayed on the WebHost.
 
     # You must override the "game" field to say the name of the game.
-    game = "NSMBW"
+    game = game_name
 
     # The WebWorld is a definition class that governs how this world will be displayed on the website.
     web = web_world.NSMBWWebWorld()
@@ -127,7 +128,8 @@ class NSMBWworld(World):
             "num_inventory_powerups",
             "dont_rando_move",
             "filler_items",
-            "trap_items"
+            "trap_items",
+            "randomize_time"
         )
         #slot_data["version"]  = self.world_version
         return slot_data
@@ -154,6 +156,7 @@ class NSMBWworld(World):
         self.options.dont_rando_move.value = set(slot_data["dont_rando_move"])
         self.options.filler_items.value = set(slot_data["filler_items"])
         self.options.trap_items.value = set(slot_data["trap_items"])
+        self.options.randomize_time.value = slot_data["randomize_time"]
 
 
 

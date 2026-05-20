@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from BaseClasses import ItemClassification, Location, LocationProgressType
+from BaseClasses import  Location, LocationProgressType
 
 from . import items
+from .Common import *
 from .raw_rules import DEPRIO_HM
 
 if TYPE_CHECKING:
@@ -16,26 +17,7 @@ if TYPE_CHECKING:
 LOCATION_NAME_TO_ID = {}
 LOCATION_NAME_GROUPS = {}
 
-def mod_level_name(worldnum : int, levelnum : int) -> str:
-    shift = 1 if worldnum in [7,8] else 0
-    new_level = levelnum - shift
-    if (worldnum, levelnum) in [(3,6),(5,6),(7,7)]:
-        return "G"
-    if worldnum !=9:
-        if new_level == 7:
-            return "T"
-        elif new_level == 8:
-            return "C"
-        elif new_level == 9:
-            return "A"
-    return str(levelnum)
 
-
-def get_level_name(worldnum : int, levelnum : int) -> str:
-    return f"{worldnum}-{mod_level_name(worldnum,levelnum)}_clear"
-
-def get_starcoin_name(worldnum : int, levelnum : int, scnum : int) -> str:
-    return f"{worldnum}-{mod_level_name(worldnum,levelnum)}_sc{scnum}"
 
 
 # Starcoins and level clear
@@ -45,8 +27,8 @@ for world_num in range(1,9+1): # worlds
     level_set = set()
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
         for sc in range(1,3+1):
-            LOCATION_NAME_TO_ID.update({get_starcoin_name(world_num, level_num, sc):10000+1000*world_num+10*level_num+sc})
-        sc_set = set(get_starcoin_name(world_num, level_num, sc) for sc in range(1, 3+1))
+            LOCATION_NAME_TO_ID.update({name_starcoin(world_num, level_num, sc): 10000 + 1000 * world_num + 10 * level_num + sc})
+        sc_set = set(name_starcoin(world_num, level_num, sc) for sc in range(1, 3 + 1))
         LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}_Level{level_num}": sc_set})
         level_set |= sc_set
     LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}": level_set})
@@ -68,14 +50,14 @@ SECRET_EXIT = [(1, 3, 2), (2, 4, 2), (2, 6, 2), (3, 5, 2), (3, 6, 2), (4, 6, 2),
 for secret_exit in SECRET_EXIT:
     world_num = secret_exit[0]
     level_num = secret_exit[1]
-    LOCATION_NAME_TO_ID.update({f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}": 7000 + 100 * world_num + level_num})
-LOCATION_NAME_GROUPS.update({"Secret_exits" : set(f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}" for world_num, level_num, _ in SECRET_EXIT) })
+    LOCATION_NAME_TO_ID.update({name_secret(world_num,level_num): 7000 + 100 * world_num + level_num})
+LOCATION_NAME_GROUPS.update({"Secret_exits" : set(name_secret(world_num,level_num) for world_num, level_num, _ in SECRET_EXIT) })
 
 #hint movies
 num_hintmovies = 65
 for i in range(1,num_hintmovies +1):
-    LOCATION_NAME_TO_ID.update({f"Hintmovie{i:02}": 3000 + i})
-LOCATION_NAME_GROUPS.update({"Hintmovies" : set(f"Hintmovie{i:02}" for  i in range(1,num_hintmovies +1)) })
+    LOCATION_NAME_TO_ID.update({name_hintmovie(i): 3000 + i})
+LOCATION_NAME_GROUPS.update({"Hintmovies" : set(name_hintmovie(i) for  i in range(1,num_hintmovies +1)) })
 
 
 for i in range(1,100+1):
@@ -85,21 +67,21 @@ LOCATION_NAME_GROUPS.update({"Starter_locations" : set(f"starter_location{i}" fo
 world_set = set()
 for world_num in range(1, 9 + 1):  # worlds
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-        flagpole = get_level_name(world_num,level_num)
+        flagpole = name_level(world_num, level_num)
         LOCATION_NAME_TO_ID.update({flagpole : 5000 + world_num*100 + level_num})
-    level_set = set(get_level_name(world_num,level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
+    level_set = set(name_level(world_num, level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
     world_set |= level_set
     LOCATION_NAME_GROUPS.update({f"Level_completion_world{world_num}": level_set})
 LOCATION_NAME_GROUPS.update({"Level_completion" : world_set })
 
 for i in range(1,1000):
-    LOCATION_NAME_TO_ID.update({f"Inventory_powerup_{i:03}" : 6000+i})
-LOCATION_NAME_GROUPS.update({"Inventory_powerups" : set(f"Inventory_powerup_{i:03}" for i in range(1,1000))})
+    LOCATION_NAME_TO_ID.update({name_inventory(i) : 6000+i})
+LOCATION_NAME_GROUPS.update({"Inventory_powerups" : set(name_inventory(i) for i in range(1,1000))})
 
 # Each Location instance must correctly report the "game" it belongs to.
 # To make this simple, it is common practice to subclass the basic Location class and override the "game" field.
 class NSMBWLocation(Location):
-    game = "NSMBW"
+    game = game_name
 
 
 # Let's make one more helper method before we begin actually creating locations.
@@ -126,7 +108,7 @@ def make_locations_priority(world: NSMBWworld) -> None:
                 #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
     if world.options.include_hintmovies.value == True:
         for i in DEPRIO_HM:
-            hm = world.get_location(f"Hintmovie{i:02}")
+            hm = world.get_location(name_hintmovie(i))
             hm.progress_type = LocationProgressType.EXCLUDED
 
 
@@ -141,15 +123,15 @@ def create_regular_locations(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             for sc in range(1, 3+1):
-                level_location = get_location_names_with_ids([get_starcoin_name(world_num, level_num, sc)])
+                level_location = get_location_names_with_ids([name_starcoin(world_num, level_num, sc)])
                 half_world = 0 if (level_num < 4 or world_num == 9) else 1
                 if world.options.randomize_coins:
                     regions[2*world_num-2+half_world].add_locations(level_location, NSMBWLocation)
                 else:
                     regions[2 * world_num - 2+half_world].add_locations(level_location, NSMBWLocation)
-                    location = world.get_location(get_starcoin_name(world_num, level_num, sc))
-                    location.place_locked_item(world.create_item("Starcoin"))
-                    #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", "Starcoin", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+                    location = world.get_location(name_starcoin(world_num, level_num, sc))
+                    location.place_locked_item(world.create_item(ITEM.StarCoin))
+                    #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", ITEM.StarCoin, location_type=NSMBWLocation, item_type=items.NSMBWItem)
         # add location for beating castles and towers
         if world_num != 9:
             level_location = get_location_names_with_ids([f"World{world_num}_tower"])
@@ -161,22 +143,19 @@ def create_regular_locations(world: NSMBWworld) -> None:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit[0]
             level_num = secret_exit[1]
-            level_location = get_location_names_with_ids([f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}"])
+            level_location = get_location_names_with_ids([name_secret(world_num, level_num)])
             regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
     if world.options.include_hintmovies.value == True:
         for i in range(1, num_hintmovies+1):
-            hintmovie_location = get_location_names_with_ids([f"Hintmovie{i:02}"])
+            hintmovie_location = get_location_names_with_ids([name_hintmovie(i)])
             regions[0].add_locations(hintmovie_location, NSMBWLocation)
-    #else:
-    #    for i in range(1, num_hintmovies+1):
-    #        regions[0].add_event(f"Hintmovie{i:02}", "Starcoin" , location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
     if world.options.include_level_completion.value == True:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                flagpole = get_location_names_with_ids([get_level_name(world_num,level_num)])
+                flagpole = get_location_names_with_ids([name_level(world_num, level_num)])
                 regions[world_num * 2 - 2 ].add_locations(flagpole, NSMBWLocation)
 
     # gives player starter location that automaticly checks
@@ -185,7 +164,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
        menu_region.add_locations(starter_location, NSMBWLocation)
 
     for i in range(1,world.options.num_inventory_powerups+1):
-        inventory_loc = get_location_names_with_ids([f"Inventory_powerup_{i:03}"])
+        inventory_loc = get_location_names_with_ids([name_inventory(i)])
         menu_region.add_locations(inventory_loc, NSMBWLocation)
 
 def create_events(world: NSMBWworld) -> None:

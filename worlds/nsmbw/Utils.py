@@ -1,4 +1,4 @@
-from typing import Callable, Iterable
+from typing import Callable
 
 
 def bytes_to_int(byte : bytes, signed=False) -> int:
@@ -7,13 +7,6 @@ def bytes_to_int(byte : bytes, signed=False) -> int:
 def int_to_bytes(num : int, width, signed=False) -> bytes:
     return int.to_bytes(num, width, byteorder='big', signed=signed)
 
-TRAPS = ["Loose_powerup_trap", "Goomba_trap", "Death_trap"] #, "Time_trap",
-FILLER = ["fill_inventory", "1ups"]
-
-
-SUPPORTED_VERSIONS = ["E2"]
-
-PLAYER_COUNT = 1
 
 
 def map_nd(list_obj : list, func : Callable) -> list:

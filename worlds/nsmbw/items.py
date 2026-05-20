@@ -3,37 +3,37 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
+from .Common import *
 from .options import RandomizeMovment, RandomizePowerups
 
 if TYPE_CHECKING:
-    from .world import NSMBWWorld
+    from .world import NSMBWworld
 
 # Every item must have a unique integer ID associated with it.
 # We will have a lookup from item name to ID here that, in world.py, we will import and bind to the world class.
 # Even if an item doesn't exist on specific options, it must be present in this lookup.
 ITEM_NAME_TO_ID = {
-    "Starcoin" : 101,
-    "glitched_logic" : 199
+    ITEM.StarCoin : 101,
+    ITEM.Time : 102,
+    ITEM.GlitchedLogic : 199
 }
 ITEM_NAME_GROUPS = {}
 
 # Items should have a defined default classification.
 # In our case, we will make a dictionary from item name to classification.
 DEFAULT_ITEM_CLASSIFICATIONS = {
-    "Starcoin" : ItemClassification.progression_deprioritized_skip_balancing, #77 x 3 st
+    ITEM.StarCoin : ItemClassification.progression_deprioritized_skip_balancing, #77 x 3 st
+    ITEM.Time : ItemClassification.progression,
+    ITEM.GlitchedLogic : ItemClassification.progression,
 }
 
 for i in range(1,9+1):
     ITEM_NAME_TO_ID.update({f"World{i}" : 200 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}" : ItemClassification.progression})
-DEFAULT_ITEM_CLASSIFICATIONS[f"World{8}"] = ItemClassification.progression_skip_balancing
 ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 
 # could add movement rando as checks
-MOVEMENT_UNLOCKS = ["ground_pound", "wall_jump", "crouch",  "yoshi",
-                    "swim", "p-switch", "!-switch", "star", "climb", "carry",
-                    "door", "?-switch", "spin_jump", "pipe", "jump", "run", "button_left",
-                    "button_right", "button_up", "button_down"]
+
 # to do
 #
 #dont even want to try
@@ -50,20 +50,17 @@ for i in range(len(MOVEMENT_UNLOCKS)):
 ITEM_NAME_GROUPS.update({"Movement" : set(f"{MOVEMENT_UNLOCKS[i]}" for i in range(len(MOVEMENT_UNLOCKS)))})
 
 
-POWERUP_UNLOCK = ["Super_Mushroom", "Fire_Flower", "Mini_Mushroom" ,"Propeller_Mushroom", "Penguin_Suit",  "Ice_Flower"]
 for i in range(len(POWERUP_UNLOCK)):
     ITEM_NAME_TO_ID.update({f"{POWERUP_UNLOCK[i]}" : 600 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{POWERUP_UNLOCK[i]}" : ItemClassification.progression})
-DEFAULT_ITEM_CLASSIFICATIONS[f"{'Super_Mushroom'}"] = ItemClassification.progression | ItemClassification.useful
+DEFAULT_ITEM_CLASSIFICATIONS[ITEM.POWERUP.Super_Mushroom] = ItemClassification.progression | ItemClassification.useful
 ITEM_NAME_GROUPS.update({"Powerups" : set(f"{POWERUP_UNLOCK[i]}" for i in range(len(POWERUP_UNLOCK)))})
 
-from .Utils import TRAPS
 for i in range(len(TRAPS)):
     ITEM_NAME_TO_ID.update({f"{TRAPS[i]}" : 400 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{TRAPS[i]}" : ItemClassification.trap})
 ITEM_NAME_GROUPS.update({"Traps" : set(f"{TRAPS[i]}" for i in range(len(TRAPS)))})
 
-from .Utils import FILLER
 for i in range(len(FILLER)):
     ITEM_NAME_TO_ID.update({f"{FILLER[i]}" : 500 + i + 1})
     DEFAULT_ITEM_CLASSIFICATIONS.update({f"{FILLER[i]}" : ItemClassification.filler})
@@ -73,13 +70,13 @@ ITEM_NAME_GROUPS.update({"Filler" : set(f"{FILLER[i]}" for i in range(len(FILLER
 # Each Item instance must correctly report the "game" it belongs to.
 # To make this simple, it is common practice to subclass the basic Item class and override the "game" field.
 class NSMBWItem(Item):
-    game = "NSMBW"
+    game = game_name
 
 
 # Ontop of our regular itempool, our world must be able to create arbitrary amounts of filler as requested by core.
 # To do this, it must define a function called world.get_filler_item_name(), which we will define in world.py later.
 # For now, let's make a function that returns the name of a random filler item here in items.py.
-def get_random_filler_item_name(world: NSMBWWorld) -> str:
+def get_random_filler_item_name(world: NSMBWworld) -> str:
     # APQuest has an option called "trap_chance".
     # This is the percentage chance that each filler item is a Math Trap instead of a Confetti Cannon.
     # For this purpose, we need to use a random generator.
@@ -96,7 +93,7 @@ def get_random_filler_item_name(world: NSMBWWorld) -> str:
     else:
         return str( world.random.choice(list(world.options.filler_items.value)) )
 
-def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSMBWItem:
+def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSMBWItem:
 
     classification = DEFAULT_ITEM_CLASSIFICATIONS[name]
 
@@ -104,21 +101,21 @@ def create_item_with_correct_classification(world: NSMBWWorld, name: str) -> NSM
 
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
-def create_all_items(world: NSMBWWorld) -> None:
+def create_all_items(world: NSMBWworld) -> None:
     #starting_world_num = 1
     #if world.options.starting_world:
     #    starting_world_num = world.random.randint(1, 8)
     starting_world_num = world.options.starting_world.value
     excluded_items : set = set()
     excluded_items.update({f"World{starting_world_num}"})
-    extera_start_items = {4 : {"swim"}, 5 : {"climb"}, 6 : {"climb"}, 8 : {"pipe"}}
+    extera_start_items = {4 : {ITEM.MOVEMENT.Swim}, 5 : {ITEM.MOVEMENT.Climb}, 6 : {ITEM.MOVEMENT.Climb}, 8 : {ITEM.MOVEMENT.Pipe}}
     if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
-        excluded_items.update({"button_right"})
-        if not ("spin_jump" in excluded_items) or ( "jump" in excluded_items):
+        excluded_items.update({ITEM.MOVEMENT.ButtonRight})
+        if not (ITEM.MOVEMENT.SpinJump in excluded_items) or ( ITEM.MOVEMENT.Jump in excluded_items):
             if world.random.randint(0,1) == 0:
-                excluded_items.update({"spin_jump"})
+                excluded_items.update({ITEM.MOVEMENT.SpinJump})
             else:
-                excluded_items.update({"jump"})
+                excluded_items.update({ITEM.MOVEMENT.Jump})
 
         if starting_world_num in extera_start_items:
             excluded_items.update(extera_start_items[starting_world_num])
@@ -138,7 +135,7 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     if world.options.randomize_coins.value == True:
         for _ in range(77*3):
-            itempool.append(world.create_item("Starcoin"))
+            itempool.append(world.create_item(ITEM.StarCoin))
     for i in range(1, 9+1):
         if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
             itempool.append(world.create_item(f"World{i}"))
@@ -152,13 +149,17 @@ def create_all_items(world: NSMBWWorld) -> None:
 
     if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_except_mushroom, RandomizePowerups.option_on_progressive]:
         for i in range(len(POWERUP_UNLOCK)):
-            if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_progressive]  or MOVEMENT_UNLOCKS[i] != f"{'Super_Mushroom'}":
-                itempool.append(world.create_item(f"{POWERUP_UNLOCK[i]}"))
+            if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_progressive]  or POWERUP_UNLOCK[i] != f"{'Super_Mushroom'}":
+                itempool.append(world.create_item(POWERUP_UNLOCK[i]))
 
 
+    for _ in range(world.options.randomize_time.value-1):
+        itempool.append(world.create_item(ITEM.Time))
+    if world.options.randomize_time.value > 0:
+        world.push_precollected(world.create_item(ITEM.Time))
 
     # handle important items
-    important_items = {"spin_jump", "jump", "Super_Mushroom", f"button_left", f"button_right"}
+    important_items = {ITEM.MOVEMENT.SpinJump, ITEM.MOVEMENT.Jump, ITEM.POWERUP.Super_Mushroom, ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.ButtonRight}
     itempool_names = []
     for item in itempool:
         itempool_names.append(item.name)
@@ -169,7 +170,7 @@ def create_all_items(world: NSMBWWorld) -> None:
             world.multiworld.early_items[world.player][item] = 1
 
 
-    #print(itempool)
+
         # Archipelago requires that each world submits as many locations as it submits items.
     # This is where we can use our filler and trap items.
     # APQuest has two of these: The Confetti Cannon and the Math Trap.

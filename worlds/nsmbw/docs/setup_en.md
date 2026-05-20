@@ -1,33 +1,34 @@
 # New Super Mario Bros Wii Archipelago Randomizer Setup Guide
 
 ## Required Software
-- [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest)
+- [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest) (Needs at least V0.6.7, the latest version as of 2026-05-19)
 - [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - [Dolphin emulator](https://dolphin-emu.org/download/)
 - A legally acquired copy of a New Super Mario Bros Wii (US rev 2) (both .iso and .wbfs works)
-- (Optionally) [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases)
+- [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) (Optionally) 
 
 
 ## Setup
-- Download and install archipelago (needs at least v0.6.7) and Dolphin.
-- Download the ap-world file from [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest), doubleclick it and it's installed (or manually move it to custom_worlds).
-- Then create a player yaml file from the option creator in the launcher.
-  - Default yaml is recommended for new players. It has 441 locations [2026-05-17], to reduce this disable star coins.
-- Note that the ap client is bundled with launcher.
-- Inside the client press CONNECT (when you are on the world map in game) and then enter your player name (from the yaml).
-- If you care about your dolphin savefiles then back them up.
+1) Download and install archipelago (needs at least v0.6.7) and Dolphin.
+2) Download the ap-world file from [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest), doubleclick it, and it's installed (or manually move it to custom_worlds).
+3) Then create a player yaml file from the option creator in the launcher.
+   -  Default yaml is recommended for new players. It has 441 locations (2026-05-17).
+   - If you want to play with a lower location count disable star coins (231 locations).
+4) Note that the ap client is bundled with launcher.
+5) Inside the client press CONNECT (when you are on the world map in game) and then enter your player name (from the yaml).
+6) If you care about your dolphin savefiles then back them up.
 
 
 ## How to play
-- Open the AP launcher and find NSMBW Client, open it.
-- This should prompt you for your game file. (You can change it from host.yaml).
-- Clear save file 2 (you can make a copy of it if you care about it).
-- When game booted select savefile 2.
-- Make savestates in emulator, saving the game doesn't currently work.
-- After you have entered the world map press CONNECT in the client.
-- Open the in game world select menu and move to a world you have unlocked
-- See the quirks section in en_NSMBW.md for quirks with the implementation.
-- Make save-states to save data, 
+1) Open the AP launcher and find NSMBW Client, open it.
+2) This should prompt you for your game file. (You can change it from host.yaml).
+3) Clear save file 2 (you can make a copy of it if you care about it).
+4) When game booted select savefile 2.
+5) Make savestates in emulator, saving the game doesn't currently work.
+6) After you have entered the world map press CONNECT in the client.
+7) Open the in game world-select menu and move to a world you have unlocked
+8) See the quirks section in en_NSMBW.md for quirks with the implementation.
+9) Make save-states to save the game and run /save. (Do NOT save when you are in world 9, it will delete your save)
 
 
 ## Tracker 

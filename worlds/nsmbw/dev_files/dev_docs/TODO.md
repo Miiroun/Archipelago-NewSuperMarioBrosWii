@@ -3,15 +3,15 @@
 - -> make release
 - Pin docs in dc
   - make new GitHub branch
-- Write more clearly: need us rev2
 
 
 ## Playtest
 - Verify bowser unlock logic wise
 - Make sure inventory updates correctly
 - Make sure fill_inventory doesn't trigger powerup location
-- Make sure powerups, 1ups, deathlink function properly
+- Make sure powerups, 1ups, death-link function properly
 - Verify saving not broken : test if can save in world 9 
+
 
 ## Bugs to fix
 
@@ -22,7 +22,7 @@
 - Rescue toad on world map
   - exists specific memory location
 
-  
+
 ## Short term
 - World map locks/unlocks doesn't work on other savefiles
 - Add more options to how world 9 levels are unlocked

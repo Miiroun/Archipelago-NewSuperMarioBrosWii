@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, List
 
 from rule_builder.rules import *
 from rule_builder.options import OptionFilter
 from .options import RandomizeMovment, RandomizePowerups
-
+from .Common import *
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -13,76 +14,82 @@ if TYPE_CHECKING:
 DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
 def specific_hintmovie_requierments(world: NSMBWworld) -> List:
     # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
-    rule_completed_everything = Has("Starcoin", count=231)  & Has("Victory")# dont want to implement complex, just deprioritize
+    rule_completed_everything = Has(ITEM.StarCoin, count=231)  & Has("Victory")# dont want to implement complex, just deprioritize
     requierments = [
         #starcoin cost, level requierment, generic requierment
         [3, (1,1), True_()],   #01
         [5, (1,1), rule_completed_everything],  # 02 #find every normal goal in world1-9
-        [3, (1,2), Has("Starcoin", count=5)],  # 03
+        [3, (1,2), Has(ITEM.StarCoin, count=5)],  # 03
         [3, (1,3), rule_completed_everything],  # 04 #find every normal goal in world1-9
         [5, (1,3), Has("World1_level8_cleared")],  # 05
-        [5, (1,7), Has("Starcoin", count=10)],  # 06
-        [5, (1,5), Has("Starcoin", count=30)],  # 07
-        [0, (2,1), Has("Starcoin", count=15)],  # 08
-        [3, (2,1), Has("Starcoin", count=1)],  # 09
-        [0, (2,2), Has("Starcoin", count=95)],  # 10
-        [3, (2,2), Has("Starcoin", count=150)],  # 11
-        [5, (2,3), Has("Starcoin", count=1)]  ,# 12
+        [5, (1,7), Has(ITEM.StarCoin, count=10)],  # 06
+        [5, (1,5), Has(ITEM.StarCoin, count=30)],  # 07
+        [0, (2,1), Has(ITEM.StarCoin, count=15)],  # 08
+        [3, (2,1), Has(ITEM.StarCoin, count=1)],  # 09
+        [0, (2,2), Has(ITEM.StarCoin, count=95)],  # 10
+        [3, (2,2), Has(ITEM.StarCoin, count=150)],  # 11
+        [5, (2,3), Has(ITEM.StarCoin, count=1)]  ,# 12
         [5, (2,4), rule_completed_everything] , # 13 #find every normal adn secret goal in world1-9
         [5, (2,5), Has("World2_level8_cleared")],  # 14
-        [5, (2,5), Has("Starcoin", count=215)],  # 15
-        [10, (2,6), Has("Starcoin", count=25)],  # 16
-        [0, (3,1), Has("Starcoin", count=65)] , # 17
-        [3, (3,1), Has("Starcoin", count=35)] , # 18
-        [5, (3,2), Has("Starcoin", count=165)] , # 19
-        [5, (3,2), Has("Starcoin", count=190)]  ,# 20
-        [0, (3,3), Has("Starcoin", count=140)] , # 21
+        [5, (2,5), Has(ITEM.StarCoin, count=215)],  # 15
+        [10, (2,6), Has(ITEM.StarCoin, count=25)],  # 16
+        [0, (3,1), Has(ITEM.StarCoin, count=65)] , # 17
+        [3, (3,1), Has(ITEM.StarCoin, count=35)] , # 18
+        [5, (3,2), Has(ITEM.StarCoin, count=165)] , # 19
+        [5, (3,2), Has(ITEM.StarCoin, count=190)]  ,# 20
+        [0, (3,3), Has(ITEM.StarCoin, count=140)] , # 21
         [3, (3,3), Has("World3_level8_cleared")],  # 22
-        [5, (3,3), Has("Starcoin", count=195)] , # 23
-        [5, (3,6), Has("Starcoin", count=140)],  # 24
-        [5, (3,5), Has("Starcoin", count=130)] , # 25
-        [3, (4,1), Has("Starcoin", count=45)]  ,# 26
-        [5, (4,2), Has("Starcoin", count=175)] , # 27
+        [5, (3,3), Has(ITEM.StarCoin, count=195)] , # 23
+        [5, (3,6), Has(ITEM.StarCoin, count=140)],  # 24
+        [5, (3,5), Has(ITEM.StarCoin, count=130)] , # 25
+        [3, (4,1), Has(ITEM.StarCoin, count=45)]  ,# 26
+        [5, (4,2), Has(ITEM.StarCoin, count=175)] , # 27
         [3, (4,2), rule_completed_everything],  # 28 # everything
-        [0, (4,3), Has("Starcoin", count=125)],  # 29
+        [0, (4,3), Has(ITEM.StarCoin, count=125)],  # 29
         [5, (4,3), Has("World4_level8_cleared")],  # 30
-        [10, (4,7), Has("Starcoin", count=70)],  # 31
-        [0, (4,4), Has("Starcoin", count=50)],  # 32
-        [5, (4,6), Has("Starcoin", count=69)],  # 33
-        [3, (4,8), Has("Starcoin", count=145)],  # 34
-        [5, (5,1), Has("Starcoin", count=105)],  # 35
-        [3, (5,3), Has("Starcoin", count=55)],  # 36
-        [0, (5,6), Has("Starcoin", count=75)],  # 37
+        [10, (4,7), Has(ITEM.StarCoin, count=70)],  # 31
+        [0, (4,4), Has(ITEM.StarCoin, count=50)],  # 32
+        [5, (4,6), Has(ITEM.StarCoin, count=69)],  # 33
+        [3, (4,8), Has(ITEM.StarCoin, count=145)],  # 34
+        [5, (5,1), Has(ITEM.StarCoin, count=105)],  # 35
+        [3, (5,3), Has(ITEM.StarCoin, count=55)],  # 36
+        [0, (5,6), Has(ITEM.StarCoin, count=75)],  # 37
         [5, (5,6), Has("World8_level8_cleared")],  # 38
         [3, (5,8), Has("World5_level8_cleared")],  # 39
-        [3, (6,1), Has("Starcoin", count=80)],  # 40
-        [0, (6,2), Has("Starcoin", count=135)],  # 41
-        [0, (6,3), Has("Starcoin", count=85)] , # 42
-        [5, (6,3), Has("Starcoin", count=205)],  # 43
-        [5, (6,5), Has("Starcoin", count=90)] , # 44
-        [10, (6,6), Has("Starcoin", count=100)] , # 45
+        [3, (6,1), Has(ITEM.StarCoin, count=80)],  # 40
+        [0, (6,2), Has(ITEM.StarCoin, count=135)],  # 41
+        [0, (6,3), Has(ITEM.StarCoin, count=85)] , # 42
+        [5, (6,3), Has(ITEM.StarCoin, count=205)],  # 43
+        [5, (6,5), Has(ITEM.StarCoin, count=90)] , # 44
+        [10, (6,6), Has(ITEM.StarCoin, count=100)] , # 45
         [5, (6,8), Has("World9_level6_cleared")],  # 46
         [5, (7,1), Has("World9_level7_cleared")],  # 47
-        [0, (7,3), Has("Starcoin", count=170)],  # 48
-        [0, (7,8), Has("Starcoin", count=160)],  # 49
-        [3, (7,7), Has("Starcoin", count=120)],  # 50
-        [3, (7,4), Has("Starcoin", count=231)],  # 51
-        [0, (7,9), Has("Starcoin", count=115)],  # 52
+        [0, (7,3), Has(ITEM.StarCoin, count=170)],  # 48
+        [0, (7,8), Has(ITEM.StarCoin, count=160)],  # 49
+        [3, (7,7), Has(ITEM.StarCoin, count=120)],  # 50
+        [3, (7,4), Has(ITEM.StarCoin, count=231)],  # 51
+        [0, (7,9), Has(ITEM.StarCoin, count=115)],  # 52
         [3, (8,2), Has("World8_level8_cleared")],  # 53 #beat world 8 castle
-        [5, (8,3), Has("Starcoin", count=180)],  # 54
-        [0, (8,8), Has("Starcoin", count=110)],  # 55
-        [5, (8,10), Has("Starcoin", count=155)],  # 56
+        [5, (8,3), Has(ITEM.StarCoin, count=180)],  # 54
+        [0, (8,8), Has(ITEM.StarCoin, count=110)],  # 55
+        [5, (8,10), Has(ITEM.StarCoin, count=155)],  # 56
         [5, (8,9), rule_completed_everything],  # 57 #all secret goals
-        [5, (9,1), Has("Starcoin", count=225)],  # 58
-        [5, (9,2), Has("Starcoin", count=220)],  # 59
-        [5, (9,3), Has("Starcoin", count=185)],  # 60
-        [5, (9,3), Has("Starcoin", count=210)],  # 61
+        [5, (9,1), Has(ITEM.StarCoin, count=225)],  # 58
+        [5, (9,2), Has(ITEM.StarCoin, count=220)],  # 59
+        [5, (9,3), Has(ITEM.StarCoin, count=185)],  # 60
+        [5, (9,3), Has(ITEM.StarCoin, count=210)],  # 61
         [0, (9,4), rule_completed_everything],  # 62 #all normal goals
-        [5, (9,5), Has("Starcoin", count=230)],  # 63
-        [0, (9,6), Has("Starcoin", count=200)],  # 64
+        [5, (9,5), Has(ITEM.StarCoin, count=230)],  # 63
+        [0, (9,6), Has(ITEM.StarCoin, count=200)],  # 64
         [3, (9,7), rule_completed_everything]  # 65 # complete everything!!!!!!!!!!!!!!!!1
     ]
     return requierments
+
+def get_time_rule(world : NSMBWworld, time : int) -> Rule[TWorld]:
+    _amount_items_needed = math.ceil( (time/500) * world.options.randomize_time.value)
+    _rule = Has(ITEM.Time, count=_amount_items_needed)
+
+    return _rule
 
 
 def specific_level_requierments(world: NSMBWworld) -> tuple:
@@ -102,52 +109,52 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
 
 
     # create rules that are true if their option filters are off or if have its item
-    button_right = Has("button_right") | filter_mov
-    button_left = Has("button_left") | filter_mov
-    button_up = Has("button_up") | filter_mov
-    button_down = Has("button_down") | filter_mov
-    jump = Has(f"jump")  | filter_mov
-    run = Has(f"run") | filter_mov
+    button_right = Has(ITEM.MOVEMENT.ButtonRight) | filter_mov
+    button_left = Has(ITEM.MOVEMENT.ButtonLeft) | filter_mov
+    button_up = Has(ITEM.MOVEMENT.ButtonUp) | filter_mov
+    button_down = Has(ITEM.MOVEMENT.ButtonDown) | filter_mov
+    jump = Has(ITEM.MOVEMENT.Jump)  | filter_mov
+    run = Has(ITEM.MOVEMENT.Run) | filter_mov
 
-    ground_pound = (Has(f"ground_pound")  & button_down)| filter_mov
-    wall_jump = (Has(f"wall_jump")  & jump)| filter_mov
-    carry = Has("carry") | filter_mov
-    climb = (Has("climb") & button_up)| filter_mov
-    spin_jump = Has("spin_jump") | filter_mov
-    swim = Has(f"swim") | filter_mov
-    crouch = (Has(f"crouch") & button_down)| filter_mov
+    ground_pound = (Has(ITEM.MOVEMENT.GroundPound)  & button_down)| filter_mov
+    wall_jump = (Has(ITEM.MOVEMENT.WallJump)  & jump)| filter_mov
+    carry = Has(ITEM.MOVEMENT.Carry) | filter_mov
+    climb = (Has(ITEM.MOVEMENT.Climb) & button_up)| filter_mov
+    spin_jump = Has(ITEM.MOVEMENT.SpinJump) | filter_mov
+    swim = Has(ITEM.MOVEMENT.Swim) | filter_mov
+    crouch = (Has(ITEM.MOVEMENT.Crouch) & button_down)| filter_mov
 
-    question_switch = Has("?-switch") | filter_mov
-    p_switch = Has(f"p-switch") | filter_mov
-    red_block = Has(f"!-switch")  | filter_mov
+    question_switch = Has(ITEM.MOVEMENT.QuestSwitch) | filter_mov
+    p_switch = Has(ITEM.MOVEMENT.PSwitch) | filter_mov
+    red_block = Has(ITEM.MOVEMENT.RedSwitch)  | filter_mov
 
-    yoshi = Has(f"Yoshi")  | filter_mov
-    star = Has(f"Star") | filter_mov
+    yoshi = Has(ITEM.MOVEMENT.Yoshi)  | filter_mov
+    star = Has(ITEM.MOVEMENT.Star) | filter_mov
 
-    door = (Has("door") & button_up) | filter_mov
-    pipe = Has("pipe") | filter_mov
+    door = (Has(ITEM.MOVEMENT.Door) & button_up) | filter_mov
+    pipe = Has(ITEM.MOVEMENT.Pipe) | filter_mov
 
 
 
 
 
     # powerups
-    mushroom = Has(f"Super_Mushroom") | filter_pow | filter_pow_on_no_mus
+    mushroom = Has(ITEM.POWERUP.Super_Mushroom) | filter_pow | filter_pow_on_no_mus
     progressive_pow_filler = mushroom | [filter_pow_on, filter_pow_on_no_mus]
 
-    propeller = (Has(f"Propeller_Mushroom") & progressive_pow_filler & spin_jump) | filter_pow
-    ice_peng = ((Has(f"Ice_Flower") | Has(f"Penguin_Suit")) & progressive_pow_filler) | filter_pow
-    mini = (Has(f"Mini_Mushroom") & progressive_pow_filler) | filter_pow
-    fire = (Has(f"Fire_Flower") & progressive_pow_filler) | filter_pow
+    propeller = (Has(ITEM.POWERUP.Propeller_Mushroom) & progressive_pow_filler & spin_jump) | filter_pow
+    ice_peng = ((Has(ITEM.POWERUP.Ice_Flower) | Has(ITEM.POWERUP.Penguin_Suit)) & progressive_pow_filler) | filter_pow
+    mini = (Has(ITEM.POWERUP.Mini_Mushroom) & progressive_pow_filler) | filter_pow
+    fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
 
 
     # Complex rules ( made of previous)
     pow_block = ground_pound | carry
     break_blocks = mushroom | propeller | ice_peng | mini | fire
-    normal_move = button_right & (spin_jump | jump)
+    normal_move = button_right & (spin_jump | jump) & get_time_rule(world, 50)
 
     bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
-    bowser_clear_rule = Has("Starcoin", count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
+    bowser_clear_rule = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
 
     hard_rules = [ # normal compleation rules
         [  # world 1

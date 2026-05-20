@@ -12,12 +12,12 @@ from .NotificationManager import NotificationManager
 
 from NetUtils import ClientStatus
 from ..Utils import int_to_bytes, bytes_to_int, map_nd
-from ..items import MOVEMENT_UNLOCKS
 
-from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT, get_level_name, get_starcoin_name, \
-    mod_level_name
+from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
 from settings import get_settings
 from ..options import RandomizeMovment
+from ..Common import *
+
 
 tracker_loaded = False
 
@@ -187,6 +187,7 @@ class NSMBWContext(SuperContext):
     previous_mapid : int = 0
     has_complained_about_world : int = 0
 
+    prev_sent_locations : set
 
     def __init__(self, server_address: str, password: str, apnsmbw_file: Optional[str] = None):
         super().__init__(server_address, password)
@@ -204,6 +205,8 @@ class NSMBWContext(SuperContext):
 
         self.completed_levelstats = list([list([b"\x00" for _ in range(LEVELS_PER_WORLD[i])]) for i in range(9)])
         self.moded_levelstats = ModifiedState.UNMODIFIED
+
+        self.prev_sent_locations = set()
 
 
     async def server_auth(self, password_requested: bool = False):
@@ -502,7 +505,7 @@ class NSMBWContext(SuperContext):
                     logger.info(f"Sent check from item{location_name}")
 
         self.locations_handled += checked_locations
-        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+        await self.send_location_with_id(checked_locations)
 
     async def check_starcoins(self):
         checked_locations = []
@@ -520,7 +523,7 @@ class NSMBWContext(SuperContext):
                 level_status = self.game_interface.get_level_stats(world_num,level_num)[0]
 
                 def send_sc_check(sc_num=0):
-                    location_name = get_starcoin_name(world_num, level_num, sc_num)
+                    location_name = name_starcoin(world_num, level_num, sc_num)
                     if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
                         print(f"Starcoin {sc_num} collected from {mod_level_name(world_num, level_num)}")
                         checked_locations.append(LOCATION_NAME_TO_ID[location_name])
@@ -534,7 +537,7 @@ class NSMBWContext(SuperContext):
                     send_sc_check(sc_num=3)
 
         self.locations_handled += checked_locations
-        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+        await self.send_location_with_id(checked_locations)
 
 
     async def check_hintmovies(self):
@@ -550,7 +553,7 @@ class NSMBWContext(SuperContext):
                             logger.info(f"Collected hintmovie at {checked_locations}")
 
             self.locations_handled += checked_locations
-            await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+            await self.send_location_with_id(checked_locations)
 
     async def check_starter_locations(self):
         checked_locations = []
@@ -561,7 +564,7 @@ class NSMBWContext(SuperContext):
                 checked_locations.append(LOCATION_NAME_TO_ID[location_name])
                 print(f"Sent starter checks {i}")
         self.locations_handled += checked_locations
-        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+        await self.send_location_with_id(checked_locations)
 
 
 
@@ -580,7 +583,7 @@ class NSMBWContext(SuperContext):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 level_status = self.game_interface.get_level_stats(world_num, level_num)[0]
                 if level_status & 16 == 16:
-                    level_name = get_level_name(world_num, level_num)
+                    level_name = name_level(world_num, level_num)
                     if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
                         checked_locations.append(LOCATION_NAME_TO_ID[level_name])
                         if not is_frozen():
@@ -593,7 +596,7 @@ class NSMBWContext(SuperContext):
             for secret_exit in SECRET_EXIT:
                 world_num = secret_exit[0]
                 level_num = secret_exit[1]
-                exit_name = f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}"
+                exit_name = name_secret(world_num, level_num)
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)
 
                 byte_to_check : int
@@ -668,7 +671,7 @@ class NSMBWContext(SuperContext):
                     logger.info("Bowsers castle is now unlocked")
                     self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 1 * 16, 1))
         self.locations_handled += checked_locations
-        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+        await self.send_location_with_id(checked_locations)
 
     async def check_inventory_location(self):
         checked_locations = []
@@ -690,7 +693,7 @@ class NSMBWContext(SuperContext):
             self.previous_inventory[i] = current_item
 
         self.locations_handled += checked_locations
-        await self.send_msgs([{"cmd": "LocationChecks", "locations": checked_locations}])
+        await self.send_location_with_id(checked_locations)
 
 
     async def handle_receive_items(self):
@@ -700,6 +703,7 @@ class NSMBWContext(SuperContext):
         self.traps = []
         self.filler = []
         self.starcoin_count = 0
+        self.time = 0
         for network_item in self.items_received:
             item_id = network_item.item
             item_name = ITEM_ID_TO_NAME[item_id]
@@ -712,15 +716,17 @@ class NSMBWContext(SuperContext):
                 #logger.info(
                 print(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
 
-                if item_name == "Starcoin":
+                if item_name == ITEM.StarCoin:
                     # implement read of starcoin count and increase by one
                     print(f"A starcoin was received")
+                elif item_name == ITEM.Time:
+                    print(f"A time extension was received")
                 elif 201 <= item_id <= 299:
                     world_num = item_id - 200
                     if world_num != 9:
                         logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
                     else:
-                        logger.info(f"World {world_num} was received.")
+                        print(f"World {world_num} was received.")
                 elif 301 <= item_id <= 399:
                     print(f"Received move {item_name} ")
                 elif 401 <= item_id <= 499:
@@ -740,6 +746,8 @@ class NSMBWContext(SuperContext):
     
             if item_id == 101:
                 self.starcoin_count += 1
+            elif item_id == 102:
+                self.time += 1
             elif 201 <= item_id <= 299:
                 self.unlocked_worlds[item_id - 201] += 1
             elif 301 <= item_id <= 399:
@@ -755,6 +763,7 @@ class NSMBWContext(SuperContext):
         await self.check_level_completion(self.unlocked_worlds)
         await self.handle_traps(self.traps)
         await self.handle_filler(self.filler)
+        await self.handle_unlocked_time(self.time)
 
     
 
@@ -841,7 +850,7 @@ class NSMBWContext(SuperContext):
                             level_stats |= 0x30
                     if f"World{8}_level{10}_completed_level" in self.completed_levels:
                        level_stats |= 0x30
-                    if f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}" in self.completed_levels:
+                    if name_secret(world_num, level_num) in self.completed_levels:
                         level_stats |= 0x30
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats, 1))
                     i += 1
@@ -908,7 +917,7 @@ class NSMBWContext(SuperContext):
                 logger.info(f"Fill inventory x{self.slot_data["amount_support_received"]} was received ")
                 for i in range(POWERUP_COUNT+1+1):
                     self.game_interface.update_inventory_items(i, self.slot_data["amount_support_received"])
-                if len(self.previous_inventory) == POWERUP_COUNT+1+1:
+                if len(self.previous_inventory) != 0:
                     for i in range(POWERUP_COUNT+1+1):
                         self.previous_inventory[i] = bytes_to_int(self.game_interface.get_inventory_items(i))
 
@@ -975,6 +984,13 @@ class NSMBWContext(SuperContext):
                         #await self.game_interface.kill_player()
                     self.has_complained_about_world = current_world
 
+    async def handle_unlocked_time(self, num_time):
+        if self.slot_data["randomize_time"] != 0:
+            current_time = bytes_to_int(self.game_interface.get_time_left())
+
+            current_time = min((num_time* 0x1e0000) //self.slot_data["randomize_time"], current_time)
+
+            self.game_interface.set_time_left(int_to_bytes(current_time, 4))
 
 
     async def patch_game_from_memory(self):
@@ -1025,6 +1041,16 @@ class NSMBWContext(SuperContext):
                 self.game_interface.set_level_stats(world_num, level_num, b'\x37\x00\x00\x00')
                 if world_num==8 and level_num==9:
                     self.game_interface.set_level_stats(world_num, level_num, b'\x00\x00\x00\x00')
+    
+    async def send_location_with_id(self, checked_locations : List[int]):
+        set_checked_locations = set(checked_locations)
+        set_checked_locations -= self.prev_sent_locations
+
+        if len(set_checked_locations) != 0:
+            assert True, "Should check that locations are valid"
+            await self.send_msgs([{"cmd": "LocationChecks", "locations": list(set_checked_locations)}])
+            self.prev_sent_locations += set_checked_locations
+
 
 
 #end of class

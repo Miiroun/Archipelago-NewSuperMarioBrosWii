@@ -1,5 +1,5 @@
 from Options import *
-
+from .Common import *
 
 class TrapChance(Range):
     """
@@ -24,8 +24,8 @@ class RandomizeStarCoins(Toggle):
 
 class RandomizeMovment(Choice):
     """
-    WARNING! logic not implemented.
     Will disable some of mario's moves until items checks are sent to reunlock them.
+    BETA FEATURE : expect bugs
     """
     display_name = "Randomize Moves"
 
@@ -54,6 +54,20 @@ class RandomizePowerups(Choice):
     option_on_progressive = 2
     option_on = 3
     default = option_on_except_mushroom
+
+class RandomizeTime(Range):
+    """
+    Will make your starting time be separated into discreet section. Select O if you want to disable this option.
+    BETA FEATURE : expect bugs
+    """
+
+    range_start = 0
+    range_end = 20
+    default = 0
+    #default = 5
+
+
+    visibility = Option.visibility.complex_ui
 
 class IncludeHintMovies(Toggle):
     """
@@ -182,7 +196,6 @@ class FillerItems(OptionSet):
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Filler Items"
-    from .Utils import FILLER
     default = set(FILLER)
 
 class TrapItems(OptionSet):
@@ -190,7 +203,6 @@ class TrapItems(OptionSet):
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Trap Items"
-    from .Utils import TRAPS
     default = set(TRAPS)
 
 
@@ -206,6 +218,7 @@ class NSMBWOptions(PerGameCommonOptions):
     randomize_movement : RandomizeMovment
     dont_rando_move : DontRandoMovement
     randomize_powerups : RandomizePowerups
+    randomize_time : RandomizeTime
 
     trap_chance: TrapChance
     logic_difficulty: LogicDifficulty
@@ -240,7 +253,8 @@ option_groups = [
         [
             RandomizePowerups,
             RandomizeMovment,
-            DontRandoMovement
+            DontRandoMovement,
+            RandomizeTime,
         ],
     ),
     OptionGroup(
@@ -308,14 +322,12 @@ def adjust_options(world):
         world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
         print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}")
 
-    from .items import MOVEMENT_UNLOCKS
     movement_set = set(MOVEMENT_UNLOCKS)
     if len(world.options.dont_rando_move.value - movement_set) > 0:
         print(f"(NSMBW generation error) Texts {world.options.dont_rando_move.value - movement_set} is not a valid movement.")
         world.options.dont_rando_move.value &= movement_set
 
 
-    from .items import FILLER
     filler_set = set(FILLER)
     if len(world.options.filler_items.value - filler_set) > 0:
         print(f"(NSMBW generation error) Texts {world.options.filler_items.value - filler_set} are not a valid filler item.")
@@ -326,7 +338,6 @@ def adjust_options(world):
             world.options.filler_items.value = filler_set
 
 
-    from .items import TRAPS
     trap_set = set(TRAPS)
     if len(world.options.trap_items.value - trap_set) > 0:
         print(f"(NSMBW generation error) Texts {world.options.trap_items.value - trap_set} are not a valid trap item.")

@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING
 
 from rule_builder import rules
 from rule_builder.options import OptionFilter
-from .locations import SECRET_EXIT, get_level_name, get_starcoin_name, LEVELS_PER_WORLD, mod_level_name
-from .raw_rules import DEPRIO_HM, specific_hintmovie_requierments, specific_level_requierments, get_levlel_connections
-from .options import LogicDifficulty, RandomizePowerups, RandomizeMovment
+from .locations import SECRET_EXIT, name_level, name_starcoin, LEVELS_PER_WORLD, mod_level_name
+from .raw_rules import *
+from .options import *
+from .Common import *
 
 
 if TYPE_CHECKING:
@@ -87,21 +88,21 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 if level_num == first_level_second_half[world_num-1]:
                     connection_rules &= rules.Has(f"World{world_num}", count=2)
             elif world_num == 9:
-                clear_rule &= rules.Has("Starcoin",count=10*level_num)
+                clear_rule &= rules.Has(ITEM.StarCoin,count=10*level_num)
 
             clear_rule = level_req[world_num-1][level_num-1][0] | (rules.Has("glitched_logic") & hard_rules[world_num-1][level_num-1][0])
             world.set_rule(flagpole, connection_rules & clear_rule)
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
-                star_coin = world.get_location(get_starcoin_name(world_num,level_num,sc))
+                star_coin = world.get_location(name_starcoin(world_num, level_num, sc))
                 sc_logic = level_req[world_num - 1][level_num - 1][1][sc - 1] | (rules.Has("glitched_logic") & hard_rules[world_num - 1][level_num - 1][1][sc - 1])
                 world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & sc_logic )
 
 
 
             if world.options.include_level_completion:
-                completed_level = world.get_location(get_level_name(world_num,level_num)) # reel location
+                completed_level = world.get_location(name_level(world_num, level_num)) # reel location
                 world.set_rule(completed_level, rules.Has(f"World{world_num}_level{level_num}_cleared")) #event location
 
         if world_num != 9:
@@ -116,24 +117,24 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     total_cost = 0
     if world.options.include_hintmovies:
         for hm_num in range(1,HM_COUNT+1):
-            location = world.get_location(f"Hintmovie{hm_num:02}")
+            location = world.get_location(name_hintmovie(hm_num))
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-            hm_rule = ((rules.Has(f"Starcoin", count=total_cost)|(rules.Has("glitched_logic") & rules.Has(f"Starcoin", count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") )
+            hm_rule = ((rules.Has(ITEM.StarCoin, count=total_cost)|(rules.Has(ITEM.GlitchedLogic) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") )
             world.set_rule(location, hm_rule)
 
     if world.options.include_shortcuts.value == True:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit[0]
             level_num = secret_exit[1]
-            secret_exit_loc = world.get_location(f"Secret_exit{world_num}-{mod_level_name(world_num,level_num)}")
+            secret_exit_loc = world.get_location(name_secret(world_num, level_num))
             if secret_exit[2] == 2:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") &
                                level_req[world_num - 1][level_num - 1][2])
             elif secret_exit[2] == 1:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
     for i in range(1,world.options.num_inventory_powerups.value+1):
-        invent_pow = world.get_location(f"Inventory_powerup_{i:03}")
+        invent_pow = world.get_location(name_inventory(i))
         worlds_list = list(f"World{j}" for j in range(1,9+1))
         worlds_list += worlds_list
         worlds_list.pop()
@@ -141,7 +142,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         # hades soft logic thats ored with glitched logic, but also make sure you have climb
         invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic")
         if i < 5:
-            invent_rule &= rules.Has("climb")  | [OptionFilter(RandomizeMovment, RandomizeMovment.option_off)]
+            invent_rule &= rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovment, RandomizeMovment.option_off)]
         world.set_rule(invent_pow, invent_rule)
         # soft logic, gain access when have new worlds
 

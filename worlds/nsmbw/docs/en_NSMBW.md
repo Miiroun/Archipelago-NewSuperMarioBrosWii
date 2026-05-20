@@ -123,7 +123,7 @@ config file.
 ## Debug tips
 - Restart launcher and computer after installing if the client doesn't show up in launcher or something doesn't work.
 - Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2 and are playing on save file 2.
-- Do not have another client open when you start client.
+- Do not have another dolphin instance open when you start client.
 - Connect to the server from the client after you are on the world map in game if you have problems on the title screen.
 - Try running the client commands /refresh, /reapply_checks and /reconnect_dolphin. Also try making a save-state and load it to clear the JIT cache.
   - If you have trouble with moves unlocking, death-link etc it probably issue with JIT_chache. The client automaticly makes savestate by pressing shirt+F8 and them F8. Make sure you have these button combos mapped to save-states in dolphoin.

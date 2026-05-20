@@ -6,7 +6,8 @@ from typing import Dict, Optional
 from . import keyboard
 from . import PowerPCInstructions
 from .dolphin_interface_client import *
-from ..Utils import bytes_to_int, int_to_bytes, SUPPORTED_VERSIONS
+from ..Utils import bytes_to_int, int_to_bytes
+from ..Common import *
 from ..items import ITEM_NAME_TO_ID, POWERUP_UNLOCK
 from ..locations import LEVELS_PER_WORLD
 
@@ -271,6 +272,8 @@ class NSMBWInterface():
         wait_long = 0.2
         wait_short = 0.1
         time.sleep(wait_short)
+        keyboard.release("shift")
+        time.sleep(wait_short)
         keyboard.press("shift")
         time.sleep(wait_short)
         keyboard.press("F8")
@@ -311,7 +314,7 @@ class NSMBWInterface():
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
             address = self.memory_addresses.address_ground_pound
-            if not "ground_pound" in unlocked_moves:
+            if not ITEM.MOVEMENT.GroundPound in unlocked_moves:
                 self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
             else:
                 # this doesnt get called, why? renamed groundpound?
@@ -322,7 +325,7 @@ class NSMBWInterface():
             # _ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
 
             address = self.memory_addresses.address_wall_slide
-            if not "wall_jump" in unlocked_moves:
+            if not ITEM.MOVEMENT.WallJump in unlocked_moves:
                 self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
             else:
@@ -330,7 +333,7 @@ class NSMBWInterface():
                 self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             address = self.memory_addresses.address_wall_jump
-            if not "wall_jump" in unlocked_moves:
+            if not ITEM.MOVEMENT.WallJump in unlocked_moves:
                 self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
             else:
@@ -343,14 +346,14 @@ class NSMBWInterface():
             # _ZN9daYoshi_c11checkCrouchEv    0x8014DBB0
 
             address = self.memory_addresses.address_crouch
-            if not "crouch" in unlocked_moves:
+            if not ITEM.MOVEMENT.Crouch in unlocked_moves:
                 self.write_instruction(address, b'\x38\x60\x00\x00')
                 self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
             else:
                 self.write_instruction(address, b'\x94\x21\xFF\xF0')
                 self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
             address = self.memory_addresses.address_crouch_yoshi
-            if not "crouch" in unlocked_moves:
+            if not ITEM.MOVEMENT.Crouch in unlocked_moves:
                 self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
             else:
@@ -365,26 +368,26 @@ class NSMBWInterface():
 
             #cary_blocks
             address = self.memory_addresses.address_cary
-            if not "carry" in unlocked_moves:
+            if not ITEM.MOVEMENT.Carry in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
 
             else:
                 self.write_instruction(address, b'\x94\x21\xff\xf0')
 
             # red switch
-            if not "!-switch" in unlocked_moves:
+            if not ITEM.MOVEMENT.RedSwitch in unlocked_moves:
                 self.set_red_switch(b'\x00')  # reset red switch if not unlocked
 
             address_nostar = self.memory_addresses.yoshi_walk_speed
             address_star = self.memory_addresses.yoshi_walk_star_speed
-            if not "yoshi" in unlocked_moves:
+            if not ITEM.MOVEMENT.Yoshi in unlocked_moves:
                 self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
                 self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
             else:
                 self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
                 self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
 
-            if not "swim" in unlocked_moves:
+            if not ITEM.MOVEMENT.Swim in unlocked_moves:
                 if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
                     await self.kill_player()
                     self.set_water_state(int_to_bytes(0,4))
@@ -401,20 +404,20 @@ class NSMBWInterface():
 
             #climb_pole
             address = self.memory_addresses.address_hang_pole
-            if not "climb" in unlocked_moves:
+            if not ITEM.MOVEMENT.Climb in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
 
-            if not "p-switch" in unlocked_moves:
+            if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
                 self.set_p_switch_timer(int_to_bytes(0,4))
 
-            if not "star" in unlocked_moves:
+            if not ITEM.MOVEMENT.Star in unlocked_moves:
                 self.set_star_timer(int_to_bytes(0,4))
 
             #climb_ladders
             address = self.memory_addresses.address_hang_ladder
-            if not "climb" in unlocked_moves:
+            if not ITEM.MOVEMENT.Climb in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, b"\x2c\x05" + PowerPCInstructions.reg_r0)
@@ -435,7 +438,7 @@ class NSMBWInterface():
             #return
             #swing_vine
             address = self.memory_addresses.address_tarzan_vine
-            if not "climb" in unlocked_moves:
+            if not ITEM.MOVEMENT.Climb in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_stwu + b"\xff\xc0")
@@ -443,12 +446,12 @@ class NSMBWInterface():
             #return
 
             address = self.memory_addresses.address_door
-            if not "door" in unlocked_moves:
+            if not ITEM.MOVEMENT.Door in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff)
             else:
                 self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
 
-            if not "?-switch" in unlocked_moves:
+            if not ITEM.MOVEMENT.QuestSwitch in unlocked_moves:
                 self.set_question_switch_timer(int_to_bytes(0,4))
 
 
@@ -465,20 +468,20 @@ class NSMBWInterface():
 
             #cary_shell
             address = self.memory_addresses.address_carry_shell
-            if not "carry" in unlocked_moves:
+            if not ITEM.MOVEMENT.Carry in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_b + b'\xff\x50')
 
             address = self.memory_addresses.address_pipe
-            if not "pipe" in unlocked_moves:
+            if not ITEM.MOVEMENT.Pipe in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_return)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffc0)
 
 
             address = self.memory_addresses.address_big_jump
-            if not "jump" in unlocked_moves:
+            if not ITEM.MOVEMENT.Jump in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_bne)
             else:
                 self.write_instruction(address, PowerPCInstructions.instru_beq)
@@ -488,34 +491,34 @@ class NSMBWInterface():
 
 
             address = self.memory_addresses.address_run
-            if not "run" in unlocked_moves:
+            if not ITEM.MOVEMENT.Run in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.instru_lhz + b'\x03\xff\xff')
             else:
                 self.write_instruction(address, button_on_instru)
 
             address = self.memory_addresses.address_button_right
-            if not "button_right" in unlocked_moves:
+            if not ITEM.MOVEMENT.ButtonRight in unlocked_moves:
                 self.write_instruction(address, button_off_instru)
             else:
                 self.write_instruction(address, button_on_instru)
             address = self.memory_addresses.address_button_left
-            if not "button_left" in unlocked_moves:
+            if not ITEM.MOVEMENT.ButtonLeft in unlocked_moves:
                 self.write_instruction(address, button_off_instru)
             else:
                 self.write_instruction(address, button_on_instru)
             address = self.memory_addresses.address_button_up
-            if not "button_up" in unlocked_moves:
+            if not ITEM.MOVEMENT.ButtonUp in unlocked_moves:
                 self.write_instruction(address, button_off_instru)
             else:
                 self.write_instruction(address, button_on_instru)
             address = self.memory_addresses.address_button_down
-            if not "button_down" in unlocked_moves:
+            if not ITEM.MOVEMENT.ButtonDown in unlocked_moves:
                 self.write_instruction(address, button_off_instru)
             else:
                 self.write_instruction(address, button_on_instru)
 
             address = self.memory_addresses.address_spinjump
-            if not "spin_jump" in unlocked_moves:
+            if not ITEM.MOVEMENT.SpinJump in unlocked_moves:
                 self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0000)
             else:
                 self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0017)
@@ -547,6 +550,7 @@ class NSMBWInterface():
         return self.dolphin_client.read_address(address,1)
     def get_hm_stats(self, hm_num):
         address = self.memory_addresses.hm_stats +hm_num
+        #address = self.memory_addresses.save_file_2_pointer # 0x06FC
         return self.dolphin_client.read_address(address,1)
     def get_worldstats_selectmenu(self):
         address = self.memory_addresses.world_stats + self.save_file_offset()
@@ -563,7 +567,7 @@ class NSMBWInterface():
         return self.dolphin_client.read_address(address,1)[0]+1
     def get_time_left(self):
         address = self.memory_addresses.time_left
-        return self.dolphin_client.read_address(address,1)
+        return self.dolphin_client.read_address(address,4)
     def get_on_map(self):
         address = self.memory_addresses.on_map+3 # beacuse 4 bytes
         return self.dolphin_client.read_address(address,1)
@@ -595,13 +599,13 @@ class NSMBWInterface():
     def set_level_stats(self, world_num, level_num, data : bytes):
         address = self.memory_offset_level_stats(world_num,level_num)
         self.dolphin_client.write_address(address,data)
-    def set_red_switch(self, data):
+    def set_red_switch(self, data : bytes):
         address = self.memory_addresses.red_switch_state
         self.dolphin_client.write_address(address,data)
-    def set_time_left(self, data):
+    def set_time_left(self, data : bytes):
         address = self.memory_addresses.time_left
         self.dolphin_client.write_address(address,data)
-    def set_world(self,data):
+    def set_world(self,data : bytes):
         #address = self.memory_addresses.world_level
         #self.dolphin_client.write_address(address,data)
         address = self.memory_addresses.map_world
@@ -611,23 +615,23 @@ class NSMBWInterface():
     def set_lives_count(self, data, player_num):
         address = self.memory_addresses.mario_lifecount[player_num]+3
         self.dolphin_client.write_address(address,data)
-    def set_water_state(self,data):
+    def set_water_state(self,data : bytes):
         address = self.memory_addresses.water_speed_if_in
         self.dolphin_client.write_address(address, data)
-    def set_p_switch_timer(self, data):
+    def set_p_switch_timer(self, data : bytes):
         address = self.memory_addresses.address_p_switch
         self.dolphin_client.write_address(address, data)
-    def set_star_timer(self, data):
+    def set_star_timer(self, data : bytes):
         address = self.memory_addresses.address_star
         self.dolphin_client.write_address(address, data)
-    def set_question_switch_timer(self,data):
+    def set_question_switch_timer(self,data : bytes):
         address = self.memory_addresses.address_question_switch
         self.dolphin_client.write_pointer(address,0x0488, data)
-    def update_inventory_items(self, type_num, increase):
+    def update_inventory_items(self, type_num : int, increase : int):
         amount = self.get_inventory_items(type_num)[0]
         if amount >99:
             amount = 99
-        self.set_inventory_items( int.to_bytes((amount+ increase), 1, byteorder='big', signed=False), type_num)
+        self.set_inventory_items( int_to_bytes((amount+ increase), 1), type_num)
 
 
 

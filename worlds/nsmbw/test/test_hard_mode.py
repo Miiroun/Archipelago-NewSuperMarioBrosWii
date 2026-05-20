@@ -1,5 +1,5 @@
 from .bases import NSMBWWorld
-from ..locations import get_level_name, get_starcoin_name
+from ..locations import name_level, name_starcoin
 from ..options import RandomizeMovment, RandomizePowerups, LogicDifficulty
 
 
@@ -17,12 +17,12 @@ class TestHardModeOff(NSMBWWorld):
         self.collect_by_name("World1")
 
         with self.subTest("make sure locations reachable"):
-            self.assertTrue(self.world.get_location(get_level_name(1,1)).can_reach(self.multiworld.state))
-            self.assertTrue(self.world.get_location(get_starcoin_name(1, 2, 1)).can_reach(self.multiworld.state))
+            self.assertTrue(self.world.get_location(name_level(1, 1)).can_reach(self.multiworld.state))
+            self.assertTrue(self.world.get_location(name_starcoin(1, 2, 1)).can_reach(self.multiworld.state))
 
 
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
-            self.assertFalse(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
             self.collect_by_name("star")
            # self.assertTrue(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
             self.collect_by_name("Propeller_Mushroom")
@@ -45,13 +45,13 @@ class TestHardModeOn(NSMBWWorld):
         self.collect_by_name("World1")
 
         with self.subTest("make sure locations reachable"):
-            self.assertTrue(self.world.get_location(get_level_name(1,1)).can_reach(self.multiworld.state))
-            self.assertTrue(self.world.get_location(get_starcoin_name(1, 2, 1)).can_reach(self.multiworld.state))
+            self.assertTrue(self.world.get_location(name_level(1, 1)).can_reach(self.multiworld.state))
+            self.assertTrue(self.world.get_location(name_starcoin(1, 2, 1)).can_reach(self.multiworld.state))
 
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
-            self.assertFalse(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
             self.collect_by_name("star")
-            self.assertFalse(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
             self.collect_by_name("Propeller_Mushroom")
             #self.assertTrue(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
 

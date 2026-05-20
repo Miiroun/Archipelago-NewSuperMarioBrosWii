@@ -1,4 +1,6 @@
 from test.bases import WorldTestBase
+from ..Common import *
+
 
 class NSMBWWorld(WorldTestBase):
-    game = "NSMBW"
+    game = game_name
