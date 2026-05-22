@@ -32,6 +32,15 @@ class ITEM:
         ButtonRight = "button_right"
         ButtonUp = "button_up"
         ButtonDown = "button_down"
+    class TRAPS(StrEnum):
+        LoosePowerupTrap = "Loose_powerup_trap"
+        GoombaTrap = "Goomba_trap"
+        DeathTrap = "Death_trap"
+        TimeTrap = "Time_trap"
+
+    class FILLER(StrEnum):
+        FillInventory = "fill_inventory"
+        OneUps = "1ups"
 
     StarCoin = "Starcoin"
     Time = "Time_left"
@@ -42,8 +51,8 @@ class ITEM:
 POWERUP_UNLOCK = list([c.value for c in ITEM.POWERUP])
 MOVEMENT_UNLOCKS = list([c.value for c in ITEM.MOVEMENT])
 
-TRAPS = ["Loose_powerup_trap", "Goomba_trap", "Death_trap"] #, "Time_trap",
-FILLER = ["fill_inventory", "1ups"]
+TRAPS = list([c.value for c in ITEM.TRAPS])
+FILLER = list([c.value for c in ITEM.FILLER])
 
 
 SUPPORTED_VERSIONS = ["E2"]

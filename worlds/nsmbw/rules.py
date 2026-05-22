@@ -133,7 +133,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                                level_req[world_num - 1][level_num - 1][2])
             elif secret_exit[2] == 1:
                 world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
-    for i in range(1,world.options.num_inventory_powerups.value+1):
+    for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))
         worlds_list = list(f"World{j}" for j in range(1,9+1))
         worlds_list += worlds_list

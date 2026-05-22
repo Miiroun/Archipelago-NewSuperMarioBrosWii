@@ -55,14 +55,14 @@ class MemoryAddresses(object):
         self.SC_current_level = self.map_between("E2",0x803741B0)
 
         self.level_world = self.map_between("E2",0x80315B9F)
-        self.level_stat = self.map_between("E2",0x80C8084F)
+        #self.level_stat = self.map_between("E2",0x80C8084F)
         self.inventory_items = self.map_between("E2",0x80C807E9)
 
         self.world_level = self.map_between("E2",0x80315B9C)
         self.level_level = self.map_between("E2",0x80315B9D)
         self.hm_stats = self.hard_code({"E2" : 0x80C80EDC})
 
-        self.world_stats = self.map_between("E2",0x80C80812) # dSaveMng_c::getSaveGame
+        #self.world_stats = self.map_between("E2",0x80C80812) # dSaveMng_c::getSaveGame
 
         #self.save_file_2_pointer = self.map_between("E2", 0x80c807e0)
 
@@ -74,14 +74,14 @@ class MemoryAddresses(object):
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
 
-        self.powerup_state = [self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})]
+        self.powerup_state = [self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})] # might be offsey with 0x2d08+0x1
         assert len(self.powerup_state) == PLAYER_COUNT, f"Powerup_state address list is of wrong size {len(self.powerup_state)}"
 
         # memory map doesnt work for this for some reason
         #self.powerup_state = 0x8154CCE7
 
         self.player_status = self.map_between("E2",0x8154CC5C)
-        self.mario_lifecount = [self.map_between("E2",0x80354E90)]
+        self.mario_lifecount = [self.map_between("E2",0x80354E90+i*2) for i in range(PLAYER_COUNT)] # JUST GEUSSING DATA STRUCTURE
         assert len(self.mario_lifecount) == PLAYER_COUNT, f"Mario life count address list is of wrong size {len(self.mario_lifecount)}"
 
         self.on_map = self.map_between("E2",0x80424798)
@@ -91,7 +91,7 @@ class MemoryAddresses(object):
         self.time_left = self.map_between("E2",0x80d25bf8)
 
 
-        self.savefile1_1_1 = self.hard_code({"E2" : 0x80c7fed3})
+        #self.savefile1_1_1 = self.hard_code({"E2" : 0x80c7fed3})
         self.savefile_num = self.map_between("E2",0x80c7f7c6)
         self.savefile2_offset = 0x860# = Save File 2 Offset
         self.savefile3_offset = 0x1300# = Save File 3 Offset
@@ -148,7 +148,9 @@ class MemoryAddresses(object):
 
         # water movement speed
         #self.water_movement_speed  =self.map_between("P1", 0x80935b18)
-        self.water_speed_if_in = 0x8154C8DA #self.map_between("P1", 0x8154C8DA)
+        self.water_speed_if_in = self.hard_code({ "E2" : 0x8154C8DA}) #self.map_between("P1", 0x8154C8DA)
+
+        self.goomba_walk = self.map_between("E2", 0x80ad2870)
 
 
     def map_between(self, ver_from : str, address : int) -> int:

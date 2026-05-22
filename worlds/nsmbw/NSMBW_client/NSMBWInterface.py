@@ -67,10 +67,12 @@ class NSMBWInterface():
 
     memory_addresses : MemoryAddresses
     deathtimer : float = time.time()
+    should_clear : int
     
     def __init__(self, logger: Logger) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
+        self.should_clear = 0
 
 
 
@@ -224,6 +226,7 @@ class NSMBWInterface():
         #    GAMES[self.current_game]["HUD_MESSAGE_ADDRESS"], encoded_message
         #)
     def save_file_offset(self):
+        # this function should probably not be used
         savefile_num = self.get_savefile_num()
         address = 0
         if savefile_num == 1:
@@ -303,7 +306,8 @@ class NSMBWInterface():
             #logger.info("Instruction changed")
             if clear:
                 self.clear_cache()
-            self.should_clear += 1
+            else:
+                self.should_clear += 1
             return True
         else:
             return False
@@ -312,7 +316,6 @@ class NSMBWInterface():
     async def handle_unlocked_moves(self, unlocked_moves, slot_data_movement):
         self.should_clear = 0
         if slot_data_movement >= 1:
-
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
             address = self.memory_addresses.address_ground_pound
@@ -528,6 +531,10 @@ class NSMBWInterface():
         if self.should_clear >= 1:
             self.clear_cache()
 
+    def patch_goomba_speed(self):
+        address = self.memory_addresses.goomba_walk
+        self.write_instruction(address, int_to_bytes(0x40000000, 4) + int_to_bytes(0xc0000000, 4), clear=True)  # f2.0 # f-2.0
+
     # just created
     def get_sc(self):
         address = self.memory_addresses.sc_currentlevel
@@ -555,13 +562,13 @@ class NSMBWInterface():
         address = self.memory_addresses.level_level
         return self.dolphin_client.read_address(address,1)
     def get_hm_stats(self, hm_num):
-        address = self.memory_addresses.hm_stats +hm_num
+        #address = self.memory_addresses.hm_stats +hm_num
         #address = self.memory_addresses.save_file_2_pointer # 0x06FC
         dMj2dGame_c_address = self.get_dMj2dGame_c_address() + hm_num + 0x6fc
         #print(f"old hm {address : x}")
         #print(f"new hm {dMj2dGame_c_address : x}")
         #print(f"diffrance hm {address-dMj2dGame_c_address : x}")
-        return self.dolphin_client.read_address(address,1)
+        return self.dolphin_client.read_address(dMj2dGame_c_address,1)
     def get_worldstats_selectmenu(self, world_num):
         #address = self.memory_addresses.world_stats # + self.save_file_offset()
         #return self.dolphin_client.read_address(address,1)
@@ -582,8 +589,12 @@ class NSMBWInterface():
         address = self.memory_addresses.player_status+3 # beacuse 4 bytes
         return self.dolphin_client.read_address(address,1)
     def get_savefile_num(self):
-        address = self.memory_addresses.savefile_num
-        return self.dolphin_client.read_address(address,1)[0]+1
+        address = self.get_dSaveMng_c_address() +0x6
+        num =  bytes_to_int(self.dolphin_client.read_address(address,1))+1
+        # print(f"dSaveMng_c = {dSaveMng_c_address}")
+        # print(f"Diffrance = {dSaveMng_c_address +0x6 -self.memory_addresses.savefile_num }")
+        assert 1 <= num <= 3, f"Save file num needs to be in range, which {num} is not"
+        return num
     def get_time_left(self):
         address = self.memory_addresses.time_left
         return self.dolphin_client.read_address(address,4)
@@ -606,24 +617,28 @@ class NSMBWInterface():
         address = self.memory_addresses.water_speed_if_in
         return self.dolphin_client.read_address(address,4)
 
-    def get_dMj2dGame_c_address(self):
+    def get_dSaveMng_c_address(self):
         pointer_dSaveMng_c_pointer = self.memory_addresses.dSaveMng_c_pointer
-        #print(f"pointer_dSaveMng_c_pointer: {pointer_dSaveMng_c_pointer : x}")
+        dSaveMng_c_address = bytes_to_int(self.dolphin_client.read_address(pointer_dSaveMng_c_pointer, 4)) +0x20
+        return dSaveMng_c_address
+
+    def get_dMj2dGame_c_address(self):
         current_file = self.get_savefile_num()-1
-        #print(f"current_file = {self.dolphin_client.read_pointer(pointer_dSaveMng_c_pointer, 0x6, 1)}")
+        #print(f"current_file = {current_file}")
+        #print(F"Other file = {self.dolphin_client.read_pointer(pointer_dSaveMng_c_pointer, 0x6, 1)}")
         #print(f"Current old file {self.get_savefile_num()}")
 
-        dMj2dGame_c_address = bytes_to_int(self.dolphin_client.read_address(pointer_dSaveMng_c_pointer, 4)) +0x20
-        #print(f"dSaveMng_c = {dMj2dGame_c_address}")
+        dSaveMng_c_address = self.get_dSaveMng_c_address()
+
 
         offset =  0x6a0  + current_file*0x980  # might be 0x2320 instead
-        dMj2dGame_c_address_offset = dMj2dGame_c_address+offset
+        dMj2dGame_c_address = dSaveMng_c_address+offset
         #print(f"dMj2dGame_c_address_offset {dMj2dGame_c_address_offset:x}")
-        return dMj2dGame_c_address_offset  # this extra here was added by trial and error, but proberbly shouldnt be there
+        return dMj2dGame_c_address  # this extra here was added by trial and error, but proberbly shouldnt be there
 
 
     def set_worldstats(self,world_num : int, status : bytes):
-        address = self.memory_addresses.world_stats + (world_num-1) # + self.save_file_offset()
+        #address = self.memory_addresses.world_stats + (world_num-1) # + self.save_file_offset()
         #self.dolphin_client.write_address(address, status)
         dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x32 + (world_num-1)
         #print(f"old world {address : x}")
@@ -676,7 +691,7 @@ class NSMBWInterface():
         address = self.memory_addresses.address_question_switch
         self.dolphin_client.write_pointer(address,0x0488, data)
     def update_inventory_items(self, type_num : int, increase : int):
-        amount = self.get_inventory_items(type_num)[0]
+        amount = bytes_to_int(self.get_inventory_items(type_num))
         if amount >99:
             amount = 99
         self.set_inventory_items( int_to_bytes((amount+ increase), 1), type_num)

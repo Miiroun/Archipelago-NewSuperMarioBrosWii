@@ -1,3 +1,5 @@
+from jinja2.nodes import Include
+
 from Options import *
 from .Common import *
 
@@ -66,8 +68,7 @@ class RandomizeTime(Range):
     default = 0
     #default = 5
 
-
-    visibility = Option.visibility.complex_ui
+    #visibility = Option.visibility.complex_ui
 
 class IncludeHintMovies(Toggle):
     """
@@ -137,24 +138,40 @@ class StartingWorld(Choice):
     option_world8 = 8
     default = "random"
 
-class AmountStartingItems(Range):
+class World9UnlockCondition(Choice):
+    """
+    Select in which way world 9 levels will be unlocked
+    Standard    : The games default unlock condition
+    Linear      : 9-1 req 10 SC, 9-2 req 20 SC, etc.
+    Gaussian    : The unlocking will be a gaussian distribution with mean = 100 SC and standard deviation = 30
+    """
+    # TODO not implemnted
+    display_name = "World 9 Unlock Condition"
+    option_standard = 1
+    option_linear = 2
+    option_gaussian = 3
+
+    default = option_linear
+    visibility = Option.visibility.none
+
+class IncludeStartingItems(Range):
     """
     Gives you an amount of free locations that are automatically checked.
     This option is here to create a few free checks that helps with restrictive start errors.
-    Put to at least ~25 if you disable both check hint movies and check level completion and have NumberInventoryItems = 0
+    Put to at least ~25 if you disable both check hint movies and check level completion and have IncludeNumberInventoryItems = 0
     otherwise you can keep it at 0.
     """
 
-    display_name = "Amount Starting Items"
+    display_name = "Include Starting Items"
     range_start = 0
     range_end = 100
     default = 0
 
-class NumberInventoryItems(Range):
+class IncludeNumberInventoryItems(Range):
     """
     A location that gets collected when you collect a powerup to your inventory, e.g. from a toad house or beating overworld enemy.
     """
-    display_name = "Number Inventory Items"
+    display_name = "Include Inventory Items"
     range_start = 0
     range_end = 999
     default = 40
@@ -223,26 +240,31 @@ class NSMBWOptions(PerGameCommonOptions):
     include_shortcuts : IncludeShortcuts
     include_hintmovies : IncludeHintMovies
     randomize_coins: RandomizeStarCoins
+    include_inventory_powerups : IncludeNumberInventoryItems
+    include_starting_locations : IncludeStartingItems
+
 
     randomize_movement : RandomizeMovment
     dont_rando_move : DontRandoMovement
     randomize_powerups : RandomizePowerups
     randomize_time : RandomizeTime
 
-    trap_chance: TrapChance
     logic_difficulty: LogicDifficulty
     logic_outside_powerup : LogicOutsidePowerups
     starting_world: StartingWorld
-    num_starting_locations : AmountStartingItems
-    death_link : DeathLink
-    enable_superpowers : EnableSuperPowers
+    world9_unlock_condition : World9UnlockCondition
+
     amount_support_received : AmountSupportReceived
-    num_inventory_powerups : NumberInventoryItems
     filler_items : FillerItems
     trap_items : TrapItems
+    trap_chance: TrapChance
+
 
     bowser_star_unlock : BowserCastleStarUnlock
     bowser_world_unlock : BowserCastleWorldUnlock
+
+    death_link : DeathLink
+    enable_superpowers : EnableSuperPowers
 
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
@@ -254,8 +276,8 @@ option_groups = [
             IncludeLevelCompletion,
             IncludeHintMovies,
             RandomizeStarCoins,
-            NumberInventoryItems,
-            AmountStartingItems,
+            IncludeNumberInventoryItems,
+            IncludeStartingItems,
         ],
     ),
     OptionGroup(
@@ -275,33 +297,77 @@ option_groups = [
         ],
     ),
     OptionGroup(
-        "Other",
+        "Logic",
         [
-            DeathLink,
             LogicDifficulty,
             LogicOutsidePowerups,
-            EnableSuperPowers,
+            World9UnlockCondition,
+            StartingWorld
+        ]
+    ),
+    OptionGroup(
+        "Filler and traps",
+        [
             FillerItems,
             TrapItems,
             TrapChance,
             AmountSupportReceived,
+        ]
+    ),
+    OptionGroup(
+        "Other",
+        [
+            DeathLink,
+            EnableSuperPowers,
         ],
     ),
 ]
 
 option_presets = {
-#    "standard": {
-#        "trap_chance": 0,
-#        "randomize_coins": True,
-#        "logic_difficulty": LogicDifficulty.option_normal,
-#        "starting_world": True,
-#        "randomize_level_completion" : False,
-#        "randomize_movement" : False,
-#        "randomize_powerups" : 2,
-#        "include_hintmovies": True,
-#        "num_starting_locations" : 10,
-#        "death_link" : False,
-#    }
+    "standard/recomeneded": {
+        "include_level_completion": IncludeLevelCompletion.default,
+        "include_shortcuts": IncludeShortcuts.default,
+        "include_hintmovies": IncludeHintMovies.default,
+        "randomize_coins": RandomizeStarCoins.default,
+
+        "randomize_movement": RandomizeMovment.default,
+        "dont_rando_move": DontRandoMovement.default,
+        "randomize_powerups": RandomizePowerups.default,
+        "randomize_time": RandomizeTime.default,
+        "starting_world": StartingWorld.default,
+        "include_inventory_powerups": IncludeNumberInventoryItems.default,
+        "include_starting_locations": IncludeStartingItems.default,
+    },
+    "Minimal": {
+        "include_level_completion": IncludeLevelCompletion.option_false,
+        "include_shortcuts": IncludeShortcuts.option_false,
+        "include_hintmovies": IncludeHintMovies.option_false,
+        "randomize_coins": RandomizeStarCoins.option_false,
+        "starting_world": 1,
+        "include_inventory_powerups": 0,
+        "include_starting_locations": 0,
+
+        "randomize_movement": RandomizeMovment.option_off,
+        "dont_rando_move": set(MOVEMENT_UNLOCKS),
+        "randomize_powerups": RandomizePowerups.option_off,
+        "randomize_time": 0,
+    },
+    "Maximal": {
+        "include_level_completion": IncludeLevelCompletion.option_true,
+        "include_shortcuts": IncludeShortcuts.option_true,
+        "include_hintmovies": IncludeHintMovies.option_true,
+        "randomize_coins": RandomizeStarCoins.option_true,
+        "starting_world": "random",
+        "include_inventory_powerups" : 200,
+        "include_starting_locations" : 0,
+
+        "randomize_movement": RandomizeMovment.option_on,
+        "dont_rando_move": set(),
+        "randomize_powerups": RandomizePowerups.option_on,
+        "randomize_time": 20,
+    }
+
+
 }
 
 
@@ -323,9 +389,9 @@ def adjust_options(world):
         print(f"(NSMBW generation error) Turning off include_shortcuts can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
 
-    if world.options.num_starting_locations.value <= req_start_loc:
+    if world.options.include_starting_locations.value <= req_start_loc:
         print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
-        world.options.num_starting_locations.value = min(req_start_loc, req_start_loc_max)
+        world.options.include_starting_locations.value = min(req_start_loc, req_start_loc_max)
 
 
     MAX_ALLOWED_BOWSER_SC = 190

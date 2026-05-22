@@ -26,14 +26,15 @@
 4) When game booted select savefile 2.
 5) Make savestates in emulator, saving the game doesn't currently work.
 6) After you have entered the world map press CONNECT in the client.
+   - IMPORTANT : do not connect before this
 7) Open the in game world-select menu and move to a world you have unlocked
-8) See the quirks section in en_NSMBW.md for quirks with the implementation.
+8) See the quirks section in [en_NSMBW.md](./en_NSMBW.md) for quirks with the implementation.
 9) Make save-states to save the game and run /save. (Do NOT save when you are in world 9, it will delete your save)
 
 
 ## Tracker 
 You can optionally use the built-in universal tracker extension to track available locations.
 Simply download [universal tracker](https://github.com/FarisTheAncient/Archipelago/releases?q=Tracker) and put it into your custom worlds folder (or double click it).
-Make sure you have your <player>.yaml file still in the /players/ directory for the tracker to work. It is automatically booted up if you have it in your custom worlds folder and is integrated into the client.
+It is automatically booted up if you have it in your custom worlds folder and is integrated into the client.
 It might prompt you for an external pop tracker pack, this can simply be ignored as that pack is still in development.
 

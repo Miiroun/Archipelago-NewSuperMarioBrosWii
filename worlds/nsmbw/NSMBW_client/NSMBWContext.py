@@ -10,7 +10,7 @@ from .NSMBWInterface import *
 from .NotificationManager import NotificationManager
 #from .patcher import patch_iso
 
-from NetUtils import ClientStatus
+from NetUtils import ClientStatus, NetworkItem
 from ..Utils import int_to_bytes, bytes_to_int, map_nd
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
@@ -158,7 +158,7 @@ status_messages = {
 class NSMBWContext(SuperContext):
     # Text Mode to use !hint and such with games that have no text entry
     tags = {"AP"}#CommonContext.tags
-    game = 'NSMBW'  # empty matches any game since 0.3.2
+    game = game_name  # empty matches any game since 0.3.2
     items_handling = 0b111  # receive all items for /received
     want_slot_data = True  # Can't use game specific slot_data
     game_interface: NSMBWInterface
@@ -174,7 +174,7 @@ class NSMBWContext(SuperContext):
 
 
     #Created for NSMBW
-    items_handled = []
+    items_handled : List[NetworkItem] = []
     locations_handled = []
     completed_levelstats : List[List[bytes]]
     moded_levelstats : ModifiedState = ModifiedState.UNMODIFIED
@@ -188,6 +188,15 @@ class NSMBWContext(SuperContext):
     has_complained_about_world : int = 0
 
     prev_sent_locations : set
+    prossessed_errors : List[str]
+    handled_num: int
+    unlocked_worlds  : List[int]
+    unlocked_powerups : List[int]
+    unlocked_moves : List[str]
+    traps : List[str]
+    filler : List[str]
+    starcoin_count : int
+    time : int
 
     def __init__(self, server_address: str, password: str, apnsmbw_file: Optional[str] = None):
         super().__init__(server_address, password)
@@ -207,6 +216,10 @@ class NSMBWContext(SuperContext):
         self.moded_levelstats = ModifiedState.UNMODIFIED
 
         self.prev_sent_locations = set()
+        self.prossessed_errors = []
+
+
+        self.handled_num = -1
 
 
     async def server_auth(self, password_requested: bool = False):
@@ -231,13 +244,13 @@ class NSMBWContext(SuperContext):
             self.slot_data = args["slot_data"]
             self.death_link_enabled = self.slot_data["death_link"]
 
+
             if tracker_loaded:
                 args.setdefault("slot_data", dict())
             Utils.async_start(self.handle_load())
         elif cmd == "RoomInfo":
             self.seed_name = args["seed_name"]
         elif cmd == "ReceivedItems":
-            #handle_recived_items
             pass
         elif cmd == "Bounced":
             pass
@@ -361,7 +374,6 @@ class NSMBWContext(SuperContext):
             await asyncio.sleep(0.5)
             await asyncio.sleep(3)
     
-    
 
 
 
@@ -382,7 +394,10 @@ class NSMBWContext(SuperContext):
         await asyncio.sleep(0.1)
 
         if self.game_interface.get_savefile_num() != 2:
-            logger.info("Please select save file 2 to play on, others are not supported")
+            text = f"Please select save file 2 to play on instead of save file {self.game_interface.get_savefile_num()}, others are not fully supported"
+            if not text in self.prossessed_errors:
+                logger.info(text)
+                self.prossessed_errors.append(text)
 
     async def handle_in_worldmap(self):
         await self.handle_check_goal_complete()
@@ -397,8 +412,6 @@ class NSMBWContext(SuperContext):
         await asyncio.sleep(0.1)
 
 
-
-
     async def handle_in_main_menu(self):
         await self.check_starter_locations()
         await self.game_interface.alive_player()
@@ -407,8 +420,6 @@ class NSMBWContext(SuperContext):
         await asyncio.sleep(0.1)
         #print(self.game_interface.get_record_state())
         #self.game_interface.set_world(b'\x05')
-
-
 
 
     async def handle_save(self):
@@ -422,13 +433,14 @@ class NSMBWContext(SuperContext):
             except FileExistsError:
                 print(f"Directory '{path}' already exists.")
 
-            data = {}
-            data.update({"completed_levels": self.completed_levels})
-            #data.update({"completed_levelstats" : list(map(lambda x : x, list(map(bytes_to_int, self.completed_levelstats))))})
-            data.update({"deathlink_enabled": self.death_link_enabled})
-            data.update({"prossesed_inventory_powerup_locations" : self.prossesed_inventory_powerup_locations})
-            data.update({"completed_levelstats" : map_nd(self.completed_levelstats, bytes_to_int)})
-            data.update({"moded_levelstats" : self.moded_levelstats})
+            data = {
+                "completed_levels": self.completed_levels,
+                "deathlink_enabled": self.death_link_enabled,
+                "prossesed_inventory_powerup_locations" : self.prossesed_inventory_powerup_locations,
+                "completed_levelstats" : map_nd(self.completed_levelstats, bytes_to_int),
+                "moded_levelstats" : self.moded_levelstats,
+                "handled_num" : self.handled_num
+            }
             with open(f"{path}\\{self.seed_name}.json", "w+") as file_name:
                 json.dump(data, file_name)
             logger.info("Saved to file")
@@ -447,8 +459,9 @@ class NSMBWContext(SuperContext):
                 self.death_link_enabled = data["deathlink_enabled"]
                 self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
 
-                self.completed_levelstats = map_nd(data["completed_levelstats"], lambda  x : int_to_bytes(x, 1))
+                self.completed_levelstats = map_nd(data["completed_levelstats"], lambda  x : int_to_bytes(x, 4))
                 self.moded_levelstats = data["moded_levelstats"]
+                self.handled_num = data["handled_num"]
 
                 logger.info("Loaded from file")
 
@@ -557,7 +570,7 @@ class NSMBWContext(SuperContext):
 
     async def check_starter_locations(self):
         checked_locations = []
-        num_starter_items = self.slot_data["num_starting_locations"]
+        num_starter_items = self.slot_data["include_starting_locations"]
         for i in range(1,num_starter_items+1):
             location_name = f"starter_location{i}"
             if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
@@ -684,7 +697,7 @@ class NSMBWContext(SuperContext):
             current_item = bytes_to_int(self.game_interface.get_inventory_items(i))
             if current_item > self.previous_inventory[i]:
                 for j in range(current_item - self.previous_inventory[i]):
-                    if self.prossesed_inventory_powerup_locations < self.slot_data["num_inventory_powerups"]:
+                    if self.prossesed_inventory_powerup_locations < self.slot_data["include_inventory_powerups"]:
                         self.prossesed_inventory_powerup_locations += 1
                         location_name = f"Inventory_powerup_{self.prossesed_inventory_powerup_locations:03}"
                         checked_locations.append(LOCATION_NAME_TO_ID[location_name])
@@ -704,45 +717,48 @@ class NSMBWContext(SuperContext):
         self.filler = []
         self.starcoin_count = 0
         self.time = 0
+
+        i = 0
         for network_item in self.items_received:
             item_id = network_item.item
             item_name = ITEM_ID_TO_NAME[item_id]
             if not network_item in self.items_handled:
-                # print(network_item)
-    
-                if item_name is None:
-                    continue
-    
-                #logger.info(
-                print(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
+                if i >= self.handled_num:
 
-                if item_name == ITEM.StarCoin:
-                    # implement read of starcoin count and increase by one
-                    print(f"A starcoin was received")
-                elif item_name == ITEM.Time:
-                    print(f"A time extension was received")
-                elif 201 <= item_id <= 299:
-                    world_num = item_id - 200
-                    if world_num != 9:
-                        logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
+                    if item_name is None:
+                        continue
+
+                    #logger.info(
+                    print(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
+
+                    if item_name == ITEM.StarCoin:
+                        # implement read of starcoin count and increase by one
+                        print(f"A starcoin was received")
+                    elif item_name == ITEM.Time:
+                        print(f"A time extension was received")
+                    elif 201 <= item_id <= 299:
+                        world_num = item_id - 200
+                        if world_num != 9:
+                            logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
+                        else:
+                            print(f"World {world_num} was received.")
+                    elif 301 <= item_id <= 399:
+                        print(f"Received move {item_name} ")
+                    elif 401 <= item_id <= 499:
+                        self.traps.append(item_name)
+                    elif 501 <= item_id <= 599:
+                        self.filler.append(item_name)
+                    elif 601 <= item_id <= 699:
+                        print(f"Power-up {item_name} was received ")
                     else:
-                        print(f"World {world_num} was received.")
-                elif 301 <= item_id <= 399:
-                    print(f"Received move {item_name} ")
-                elif 401 <= item_id <= 499:
-                    self.traps.append(item_name)
-                elif 501 <= item_id <= 599:
-                    self.filler.append(item_name)
-                elif 601 <= item_id <= 699:
-                    print(f"Power-up {item_name} was received ")
-                else:
-                    print(f"Handling for {item_name} haven't been implemented")
-    
-                #if network_item.player != self.slot:
-                #    receipt_message = ("online")
-                #    self.notification_manager.queue_notification(
-                #        f"{item_name} {receipt_message} ({self.player_names[network_item.player]})")
+                        print(f"Handling for {item_name} haven't been implemented")
+
+                    #if network_item.player != self.slot:
+                    #    receipt_message = ("online")
+                    #    self.notification_manager.queue_notification(
+                    #        f"{item_name} {receipt_message} ({self.player_names[network_item.player]})")
                 self.items_handled.append(network_item)
+            i += 1
     
             if item_id == 101:
                 self.starcoin_count += 1
@@ -754,6 +770,7 @@ class NSMBWContext(SuperContext):
                 self.unlocked_moves.append(item_name)
             elif 601 <= item_id <= 699:
                 self.unlocked_powerups[item_id - 601] = 1
+        self.handled_num = i
         # proccess code
         await self.handle_unlocked_powerups(self.unlocked_powerups)
         await self.handle_unlocked_worlds(self.unlocked_worlds)
@@ -834,14 +851,14 @@ class NSMBWContext(SuperContext):
                 for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                     level_stats = self.game_interface.get_level_stats(world_num,level_num)[0]
                     level_stats &= 0x30 # keeps level completion
-                    if i * 3 < starcoin_count:
-                        level_stats += 0x07
-                    elif 3 * i == starcoin_count - 2:
-                        level_stats += 0x03
-                    elif 3 * i == starcoin_count - 1:
-                        level_stats += 0x01
+                    if i * 3 + 3  <= starcoin_count:
+                        level_stats |= 0x07
+                    elif 3 * i + 2 == starcoin_count:
+                        level_stats |= 0x03
+                    elif 3 * i + 1 == starcoin_count:
+                        level_stats |= 0x01
                     else:
-                        level_stats += 0x00
+                        level_stats |= 0x00
                     if f"World{world_num}_tower" in self.completed_levels:
                         if level_num == (7 + 1 if world_num in [7,8] else 0):
                             level_stats |= 0x30
@@ -891,12 +908,12 @@ class NSMBWContext(SuperContext):
             if trap == "Goomba_trap":
                 #logger.info(f"Trap {trap} is not implemented")
                 logger.info("Imaging a goomba comes and attacks you with speed")
-                self.game_interface.dolphin_client.write_address( 0x80ad2870, int_to_bytes(0x40000000,4))# f2.0
-                self.game_interface.dolphin_client.write_address(0x80ad2874,  int_to_bytes(0xc0000000,4)) # f-2.0
+                self.game_interface.patch_goomba_speed()
+
 
             elif trap == "Time_trap":
                 logger.info(f"Trap {trap} is not implemented")
-                time_left = self.game_interface.get_time_left()[0]
+                time_left = bytes_to_int(self.game_interface.get_time_left())
                 self.game_interface.set_time_left(int_to_bytes(time_left // 2, 4))  #half times left
 
             elif trap == "Loose_powerup_trap":
@@ -913,7 +930,7 @@ class NSMBWContext(SuperContext):
 
     async def handle_filler(self, filler):
         for item_name in filler:
-            if item_name == "fill_inventory":
+            if item_name == ITEM.FILLER.FillInventory:
                 logger.info(f"Fill inventory x{self.slot_data["amount_support_received"]} was received ")
                 for i in range(POWERUP_COUNT+1+1):
                     self.game_interface.update_inventory_items(i, self.slot_data["amount_support_received"])
@@ -921,7 +938,7 @@ class NSMBWContext(SuperContext):
                     for i in range(POWERUP_COUNT+1):
                         self.previous_inventory[i] = bytes_to_int(self.game_interface.get_inventory_items(i))
 
-            elif item_name == "1ups":
+            elif item_name == ITEM.FILLER.OneUps:
                 logger.info(f"1ups x{self.slot_data["amount_support_received"]} was received ")
                 for player_num in range(PLAYER_COUNT):
                     lives = self.game_interface.get_lives_count(player_num)
@@ -988,7 +1005,7 @@ class NSMBWContext(SuperContext):
         if self.slot_data["randomize_time"] != 0:
             current_time = bytes_to_int(self.game_interface.get_time_left())
             new_time = (num_time* 0x1e0000)//self.slot_data["randomize_time"]
-            if 0x001000 < new_time < current_time:
+            if (new_time < current_time) and (0x001000 < current_time  < 0x1e0000) and self.game_interface.is_in_level():
                 self.game_interface.set_time_left(int_to_bytes(new_time, 4))
 
 
@@ -1066,8 +1083,11 @@ async def patch_and_run_game(apnsmbw_file: str):
         output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
 
         input_iso_path = get_settings()["nsmbw.world_options"].game_file_path
-        assert input_iso_path is not None, "Add a path to your game file in host.yaml"
-        assert Path(input_iso_path).exists(), "Your game file path is invalid"
+        try:
+            assert input_iso_path is not None, "Add a path to your game file in host.yaml"
+            assert Path(input_iso_path).exists(), "Your game file path is invalid"
+        except AssertionError as e:
+            logger.error(e)
 
 
         if not os.path.exists(output_path):

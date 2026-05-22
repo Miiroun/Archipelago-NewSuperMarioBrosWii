@@ -42,8 +42,8 @@ class NSMBWworld(World):
     location_name_to_id = locations.LOCATION_NAME_TO_ID
     item_name_to_id = items.ITEM_NAME_TO_ID
 
-    #location_name_groups = locations.LOCATION_NAME_GROUPS
-    #item_name_groups  = items.ITEM_NAME_GROUPS
+    location_name_groups = locations.LOCATION_NAME_GROUPS
+    item_name_groups  = items.ITEM_NAME_GROUPS
 
 
     # There is always one region that the generator starts from & assumes you can always go back to.

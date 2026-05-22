@@ -3,17 +3,10 @@
 - -> make release
 - Pin docs in dc
   - make new GitHub branch
-- Test if works on other save files and game revisions
-  - also test play_file on them
 
 
 ## Playtest
 - Verify bowser unlock logic wise
-- Make sure inventory updates correctly
-- Make sure fill_inventory doesn't trigger powerup location
-- Make sure powerups, 1ups, death-link function properly
-- Verify saving not broken : test if can save in world 9 
-- Test if star coins in peach unlock correctly : send items to me in consol and see if match
 
 
 ## Bugs to fix
@@ -27,45 +20,40 @@
 
 
 ## Short term
-- World map locks/unlocks doesn't work on other savefiles
 - Add more options to how world 9 levels are unlocked
 - add some cashing for received checks, so doesn't double count already accounted for items when relogs
-- Try to get EU conversion to work
 - Protocol
   - Grouped death-link
   - Damage-link
   - Filler link
 - change to option of collects star coin on level completion or when you get them
 - Multiplayer support
-  - Add support for powerups
-  - find other player pointers
+  - find other player pointers : for lives and powerups
   - Kill when in water
 - Have a vote in discord about if riivolution patch
 - Try debuging about intro cutscene : look at patch in ghidra
 - Us pipe rando patches : always move next world → never
-- Look at pipe rando code for different patches : always move to next world seems useful
+  - Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab
-- World unlock only works on savefile2, same with goal completion
-- Try moving the things that version specific to the pointer referencing them instead, might work
-- fix unit tests
 - Work on multiplayer support
+- Hint movies doe not work on other save files?
+- Inventory powerups only work savefile 2 : make a part of dSave pointer
 
 ## Filler link
 - Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
 
 
 ## Broken versions
+# EU 1
+- Movement
+
+
 # EU 2
-- World unlocks
-  - Look up address in ghidra
-- is in level check
-- star coin and level completed checks
-- hint movies
-- Probably 
+- 
 
 # US 1
-- Sending hint movies
-- Sending level checks
+- 
+
 
 ## Mid term
 - Implement graphics for Hint movie shop
@@ -74,7 +62,6 @@
 - Create functions that are called at start/end of level instead of continuously? (to optimize code)
   - Remove having to loop though all checks each frame?
 - Bases on death messages create an ingame text message
-- Support different savefiles
 - Skipp cutscenes
 - Create option presets
 - Allow for filtered messages
@@ -87,7 +74,8 @@
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap
   - Marios animation start from back of world
-- Starts playing ending sequence when new file
+  - Might fix with : dMj2dGame_c
+- Starts playing ending sequence when new file, or doesnt set start world
 - Sneak freezes game
 - 7-6 freezes when clear?, is temporarily removed
 - Hint movies that requires all level completion don't work in game

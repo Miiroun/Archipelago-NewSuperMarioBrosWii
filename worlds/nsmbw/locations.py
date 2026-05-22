@@ -159,11 +159,11 @@ def create_regular_locations(world: NSMBWworld) -> None:
                 regions[world_num * 2 - 2 ].add_locations(flagpole, NSMBWLocation)
 
     # gives player starter location that automaticly checks
-    for i in range(1,world.options.num_starting_locations+1):
+    for i in range(1, world.options.include_starting_locations + 1):
        starter_location = get_location_names_with_ids([f"starter_location{i}"])
        menu_region.add_locations(starter_location, NSMBWLocation)
 
-    for i in range(1,world.options.num_inventory_powerups+1):
+    for i in range(1, world.options.include_inventory_powerups + 1):
         inventory_loc = get_location_names_with_ids([name_inventory(i)])
         menu_region.add_locations(inventory_loc, NSMBWLocation)
 

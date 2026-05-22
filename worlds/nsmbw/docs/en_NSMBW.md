@@ -70,7 +70,6 @@ config file.
 - Sometimes mario is invisible on the worldmap
 - Only save file 2 will work to play on.
 - Deathlink is sometimes sent on connect.
-- If you dev for this game and run from source (not frozen), generate locally, you wont be able to host on https://archipelago.gg since the server errors out
 
 
 ## Client commands
@@ -117,7 +116,9 @@ config file.
 - Why are not cannons unlocked?
   - All cannons are locked and turned into locations, they can not be unlocked. Same with completing 7-6 and 8-7.
 - Game versions
-  - Game is developed on US rev2 of NSMBW. The client doesn't error out on other editions but will be unplayable because of bugs, it has difficulty sending locations etc.
+  - Game is developed on US rev2 of NSMBW. The client doesn't error out on other editions but some features will not work.
+  - If you have another revision please report the problems you have in discord and mention your game revision.
+  - Known issues: E1; Time and movement
 - Bugs?
   - Expect bugs, it is still in development.
   - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).
