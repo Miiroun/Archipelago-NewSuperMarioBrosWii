@@ -3,12 +3,14 @@ import time
 from enum import Enum
 
 from typing import Dict, Optional
+
+from Utils import is_frozen
 from . import keyboard
 from . import PowerPCInstructions
 from .dolphin_interface_client import *
 from ..Utils import bytes_to_int, int_to_bytes
 from ..Common import *
-from ..items import ITEM_NAME_TO_ID, POWERUP_UNLOCK
+from ..items import ITEM_NAME_TO_ID
 from ..locations import LEVELS_PER_WORLD
 
 from .memoryAddresses import *
@@ -236,7 +238,7 @@ class NSMBWInterface():
         """" This function callculates the memory adress for the level stats of the given level"""
         #address = self.memory_addresses.savefile1_1_1
 
-        address = self.memory_addresses.level_stat
+        address = 0 # self.memory_addresses.level_stat
 
         #address += self.save_file_offset()
 
@@ -289,7 +291,7 @@ class NSMBWInterface():
         keyboard.release("F8")
         time.sleep(wait_long)
         #asyncio.sleep(1)
-        logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the JIT cache (JIT -> clear chache).")
+        logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the JIT cache manualy (JIT -> clear chache).")
 
 
 
@@ -537,13 +539,17 @@ class NSMBWInterface():
         address = self.memory_addresses.level_world
         return self.dolphin_client.read_address(address,1)
     def get_level_stats(self, world_num,level_num) -> bytes: # should make this take in world as paramiter
-        address = self.memory_offset_level_stats(world_num,level_num)
-        return self.dolphin_client.read_address(address,4)
+        #address = self.memory_offset_level_stats(world_num,level_num)
+        #return self.dolphin_client.read_address(address,4)
+        dMj2dGame_c_address = self.get_dMj2dGame_c_address() +0x3
+        offset = self.memory_offset_level_stats(world_num,level_num)  #magic numer to make line up with old
+        return self.dolphin_client.read_address(dMj2dGame_c_address+0x6c+offset, 4)
+
     def get_inventory_items(self, type_num : int):
         address = self.memory_addresses.inventory_items + type_num -1
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self):
-        address = self.memory_addresses.world_level + self.save_file_offset()
+        address = self.memory_addresses.world_level# + self.save_file_offset()
         return self.dolphin_client.read_address(address,1)
     def get_level_level(self):
         address = self.memory_addresses.level_level
@@ -551,11 +557,24 @@ class NSMBWInterface():
     def get_hm_stats(self, hm_num):
         address = self.memory_addresses.hm_stats +hm_num
         #address = self.memory_addresses.save_file_2_pointer # 0x06FC
+        dMj2dGame_c_address = self.get_dMj2dGame_c_address() + hm_num + 0x6fc
+        #print(f"old hm {address : x}")
+        #print(f"new hm {dMj2dGame_c_address : x}")
+        #print(f"diffrance hm {address-dMj2dGame_c_address : x}")
         return self.dolphin_client.read_address(address,1)
-    def get_worldstats_selectmenu(self):
-        address = self.memory_addresses.world_stats + self.save_file_offset()
-        return self.dolphin_client.read_address(address,1)
+    def get_worldstats_selectmenu(self, world_num):
+        #address = self.memory_addresses.world_stats # + self.save_file_offset()
+        #return self.dolphin_client.read_address(address,1)
+        dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x32 + (world_num-1) - 0xa60
+        return self.dolphin_client.read_address(dMj2dGame_c_address+0x32, 1)
+
     def get_powerupstate(self, player_num):
+        #dMj2dGame_c_address = self.get_dMj2dGame_c_address()
+        #powerup_state = self.dolphin_client.read_address(dMj2dGame_c_address+0x2e+player_num*4, 1)
+        #print(f"old powerup: {self.memory_addresses.powerup_state[player_num]:x}")
+        #print(f"new powerup: {dMj2dGame_c_address+0x2e+player_num*4:x}")
+        # this new one appers to be a completely diffrent object
+        #return powerup_state
         address = self.memory_addresses.powerup_state[player_num]
         powerup_state = self.dolphin_client.read_address(address,1)
         return powerup_state
@@ -587,9 +606,30 @@ class NSMBWInterface():
         address = self.memory_addresses.water_speed_if_in
         return self.dolphin_client.read_address(address,4)
 
+    def get_dMj2dGame_c_address(self):
+        pointer_dSaveMng_c_pointer = self.memory_addresses.dSaveMng_c_pointer
+        #print(f"pointer_dSaveMng_c_pointer: {pointer_dSaveMng_c_pointer : x}")
+        current_file = self.get_savefile_num()-1
+        #print(f"current_file = {self.dolphin_client.read_pointer(pointer_dSaveMng_c_pointer, 0x6, 1)}")
+        #print(f"Current old file {self.get_savefile_num()}")
+
+        dMj2dGame_c_address = bytes_to_int(self.dolphin_client.read_address(pointer_dSaveMng_c_pointer, 4)) +0x20
+        #print(f"dSaveMng_c = {dMj2dGame_c_address}")
+
+        offset =  0x6a0  + current_file*0x980  # might be 0x2320 instead
+        dMj2dGame_c_address_offset = dMj2dGame_c_address+offset
+        #print(f"dMj2dGame_c_address_offset {dMj2dGame_c_address_offset:x}")
+        return dMj2dGame_c_address_offset  # this extra here was added by trial and error, but proberbly shouldnt be there
+
+
     def set_worldstats(self,world_num : int, status : bytes):
-        address = self.memory_addresses.world_stats + (world_num-1) + self.save_file_offset()
-        self.dolphin_client.write_address(address, status)
+        address = self.memory_addresses.world_stats + (world_num-1) # + self.save_file_offset()
+        #self.dolphin_client.write_address(address, status)
+        dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x32 + (world_num-1)
+        #print(f"old world {address : x}")
+        #print(f"new world {dMj2dGame_c_address : x}")
+        #print(f"diffrance {address-dMj2dGame_c_address : x}")
+        self.dolphin_client.write_address(dMj2dGame_c_address, status)
     def set_powerupstate(self, powerup_state : bytes, player_num):
         address = self.memory_addresses.powerup_state[player_num]
         self.dolphin_client.write_address(address, powerup_state)
@@ -597,14 +637,22 @@ class NSMBWInterface():
         address = self.memory_addresses.inventory_items + type_num -1
         self.dolphin_client.write_address(address, value)
     def set_level_stats(self, world_num, level_num, data : bytes):
-        address = self.memory_offset_level_stats(world_num,level_num)
-        self.dolphin_client.write_address(address,data)
+        dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x3
+        offset = self.memory_offset_level_stats(world_num,level_num) #magic numer to make line up with old
+        #print(f"World {world_num} Level {level_num}")
+        #print(f"new level stats {dMj2dGame_c_address++offset : x}")
+        #print(f"old level stats {self.memory_addresses.level_stat+ offset : x}")
+        #print(f"diffrance level {dMj2dGame_c_address+0x6c-self.memory_addresses.level_stat}")
+        return self.dolphin_client.write_address(dMj2dGame_c_address+0x6c+offset, data)
+        #address = self.memory_offset_level_stats(world_num,level_num)
+        #self.dolphin_client.write_address(address,data)
     def set_red_switch(self, data : bytes):
         address = self.memory_addresses.red_switch_state
         self.dolphin_client.write_address(address,data)
     def set_time_left(self, data : bytes):
         address = self.memory_addresses.time_left
-        self.dolphin_client.write_address(address,data)
+        if self.is_in_level():
+            self.dolphin_client.write_address(address,data)
     def set_world(self,data : bytes):
         #address = self.memory_addresses.world_level
         #self.dolphin_client.write_address(address,data)
@@ -638,7 +686,8 @@ class NSMBWInterface():
     async def kill_player(self):
         address = self.memory_addresses.death_address
         if self.write_instruction(address, b'\x60\x00\x00\x00', clear=True):
-            logger.info("Kill player")
+            if not is_frozen():
+                logger.info("Killing player")
         #await asyncio.sleep(1)
         #time.sleep(2) # to much of wait?
         #why doesnt asyncrio work here?????

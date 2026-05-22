@@ -103,61 +103,21 @@ class NSMBWworld(World):
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
-    # There may be data that the game client will need to modify the behavior of the game.
-    # This is what slot_data exists for. Upon every client connection, the slot's slot_data is sent to the client.
-    # slot_data is just a dictionary using basic types, that will be converted to json when sent to the client.
+    default_options_set = {"progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints', 'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items'}
     def fill_slot_data(self) -> Mapping[str, Any]:
-        # If you need access to the player's chosen options on the client side, there is a helper for that.
-
-        slot_data = self.options.as_dict(
-            "randomize_powerups",
-            "randomize_movement",
-            "num_starting_locations",
-            "bowser_star_unlock",
-            "bowser_world_unlock",
-            "death_link",
-            "amount_support_received",
-            "include_level_completion",
-            "include_shortcuts",
-            "include_hintmovies",
-            "randomize_coins",
-            "trap_chance",
-            "logic_difficulty",
-            "starting_world",
-            "enable_superpowers",
-            "num_inventory_powerups",
-            "dont_rando_move",
-            "filler_items",
-            "trap_items",
-            "randomize_time"
-        )
+        option_list : list = list(self.options.__dict__.keys()- self.default_options_set)
+        slot_data = self.options.as_dict(*option_list)
         #slot_data["version"]  = self.world_version
         return slot_data
 
-
-
     # UT-tracket imlementation
     def overwrite_options(self, slot_data: dict[str, Any]):
-        self.options.randomize_powerups.value = slot_data["randomize_powerups"]
-        self.options.randomize_movement.value = slot_data["randomize_movement"]
-        self.options.num_starting_locations.value = slot_data["num_starting_locations"]
-        self.options.bowser_star_unlock.value = slot_data["bowser_star_unlock"]
-        self.options.bowser_world_unlock.value = slot_data["bowser_world_unlock"]
-        self.options.amount_support_received.value = slot_data["amount_support_received"]
-        self.options.include_level_completion.value = slot_data["include_level_completion"]
-        self.options.include_shortcuts.value = slot_data["include_shortcuts"]
-        self.options.include_hintmovies.value = slot_data["include_hintmovies"]
-        self.options.randomize_coins.value = slot_data["randomize_coins"]
-        self.options.trap_chance.value = slot_data["trap_chance"]
-        self.options.logic_difficulty.value = slot_data["logic_difficulty"]
-        self.options.starting_world.value = slot_data["starting_world"]
-        self.options.enable_superpowers.value = slot_data["enable_superpowers"]
-        self.options.num_inventory_powerups.value = slot_data["num_inventory_powerups"]
-        self.options.dont_rando_move.value = set(slot_data["dont_rando_move"])
-        self.options.filler_items.value = set(slot_data["filler_items"])
-        self.options.trap_items.value = set(slot_data["trap_items"])
-        self.options.randomize_time.value = slot_data["randomize_time"]
-
+        option_set : set = self.options.__dict__.keys() - self.default_options_set
+        set_options = {"dont_rando_move", "filler_items", "trap_items"}
+        for item in (option_set & slot_data.keys()) -set_options:
+            setattr(getattr(self.options, item), item, slot_data[item])
+        for item in set_options:
+            setattr(getattr(self.options, item), item, set(slot_data[item]))
 
 
     @staticmethod

@@ -16,6 +16,7 @@ config file.
 - Progression items
   - 17 World unlocks (are progressive, requires 2 to unlock whole world except world 9) e.g. World1, World2
   - 231 Star coins (so many star coins), used for buying hint movies, unlocking world 9 levels and bowser 
+  - The amount of in game time you have to complete a level. You select in the option how many times you divide the 500 mario seconds in.
   - 6 Power-up unlocks
   - Move unlocks (needs to be unlocked before can be used)
     - button up/down/right/left
@@ -54,6 +55,7 @@ config file.
 - Starting world is selectable in option
 - Most locations and items can be turned on/off in options
 - You can select your requirement for reaching bowser in your goal
+- You can select easy or hard rules, with easy being trivial to figure out and hard REQUIRING skips and trix. You can also select if you want brining powerups from outside the level to be considered in logic.
 
 
 ## Known quirks / bugs
@@ -122,7 +124,7 @@ config file.
 
 ## Debug tips
 - Restart launcher and computer after installing if the client doesn't show up in launcher or something doesn't work.
-- Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2 and are playing on save file 2.
+- Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2 (and the file format is either .iso or .wbfs, .rvz will not work) and are playing on save file 2.
 - Do not have another dolphin instance open when you start client.
 - Connect to the server from the client after you are on the world map in game if you have problems on the title screen.
 - Try running the client commands /refresh, /reapply_checks and /reconnect_dolphin. Also try making a save-state and load it to clear the JIT cache.

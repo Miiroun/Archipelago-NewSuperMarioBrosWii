@@ -8,6 +8,7 @@ from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 from ..Common import *
 
 
+
 class SymbolReader(object):
     def __init__(self, _file):
         #self.symbol_db = pandas.read_table(_file,sep=r"\s+", names=["symbol", "address", "type"], dtype = {"symbol" : str, "address" : str, "type" : str})
@@ -61,11 +62,13 @@ class MemoryAddresses(object):
         self.level_level = self.map_between("E2",0x80315B9D)
         self.hm_stats = self.hard_code({"E2" : 0x80C80EDC})
 
-        self.world_stats = self.map_between("E2",0x80C80812)
+        self.world_stats = self.map_between("E2",0x80C80812) # dSaveMng_c::getSaveGame
 
         #self.save_file_2_pointer = self.map_between("E2", 0x80c807e0)
 
         #self.world_stats_pointer_pointer = self.map_between("E2",0x80C7F494) # holds pointer to 8042F680 in memeory US rev2
+        self.dSaveMng_c_pointer = self.map_between("P1", 0x8042a320) #dSaveMng_c::m_instance
+
 
         self.map_world = self.map_between("E2",0x8042A04B)
         self.game_recording_state = self.map_between("E2",0x80315b98)
@@ -146,6 +149,7 @@ class MemoryAddresses(object):
         # water movement speed
         #self.water_movement_speed  =self.map_between("P1", 0x80935b18)
         self.water_speed_if_in = 0x8154C8DA #self.map_between("P1", 0x8154C8DA)
+
 
     def map_between(self, ver_from : str, address : int) -> int:
         mapper_from = self.mappers[ver_from]

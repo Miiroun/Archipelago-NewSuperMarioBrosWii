@@ -1,14 +1,17 @@
 from .bases import NSMBWWorld
+from ..Common import *
 from ..locations import name_level, name_starcoin
-from ..options import RandomizeMovment, RandomizePowerups, LogicDifficulty
+from ..options import RandomizeMovment, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups
 
 
 class TestHardModeOff(NSMBWWorld):
     options = {
         "randomize_movement" : RandomizeMovment.option_on,
-        "randomize_powerups" : RandomizePowerups.option_on,
+        "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_normal,
+        "logic_outside_powerups": LogicOutsidePowerups.option_allow,
+
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,
     }
@@ -23,10 +26,10 @@ class TestHardModeOff(NSMBWWorld):
 
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
             self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
-            self.collect_by_name("star")
-           # self.assertTrue(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
-            self.collect_by_name("Propeller_Mushroom")
-            #self.assertTrue(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
+            self.collect_by_name(ITEM.MOVEMENT.Star)
+            self.assertFalse(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
+            self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
+            self.assertTrue(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
 
 
 
@@ -34,9 +37,10 @@ class TestHardModeOff(NSMBWWorld):
 class TestHardModeOn(NSMBWWorld):
     options = {
         "randomize_movement" : RandomizeMovment.option_on,
-        "randomize_powerups" : RandomizePowerups.option_on,
+        "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_difficult,
+        "logic_outside_powerups" : LogicOutsidePowerups.option_allow,
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,
     }
@@ -50,8 +54,8 @@ class TestHardModeOn(NSMBWWorld):
 
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
             self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
-            self.collect_by_name("star")
-            self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
-            self.collect_by_name("Propeller_Mushroom")
-            #self.assertTrue(self.world.get_location(get_starcoin_name(1,1,1)).can_reach(self.multiworld.state))
+            self.collect_by_name(ITEM.MOVEMENT.Star)
+            self.assertTrue(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
+            self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
+            self.assertTrue(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
 

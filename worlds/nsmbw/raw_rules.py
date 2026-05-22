@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List
 
 from rule_builder.rules import *
 from rule_builder.options import OptionFilter
-from .options import RandomizeMovment, RandomizePowerups
+from .options import RandomizeMovment, RandomizePowerups, LogicOutsidePowerups, LogicDifficulty
 from .Common import *
 
 if TYPE_CHECKING:
@@ -147,6 +147,12 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     mini = (Has(ITEM.POWERUP.Mini_Mushroom) & progressive_pow_filler) | filter_pow
     fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
 
+    #other rules
+    outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] # and with this rule
+    # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
+    logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)]
+    logic_easy = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably can be used, but I will leave it in just in case, maybe useful if OR
+
 
     # Complex rules ( made of previous)
     pow_block = ground_pound | carry
@@ -158,7 +164,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
 
     hard_rules = [ # normal compleation rules
         [  # world 1
-            [normal_move, [propeller | mini | star, wall_jump | propeller, propeller]],  # -1
+            [normal_move, [propeller | ((mini | (star & logic_hard)) & outside_powerups), wall_jump | propeller, propeller]],  # -1
             [normal_move, [True_(), True_(), break_blocks & pow_block]],  # -2
             [normal_move, [True_(), break_blocks | yoshi | mini, break_blocks], True_()],  # -3
             [normal_move, [True_(), yoshi | propeller | mini, ice_peng]],  # -4
@@ -262,7 +268,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     #
     easy_rules = [ # difficult logic
         [  # world 1
-            [True_(), [propeller | mini, True_(), True_()]],  # -1
+            [True_(), [True_(), True_(), True_()]],  # -1
             [True_(), [True_(), True_(), True_()]],  # -2
             [True_(), [True_(), True_(), True_()],True_()],  # -3
             [True_(), [True_(), True_(), True_()]],  # -4

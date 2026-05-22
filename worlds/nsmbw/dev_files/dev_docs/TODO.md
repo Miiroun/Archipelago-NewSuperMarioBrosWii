@@ -3,6 +3,8 @@
 - -> make release
 - Pin docs in dc
   - make new GitHub branch
+- Test if works on other save files and game revisions
+  - also test play_file on them
 
 
 ## Playtest
@@ -11,6 +13,7 @@
 - Make sure fill_inventory doesn't trigger powerup location
 - Make sure powerups, 1ups, death-link function properly
 - Verify saving not broken : test if can save in world 9 
+- Test if star coins in peach unlock correctly : send items to me in consol and see if match
 
 
 ## Bugs to fix

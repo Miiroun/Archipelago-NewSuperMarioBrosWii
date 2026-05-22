@@ -113,6 +113,15 @@ class LogicDifficulty(Choice):
     default = option_normal
     #visibility  = Option.visibility.none
 
+class LogicOutsidePowerups(Choice):
+    """
+    Sett this to allow if you want solution involving bringing powerups from outside the level to be in logic.
+    """
+    display_name = "Logic Outside Power-ups"
+    option_dissallow = 0
+    option_allow = 1
+    default = option_allow
+
 class StartingWorld(Choice):
     """
     Select the world you want to start with, or keep it at random.
@@ -222,6 +231,7 @@ class NSMBWOptions(PerGameCommonOptions):
 
     trap_chance: TrapChance
     logic_difficulty: LogicDifficulty
+    logic_outside_powerup : LogicOutsidePowerups
     starting_world: StartingWorld
     num_starting_locations : AmountStartingItems
     death_link : DeathLink
@@ -269,6 +279,7 @@ option_groups = [
         [
             DeathLink,
             LogicDifficulty,
+            LogicOutsidePowerups,
             EnableSuperPowers,
             FillerItems,
             TrapItems,

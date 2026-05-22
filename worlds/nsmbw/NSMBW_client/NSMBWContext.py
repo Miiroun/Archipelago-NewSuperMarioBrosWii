@@ -918,7 +918,7 @@ class NSMBWContext(SuperContext):
                 for i in range(POWERUP_COUNT+1+1):
                     self.game_interface.update_inventory_items(i, self.slot_data["amount_support_received"])
                 if len(self.previous_inventory) != 0:
-                    for i in range(POWERUP_COUNT+1+1):
+                    for i in range(POWERUP_COUNT+1):
                         self.previous_inventory[i] = bytes_to_int(self.game_interface.get_inventory_items(i))
 
             elif item_name == "1ups":
@@ -987,10 +987,9 @@ class NSMBWContext(SuperContext):
     async def handle_unlocked_time(self, num_time):
         if self.slot_data["randomize_time"] != 0:
             current_time = bytes_to_int(self.game_interface.get_time_left())
-
-            current_time = min((num_time* 0x1e0000) //self.slot_data["randomize_time"], current_time)
-
-            self.game_interface.set_time_left(int_to_bytes(current_time, 4))
+            new_time = (num_time* 0x1e0000)//self.slot_data["randomize_time"]
+            if 0x001000 < new_time < current_time:
+                self.game_interface.set_time_left(int_to_bytes(new_time, 4))
 
 
     async def patch_game_from_memory(self):
@@ -1049,7 +1048,7 @@ class NSMBWContext(SuperContext):
         if len(set_checked_locations) != 0:
             assert True, "Should check that locations are valid"
             await self.send_msgs([{"cmd": "LocationChecks", "locations": list(set_checked_locations)}])
-            self.prev_sent_locations += set_checked_locations
+            self.prev_sent_locations |= set_checked_locations
 
 
 
