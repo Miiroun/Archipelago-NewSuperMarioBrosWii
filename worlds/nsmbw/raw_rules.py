@@ -143,6 +143,8 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     progressive_pow_filler = mushroom | [filter_pow_on, filter_pow_on_no_mus]
 
     propeller = (Has(ITEM.POWERUP.Propeller_Mushroom) & progressive_pow_filler & spin_jump) | filter_pow
+    ice = (Has(ITEM.POWERUP.Ice_Flower) & progressive_pow_filler) | filter_pow
+    peng = (Has(ITEM.POWERUP.Penguin_Suit) & progressive_pow_filler) | filter_pow
     ice_peng = ((Has(ITEM.POWERUP.Ice_Flower) | Has(ITEM.POWERUP.Penguin_Suit)) & progressive_pow_filler) | filter_pow
     mini = (Has(ITEM.POWERUP.Mini_Mushroom) & progressive_pow_filler) | filter_pow
     fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
@@ -153,115 +155,122 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)]
     logic_easy = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably can be used, but I will leave it in just in case, maybe useful if OR
 
+    # more powerup stuff
+    fire_o = fire & outside_powerups
+    ice_o = ice & outside_powerups
+    propeller_o = propeller & outside_powerups
+    peng_o = peng & outside_powerups
+    ice_peng_o = ice_peng & outside_powerups
+    mini_o = mini & outside_powerups
+    star_o = star & outside_powerups
 
     # Complex rules ( made of previous)
-    pow_block = ground_pound | carry
-    break_blocks = mushroom | propeller | ice_peng | mini | fire
-    normal_move = button_right & (spin_jump | jump) & get_time_rule(world, 50)
+    super_mario = mushroom | propeller | ice_peng | fire
+    max_mini = mini & run & wall_jump
+    oswj = run & wall_jump & (fire | ice_peng | mini)
+    normal_move = button_right & button_ left & button_up & button_down & jump & spin_jump & question_switch & p_switch & door & pipe & get_time_rule(world, 50) #changed this to fit my current logic, can probably be cleaned up a bit
 
     bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
     bowser_clear_rule = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
 
     hard_rules = [ # normal compleation rules
         [  # world 1
-            [normal_move, [propeller | ((mini | (star & logic_hard)) & outside_powerups), wall_jump | propeller, propeller]],  # -1
-            [normal_move, [True_(), True_(), break_blocks & pow_block]],  # -2
-            [normal_move, [True_(), break_blocks | yoshi | mini, break_blocks], True_()],  # -3
-            [normal_move, [True_(), yoshi | propeller | mini, ice_peng]],  # -4
-            [normal_move, [True_(), True_(), True_()]],  # -5
-            [normal_move, [True_(), True_(), True_()]],  # -6
-            [normal_move & door, [True_(), True_(), True_()]],  # -7 1-T
-            [normal_move & door, [True_(), True_(), propeller | p_switch]],  # -8 1-C
+            [normal_move, [propeller | (mini_o & (run | logic_hard)) | (run & (carry | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))]],  # -1
+            [normal_move, [True_(), True_(), (super_mario & ground_pound) | propeller_o]],  # -2
+            [normal_move, [yoshi | propeller_o | (logic_hard & ((mini_o & (ground_pound | run)) | (run & (super_mario | ground_pound)) | carry)), yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario)), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry))], yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry & (super_mario | run))))],  # -3
+            [normal_move & swim, [True_(), ice | peng_o | propeller_o | mini_o | logic_hard, ice | peng_o | logic_hard]],  # -4
+            [normal_move, [climb, True_(), True_()]],  # -5
+            [normal_move, [True_(), True_(), run | (mini_o | (star_o & logic_hard)) | (propeller & (climb | outside_powerups))]],  # -6
+            [normal_move, [True_(), wall_jump | propeller_o, True_()]],  # -7 1-T
+            [normal_move, [True_(), True_(), propeller_o | wall_jump]],  # -8 1-C
         ],
         [  # world 2
-            [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), p_switch & pipe, mini]],  # -2
-            [normal_move, [True_(), True_(), True_()]],  # -3
-            [normal_move, [True_(), propeller, propeller | mini], True_()],  # -4
-            [normal_move, [True_(), True_(), True_()]],  # -5
-            [normal_move, [True_(), True_(), True_()], True_()],  # -6
-            [normal_move & door, [True_(), True_(), True_()]],  # -7 2-T
-            [ normal_move & (ice_peng | p_switch) & door, [True_(), break_blocks, propeller | p_switch]],  # -8 2-C
+            [normal_move, [True_(), True_(), carry | propeller_o | mini_o]],  # -1
+            [normal_move, [True_(), climb & (carry | propeller_o | logic_hard), mini & wall_jump & (carry | ground_pound)]],  # -2
+            [normal_move, [True_(), True_(), run | propeller_o | mini_o | (star & logic_hard)]],  # -3
+            [normal_move & (climb | (propeller_o | (mini_o & wall_jump)) | (logic_hard & wall_jump & run & super_mario)), [climb, propeller_o, (propeller_o | (mini_o & wall_jump))], propeller_o & (wall_jump | run)],  # -4
+            [normal_move, [True_(), yoshi | carry | propeller_o | (wall_jump & (mini_o | run | super_mario)) | (logic_hard & ice_peng_o), True_()]],  # -5
+            [normal_move, [True_(), carry | propeller | mini_o, True_()], propeller | (mini_o & logic_hard)],  # -6
+            [normal_move, [True_(), True_(), True_()]],  # -7 2-T
+            [normal_move, [True_(), super_mario, True_()]],  # -8 2-C
         ],
         [  # world 3
-            [normal_move, [ice_peng, True_(), ice_peng]],  # -1
+            [normal_move, [(peng & crouch) | logic_hard, True_(), (peng & crouch) | (carry & logic_hard)]],  # -1
             [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), ice_peng | propeller]],  # -3
+            [normal_move, [swim | mini_o | ((propeller_o | (peng & crouch)) & logic_hard), True_(), carry | propeller_o | (wall_jump & logic_hard)]],  # -3
             [normal_move & red_block, [True_(), True_(), True_()]],  # -4
-            [normal_move, [True_(), red_block, red_block], True_()],  # -5
-            [normal_move & door & climb, [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthous
-            [normal_move & door, [True_(), True_(), True_()]],  # -7
-            [normal_move & door, [True_(), True_(), True_()]],  # -8
+            [normal_move, [True_(), red_block, red_block], red_block],  # -5
+            [normal_move & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthouse
+            [normal_move, [True_(), carry, wall jump | propeller_o]],  # -7 3-T
+            [normal_move, [True_(), True_(), True_()]],  # -8 3-C
         ],
         [  # world 4
-            [normal_move, [True_(), ice_peng | propeller | mini, True_()]],  # -1
+            [normal_move & swim, [ice_o | peng | propeller_o | (mini_o & (run | logic_hard)), ice_o | peng | propeller_o | mini_o | (logic_hard & wall_jump & run & ground_pound), peng | ice_o | mini_o | propeller_o | logic_hard]],  # -1
             [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), mini]],  # -3
-            [normal_move & (ice_peng | mini | propeller), [True_(), True_(), True_()]],  # -4
+            [normal_move, [True_(), mini | propeller_o | (peng & crouch & (run | logic_hard)) | (swim & (super_mario | run | (star & logic_hard))), swim & mini]],  # -3
+            [normal_move & swim, [peng | ice_o | propeller_o | mini_o, True_(), True_()]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
-            [normal_move, [True_(), True_(), True_()], True_()],  # -6
-            [normal_move &  (ice_peng | p_switch)& door, [True_(), ice_peng | p_switch, True_()],True_()],  # -7 4-G
-            [normal_move& door, [True_(), True_(), True_()]],  # -8 4-C
-            [normal_move, [True_(), True_(), True_()]],  # -9 4-A
-
+            [normal_move, [True_(), True_(), True_()], True_()],  # -6 4-G
+            [normal_move, [True_(), True_(), True_()], True_()],  # -7 4-T
+            [normal_move & swim, [True_(), True_(), True_()]],  # -8 4-C
+            [normal_move & (carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))), [True_(), (carry & (ground_pound | propeller_o)) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_()]],  # -9 4-A
         ],
         [  # world 5
-            [normal_move, [break_blocks, True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), True_()]],  # -3
-            [normal_move, [True_(), True_(), True_()]],  # -4
-            [normal_move, [True_(), True_(), True_()]],  # -5
-            [normal_move, [True_(), True_(), True_()],True_()],  # -6 #5-Ghosthouse
-            [normal_move& door, [True_(), True_(), break_blocks]],  # -7 5-T
-            [normal_move& door, [True_(), True_(), True_()]],  # -8 5-C
+            [normal_move & (climb | run | propeller_o), [(super_mario & ground_pound) | propeller_o, swim | (mini_o & (climb | run)), ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound))]],  # -1
+            [normal_move, [True_(), True_(), carry | propeller_o | (max_mini & logic_hard & outside_powerups)]],  # -2
+            [normal_move, [True_(), carry | (peng_o & crouch), True_()]],  # -3
+            [normal_move, [logic_hard | super_mario | run, logic_hard | carry | propeller_o, carry]],  # -4
+            [normal_move, [True_(), True_(), carry]],  # -5
+            [normal_move, [True_(), True_(), True_()],True_()],  # -6 5-Ghosthouse
+            [normal_move & (carry | wall_jump | propeller_o), [True_(), True_(), super_mario]],  # -7 5-T
+            [normal_move, [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
         ],
         [  # world 6
             [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), break_blocks | p_switch]],  # -2
-            [normal_move, [True_(), True_(), break_blocks]],  # -3
-            [normal_move, [True_(), yoshi | propeller | mini, True_()]],  # -4
-            [normal_move, [True_(), True_(), True_()], True_()],  # -5
+            [normal_move, [carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_()]],  # -2
+            [normal_move & (swim | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))), [True_(), True_(), (swim & super_mario) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run & carry)))]],  # -3
+            [normal_move, [logic_hard | yoshi | propeller, yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups), yoshi | propeller | wall_jump]],  # -4
+            [normal_move, [True_(), True_(), climb & (carry | propeller_o)], climb],  # -5
             [normal_move, [True_(), True_(), True_()],True_()],  # -6
-            [normal_move & wall_jump & jump & door & button_down, [True_(), True_(), True_()]],  # -7 6-T
-            [normal_move& door, [break_blocks, True_(), True_()]],  # -8 6-C
-            [normal_move, [True_(), True_(), True_()]],  # -9 6-A
+            [normal_move, [True_(), wall_jump | propeller_o, wall_jump | propeller_o]],  # -7 6-T
+            [normal_move, [True_(), True_(), True_()]],  # -8 6-C
+            [normal_move, [ground_pound | propeller_o | (logic_hard & ((peng_o & crouch & wall_jump) | (carry & (ice | peng_o)))), ground_pound | propeller_o, ground_pound | propeller_o | (logic_hard & peng_o & crouch)]],  # -9 6-A
 
         ],
         [  # world 7
-            [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), True_()]],  # -3
-            [normal_move, [True_(), True_(), True_()]],  # -4
-            [normal_move, [True_(), True_(), True_()]],  # -5
-            [normal_move, [True_(), True_(), True_()], True_()],  # -6
-            [normal_move, [True_(), True_(), True_()], True_()],  # -7
-            [normal_move & door, [True_(), True_(), True_()]],  # -8 8-T
-            [normal_move & door, [break_blocks, True_(), True_()]],  # -9 7-C
-            [normal_move & ground_pound, [True_(), True_(), propeller | mini]],  # -10 8-A
-
-        ],
-        [  # world 8
-            [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), True_()]],  # -3
+            [normal_move, [wall_jump | propeller_o, True_(), True_()]],  # -1
+            [normal_move & (swim | propeller_o), [ground_pound | (logic_hard & swim & (ice_peng_o & carry) | (peng_o & crouch)), swim, True_()]],  # -2
+            [normal_move, [True_(), climb, True_()]],  # -3
             [normal_move, [True_(), True_(), True_()]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), True_()]],  # -6
+            [normal_move, [True_(), True_(), climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))], climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))],  # -7 7-Ghosthouse
+            [normal_move, [True_(), True_(), True_()]],  # -8 7-T
+            [normal_move & (run | (super_mario & logic_hard)), [super_mario, True_(), wall_jump | propeller_o]],  # -9 7-C
+
+        ],
+        [  # world 8
+            [normal_move & run, [True_(), carry, True_()]],  # -1
+            [normal_move, [True_(), True_(), True_()]],  # -2
+            [normal_move, [True_(), True_(), True_()]],  # -3
+            [normal_move & swim, [True_(), True_(), True_()]],  # -4
+            [normal_move, [True_(), True_(), True_()]],  # -5
+            [normal_move & climb, [True_(), climb & (propeller | wall_jump), True_()]],  # -6
             [normal_move, [True_(), True_(), True_()]],  # -7
-            [normal_move & door, [True_(), True_(), True_()]],  # -8 8-T
-            [normal_move & bowser_clear_rule & door, [True_(), True_(), True_()]],  # -9 8-C
-            [normal_move & ground_pound, [True_(), True_(), propeller | mini]],  # -10 8-A
+            [normal_move, [True_(), True_(), True_()]],  # -8 8-T
+            [normal_move & bowser_clear_rule, [True_(), True_(), True_()]],  # -9 8-C
+            [normal_move & (ground_pound | propeller), [True_(), True_(), propeller | (ground_pound & ((mini_o & (wall_jump | run)) | (logic_hard & run & carry)))]],  # -10 8-A
 
         ],
         [  # world 9
             [normal_move, [True_(), True_(), True_()]],  # -1
-            [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move, [True_(), True_(), True_()]],  # -3
-            [normal_move, [True_(), True_(), ice_peng]],  # -4
-            [normal_move, [True_(), True_(), ice_peng | propeller]],  # -5
-            [normal_move, [True_(), True_(), True_()]],  # -6
-            [normal_move, [True_(), True_(), True_()]],  # -7
-            [normal_move, [True_(), True_(), True_()]],  # -8
+            [normal_move & (mini_o | (run & climb) | swim | (peng_o & crouch & run)), [True_(), swim, (carry & ((mini_o & ground_pound) | (run & climb) | swim)) | (peng_o & crouch & run)]],  # -2
+            [normal_move, [True_(), run | (propeller_o & logic_hard), logic_hard | run | propeller_o | mini_o]],  # -3
+            [normal_move & (run | propeller_o | mini_o | ice | peng_o), [wall_jump | propeller_o, carry | propeller_o, ice | peng_o]],  # -4
+            [normal_move, [True_(), True_(), ice_o | peng | propeller_o]],  # -5
+            [normal_move & (run | propeller_o | mini_o), [True_(), logic_hard | propeller_o | ((run | mini_o) & wall_jump), True_()]],  # -6
+            [normal_move & (run | ((mini_o | wall_jump | propeller_o) & logic_hard)), [True_(), True_(), ((run | logic_hard) & (wall_jump | propeller_o))]],  # -7
+            [normal_move, [carry | propeller | mini, True_(), True_()]],  # -8
         ],
     ]
 
