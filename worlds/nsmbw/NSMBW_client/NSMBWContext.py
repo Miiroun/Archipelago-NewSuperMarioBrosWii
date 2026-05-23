@@ -10,14 +10,14 @@ from .NSMBWInterface import *
 from .NotificationManager import NotificationManager
 #from .patcher import patch_iso
 
-from NetUtils import ClientStatus, NetworkItem
+from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
 from ..Utils import int_to_bytes, bytes_to_int, map_nd
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
 from settings import get_settings
 from ..options import RandomizeMovment
 from ..Common import *
-
+from ...sc2.mission_order import slot_data
 
 tracker_loaded = False
 
@@ -75,6 +75,7 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         self.ctx.items_handled = []
         self.ctx.locations_handled = []
         self.ctx.prossesed_inventory_powerup_locations = 0
+        self.ctx.items_handled = -1
 
     if not is_frozen():
         def _cmd_dev(self, key: str = ""):
@@ -286,7 +287,6 @@ class NSMBWContext(SuperContext):
         print("Recived deathlink")
         self.game_interface.kill_player()
 
-
     
     async def dolphin_sync_task_func(self):
         if self.apnsmbw_file:
@@ -342,7 +342,7 @@ class NSMBWContext(SuperContext):
                 else:
                     message = "Waiting for player to connect to server"
                     if self.last_error_message is not message:
-                        logger.info("Waiting for player to connect to server")
+                        logger.error("Waiting for player to connect to server")
                         self.last_error_message = message
                     await asyncio.sleep(1)
             except Exception as e:
@@ -396,7 +396,7 @@ class NSMBWContext(SuperContext):
         if self.game_interface.get_savefile_num() != 2:
             text = f"Please select save file 2 to play on instead of save file {self.game_interface.get_savefile_num()}, others are not fully supported"
             if not text in self.prossessed_errors:
-                logger.info(text)
+                logger.error(text)
                 self.prossessed_errors.append(text)
 
     async def handle_in_worldmap(self):
@@ -445,7 +445,7 @@ class NSMBWContext(SuperContext):
                 json.dump(data, file_name)
             logger.info("Saved to file")
         else:
-            logger.info("Failed to initiate save of data")
+            logger.error("Failed to initiate save of data, make sure you are connected when trying to save.")
         self.game_interface.clear_cache()
 
     async def handle_load(self):
@@ -466,9 +466,9 @@ class NSMBWContext(SuperContext):
                 logger.info("Loaded from file")
 
             except FileNotFoundError:
-                logger.info("Did not find save file to load from")
+                logger.error("Did not find save file to load from")
         else:
-            logger.info("Failed to initiate load of data")
+            logger.error("Failed to initiate load of data, make sure you are connected when trying to load.")
 
     #print("--------------------------- Main Code started ---------------------------------------------")
 
@@ -497,28 +497,29 @@ class NSMBWContext(SuperContext):
     # this code is for checking if the star coin was in level, but it was buggy so changed to on world collect
     # THIS IS NOT CURRENLY RUN
     async def check_starcoins_in_level(self):
-        sc_statuses = self.game_interface.get_sc()
-        checked_locations = []
-        for n in range(0, 3):
-            sc_status = sc_statuses[3 + 4 * n]
-            # print(sc_status)
-            # print(sc_statuses)
-            sc_num = n + 1
-            if sc_status == 0:  # becomes 0 if collected
-                world_num = int.from_bytes(self.game_interface.get_world_level(), "big") + 1
-                level_num = int.from_bytes(self.game_interface.get_level_level(), "big") + 1
+        if slot_data["starcoin_collect_immediately"] == 1:
+            sc_statuses = self.game_interface.get_sc()
+            checked_locations = []
+            for n in range(0, 3):
+                sc_status = sc_statuses[3 + 4 * n]
+                # print(sc_status)
+                # print(sc_statuses)
+                sc_num = n + 1
+                if sc_status == 0:  # becomes 0 if collected
+                    world_num = bytes_to_int(self.game_interface.get_world_level()) + 1
+                    level_num = bytes_to_int(self.game_interface.get_level_level()) + 1
 
-                print(f"Levelnum: {level_num}")
-                if level_num > 10: level_num += -10
+                    print(f"Levelnum: {level_num}")
+                    if level_num > 10: level_num += -10
+                    # this function probably need more post processioning
 
-                location_name = f"World{world_num}_level{level_num}_SC{sc_num}"
-                if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                    print(f"Starcoin {sc_num} collected for world {world_num} and level {level_num} ")
-                    checked_locations.append(LOCATION_NAME_TO_ID[location_name])
-                    logger.info(f"Sent check from item{location_name}")
-
-        self.locations_handled += checked_locations
-        await self.send_location_with_id(checked_locations)
+                    location_name = name_starcoin(world_num, level_num, sc_num)
+                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                        if not is_frozen():
+                            logger.info(f"Sent check from item{location_name}")
+            self.locations_handled += checked_locations
+            await self.send_location_with_id(checked_locations)
 
     async def check_starcoins(self):
         checked_locations = []
@@ -610,7 +611,7 @@ class NSMBWContext(SuperContext):
                 world_num = secret_exit[0]
                 level_num = secret_exit[1]
                 exit_name = name_secret(world_num, level_num)
-                level_stats = self.game_interface.get_level_stats(world_num, level_num)
+                level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
 
                 byte_to_check : int
                 if secret_exit[2] == 1:
@@ -621,11 +622,11 @@ class NSMBWContext(SuperContext):
                     raise ValueError("Somthing is wrong with SECRET_EXIT")
 
 
-                if level_stats[0] & byte_to_check == byte_to_check:
+                if level_stats & byte_to_check == byte_to_check:
                     if not LOCATION_NAME_TO_ID[exit_name] in self.locations_handled:
                         checked_locations.append(LOCATION_NAME_TO_ID[exit_name])
                         logger.info(f"You collected a check for {exit_name}, but the cannon/exit will be locked to make the randomizer more interesting.")
-                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] - byte_to_check,1))
+                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
 
             for world_num in range(1,8+1):
 
@@ -633,20 +634,21 @@ class NSMBWContext(SuperContext):
                 level_name =f"World{world_num}_tower"
                 level_num = 7
                 level_num += 1 if world_num in  [7,8] else 0
-                level_stats = self.game_interface.get_level_stats(world_num, level_num)
-                if level_stats[0] & 0x10== 0x10:
+                level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
+                if level_stats & 0x30 > 0:
                     if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
                         checked_locations.append(LOCATION_NAME_TO_ID[level_name])
-                        logger.info(f"You collected a check for completing {level_name}, to unlock the rest of this world, receive its AP-item.")
                     if unlocked_worlds[world_num-1] <= 1:
                         if not (level_name in self.completed_levels):
                             self.completed_levels.append(level_name)
-                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] - 1*16,1))
+                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x07,1))
+                        logger.info(f"You collected a check for completing {level_name}, to unlock the rest of this world, receive its AP-item.")
                 else:
                     if unlocked_worlds[world_num-1] >= 2:
                         if level_name in self.completed_levels:
-                            self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats[0] + 1*16,1))
+                            self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + 0x30,1))
                             self.completed_levels.remove(level_name)
+                            logger.info(f"Second half of world {world_num} is ")
                             # if reset this value then maybe will not move to next world
 
 
@@ -654,13 +656,13 @@ class NSMBWContext(SuperContext):
                 if world_num != 8:
                     level_name =f"World{world_num}_castle"
                     level_num = 8 # should make dynamic
-                    level_num += 1 if world_num in  [4,6,7,8] else 0
+                    level_num += 1 if world_num in  [7,8] else 0 #4,6,
                     level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
-                    if level_stats & 0x10== 0x10:
+                    if level_stats & 0x30 > 0:
                         if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
                             checked_locations.append(LOCATION_NAME_TO_ID[level_name])
                             logger.info(f"You collected a check for {level_name}, to unlock the next world, receive its AP-item.")
-                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - 1 * 16, 1))
+                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x07, 1))
                         if not level_name in self.completed_levels:
                             self.completed_levels.append(level_name)
 
@@ -675,14 +677,14 @@ class NSMBWContext(SuperContext):
             if  level_stats & 16 == 16 and (not bowser_unlock):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
-                    logger.info(f" Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data["bowser_star_unlock"]} star coins and you have {self.starcoin_count}, Require {self.slot_data["bowser_world_unlock"]} worlds completed and you have {completed_worlds}).")
-                self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats - 1 * 16, 1))
+                self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x07, 1))
+                logger.info(f"Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data["bowser_star_unlock"]} star coins and you have {self.starcoin_count}, Require {self.slot_data["bowser_world_unlock"]} worlds completed and you have {completed_worlds}).")
             # if previously completed 8-arship and now unlocked bowser
             if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
                 if level_name in self.completed_levels:
                     self.completed_levels.remove(level_name)
                     logger.info("Bowsers castle is now unlocked")
-                    self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 1 * 16, 1))
+                    self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 0x30, 1))
         self.locations_handled += checked_locations
         await self.send_location_with_id(checked_locations)
 
@@ -738,7 +740,7 @@ class NSMBWContext(SuperContext):
                         print(f"A time extension was received")
                     elif 201 <= item_id <= 299:
                         world_num = item_id - 200
-                        if world_num != 9:
+                        if world_num != 9 and self.unlocked_worlds[world_num] == 0:
                             logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
                         else:
                             print(f"World {world_num} was received.")
@@ -905,22 +907,22 @@ class NSMBWContext(SuperContext):
 
     async def handle_traps(self, traps):
         for trap in traps:
-            if trap == "Goomba_trap":
+            if trap == ITEM.TRAPS.GoombaTrap:
                 #logger.info(f"Trap {trap} is not implemented")
                 logger.info("Imaging a goomba comes and attacks you with speed")
                 self.game_interface.patch_goomba_speed()
 
 
-            elif trap == "Time_trap":
+            elif trap == ITEM.TRAPS.TimeTrap:
                 logger.info(f"Trap {trap} is not implemented")
                 time_left = bytes_to_int(self.game_interface.get_time_left())
                 self.game_interface.set_time_left(int_to_bytes(time_left // 2, 4))  #half times left
 
-            elif trap == "Loose_powerup_trap":
+            elif trap == ITEM.TRAPS.LoosePowerupTrap:
                 for player_num in range(PLAYER_COUNT):
                     self.game_interface.set_powerupstate(b'\x00', player_num)
 
-            elif trap == "Death_trap":
+            elif trap == ITEM.TRAPS.DeathTrap:
                 await self.game_interface.kill_player()
 
             else:

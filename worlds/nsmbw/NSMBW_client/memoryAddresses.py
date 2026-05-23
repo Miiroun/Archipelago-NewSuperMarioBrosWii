@@ -61,6 +61,7 @@ class MemoryAddresses(object):
         self.world_level = self.map_between("E2",0x80315B9C)
         self.level_level = self.map_between("E2",0x80315B9D)
         self.hm_stats = self.hard_code({"E2" : 0x80C80EDC})
+        self.sc_currentlevel = self.map_between("E2",0x803741B0)
 
         #self.world_stats = self.map_between("E2",0x80C80812) # dSaveMng_c::getSaveGame
 

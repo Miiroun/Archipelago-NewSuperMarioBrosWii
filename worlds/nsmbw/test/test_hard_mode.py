@@ -29,6 +29,7 @@ class TestHardModeOff(NSMBWWorld):
             self.collect_by_name(ITEM.MOVEMENT.Star)
             self.assertFalse(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
             self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
+            self.collect_by_name(ITEM.MOVEMENT.SpinJump)
             self.assertTrue(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
 
 

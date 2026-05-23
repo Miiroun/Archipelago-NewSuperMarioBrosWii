@@ -7,7 +7,7 @@ import settings
 class NSMBWSettings(settings.Group):
     class GameFilePath(settings.UserFilePath):
         """A path to your game file, preferable that  it ends with either .iso or .wbfs"""
-        required = False
+        required = True
 
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
@@ -24,7 +24,7 @@ class NSMBWSettings(settings.Group):
 
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
-    game_file_path: settings.Union[GameFilePath, str] = GameFilePath()
+    game_file_path: settings.Union[GameFilePath, str] = GameFilePath("nsmbw.wbfs")
     auto_open: AutoOpenGame | bool = True
-    ut_pack_path: Union[UTPackPath, str] = UTPackPath()
-    save_file_path : SaveFileLocation = Utils.user_path() + f"\\nsmbw\\nsmbw_saves"
+    ut_pack_path: Union[UTPackPath, str] = UTPackPath("")
+    save_file_path : settings.Union[SaveFileLocation, str] = Utils.user_path() + r"\\nsmbw\\nsmbw_saves"

@@ -3,13 +3,12 @@ import time
 from enum import Enum
 
 from typing import Dict, Optional
-
+from ..Common import *
 from Utils import is_frozen
 from . import keyboard
 from . import PowerPCInstructions
 from .dolphin_interface_client import *
 from ..Utils import bytes_to_int, int_to_bytes
-from ..Common import *
 from ..items import ITEM_NAME_TO_ID
 from ..locations import LEVELS_PER_WORLD
 
@@ -53,7 +52,7 @@ GAMELEVELS_PER_WORLD = LEVELS_PER_WORLD
 logger = logging.getLogger("Client")
 
 class NSMBWInterface():
-    """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with Metroid Prime"""
+    """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with game"""
 
     dolphin_client: DolphinClient
     connection_status: str
@@ -68,7 +67,8 @@ class NSMBWInterface():
     memory_addresses : MemoryAddresses
     deathtimer : float = time.time()
     should_clear : int
-    
+
+
     def __init__(self, logger: Logger) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
@@ -98,7 +98,11 @@ class NSMBWInterface():
                 self.game_rev = int(game_rev)
                 version_name = GAME_VERSIONS[(game_id, game_rev)]
                 if version_name not in SUPPORTED_VERSIONS:
-                    logger.error("The only playtested version is E2 (US rev2) and this is not the version of your game. Play the others at your own risk. When you find errors, please report them so they might be fixed.")
+                    text = ("The client is only playtested for game version E2 (US rev2) and this is not the version"
+                            " of your game. Play at your own risk. When you find errors, please report them in the "
+                            "discord and mention your game version, so that they might be fixed.")
+                    #message : JSONMessagePart = [{"type": "color", "color": "red", "text":text }]
+                    logger.info(text)
 
                 self.memory_addresses = MemoryAddresses(version_name)
 
@@ -294,7 +298,8 @@ class NSMBWInterface():
         keyboard.release("F8")
         time.sleep(wait_long)
         #asyncio.sleep(1)
-        logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the JIT cache manualy (JIT -> clear chache).")
+        logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
+                    " JIT cache manualy (JIT -> clear chache).")
 
 
 
@@ -539,9 +544,6 @@ class NSMBWInterface():
     def get_sc(self):
         address = self.memory_addresses.sc_currentlevel
         return self.dolphin_client.read_address(address,4*3)
-    def get_starcoin_stockage(self):
-        address = self.memory_addresses.sc_stockage
-        return self.dolphin_client.read_address(address,1)
     def get_level_world(self):
         address = self.memory_addresses.level_world
         return self.dolphin_client.read_address(address,1)
@@ -551,7 +553,6 @@ class NSMBWInterface():
         dMj2dGame_c_address = self.get_dMj2dGame_c_address() +0x3
         offset = self.memory_offset_level_stats(world_num,level_num)  #magic numer to make line up with old
         return self.dolphin_client.read_address(dMj2dGame_c_address+0x6c+offset, 4)
-
     def get_inventory_items(self, type_num : int):
         address = self.memory_addresses.inventory_items + type_num -1
         return self.dolphin_client.read_address(address,1)
@@ -692,9 +693,10 @@ class NSMBWInterface():
         self.dolphin_client.write_pointer(address,0x0488, data)
     def update_inventory_items(self, type_num : int, increase : int):
         amount = bytes_to_int(self.get_inventory_items(type_num))
+        amount += increase
         if amount >99:
             amount = 99
-        self.set_inventory_items( int_to_bytes((amount+ increase), 1), type_num)
+        self.set_inventory_items( int_to_bytes(amount, 1), type_num)
 
 
 

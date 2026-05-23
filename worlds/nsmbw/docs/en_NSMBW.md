@@ -40,22 +40,24 @@ config file.
   - Inventory fill (one of every powerup)
   - 1ups
 - Traps
-  - Loose powerup
+  - Loose powerup trap
   - Goomba speed trap
   - Death trap
 
 
 ## Locations
 - Completing normal levels and collecting their star coins. (77 levels and 231 star coins) e.g. 1-1_clear, 1-1_sc1
-- Buying hint movies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if you need help with unlocking them. Hintmovie1
+- Buying hint movies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if you need help with unlocking them. e.g. Hintmovie01
 - Completing towers, castles and secret exits that unlock cannons ( 8 towers, 8 castles and 8 secret exits) World1_tower, Secret_exit1-3
-- Getting powerups to inventory (from toad-houses or rescuing toad)
+- Getting powerups to inventory (from toad-houses or rescuing toad) e.g. Inventory_powerup_001
 
 ## Options
 - Starting world is selectable in option
 - Most locations and items can be turned on/off in options
 - You can select your requirement for reaching bowser in your goal
-- You can select easy or hard rules, with easy being trivial to figure out and hard REQUIRING skips and trix. You can also select if you want brining powerups from outside the level to be considered in logic.
+- You can select normal or hard rules, with normal being trivial to figure out and hard REQUIRING skips and trix. 
+  - Normal rules is highly recommended
+- You can also select if you want brining powerups from outside the level to be considered in logic.
 
 
 ## Known quirks / bugs
@@ -66,7 +68,7 @@ config file.
 - If you have movement rando selected, you will be given some movement abilities to start out with to be able to grab your checks. You will always have button_right and either spin or big_jump.
 - The client will ask for a pop-tracker pack, you can ignore it for now as it is still in development.
 - With movement rando on and not having the item climb will cause a soft lock if you encounter a ledge (like in 6-1). You are free from the softlock if you do /kill.
-- Disabling 7-6 causes the game to freez, so it just isn't.
+- Disabling 7-6 causes the game to freeze, so it isn't.
 - Sometimes mario is invisible on the worldmap
 - Only save file 2 will work to play on.
 - Deathlink is sometimes sent on connect.
@@ -119,6 +121,8 @@ config file.
   - Game is developed on US rev2 of NSMBW. The client doesn't error out on other editions but some features will not work.
   - If you have another revision please report the problems you have in discord and mention your game revision.
   - Known issues: E1; Time and movement
+- I want to help with this game, how do I start?
+  - Help is appreciated, both coding playtesting and logic. Bigin by reading [dev_docs](../dev_files/dev_docs) and then ask in discord.
 - Bugs?
   - Expect bugs, it is still in development.
   - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).

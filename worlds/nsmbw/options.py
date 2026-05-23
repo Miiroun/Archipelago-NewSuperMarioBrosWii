@@ -23,6 +23,16 @@ class RandomizeStarCoins(Toggle):
     display_name = "Randomize Star Coins"
     default = True
 
+class StarCoinCollectImmediately(Toggle):
+    """
+    If enabled will send checks for star coins directly when collected,
+    otherwise will send them on level completion
+    """
+    display_name = "Star Coin Collect immediately"
+    default = False
+
+    visibility = Option.visibility.none
+
 
 class RandomizeMovment(Choice):
     """
@@ -37,13 +47,13 @@ class RandomizeMovment(Choice):
     default = option_off
     #visibility  = Option.visibility.none
 
-class DontRandoMovement(OptionSet):
+class DontRandoMovement(ItemSet):
     """
-    Put movement items here if you want to play with movement except curtain once like spin
+    Put movement items here if you want to play with movement except certain once.
     """
 
     display_name = "Dont Rando these Movements"
-    default = {"run", "button_left"}
+    default = set()
 
 
 class RandomizePowerups(Choice):
@@ -64,7 +74,8 @@ class RandomizeTime(Range):
     """
 
     range_start = 0
-    range_end = 20
+    range_end = 5
+    #range_end = 20
     default = 0
     #default = 5
 
@@ -77,7 +88,6 @@ class IncludeHintMovies(Toggle):
     """
     display_name = "Include Hint Movies"
     default = True
-    #visibility = Option.visibility.complex_ui
 
 class IncludeLevelCompletion(Toggle):
     """
@@ -198,9 +208,9 @@ class BowserCastleWorldUnlock(Range):
     range_start = 0
     range_end = 7
 
-    default = 4
+    default = 2
 
-class DeathLink(Toggle):
+class DeathLink(DeathLink):
     """
     Enable death-link as default, can be toggled in client.
     """
@@ -217,14 +227,14 @@ class AmountSupportReceived(Range):
 
     default = 5
 
-class FillerItems(OptionSet):
+class FillerItems(ItemSet):
     """
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Filler Items"
     default = set(FILLER)
 
-class TrapItems(OptionSet):
+class TrapItems(ItemSet):
     """
     Select which filler items you want to have be possible to generate.
     """
@@ -265,6 +275,7 @@ class NSMBWOptions(PerGameCommonOptions):
 
     death_link : DeathLink
     enable_superpowers : EnableSuperPowers
+    starcoin_collect_immediately : StarCoinCollectImmediately
 
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
@@ -319,6 +330,7 @@ option_groups = [
         [
             DeathLink,
             EnableSuperPowers,
+            StarCoinCollectImmediately
         ],
     ),
 ]
@@ -337,6 +349,10 @@ option_presets = {
         "starting_world": StartingWorld.default,
         "include_inventory_powerups": IncludeNumberInventoryItems.default,
         "include_starting_locations": IncludeStartingItems.default,
+        "logic_difficulty" : LogicDifficulty.default,
+
+        "bowser_star_unlock": BowserCastleStarUnlock.default,
+        "bowser_world_unlock": BowserCastleWorldUnlock.default
     },
     "Minimal": {
         "include_level_completion": IncludeLevelCompletion.option_false,
@@ -351,6 +367,10 @@ option_presets = {
         "dont_rando_move": set(MOVEMENT_UNLOCKS),
         "randomize_powerups": RandomizePowerups.option_off,
         "randomize_time": 0,
+
+        "bowser_star_unlock": 0,
+        "bowser_world_unlock": 0,
+        "logic_difficulty" : LogicDifficulty.option_normal
     },
     "Maximal": {
         "include_level_completion": IncludeLevelCompletion.option_true,
@@ -364,7 +384,11 @@ option_presets = {
         "randomize_movement": RandomizeMovment.option_on,
         "dont_rando_move": set(),
         "randomize_powerups": RandomizePowerups.option_on,
-        "randomize_time": 20,
+        "randomize_time": 5,
+
+        "bowser_star_unlock": 200, #231
+        "bowser_world_unlock": 7,
+        "logic_difficulty" : LogicDifficulty.option_difficult
     }
 
 

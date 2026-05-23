@@ -1,16 +1,10 @@
 ## Super short term
-- Wait on logic getting made
-- -> make release
-- Pin docs in dc
-  - make new GitHub branch
 
 
 ## Playtest
-- Verify bowser unlock logic wise
 
 
 ## Bugs to fix
-
 
 ## Important features (asked after a lot)
 - World enemies
@@ -36,8 +30,19 @@
   - Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab
 - Work on multiplayer support
-- Hint movies doe not work on other save files?
+- Hint movies does not work on other save files?
 - Inventory powerups only work savefile 2 : make a part of dSave pointer
+- Add option for star coins to be collected directly instead of having to complete level
+- Design icon for client : apstyle
+
+
+## Game patches
+- Coin worlds single player
+- Skipp intro cutscene
+- Skipp playing hint movies when buying them
+- Update world map - file
+- AP-images for toad houses
+- Not move forward to next world after completing previous
 
 ## Filler link
 - Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
@@ -70,6 +75,7 @@
 - Add info to ap-wiki
 - Riivolution patch that changes world map unlock order and which level required to leave
 - Use data_storage for save file data instead of creating files?
+- Should I check level completed in ap when connect : overwrite save file : better same slot co-op
 
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap

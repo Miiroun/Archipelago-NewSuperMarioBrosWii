@@ -11,6 +11,7 @@ class ITEM:
         Propeller_Mushroom = "Propeller_Mushroom"
         Penguin_Suit = "Penguin_Suit"
         Ice_Flower = "Ice_Flower"
+
     class MOVEMENT(StrEnum):
         GroundPound = "ground_pound"
         WallJump = "wall_jump"
@@ -32,6 +33,7 @@ class ITEM:
         ButtonRight = "button_right"
         ButtonUp = "button_up"
         ButtonDown = "button_down"
+
     class TRAPS(StrEnum):
         LoosePowerupTrap = "Loose_powerup_trap"
         GoombaTrap = "Goomba_trap"

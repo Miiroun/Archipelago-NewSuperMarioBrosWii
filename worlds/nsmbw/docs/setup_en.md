@@ -14,6 +14,7 @@
 3) Then create a player yaml file from the option creator in the launcher.
    -  Default yaml is recommended for new players. It has 441 locations (2026-05-17).
    - If you want to play with a lower location count disable star coins (231 locations).
+   - See [en_NSMBW.md](../docs/en_NSMBW.md) for all options, etc.
 4) Note that the ap client is bundled with launcher.
 5) Inside the client press CONNECT (when you are on the world map in game) and then enter your player name (from the yaml).
 6) If you care about your dolphin savefiles then back them up.
@@ -24,12 +25,11 @@
 2) This should prompt you for your game file. (You can change it from host.yaml).
 3) Clear save file 2 (you can make a copy of it if you care about it).
 4) When game booted select savefile 2.
-5) Make savestates in emulator, saving the game doesn't currently work.
-6) After you have entered the world map press CONNECT in the client.
+5) After you have entered the world map press CONNECT in the client.
    - IMPORTANT : do not connect before this
-7) Open the in game world-select menu and move to a world you have unlocked
-8) See the quirks section in [en_NSMBW.md](./en_NSMBW.md) for quirks with the implementation.
-9) Make save-states to save the game and run /save. (Do NOT save when you are in world 9, it will delete your save)
+6) Open the in game world-select menu and move to the world you have unlocked.
+7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
+8) Make save-states to save the game and run /save. (Do NOT save when you are in world 9, it will delete your save)
 
 
 ## Tracker 

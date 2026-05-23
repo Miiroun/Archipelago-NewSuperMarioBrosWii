@@ -1,6 +1,18 @@
 # New Super Mario Bros Wii
-An archipelago implementation of a NSMBW randomizer. Check out worlds/nsmbw/docs for setup instructions.
+An archipelago implementation of a NSMBW randomizer.
+READ FIRST
+[SETUP GUIDE](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/setup_en.md)
 
+Then skim though
+[GLOSSARY](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md)
+, if you have any issues read the Debug tips first and then ask for help in the archipelago discord. 
+
+LATEST RELEASE
+[NSMBW](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases)
+
+
+Check out [worlds/nsmbw/docs](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW_miiroun_dev/worlds/nsmbw) for the source code, 
+and [dev_docs](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW_miiroun_dev/worlds/nsmbw/dev_files/dev_docs) for the explanation of the code.
 
 # [Archipelago](https://archipelago.gg) ![Discord Shield](https://discordapp.com/api/guilds/731205301247803413/widget.png?style=shield) | [Install](https://github.com/ArchipelagoMW/Archipelago/releases)
 

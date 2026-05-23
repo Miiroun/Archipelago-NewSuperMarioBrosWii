@@ -55,7 +55,9 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     easy_rules, hard_rules = specific_level_requierments(world)
     requierments = hard_rules.copy()
     if world.options.logic_difficulty.value == LogicDifficulty.option_normal:
+        assert len(easy_rules) == len(hard_rules) == len(LEVELS_PER_WORLD), "Make sure lists is of correct size"
         for world_num in range(9):
+            assert len(easy_rules[world_num]) == len(hard_rules[world_num]) == LEVELS_PER_WORLD[world_num], "Make sure lists is of correct size"
             for level_num in range(LEVELS_PER_WORLD[world_num]):
                 requierments[world_num][level_num][0] = hard_rules[world_num][level_num][0] & easy_rules[world_num][level_num][0]
                 for sc in range(3):

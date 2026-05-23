@@ -145,17 +145,17 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     propeller = (Has(ITEM.POWERUP.Propeller_Mushroom) & progressive_pow_filler & spin_jump) | filter_pow
     ice = (Has(ITEM.POWERUP.Ice_Flower) & progressive_pow_filler) | filter_pow
     peng = (Has(ITEM.POWERUP.Penguin_Suit) & progressive_pow_filler) | filter_pow
-    ice_peng = ((Has(ITEM.POWERUP.Ice_Flower) | Has(ITEM.POWERUP.Penguin_Suit)) & progressive_pow_filler) | filter_pow
     mini = (Has(ITEM.POWERUP.Mini_Mushroom) & progressive_pow_filler) | filter_pow
     fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
 
     #other rules
-    outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] # and with this rule
+    outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | Has(ITEM.GlitchedLogic) # and with this rule
     # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
     logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)]
     logic_easy = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably can be used, but I will leave it in just in case, maybe useful if OR
 
     # more powerup stuff
+    ice_peng = ice | peng
     fire_o = fire & outside_powerups
     ice_o = ice & outside_powerups
     propeller_o = propeller & outside_powerups
@@ -168,7 +168,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
     super_mario = mushroom | propeller | ice_peng | fire
     max_mini = mini & run & wall_jump
     oswj = run & wall_jump & (fire | ice_peng | mini)
-    normal_move = button_right & button_ left & button_up & button_down & jump & spin_jump & question_switch & p_switch & door & pipe & get_time_rule(world, 50) #changed this to fit my current logic, can probably be cleaned up a bit
+    normal_move = button_right & button_left & button_up & button_down & jump & spin_jump & question_switch & p_switch & door & pipe & get_time_rule(world, 50) #changed this to fit my current logic, can probably be cleaned up a bit
 
     bowser_world_clear_list  = list([f"World{world_num}_level{level_num}_cleared" for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
     bowser_clear_rule = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
@@ -188,7 +188,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [normal_move, [True_(), True_(), carry | propeller_o | mini_o]],  # -1
             [normal_move, [True_(), climb & (carry | propeller_o | logic_hard), mini & wall_jump & (carry | ground_pound)]],  # -2
             [normal_move, [True_(), True_(), run | propeller_o | mini_o | (star & logic_hard)]],  # -3
-            [normal_move & (climb | (propeller_o | (mini_o & wall_jump)) | (logic_hard & wall_jump & run & super_mario)), [climb, propeller_o, (propeller_o | (mini_o & wall_jump))], propeller_o & (wall_jump | run)],  # -4
+            [normal_move & (climb | (propeller_o | (mini_o & wall_jump)) | (logic_hard & wall_jump & run & super_mario)), [climb, propeller, (propeller | (mini_o & wall_jump))], propeller & (wall_jump | run)],  # -4 # this was orignaly propeller_o for sc2, sc3 and secret exit, but locations must be accessible independent of setting, so changed it to just propeller_o
             [normal_move, [True_(), yoshi | carry | propeller_o | (wall_jump & (mini_o | run | super_mario)) | (logic_hard & ice_peng_o), True_()]],  # -5
             [normal_move, [True_(), carry | propeller | mini_o, True_()], propeller | (mini_o & logic_hard)],  # -6
             [normal_move, [True_(), True_(), True_()]],  # -7 2-T
@@ -201,7 +201,7 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [normal_move & red_block, [True_(), True_(), True_()]],  # -4
             [normal_move, [True_(), red_block, red_block], red_block],  # -5
             [normal_move & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthouse
-            [normal_move, [True_(), carry, wall jump | propeller_o]],  # -7 3-T
+            [normal_move, [True_(), carry, wall_jump | propeller_o]],  # -7 3-T
             [normal_move, [True_(), True_(), True_()]],  # -8 3-C
         ],
         [  # world 4
@@ -244,9 +244,10 @@ def specific_level_requierments(world: NSMBWworld) -> tuple:
             [normal_move, [True_(), True_(), True_()]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), True_()]],  # -6
-            [normal_move, [True_(), True_(), climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))], climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))],  # -7 7-Ghosthouse
+            [normal_move, [True_(), True_(), climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))], climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))],  #  7-Ghosthouse
             [normal_move, [True_(), True_(), True_()]],  # -8 7-T
-            [normal_move & (run | (super_mario & logic_hard)), [super_mario, True_(), wall_jump | propeller_o]],  # -9 7-C
+            [normal_move & (run | (super_mario & logic_hard)), [super_mario, True_(), wall_jump | propeller_o]],  # 7-C
+
 
         ],
         [  # world 8
@@ -451,7 +452,7 @@ def get_levlel_connections():
             [8],  # -4
             [4],  # -5
             [5],  # -6
-            [6], # - 7
+            [8], # - 7
             [3],  # -Tower
             [6]  # -Caslte
         ],

@@ -37,7 +37,8 @@ ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
 # to do
 #
 #dont even want to try
-# [ "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove), "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai)]
+# [ "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove),
+# "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), red coins - ring]
 # temporarily given up on
 # ["pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)]
 
@@ -108,9 +109,10 @@ def create_all_items(world: NSMBWworld) -> None:
     starting_world_num = world.options.starting_world.value
     excluded_items : set = set()
     excluded_items.update({f"World{starting_world_num}"})
-    extera_start_items = {4 : {ITEM.MOVEMENT.Swim}, 5 : {ITEM.MOVEMENT.Climb}, 6 : {ITEM.MOVEMENT.Climb}, 8 : {ITEM.MOVEMENT.Pipe}}
+    extera_start_items = {4 : {ITEM.MOVEMENT.Swim}, 5 : {ITEM.MOVEMENT.Climb}, 8 : {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.Run}}
     if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
-        excluded_items.update({ITEM.MOVEMENT.ButtonRight})
+        excluded_items.update({ITEM.MOVEMENT.ButtonRight,ITEM.MOVEMENT.ButtonLeft,ITEM.MOVEMENT.ButtonUp,ITEM.MOVEMENT.ButtonDown,
+                               ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.Door, ITEM.MOVEMENT.SpinJump, ITEM.MOVEMENT.Jump, ITEM.MOVEMENT.PSwitch,ITEM.MOVEMENT.QuestSwitch })
         if not (ITEM.MOVEMENT.SpinJump in excluded_items) or ( ITEM.MOVEMENT.Jump in excluded_items):
             if world.random.randint(0,1) == 0:
                 excluded_items.update({ITEM.MOVEMENT.SpinJump})
