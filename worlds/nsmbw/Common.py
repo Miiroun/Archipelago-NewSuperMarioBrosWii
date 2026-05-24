@@ -75,22 +75,23 @@ def mod_level_name(worldnum : int, levelnum : int) -> str:
             return "A"
     return str(levelnum)
 
+def name_base(world_num : int, level_num : int) -> str:
+    assert_valid_level(world_num, level_num)
+    return f"{world_num}-{mod_level_name(world_num,level_num)}"
+
 def assert_valid_level(world_num : int, level_num : int) -> None:
     from worlds.nsmbw.locations import LEVELS_PER_WORLD
     assert 1 <= world_num <= 9
     assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1]
 
 def name_level(world_num : int, level_num : int) -> str:
-    assert_valid_level(world_num, level_num)
-    return f"{world_num}-{mod_level_name(world_num,level_num)}_clear"
+    return f"{name_base(world_num,level_num)}_clear"
 
 def name_starcoin(world_num : int, level_num : int, scnum : int) -> str:
-    assert_valid_level(world_num, level_num)
-    return f"{world_num}-{mod_level_name(world_num,level_num)}_sc{scnum}"
+    return f"{name_base(world_num,level_num)}_sc{scnum}"
 
 def name_secret(world_num : int, level_num : int) -> str:
-    assert_valid_level(world_num, level_num)
-    return f"Secret_exit{world_num}-{mod_level_name(world_num, level_num)}"
+    return f"Secret_exit{name_base(world_num,level_num)}"
 
 def name_hintmovie(i:int) -> str:
     from worlds.nsmbw.NSMBW_client.NSMBWInterface import HINTMOVIE_COUNT

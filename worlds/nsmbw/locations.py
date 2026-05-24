@@ -177,8 +177,8 @@ def create_events(world: NSMBWworld) -> None:
 
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-            flagpole = f"World{world_num}_level{level_num}_flagpole"
-            regions[world_num*2 - 2 ].add_event(flagpole,f"World{world_num}_level{level_num}_cleared", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+            flagpole = f"{name_base(world_num, level_num)}"
+            regions[world_num*2 - 2 ].add_event(flagpole,name_base(world_num, level_num), location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
     #events could be usefully for merging split paths
 

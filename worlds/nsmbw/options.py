@@ -1,5 +1,3 @@
-from jinja2.nodes import Include
-
 from Options import *
 from .Common import *
 
@@ -25,19 +23,19 @@ class RandomizeStarCoins(Toggle):
 
 class StarCoinCollectImmediately(Toggle):
     """
+    BETA
     If enabled will send checks for star coins directly when collected,
     otherwise will send them on level completion
     """
     display_name = "Star Coin Collect immediately"
     default = False
 
-    visibility = Option.visibility.none
+    #visibility = Option.visibility.none
 
 
-class RandomizeMovment(Choice):
+class RandomizeMovement(Choice):
     """
     Will disable some of mario's moves until items checks are sent to reunlock them.
-    BETA FEATURE : expect bugs
     """
     display_name = "Randomize Moves"
 
@@ -50,17 +48,18 @@ class RandomizeMovment(Choice):
 class DontRandoMovement(ItemSet):
     """
     Put movement items here if you want to play with movement except certain once.
+    Turning on the default moves here can and will cause issue, they are experimental
     """
 
     display_name = "Dont Rando these Movements"
-    default = set()
+    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value}
 
 
 class RandomizePowerups(Choice):
     """
     Will make power ups not unlockable until items check are sent to reunlock them.
     """
-    display_name = "Randomize Powerups"
+    display_name = "Randomize Power-ups"
     option_off = 0
     option_on_except_mushroom = 1
     option_on_progressive = 2
@@ -70,11 +69,10 @@ class RandomizePowerups(Choice):
 class RandomizeTime(Range):
     """
     Will make your starting time be separated into discreet section. Select O if you want to disable this option.
-    BETA FEATURE : expect bugs
     """
 
     range_start = 0
-    range_end = 5
+    range_end = 10
     #range_end = 20
     default = 0
     #default = 5
@@ -129,7 +127,7 @@ class LogicOutsidePowerups(Choice):
     Sett this to allow if you want solution involving bringing powerups from outside the level to be in logic.
     """
     display_name = "Logic Outside Power-ups"
-    option_dissallow = 0
+    option_disallow = 0
     option_allow = 1
     default = option_allow
 
@@ -150,19 +148,16 @@ class StartingWorld(Choice):
 
 class World9UnlockCondition(Choice):
     """
+    BETA
     Select in which way world 9 levels will be unlocked
-    Standard    : The games default unlock condition
-    Linear      : 9-1 req 10 SC, 9-2 req 20 SC, etc.
-    Gaussian    : The unlocking will be a gaussian distribution with mean = 100 SC and standard deviation = 30
+    Linear      : 9-1 req 20 SC, 9-2 req e0 SC, etc.
+    Gaussian    : The unlocking will be a gaussian distribution with mean = 80 SC and standard deviation = 40
     """
-    # TODO not implemnted
     display_name = "World 9 Unlock Condition"
-    option_standard = 1
     option_linear = 2
     option_gaussian = 3
 
-    default = option_linear
-    visibility = Option.visibility.none
+    default = option_gaussian
 
 class IncludeStartingItems(Range):
     """
@@ -215,7 +210,14 @@ class DeathLink(DeathLink):
     Enable death-link as default, can be toggled in client.
     """
     display_name = "Death Link"
-    default = True
+    default = False
+class DeathLinkGroup(FreeText):
+    """Death Link only applies to players with an identical Group name.
+    Games that don't support the Group option count as having an empty group name."""
+    display_name = "Death Link Group"
+    rich_text_doc = True
+    default = ""
+
 
 class AmountSupportReceived(Range):
     """
@@ -254,7 +256,7 @@ class NSMBWOptions(PerGameCommonOptions):
     include_starting_locations : IncludeStartingItems
 
 
-    randomize_movement : RandomizeMovment
+    randomize_movement : RandomizeMovement
     dont_rando_move : DontRandoMovement
     randomize_powerups : RandomizePowerups
     randomize_time : RandomizeTime
@@ -274,6 +276,7 @@ class NSMBWOptions(PerGameCommonOptions):
     bowser_world_unlock : BowserCastleWorldUnlock
 
     death_link : DeathLink
+    death_link_group : DeathLinkGroup
     enable_superpowers : EnableSuperPowers
     starcoin_collect_immediately : StarCoinCollectImmediately
 
@@ -295,7 +298,7 @@ option_groups = [
         "Items",
         [
             RandomizePowerups,
-            RandomizeMovment,
+            RandomizeMovement,
             DontRandoMovement,
             RandomizeTime,
         ],
@@ -342,7 +345,7 @@ option_presets = {
         "include_hintmovies": IncludeHintMovies.default,
         "randomize_coins": RandomizeStarCoins.default,
 
-        "randomize_movement": RandomizeMovment.default,
+        "randomize_movement": RandomizeMovement.default,
         "dont_rando_move": DontRandoMovement.default,
         "randomize_powerups": RandomizePowerups.default,
         "randomize_time": RandomizeTime.default,
@@ -350,6 +353,8 @@ option_presets = {
         "include_inventory_powerups": IncludeNumberInventoryItems.default,
         "include_starting_locations": IncludeStartingItems.default,
         "logic_difficulty" : LogicDifficulty.default,
+        "death_link": DeathLink.default,
+
 
         "bowser_star_unlock": BowserCastleStarUnlock.default,
         "bowser_world_unlock": BowserCastleWorldUnlock.default
@@ -363,14 +368,15 @@ option_presets = {
         "include_inventory_powerups": 0,
         "include_starting_locations": 0,
 
-        "randomize_movement": RandomizeMovment.option_off,
+        "randomize_movement": RandomizeMovement.option_off,
         "dont_rando_move": set(MOVEMENT_UNLOCKS),
         "randomize_powerups": RandomizePowerups.option_off,
         "randomize_time": 0,
 
         "bowser_star_unlock": 0,
         "bowser_world_unlock": 0,
-        "logic_difficulty" : LogicDifficulty.option_normal
+        "logic_difficulty" : LogicDifficulty.option_normal,
+        "death_link": DeathLink.option_false,
     },
     "Maximal": {
         "include_level_completion": IncludeLevelCompletion.option_true,
@@ -378,17 +384,18 @@ option_presets = {
         "include_hintmovies": IncludeHintMovies.option_true,
         "randomize_coins": RandomizeStarCoins.option_true,
         "starting_world": "random",
-        "include_inventory_powerups" : 200,
+        "include_inventory_powerups" : 999,
         "include_starting_locations" : 0,
 
-        "randomize_movement": RandomizeMovment.option_on,
+        "randomize_movement": RandomizeMovement.option_on,
         "dont_rando_move": set(),
         "randomize_powerups": RandomizePowerups.option_on,
         "randomize_time": 5,
 
-        "bowser_star_unlock": 200, #231
+        "bowser_star_unlock": 231, #231
         "bowser_world_unlock": 7,
-        "logic_difficulty" : LogicDifficulty.option_difficult
+        "logic_difficulty" : LogicDifficulty.option_difficult,
+        "death_link": DeathLink.option_true,
     }
 
 

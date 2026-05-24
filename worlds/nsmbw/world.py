@@ -1,7 +1,7 @@
 from collections.abc import Mapping
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from BaseClasses import CollectionState, ItemClassification
+from BaseClasses import CollectionState, ItemClassification, MultiWorld
 from NetUtils import JSONMessagePart
 from worlds.AutoWorld import World
 
@@ -60,6 +60,11 @@ class NSMBWworld(World):
     ut_can_gen_without_yaml = True
     glitches_item_name = "glitched_logic"
 
+    star_coin_req_per_world_9_level : List[int]
+
+    def __init__(self, multiworld: "MultiWorld", player: int):
+        super().__init__(multiworld, player)
+        self.star_coin_req_per_world_9_level = []
 
     def create_regions(self) -> None:
         regions.create_and_connect_regions(self)
@@ -108,6 +113,7 @@ class NSMBWworld(World):
         option_list : list = list(self.options.__dict__.keys()- self.default_options_set)
         slot_data = self.options.as_dict(*option_list)
         #slot_data["version"]  = self.world_version
+        slot_data["star_coin_req_per_world_9_level"] = self.star_coin_req_per_world_9_level
         return slot_data
 
     # UT-tracket imlementation
@@ -118,6 +124,8 @@ class NSMBWworld(World):
             setattr(getattr(self.options, item), item, slot_data[item])
         for item in set_options:
             setattr(getattr(self.options, item), item, set(slot_data[item]))
+        self.star_coin_req_per_world_9_level = slot_data["star_coin_req_per_world_9_level"]
+
 
 
     @staticmethod
@@ -129,7 +137,14 @@ class NSMBWworld(World):
         return []
 
     def explain_rule(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
-        return []
+        specific_rules = {
+            "1-1" : [JSONMessagePart({"text": " You should have no trouble beating the first level in the game, jsut get a world1 item and it will be unlocked on the world-map.", "type":"text"})]
+        }
+
+        if target_name in specific_rules.keys():    
+            return specific_rules[target_name]
+        else:
+            return []
 
     def map_page_index(data: Any) -> int:
         try:

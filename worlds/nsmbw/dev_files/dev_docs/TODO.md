@@ -1,20 +1,41 @@
 ## Super short term
-
-
-## Playtest
-
-
-## Bugs to fix
-
-## Important features (asked after a lot)
+- Fix dying -> freeze
+- Bug report /send_location not taking location groups (check if new PR does)
+- compare memory of in game and menu to find difference -> better menu detection
 - World enemies
   - exists specific memory location
 - Rescue toad on world map
   - exists specific memory location
 
 
+## Playtest
+- Does fill inventory work on us rev2?
+- Does 5-T show correct logic as asked by LugigiXRules
+  - Powerup logic_o seams not working?
+- SAVE REMOVED POWERUPS TO SLOTDATA
+- test that deathlink groups and deathlink both works
+- test options for world9
+- Playtest star coin collect directly instead of after level completion
+
+
+## Bugs to fix
+- Camera is weired: might cause problems with 7-6
+  - Dying in 7-6, 8-3 and 8-5 freezes game
+  - might be issue with replacing save file : not correct magic number
+  - watch memory if worldmap node is correct?
+  - otherwise check savefile magic number
+  - Seems to work kinda if clears level
+  - test if still happens on minimal settings
+  - Might be rough data writing: overwriting memory that I shouldn't
+  - try with just world unlock
+- Castle check is for airship not castle in client
+- Inventory item doesn't work on other versions
+- 8-t_sc2 not collected
+- Something is broken with star coin generation logic
+  - tracker ISSUE?
+
+
 ## Short term
-- Add more options to how world 9 levels are unlocked
 - add some cashing for received checks, so doesn't double count already accounted for items when relogs
 - Protocol
   - Grouped death-link
@@ -32,9 +53,11 @@
 - Work on multiplayer support
 - Hint movies does not work on other save files?
 - Inventory powerups only work savefile 2 : make a part of dSave pointer
-- Add option for star coins to be collected directly instead of having to complete level
 - Design icon for client : apstyle
-
+- Derefrense player  pointer
+- Add support for multiplayer and other savefile support
+- Add enemy ambush and toad rescue
+- Castles are gotten by airships since last level of world, rename them?
 
 ## Game patches
 - Coin worlds single player
@@ -43,6 +66,7 @@
 - Update world map - file
 - AP-images for toad houses
 - Not move forward to next world after completing previous
+- allways leave level
 
 ## Filler link
 - Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
@@ -51,13 +75,14 @@
 ## Broken versions
 # EU 1
 - Movement
-
+- Inventory
 
 # EU 2
-- 
+- Inventory
 
 # US 1
-- 
+- Inventory
+- Star and water
 
 
 ## Mid term
@@ -85,7 +110,7 @@
 - Sneak freezes game
 - 7-6 freezes when clear?, is temporarily removed
 - Hint movies that requires all level completion don't work in game
-
+- Maybe update how shell carry works
 
 ## Features
 - Save toad / kill world enemy = hint/check
@@ -104,6 +129,7 @@
 - FILLER 
   - 1 normal coin
   - random powerup : gain
+  - Gain this levels check point
 - Features from gecko
   - Speed trap
   - fall damage

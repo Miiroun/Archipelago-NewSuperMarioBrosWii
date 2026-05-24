@@ -1,12 +1,12 @@
 from .bases import NSMBWWorld
 from ..Common import *
 from ..locations import name_level, name_starcoin
-from ..options import RandomizeMovment, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups
+from ..options import RandomizeMovement, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups
 
 
 class TestHardModeOff(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovment.option_on,
+        "randomize_movement" : RandomizeMovement.option_on,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_normal,
@@ -27,6 +27,7 @@ class TestHardModeOff(NSMBWWorld):
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
             self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
             self.collect_by_name(ITEM.MOVEMENT.Star)
+            self.collect_by_name(ITEM.MOVEMENT.Run)
             self.assertFalse(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
             self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
             self.collect_by_name(ITEM.MOVEMENT.SpinJump)
@@ -37,7 +38,7 @@ class TestHardModeOff(NSMBWWorld):
 
 class TestHardModeOn(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovment.option_on,
+        "randomize_movement" : RandomizeMovement.option_on,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_difficult,
@@ -56,6 +57,7 @@ class TestHardModeOn(NSMBWWorld):
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
             self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
             self.collect_by_name(ITEM.MOVEMENT.Star)
+            self.collect_by_name(ITEM.MOVEMENT.Run)
             self.assertTrue(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
             self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
             self.assertTrue(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))

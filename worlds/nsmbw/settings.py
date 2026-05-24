@@ -26,5 +26,5 @@ class NSMBWSettings(settings.Group):
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: settings.Union[GameFilePath, str] = GameFilePath("nsmbw.wbfs")
     auto_open: AutoOpenGame | bool = True
-    ut_pack_path: Union[UTPackPath, str] = UTPackPath("")
-    save_file_path : settings.Union[SaveFileLocation, str] = Utils.user_path() + r"\\nsmbw\\nsmbw_saves"
+    ut_pack_path: Union[UTPackPath, str] = UTPackPath("nsmbw\\Poptracker_pack_NSMBW.zip")
+    save_file_path : settings.Union[SaveFileLocation, str] = SaveFileLocation(f"nsmbw\\nsmbw_saves")

@@ -318,84 +318,88 @@ class NSMBWInterface():
             return False
 
 
-    async def handle_unlocked_moves(self, unlocked_moves, slot_data_movement):
+    async def handle_unlocked_moves(self, unlocked_moves, slot_data):
         self.should_clear = 0
+        slot_data_movement = slot_data["randomize_movement"]
+        slot_data_dont_rando = slot_data["dont_rando_move"]
         if slot_data_movement >= 1:
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
-            address = self.memory_addresses.address_ground_pound
-            if not ITEM.MOVEMENT.GroundPound in unlocked_moves:
-                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-            else:
-                # this doesnt get called, why? renamed groundpound?
-                self.write_instruction(address, b'\x94\x21\xFF\xF0'+b'\x7C\x08\x02\xA6')
-
-            # walljump ?
-            # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
-            # _ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
-
-            address = self.memory_addresses.address_wall_slide
-            if not ITEM.MOVEMENT.WallJump in unlocked_moves:
-                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-
-            else:
-                self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
-
-            address = self.memory_addresses.address_wall_jump
-            if not ITEM.MOVEMENT.WallJump in unlocked_moves:
-                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-
-            else:
-                self.write_instruction(address, b'\x94\x21\xFF\xE0')
-                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+            if not ITEM.MOVEMENT.GroundPound in slot_data_dont_rando:
+                address = self.memory_addresses.address_ground_pound
+                if not ITEM.MOVEMENT.GroundPound in unlocked_moves:
+                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+                else:
+                    # this doesnt get called, why? renamed groundpound?
+                    self.write_instruction(address, b'\x94\x21\xFF\xF0'+b'\x7C\x08\x02\xA6')
 
 
+            if not ITEM.MOVEMENT.WallJump in slot_data_dont_rando:
+                # walljump ?
+                # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
+                # _ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
+
+                address = self.memory_addresses.address_wall_slide
+                if not ITEM.MOVEMENT.WallJump in unlocked_moves:
+                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+
+                else:
+                    self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+
+                address = self.memory_addresses.address_wall_jump
+                if not ITEM.MOVEMENT.WallJump in unlocked_moves:
+                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, b'\x94\x21\xFF\xE0')
+                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
             # _ZN7dAcPy_c11checkCrouchEv      0x8012D490      f
             # _ZN9daYoshi_c11checkCrouchEv    0x8014DBB0
+            if not ITEM.MOVEMENT.Crouch in slot_data_dont_rando:
+                address = self.memory_addresses.address_crouch
+                if not ITEM.MOVEMENT.Crouch in unlocked_moves:
+                    self.write_instruction(address, b'\x38\x60\x00\x00')
+                    self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
+                else:
+                    self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+                address = self.memory_addresses.address_crouch_yoshi
+                if not ITEM.MOVEMENT.Crouch in unlocked_moves:
+                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
 
-            address = self.memory_addresses.address_crouch
-            if not ITEM.MOVEMENT.Crouch in unlocked_moves:
-                self.write_instruction(address, b'\x38\x60\x00\x00')
-                self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
-            else:
-                self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
-            address = self.memory_addresses.address_crouch_yoshi
-            if not ITEM.MOVEMENT.Crouch in unlocked_moves:
-                self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-
-            else:
-                self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
+                else:
+                    self.write_instruction(address, b'\x94\x21\xFF\xF0')
+                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
 
 
             # _ZN7dAcPy_c16checkEnableThrowEv 0x8012E6E0      f
             # _ZN7dAcPy_c15checkCarryThrowEv  0x8012E760      f
             # _ZN7dAcPy_c15checkCarryActorEP7dAcPy_c 0x8013A150
 
+            if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
+                #cary_blocks
+                address = self.memory_addresses.address_cary
+                if not ITEM.MOVEMENT.Carry in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_return)
 
-            #cary_blocks
-            address = self.memory_addresses.address_cary
-            if not ITEM.MOVEMENT.Carry in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, b'\x94\x21\xff\xf0')
 
-            else:
-                self.write_instruction(address, b'\x94\x21\xff\xf0')
+            if not ITEM.MOVEMENT.RedSwitch in slot_data_dont_rando:
+                # red switch
+                if not ITEM.MOVEMENT.RedSwitch in unlocked_moves:
+                    self.set_red_switch(b'\x00')  # reset red switch if not unlocked
 
-            # red switch
-            if not ITEM.MOVEMENT.RedSwitch in unlocked_moves:
-                self.set_red_switch(b'\x00')  # reset red switch if not unlocked
-
-            address_nostar = self.memory_addresses.yoshi_walk_speed
-            address_star = self.memory_addresses.yoshi_walk_star_speed
-            if not ITEM.MOVEMENT.Yoshi in unlocked_moves:
-                self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-                self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-            else:
-                self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
-                self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
+            if not ITEM.MOVEMENT.Yoshi in slot_data_dont_rando:
+                address_nostar = self.memory_addresses.yoshi_walk_speed
+                address_star = self.memory_addresses.yoshi_walk_star_speed
+                if not ITEM.MOVEMENT.Yoshi in unlocked_moves:
+                    self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                    self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+                else:
+                    self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
+                    self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
 
             if not ITEM.MOVEMENT.Swim in unlocked_moves:
                 if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
@@ -411,127 +415,135 @@ class NSMBWInterface():
             #        await self.kill_player()
             #    else:
             #        pass
+            if not ITEM.MOVEMENT.Climb in slot_data_dont_rando:
+                #climb_pole
+                address = self.memory_addresses.address_hang_pole
+                if not ITEM.MOVEMENT.Climb in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
 
-            #climb_pole
-            address = self.memory_addresses.address_hang_pole
-            if not ITEM.MOVEMENT.Climb in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
+                if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
+                    self.set_p_switch_timer(int_to_bytes(0,4))
 
-            if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
-                self.set_p_switch_timer(int_to_bytes(0,4))
+                if not ITEM.MOVEMENT.Star in unlocked_moves:
+                    self.set_star_timer(int_to_bytes(0,4))
 
-            if not ITEM.MOVEMENT.Star in unlocked_moves:
-                self.set_star_timer(int_to_bytes(0,4))
-
-            #climb_ladders
-            address = self.memory_addresses.address_hang_ladder
-            if not ITEM.MOVEMENT.Climb in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address, b"\x2c\x05" + PowerPCInstructions.reg_r0)
-            #return
-
-
-            # this causes game to crash / freez when climb fence
-            #climb_vine
-            #address_stand_still = self.memory_addresses.address_climb_vine_still
-            #address_fall = self.memory_addresses.address_climb_vine_fall
-            #if not "climb" in unlocked_moves:
-            #    self.write_instruction(address_stand_still, PowerPCInstructions.instru_return)
-            #    self.write_instruction(address_fall, PowerPCInstructions.instru_return)
-            #else:
-            #    self.write_instruction(address_stand_still, PowerPCInstructions.intru_stwu + b"\xff\xc0")
-            #    self.write_instruction(address_fall, PowerPCInstructions.intru_stwu + b"\xff\xc0")
-
-            #return
-            #swing_vine
-            address = self.memory_addresses.address_tarzan_vine
-            if not ITEM.MOVEMENT.Climb in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address, PowerPCInstructions.intru_stwu + b"\xff\xc0")
-
-            #return
-
-            address = self.memory_addresses.address_door
-            if not ITEM.MOVEMENT.Door in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff)
-            else:
-                self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
-
-            if not ITEM.MOVEMENT.QuestSwitch in unlocked_moves:
-                self.set_question_switch_timer(int_to_bytes(0,4))
+                #climb_ladders
+                address = self.memory_addresses.address_hang_ladder
+                if not ITEM.MOVEMENT.Climb in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, b"\x2c\x05" + PowerPCInstructions.reg_r0)
+                #return
 
 
-            # sneak
-            # causes game to freez
-            #address_sneak_walk = self.memory_addresses.address_kani_walk
-            #address_sneak_hang = self.memory_addresses.address_kani_hang
-            #if not "climb" in unlocked_moves:
-            #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
-            #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
-            #else:
-            #    self.write_instruction(address_sneak_walk, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffe0)
-            #    self.write_instruction(address_sneak_hang, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffd0)
+                # this causes game to crash / freez when climb fence
+                #climb_vine
+                #address_stand_still = self.memory_addresses.address_climb_vine_still
+                #address_fall = self.memory_addresses.address_climb_vine_fall
+                #if not "climb" in unlocked_moves:
+                #    self.write_instruction(address_stand_still, PowerPCInstructions.instru_return)
+                #    self.write_instruction(address_fall, PowerPCInstructions.instru_return)
+                #else:
+                #    self.write_instruction(address_stand_still, PowerPCInstructions.intru_stwu + b"\xff\xc0")
+                #    self.write_instruction(address_fall, PowerPCInstructions.intru_stwu + b"\xff\xc0")
 
-            #cary_shell
-            address = self.memory_addresses.address_carry_shell
-            if not ITEM.MOVEMENT.Carry in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address, PowerPCInstructions.intru_b + b'\xff\x50')
+                #return
+                #swing_vine
+                address = self.memory_addresses.address_tarzan_vine
+                if not ITEM.MOVEMENT.Climb in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.intru_stwu + b"\xff\xc0")
 
-            address = self.memory_addresses.address_pipe
-            if not ITEM.MOVEMENT.Pipe in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_return)
-            else:
-                self.write_instruction(address, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffc0)
+                #return
+            if not ITEM.MOVEMENT.Door in slot_data_dont_rando:
+                address = self.memory_addresses.address_door
+                if not ITEM.MOVEMENT.Door in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
+
+                if not ITEM.MOVEMENT.QuestSwitch in unlocked_moves:
+                    self.set_question_switch_timer(int_to_bytes(0,4))
 
 
-            address = self.memory_addresses.address_big_jump
-            if not ITEM.MOVEMENT.Jump in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_bne)
-            else:
-                self.write_instruction(address, PowerPCInstructions.instru_beq)
+                # sneak
+                # causes game to freez
+                #address_sneak_walk = self.memory_addresses.address_kani_walk
+                #address_sneak_hang = self.memory_addresses.address_kani_hang
+                #if not "climb" in unlocked_moves:
+                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
+                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
+                #else:
+                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffe0)
+                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffd0)
+
+            if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
+                #cary_shell
+                address = self.memory_addresses.address_carry_shell
+                if not ITEM.MOVEMENT.Carry in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.intru_b + b'\xff\x50')
+
+            if not ITEM.MOVEMENT.Pipe in slot_data_dont_rando:
+                address = self.memory_addresses.address_pipe
+                if not ITEM.MOVEMENT.Pipe in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_return)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffc0)
+
+            if not ITEM.MOVEMENT.Jump in slot_data_dont_rando:
+                address = self.memory_addresses.address_big_jump
+                if not ITEM.MOVEMENT.Jump in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_bne)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.instru_beq)
 
             button_off_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x00'
             button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
 
+            if not ITEM.MOVEMENT.run in slot_data_dont_rando:
+                address = self.memory_addresses.address_run
+                if not ITEM.MOVEMENT.Run in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_lhz + b'\x03\xff\xff')
+                else:
+                    self.write_instruction(address, button_on_instru)
 
-            address = self.memory_addresses.address_run
-            if not ITEM.MOVEMENT.Run in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.instru_lhz + b'\x03\xff\xff')
-            else:
-                self.write_instruction(address, button_on_instru)
+            if not ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando:
+                address = self.memory_addresses.address_button_right
+                if not ITEM.MOVEMENT.ButtonRight in unlocked_moves:
+                    self.write_instruction(address, button_off_instru)
+                else:
+                    self.write_instruction(address, button_on_instru)
+            if not ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando:
+                address = self.memory_addresses.address_button_left
+                if not ITEM.MOVEMENT.ButtonLeft in unlocked_moves:
+                    self.write_instruction(address, button_off_instru)
+                else:
+                    self.write_instruction(address, button_on_instru)
+            if not ITEM.MOVEMENT.ButtonUp in slot_data_dont_rando:
+                address = self.memory_addresses.address_button_up
+                if not ITEM.MOVEMENT.ButtonUp in unlocked_moves:
+                    self.write_instruction(address, button_off_instru)
+                else:
+                    self.write_instruction(address, button_on_instru)
+            if not ITEM.MOVEMENT.ButtonDown in slot_data_dont_rando:
+                address = self.memory_addresses.address_button_down
+                if not ITEM.MOVEMENT.ButtonDown in unlocked_moves:
+                    self.write_instruction(address, button_off_instru)
+                else:
+                    self.write_instruction(address, button_on_instru)
 
-            address = self.memory_addresses.address_button_right
-            if not ITEM.MOVEMENT.ButtonRight in unlocked_moves:
-                self.write_instruction(address, button_off_instru)
-            else:
-                self.write_instruction(address, button_on_instru)
-            address = self.memory_addresses.address_button_left
-            if not ITEM.MOVEMENT.ButtonLeft in unlocked_moves:
-                self.write_instruction(address, button_off_instru)
-            else:
-                self.write_instruction(address, button_on_instru)
-            address = self.memory_addresses.address_button_up
-            if not ITEM.MOVEMENT.ButtonUp in unlocked_moves:
-                self.write_instruction(address, button_off_instru)
-            else:
-                self.write_instruction(address, button_on_instru)
-            address = self.memory_addresses.address_button_down
-            if not ITEM.MOVEMENT.ButtonDown in unlocked_moves:
-                self.write_instruction(address, button_off_instru)
-            else:
-                self.write_instruction(address, button_on_instru)
 
-            address = self.memory_addresses.address_spinjump
-            if not ITEM.MOVEMENT.SpinJump in unlocked_moves:
-                self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0000)
-            else:
-                self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0017)
+            if not ITEM.MOVEMENT.SpinJump in slot_data_dont_rando:
+                address = self.memory_addresses.address_spinjump
+                if not ITEM.MOVEMENT.SpinJump in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0000)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0017)
 
         if self.should_clear >= 1:
             self.clear_cache()

@@ -1,11 +1,12 @@
 from .bases import NSMBWWorld
-from ..options import RandomizeMovment, RandomizePowerups, LogicDifficulty
+from ..options import RandomizeMovement, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups
 from ..Common import *
 
 class TestRawRules(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovment.option_off,
+        "randomize_movement" : RandomizeMovement.option_off,
         "randomize_powerups" : RandomizePowerups.option_on,
+        "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_normal,
         "bowser_star_unlock" : 100,
@@ -19,7 +20,7 @@ class TestRawRules(NSMBWWorld):
 
 
 
-    def test_1_1(self) -> None:
+    def test_1_1(self):
         """Test some of 1-1"""
         self.collect_by_name("World1")
 
@@ -27,12 +28,11 @@ class TestRawRules(NSMBWWorld):
         complete1_1 = self.world.get_location(name_level(1, 1))
         sc_1_1_3  = name_starcoin(1, 1, 3)
 
-        propeller = "Propeller_Mushroom"
 
         self.assertTrue(complete1_1.can_reach(self.multiworld.state))
         self.assertFalse(self.world.get_location(sc_1_1_3).can_reach(self.multiworld.state))
 
-        self.assertAccessDependency([sc_1_1_3], [[propeller]], only_check_listed=True)
+        self.assertAccessDependency([sc_1_1_3], [[ITEM.POWERUP.Propeller_Mushroom]], only_check_listed=True)
 
     def test_hint_movie(self):
         self.assertFalse(self.world.get_location("Hintmovie01").can_reach(self.multiworld.state))

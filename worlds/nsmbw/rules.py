@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest import case
 
 from rule_builder import rules
 from rule_builder.options import OptionFilter
@@ -52,67 +53,78 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     #        regions.append(world.get_region(f"World_{i}_2"))
 
     # this is transcribing raw ruels-------------------------------------
-    easy_rules, hard_rules = specific_level_requierments(world)
-    requierments = hard_rules.copy()
+    level_req = specific_level_requierments(world)
     if world.options.logic_difficulty.value == LogicDifficulty.option_normal:
-        assert len(easy_rules) == len(hard_rules) == len(LEVELS_PER_WORLD), "Make sure lists is of correct size"
+        assert len(level_req) == len(LEVELS_PER_WORLD), "Make sure lists is of correct size"
         for world_num in range(9):
-            assert len(easy_rules[world_num]) == len(hard_rules[world_num]) == LEVELS_PER_WORLD[world_num], "Make sure lists is of correct size"
+            assert len(level_req[world_num]) == LEVELS_PER_WORLD[world_num], "Make sure lists is of correct size"
             for level_num in range(LEVELS_PER_WORLD[world_num]):
-                requierments[world_num][level_num][0] = hard_rules[world_num][level_num][0] & easy_rules[world_num][level_num][0]
-                for sc in range(3):
-                    requierments[world_num][level_num][1][sc] = hard_rules[world_num][level_num][1][sc] & \
-                                                            easy_rules[world_num][level_num][1][sc]
-                if (world_num+1,level_num+1, 2) in SECRET_EXIT:
-                    requierments[world_num][level_num][2] = hard_rules[world_num][level_num][2] & \
-                                                            easy_rules[world_num][level_num][2]
-    elif world.options.logic_difficulty.value == LogicDifficulty.option_difficult:
-        requierments = hard_rules
-    level_req = requierments
+                assert len(level_req[world_num][level_num]) == 2 + ((world_num+1,level_num+1, 2) in SECRET_EXIT), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + ((world_num+1,level_num+1, 2) in SECRET_EXIT)} "
+                assert len(level_req[world_num][level_num][1]) == 3, f" Star coins for {name_base(world_num+1, level_num+1)} has wrong lenth {len(level_req[world_num][level_num][1])}"
+                # should maybe assert that is rule
+                for sc in range(3):pass
+                if (world_num+1,level_num+1, 2) in SECRET_EXIT:pass
     # transcribing ends--------------------------------
 
 
     level_connections = get_levlel_connections()
 
+
+    if len(world.star_coin_req_per_world_9_level) == 0:
+        world.star_coin_req_per_world_9_level = list(0 for _ in range(8))
+        match world.options.world9_unlock_condition.value:
+            case World9UnlockCondition.option_linear:
+                for i in range(8):
+                    world.star_coin_req_per_world_9_level[i] = 20*(i+1)
+            case World9UnlockCondition.option_gaussian:
+                for i in range(8):
+                    world.star_coin_req_per_world_9_level[i] = int(round( world.random.normalvariate(20*8/2,40)))
+                    if world.star_coin_req_per_world_9_level[i] <0:
+                        world.star_coin_req_per_world_9_level[i] = -world.star_coin_req_per_world_9_level[i]
+                    if world.star_coin_req_per_world_9_level[i] > 231:
+                        world.star_coin_req_per_world_9_level[i] = 231
+            case _:
+                raise ValueError(f"Case {world.options.world9_unlock_condition.value} is not valid")
+
     #sets basic rules for each level
     #
-    levels_per_world = [8, 8, 8, 9, 8, 9, 9, 10, 8]
     first_level_second_half = [4,4,4,4,4,5,4,4]
     for world_num in range(1, 9+1):  # worlds
-        for level_num in range(1, levels_per_world[world_num - 1]+1):
-            flagpole = world.get_location(f"World{world_num}_level{level_num}_flagpole")
+        for level_num in range(1, LEVELS_PER_WORLD[world_num - 1]+1):
+            flagpole = world.get_location(f"{name_base(world_num, level_num)}")
             connection_rules = rules.False_()
             for connection in level_connections[world_num-1][level_num-1]:
-                connection_rules |= rules.Has(f"World{world_num}_level{connection}_cleared")
+                connection_rules |= rules.Has(name_base(world_num, connection))
             if connection_rules == rules.False_(): # maybe have to use ==, not sure
                 connection_rules = rules.Has(f"World{world_num}", count=1)
             if world_num != 9:
                 if level_num == first_level_second_half[world_num-1]:
                     connection_rules &= rules.Has(f"World{world_num}", count=2)
             elif world_num == 9:
-                clear_rule &= rules.Has(ITEM.StarCoin,count=10*level_num)
+                assert len(world.star_coin_req_per_world_9_level) == 8
+                clear_rule &= rules.Has(ITEM.StarCoin,count=world.star_coin_req_per_world_9_level[level_num-1])
 
-            clear_rule = level_req[world_num-1][level_num-1][0] | (rules.Has("glitched_logic") & hard_rules[world_num-1][level_num-1][0])
+            clear_rule = level_req[world_num-1][level_num-1][0]
             world.set_rule(flagpole, connection_rules & clear_rule)
 
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
                 star_coin = world.get_location(name_starcoin(world_num, level_num, sc))
-                sc_logic = level_req[world_num - 1][level_num - 1][1][sc - 1] | (rules.Has("glitched_logic") & hard_rules[world_num - 1][level_num - 1][1][sc - 1])
-                world.set_rule(star_coin,rules.Has(f"World{world_num}_level{level_num}_cleared") & sc_logic )
+                sc_logic = level_req[world_num - 1][level_num - 1][1][sc - 1]
+                world.set_rule(star_coin,rules.Has(name_base(world_num, level_num)) & sc_logic )
 
 
 
             if world.options.include_level_completion:
                 completed_level = world.get_location(name_level(world_num, level_num)) # reel location
-                world.set_rule(completed_level, rules.Has(f"World{world_num}_level{level_num}_cleared")) #event location
+                world.set_rule(completed_level, rules.Has(name_base(world_num, level_num))) #event location
 
         if world_num != 9:
-            ofset = 1 if world_num in [7,8] else 0
+            offset = 1 if world_num in [7,8] else 0
             loc_name = world.get_location(f"World{world_num}_tower")
-            world.set_rule(loc_name, rules.Has(f"World{world_num}_level{7+ofset}_cleared"))
+            world.set_rule(loc_name, rules.Has(name_base(world_num, 7+offset)))
             loc_name = world.get_location(f"World{world_num}_castle")
-            world.set_rule(loc_name, rules.Has(f"World{world_num}_level{8+ofset}_cleared"))
+            world.set_rule(loc_name, rules.Has(name_base(world_num, 8+offset)))
 
     HM_COUNT = 65
     hm_req = specific_hintmovie_requierments(world)
@@ -122,7 +134,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             location = world.get_location(name_hintmovie(hm_num))
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-            hm_rule = ((rules.Has(ITEM.StarCoin, count=total_cost)|(rules.Has(ITEM.GlitchedLogic) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(f"World{hm_req[hm_num-1][1][0]}_level{hm_req[hm_num-1][1][1]}_cleared") )
+            hm_rule = ((rules.Has(ITEM.StarCoin, count=total_cost)|(rules.Has(ITEM.GlitchedLogic) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
             world.set_rule(location, hm_rule)
 
     if world.options.include_shortcuts.value == True:
@@ -131,10 +143,10 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             level_num = secret_exit[1]
             secret_exit_loc = world.get_location(name_secret(world_num, level_num))
             if secret_exit[2] == 2:
-                world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") &
+                world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) &
                                level_req[world_num - 1][level_num - 1][2])
             elif secret_exit[2] == 1:
-                world.set_rule(secret_exit_loc, rules.Has(f"World{world_num}_level{level_num}_cleared") )
+                world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) )
     for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))
         worlds_list = list(f"World{j}" for j in range(1,9+1))
@@ -144,13 +156,13 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         # hades soft logic thats ored with glitched logic, but also make sure you have climb
         invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic")
         if i < 5:
-            invent_rule &= rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovment, RandomizeMovment.option_off)]
+            invent_rule &= rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovement, RandomizeMovement.option_off)]
         world.set_rule(invent_pow, invent_rule)
         # soft logic, gain access when have new worlds
 
     # sets logic for completion condition location
     bowser_defeat_loc = world.get_location("Bowser Defeated")
-    reach_bowser_rule = rules.Has(f"World{8}_level{9}_cleared")
+    reach_bowser_rule = rules.Has(name_base(8,9))
     world.set_rule(bowser_defeat_loc, reach_bowser_rule)
 
 

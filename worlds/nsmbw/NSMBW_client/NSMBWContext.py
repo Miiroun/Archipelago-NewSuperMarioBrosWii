@@ -15,20 +15,19 @@ from ..Utils import int_to_bytes, bytes_to_int, map_nd
 
 from ..locations import LOCATION_NAME_TO_ID, LEVELS_PER_WORLD, SECRET_EXIT
 from settings import get_settings
-from ..options import RandomizeMovment
+from ..options import RandomizeMovement
 from ..Common import *
-from ...sc2.mission_order import slot_data
 
 tracker_loaded = False
 
 try:
     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, \
-    ClientCommandProcessor, CommonContext, asyncio, server_loop, updateTracker
+    TrackerCommandProcessor as SuperClientCommandProcessor, CommonContext, asyncio, server_loop, updateTracker
 
     tracker_loaded = True
     print("Tracker is loaded")
 except ModuleNotFoundError:
-    from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor, CommonContext, asyncio, server_loop
+    from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, ClientCommandProcessor as SuperClientCommandProcessor, CommonContext, asyncio, server_loop
     print("Tracker was not found so is not loaded")
 logger = logging.getLogger("Client")
 
@@ -41,7 +40,7 @@ class ModifiedState(IntEnum):
     MODALLWORLDS = 2
 
 
-class NSMBWCommandProcessor(ClientCommandProcessor):
+class NSMBWCommandProcessor(SuperClientCommandProcessor):
     ctx: "NSMBWContext"
 
     def __init__(self, ctx: "NSMBWContext"):
@@ -68,6 +67,10 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         logger.info(message)
         self.ctx.notification_manager.queue_notification(message)
 
+    def _cmd_deathlink_group(self, key : str = ""):
+        """Update the deathlink group """
+        self.ctx.update_death_link_group(key)
+
     def _cmd_reapply_checks(self):
         """
         Do this command if some checks haven't been applied because of wrong cache.
@@ -75,7 +78,8 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         self.ctx.items_handled = []
         self.ctx.locations_handled = []
         self.ctx.prossesed_inventory_powerup_locations = 0
-        self.ctx.items_handled = -1
+        self.ctx.handled_num = -1
+        self.ctx.prev_sent_locations = set()
 
     if not is_frozen():
         def _cmd_dev(self, key: str = ""):
@@ -139,7 +143,7 @@ class NSMBWCommandProcessor(ClientCommandProcessor):
         """
         Gives you a list of which movement you have and have not unlocked
         """
-        if self.ctx.slot_data["randomize_movement"] != RandomizeMovment.option_off:
+        if self.ctx.slot_data["randomize_movement"] != RandomizeMovement.option_off:
             logger.info(f"You currently have {self.ctx.unlocked_moves}")
             logger.info(f"And you are missing {set(MOVEMENT_UNLOCKS) - set(self.ctx.unlocked_moves)}")
         else:
@@ -168,6 +172,7 @@ class NSMBWContext(SuperContext):
     dolphin_sync_task: Optional[asyncio.Task[Any]] = None
     notification_manager: NotificationManager
     death_link_enabled : bool = False
+    death_link_group : str = ""
     is_pending_death_link_reset = False
     command_processor = NSMBWCommandProcessor
     apnsmbw_file: Optional[str] = None
@@ -219,6 +224,7 @@ class NSMBWContext(SuperContext):
         self.prev_sent_locations = set()
         self.prossessed_errors = []
 
+        self.death_link_group = ""
 
         self.handled_num = -1
 
@@ -254,7 +260,9 @@ class NSMBWContext(SuperContext):
         elif cmd == "ReceivedItems":
             pass
         elif cmd == "Bounced":
-            pass
+            tags = args.get("tags", [])
+            if f"DeathLink{self.death_link_group}" in tags and self.last_death_link != args["data"]["time"]:
+                self.on_deathlink(args["data"])
         elif cmd == "PrintJSON":
             pass
         elif cmd == "Retrieved":
@@ -493,11 +501,12 @@ class NSMBWContext(SuperContext):
         await self.check_hintmovies()
         await self.check_starter_locations()
         await self.check_inventory_location()
+        await self.check_starcoins_in_level()
 
     # this code is for checking if the star coin was in level, but it was buggy so changed to on world collect
     # THIS IS NOT CURRENLY RUN
     async def check_starcoins_in_level(self):
-        if slot_data["starcoin_collect_immediately"] == 1:
+        if self.slot_data["starcoin_collect_immediately"] == 1:
             sc_statuses = self.game_interface.get_sc()
             checked_locations = []
             for n in range(0, 3):
@@ -653,10 +662,11 @@ class NSMBWContext(SuperContext):
 
 
                 #castle logic
+                # and logic for completing world
                 if world_num != 8:
                     level_name =f"World{world_num}_castle"
                     level_num = 8 # should make dynamic
-                    level_num += 1 if world_num in  [7,8] else 0 #4,6,
+                    level_num += 1 if world_num in  [4,6,7,8] else 0 #4,6,
                     level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
                     if level_stats & 0x30 > 0:
                         if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
@@ -778,7 +788,7 @@ class NSMBWContext(SuperContext):
         await self.handle_unlocked_worlds(self.unlocked_worlds)
         await self.handle_is_world_unlocked(self.unlocked_worlds)
         await self.handle_set_sc_count(self.starcoin_count)
-        await self.game_interface.handle_unlocked_moves(self.unlocked_moves,self.slot_data["randomize_movement"])
+        await self.game_interface.handle_unlocked_moves(self.unlocked_moves,self.slot_data)
         await self.check_level_completion(self.unlocked_worlds)
         await self.handle_traps(self.traps)
         await self.handle_filler(self.filler)
@@ -876,11 +886,11 @@ class NSMBWContext(SuperContext):
         elif current_world_num == 9:
             if self.moded_levelstats == ModifiedState.UNMODIFIED:
                 self.moded_levelstats = ModifiedState.MODWOLD1_8
-                for world_num in range(1, 8+1):
-                    unlocked_level = self.starcoin_count >= (world_num * 10)
+                for level_num in range(1, 8+1):
+                    unlocked_level = self.starcoin_count >= self.slot_data["star_coin_req_per_world_9_level"][level_num-1]
                     data = b'\x07' if unlocked_level else b'\x00'
-                    for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
-                        self.game_interface.set_level_stats(world_num,level_num, data)
+                    for world_level_num in range(1,LEVELS_PER_WORLD[level_num-1]+1):
+                        self.game_interface.set_level_stats(level_num,world_level_num, data)
         elif current_world_num != 9:
             #this removes modification
            if self.moded_levelstats != ModifiedState.UNMODIFIED:
@@ -974,6 +984,19 @@ class NSMBWContext(SuperContext):
                     self.is_pending_death_link_reset = True
                 elif (not is_dead) and self.is_pending_death_link_reset == True:
                     self.is_pending_death_link_reset = False
+    async def send_death(self, death_text: str = ""):
+        """Helper function to send a deathlink using death_text as the unique death cause string."""
+        if self.server and self.server.socket:
+            logger.info("DeathLink: Sending death to your friends...")
+            self.last_death_link = time.time()
+            await self.send_msgs([{
+                "cmd": "Bounce", "tags": [f"DeathLink{self.death_link_group}"],
+                    "data": {
+                    "time": self.last_death_link,
+                    "source": self.player_names[self.slot],
+                    "cause": death_text
+                }
+            }])
 
     async def handle_is_world_unlocked(self, unlocked_worlds : list):
         # this function currenly does nothing since it should now be imposible to be in a world you dont have access to
@@ -1069,6 +1092,25 @@ class NSMBWContext(SuperContext):
             await self.send_msgs([{"cmd": "LocationChecks", "locations": list(set_checked_locations)}])
             self.prev_sent_locations |= set_checked_locations
 
+    async def update_death_link(self, death_link: bool):
+        """Helper function to set Death Link connection tag on/off and update the connection if already connected."""
+        old_tags = self.tags.copy()
+        if death_link:
+            self.tags.add(f"DeathLink{self.death_link_group}")
+        else:
+            self.tags -= {f"DeathLink{self.death_link_group}"}
+        if old_tags != self.tags and self.server and not self.server.socket.closed:
+            await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
+    async def update_death_link_group(self, group_name: str):
+        """Helper function to change the Death Link group, updating the connection tag as needed if already connected."""
+        death_link: bool = f"DeathLink{self.death_link_group}" in self.tags
+        if death_link:
+            self.tags -= {f"DeathLink{self.death_link_group}"}
+        self.death_link_group = group_name
+        if death_link:
+            self.tags.add(f"DeathLink{self.death_link_group}")
+            if self.server and not self.server.socket.closed:
+                await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
 
 
 #end of class

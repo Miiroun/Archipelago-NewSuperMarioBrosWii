@@ -206,3 +206,8 @@ Thumbs.db
 /worlds/tracker/
 /worlds/nsmbw/NSMBW_client/wii-code-tools/address-map.txt
 /nsmbw/
+/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/_maps/
+/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/_build/
+/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/_build
+*.o
+/nsmbw/nsmbw_saves

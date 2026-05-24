@@ -4,3 +4,4 @@ build.ninja
 bin
 *.o
 *.o.d
+/_build/
