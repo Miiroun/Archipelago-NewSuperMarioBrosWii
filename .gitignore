@@ -199,3 +199,7 @@ _speedups.html
 .LSOverride
 Thumbs.db
 [Dd]esktop.ini
+/fuzz_output/
+/worlds/tracker/
+/worlds/nsmbw/
+/nsmbw/
