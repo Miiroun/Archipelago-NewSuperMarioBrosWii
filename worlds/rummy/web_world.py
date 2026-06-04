@@ -6,7 +6,7 @@ from .options import option_groups, option_presets
 
 
 # For our game to display correctly on the website, we need to define a WebWorld subclass.
-class APQuestWebWorld(WebWorld):
+class RummyWebWorld(WebWorld):
     # We need to override the "game" field of the WebWorld superclass.
     # This must be the same string as the regular World class.
     game = RUMMY_NAME

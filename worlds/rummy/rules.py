@@ -40,7 +40,7 @@ def set_all_entrance_rules(world: RummyWorld) -> None:
 
 def set_all_location_rules(world: RummyWorld) -> None:
     for card in world.card_order:
-        world.set_rule(world.get_location(card.get_name()), Has(card.color) & Has(card.symbol))
+        world.set_rule(world.get_location(card.get_name()), Has(name_color_item(card.color)) & Has(name_symbol_item(card.symbol)))
 
 
     create_card_order(world)
@@ -56,5 +56,7 @@ def set_all_location_rules(world: RummyWorld) -> None:
             world.set_rule(world.get_location(get_merge_name(i)), _rule)
 
 def set_completion_condition(world: RummyWorld) -> None:
+    _rule = Has(MOVES.STRAIT, MAX_NUMBERS) & Has(MOVES.MELD, MAX_COLORS) & Has(ITEMS.CARDS, (len(world.card_order)//card_for_item)-1)
+    world.set_rule(world.get_location("Victory"), _rule | Has(world.glitches_item_name))
     world.set_completion_rule(Has("Victory"))
 

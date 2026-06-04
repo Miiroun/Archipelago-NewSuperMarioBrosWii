@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from worlds.rummy import RummyWorld
@@ -17,6 +17,13 @@ class TRAPS(StrEnum):
     SHUFFLE = "Shuffle"
     PROGRESS = "Progress TRAP"
 
+class MOVES(StrEnum):
+    STRAIT = "progressive strait"
+    MELD = "progressive meld"
+
+class ITEMS(StrEnum):
+    CARDS = "progressive card"
+
 def get_merge_name(num : int) -> str:
     return f"Merge {num : 04}"
 
@@ -25,8 +32,8 @@ class RummyCard(object):
     symbol : str
 
     def __init__(self, color, symbol) -> None:
-        assert color in COLORS
-        assert symbol in SYMBOLS
+        assert color in COLORS, f"color {color} not in {COLORS}"
+        assert symbol in SYMBOLS, f"symbol {symbol} not in {SYMBOLS}"
         self.color = str(color)
         self.symbol = str(symbol)
 
@@ -36,24 +43,39 @@ class RummyCard(object):
     def get_name(self) -> str:
         return f"CARD: {self.color}-{self.symbol}"
 
-COLORS = ["RED", "GREEN", "BLUE", "YELLOW"]
+    def __eq__(self, other):
+        if not isinstance(other, RummyCard):
+            return NotImplemented            # don't attempt to compare against unrelated types
+        return self.color == other.color and self.symbol == other.symbol
+    def __hash__(self):
+        return hash((self.color, self.symbol))
+    def __repr__(self):
+        return self.get_name()
+    def __str__(self):
+        return self.get_name()
+
+    @staticmethod
+    def from_string(data : str) -> Any:
+        split = data.split(" ")[1].split("-")
+        color = split[0]
+        symbol = split[1]
+        return RummyCard(color, symbol)
+
+
+COLORS = ["RED", "BLUE", "BLACK", "WHITE"] #, "GREEN", "YELLOW"
+assert len(COLORS) == MAX_COLORS
 
 SYMBOLS = list([str(i) for i in range(1,MAX_NUMBERS+1)])
-
+assert len(SYMBOLS) == MAX_NUMBERS
 
 def name_color_item(color : str) -> str:
-    assert color in COLORS
+    assert color in COLORS, f"name {color} not in {COLORS}"
     return f"Color: {color}"
 def name_symbol_item(symbol : str) -> str:
-    assert symbol in SYMBOLS
+    assert symbol in SYMBOLS, f"name {symbol} not in SYMBOLS"
     return f"Symbol: {symbol}"
 
-class MOVES(StrEnum):
-    STRAIT = "progressive strait"
-    MELD = "progressive meld"
 
-class ITEMS(StrEnum):
-    CARDS = "progressive card"
 
 def enum_to_list(enum) -> list:
     return [e.value for e in enum]

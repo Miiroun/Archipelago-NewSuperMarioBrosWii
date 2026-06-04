@@ -19,25 +19,20 @@ class RummyWorld(CachedRuleBuilderWorld):
 
     game = RUMMY_NAME
 
-    # The WebWorld is a definition class that governs how this world will be displayed on the website.
-    web = web_world.APQuestWebWorld()
+    web = web_world.RummyWebWorld()
 
     settings: RummySettings
 
-    # This is how we associate the options defined in our options.py with our world.
-    # (Note: options.py has been imported as "rummy_options" at the top of this file to avoid a name conflict)
     options_dataclass = rummy_options.RummyOptions
-    options: rummy_options.RummyOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
+    options: rummy_options.RummyOptions
 
-    # Our world class must have a static location_name_to_id and item_name_to_id defined.
-    # We define these in regions.py and items.py respectively, so we just set them here.
     location_name_to_id = locations.LOCATION_NAME_TO_ID
     item_name_to_id = items.ITEM_NAME_TO_ID
 
     location_name_groups = locations.LOCATION_NAME_GROUPS
     item_name_groups  = items.ITEM_NAME_GROUPS
 
-    origin_region_name = "rummy"
+    origin_region_name = RUMMY_REGION
 
     topology_present = True
 
@@ -57,13 +52,17 @@ class RummyWorld(CachedRuleBuilderWorld):
         items.create_all_items(self)
 
     def create_item(self, name: str) -> items.RummyItem:
+        assert name != "1" and name != "4", "numbers are not valid names"
+        assert name != "BLUE", "colors are not valid names"
         return items.create_item_with_correct_classification(self, name)
 
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
     def fill_slot_data(self) -> Mapping[str, Any]:
-        return {}#self.options.as_dict()
+        slot_data = {}#self.options.as_dict()
+        slot_data["card_order"] = list(map(str, self.card_order))
+        return slot_data
 
     def overwrite_options(self, slot_data: dict[str, Any]):
         pass

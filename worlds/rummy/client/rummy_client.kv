@@ -1,0 +1,61 @@
+<ConfettiView>:
+    size_hint: None, None
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+    spacing: 0
+    padding: 0
+
+<RummyGrid>:
+    cols: 12
+    rows: 11
+    spacing: 0
+    padding: 0
+    size_hint: None, None
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
+<RummyGameView>:
+    RelativeLayout:
+        id: game_container
+
+<RummyControlsView>:
+    Label:
+        markup: True
+        font_size: "20sp"
+        valign: "middle"
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        text:
+            """[b]Controls:[/b]
+
+            Click to move blocks around
+            CTRL CLICK to merge
+            SHIFT CLICK to separate
+            """
+
+<VolumeSliderView>:
+    orientation: "horizontal"
+    size_hint: 1, None
+    padding: 0
+    height: 50
+
+    Label:
+        size_hint: None, 1
+        text: "Volume:"
+
+    Slider:
+        id: volume_slider
+        size_hint: 1, 1
+        min: 0
+        max: 100
+        step: 1
+        value: 50
+        orientation: "horizontal"
+
+    Label:
+        size_hint: None, 1
+        text: str(int(volume_slider.value))
+
+
+<RummyCardWidget>:
+    drag_rectangle: self.x, self.y, self.width, self.height
+    #    drag_rectangle: self.x, self.y, 64, 96
+    drag_timeout: 10000000
+    drag_distance: 0

@@ -10,10 +10,10 @@ if TYPE_CHECKING:
 
 
 ITEM_NAME_TO_ID = {
-    ITEMS.CARDS : 101
+    ITEMS.CARDS.value : 101
 }
 DEFAULT_ITEM_CLASSIFICATIONS = {
-    ITEMS.CARDS : ItemClassification.progression
+    ITEMS.CARDS.value : ItemClassification.progression
 }
 ITEM_NAME_GROUPS = {}
 
@@ -32,7 +32,7 @@ for i in range(len(enum_to_list(MOVES))):
 
 
 
-ITEM_NAME_GROUPS.update({"COLORS" : set(COLORS), "SYMBOLS" : set(SYMBOLS), "TRAPS" : set(TRAPS)})
+ITEM_NAME_GROUPS.update({"COLORS" : set(map(name_color_item,COLORS)), "SYMBOLS" : set(map(name_symbol_item,SYMBOLS)), "TRAPS" : set(enum_to_list(TRAPS)), "MOVES" : set(enum_to_list(MOVES))})
 
 
 class RummyItem(Item):
@@ -40,7 +40,7 @@ class RummyItem(Item):
 
 
 def get_random_filler_item_name(world: RummyWorld) -> str:
-    return str( world.random.choice(list(TRAPS)) )
+    return str( world.random.choice(enum_to_list(TRAPS)) )
 
 
 def create_item_with_correct_classification(world: RummyWorld, name: str) -> RummyItem:
@@ -54,9 +54,11 @@ def create_all_items(world: RummyWorld) -> None:
     itempool: list[Item] = []
 
     #TODO should remove the once that push precollected
-    itempool += [world.create_item(ITEMS.CARDS) for _ in range(1,(MAX_NUMBERS * MAX_COLORS+1)//card_for_item)]
-    itempool += [world.create_item(symbol) for symbol in SYMBOLS]
-    itempool += [world.create_item(color) for color in COLORS]
+    itempool += [world.create_item(ITEMS.CARDS.value) for _ in range(1,(MAX_NUMBERS * MAX_COLORS+1)//card_for_item)]
+    itempool += [world.create_item(name_symbol_item(symbol)) for symbol in SYMBOLS]
+    itempool += [world.create_item(name_color_item(color)) for color in COLORS]
+    itempool += [world.create_item(MOVES.MELD) for _ in range(MAX_COLORS)]
+    itempool += [world.create_item(MOVES.STRAIT) for _ in range(MAX_NUMBERS)]
 
 
 
@@ -71,7 +73,7 @@ def create_all_items(world: RummyWorld) -> None:
 
 
     for _ in range(3):
-        world.push_precollected(world.create_item(ITEMS.CARDS))
+        world.push_precollected(world.create_item(ITEMS.CARDS.value))
     world.push_precollected(world.create_item(name_symbol_item(world.random.choice(SYMBOLS))))
     world.push_precollected(world.create_item(name_color_item(world.random.choice(COLORS))))
     world.push_precollected(world.create_item(world.random.choice(enum_to_list(MOVES))))

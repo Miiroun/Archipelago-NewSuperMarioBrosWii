@@ -10,3 +10,20 @@ config file.
 
 
 ## What rules does a tile need to follow
+
+
+
+## Credit
+Miiroun
+- for developing
+
+NewSoupVi
+- Developing AP-quest which large parts of the code bas is based on
+
+KabGames
+- design of playing cards
+- https://kaboff.itch.io/cards-pixel-art-pack-64x96
+
+
+# AI
+The only AI used is pycharm-linter
