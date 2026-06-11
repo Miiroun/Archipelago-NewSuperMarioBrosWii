@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
@@ -13,7 +14,7 @@ ITEM_NAME_TO_ID = {
     ITEMS.CARDS.value : 101
 }
 DEFAULT_ITEM_CLASSIFICATIONS = {
-    ITEMS.CARDS.value : ItemClassification.progression
+    ITEMS.CARDS.value : ItemClassification.progression_skip_balancing#ItemClassification.progression
 }
 ITEM_NAME_GROUPS = {}
 
@@ -54,14 +55,21 @@ def create_all_items(world: RummyWorld) -> None:
     itempool: list[Item] = []
 
     #TODO should remove the once that push precollected
-    itempool += [world.create_item(ITEMS.CARDS.value) for _ in range(1,(MAX_NUMBERS * MAX_COLORS+1)//card_for_item)]
-    itempool += [world.create_item(name_symbol_item(symbol)) for symbol in SYMBOLS]
-    itempool += [world.create_item(name_color_item(color)) for color in COLORS]
-    itempool += [world.create_item(MOVES.MELD) for _ in range(MAX_COLORS)]
-    itempool += [world.create_item(MOVES.STRAIT) for _ in range(MAX_NUMBERS)]
+    itempool += [world.create_item(ITEMS.CARDS.value) for _ in range(1, math.ceil(((MAX_NUMBERS * MAX_COLORS) * COPYS_OF_CARDS - NUMBER_STARTING_CARDS +1)/CARD_PER_ITEM))]
+    #itempool += [world.create_item(name_symbol_item(symbol)) for symbol in SYMBOLS]
+    #itempool += [world.create_item(name_color_item(color)) for color in COLORS]
+    itempool += [world.create_item(MOVES.MELD) for _ in range(2)]
+    itempool += [world.create_item(MOVES.STRAIT) for _ in range(3)]
 
 
 
+
+    # creates early items
+    early_items_list = []
+    early_items_list += enum_to_list(MOVES)
+    early_items_list += [ITEMS.CARDS.value]
+    for item in early_items_list:
+        world.multiworld.early_items[world.player][item] = 2
 
 
 
@@ -72,10 +80,12 @@ def create_all_items(world: RummyWorld) -> None:
     world.multiworld.itempool += itempool
 
 
-    for _ in range(3):
+    for _ in range(NUMBER_STARTING_CARDS):
         world.push_precollected(world.create_item(ITEMS.CARDS.value))
-    world.push_precollected(world.create_item(name_symbol_item(world.random.choice(SYMBOLS))))
-    world.push_precollected(world.create_item(name_color_item(world.random.choice(COLORS))))
-    world.push_precollected(world.create_item(world.random.choice(enum_to_list(MOVES))))
+    #world.push_precollected(world.create_item(name_symbol_item(world.random.choice(SYMBOLS))))
+    #world.push_precollected(world.create_item(name_color_item(world.random.choice(COLORS))))
+
+    #this has been moved to rules
+    #world.push_precollected(world.create_item(world.random.choice(enum_to_list(MOVES))))
 
 

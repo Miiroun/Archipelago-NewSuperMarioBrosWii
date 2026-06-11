@@ -10,7 +10,9 @@ RUMMY_REGION = "rummy"
 
 MAX_COLORS = 4
 MAX_NUMBERS = 13
-card_for_item = 5
+CARD_PER_ITEM = 3
+COPYS_OF_CARDS = 2
+NUMBER_STARTING_CARDS = 20 // CARD_PER_ITEM
 
 
 class TRAPS(StrEnum):
@@ -25,13 +27,14 @@ class ITEMS(StrEnum):
     CARDS = "progressive card"
 
 def get_merge_name(num : int) -> str:
+    assert 0 < num < 10_000, f"get merge number {num} out of range"
     return f"Merge {num : 04}"
 
 class RummyCard(object):
     color : str
     symbol : str
 
-    def __init__(self, color, symbol) -> None:
+    def __init__(self, color : str, symbol : str) -> None:
         assert color in COLORS, f"color {color} not in {COLORS}"
         assert symbol in SYMBOLS, f"symbol {symbol} not in {SYMBOLS}"
         self.color = str(color)
