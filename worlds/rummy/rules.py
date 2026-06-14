@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, List, Tuple, Set
 
 from rule_builder.options import OptionFilter
 from rule_builder.rules import *
@@ -20,6 +20,7 @@ def requremenst_for_merge(world, available_cards):# -> List[Tuple[int,int,int]]:
     reachables = 0
     reachables_straits = 0
     reachables_melds = 0
+    sets_completed : List[Set[RummyCard]] = []
 
     # this checks for all avalibe medls
     req_melds = 2
@@ -34,9 +35,12 @@ def requremenst_for_merge(world, available_cards):# -> List[Tuple[int,int,int]]:
             if test_set <= set(available_cards_copy):
                 reachables_melds += len(test_set)
                 req_melds = max(req_melds,len(test_set))
-                for tempcard in test_set:
-                    available_cards_copy.remove(tempcard)
+                for tempcard in test_set:available_cards_copy.remove(tempcard)
+                sets_completed.append(test_set)
+                break
 
+
+    available_cards_copy = available_cards.copy()
     # this checks all avalibe straits
     req_straits = 2
     for color in COLORS:
@@ -48,6 +52,7 @@ def requremenst_for_merge(world, available_cards):# -> List[Tuple[int,int,int]]:
                     req_straits = max(req_straits, len(test_set))
                     reachables_straits += len(test_set)
                     for tempcard in test_set:   available_cards_copy.remove(tempcard)
+                    sets_completed.append(set(test_set))
                     break
                 test_set.pop()
 
@@ -58,7 +63,7 @@ def requremenst_for_merge(world, available_cards):# -> List[Tuple[int,int,int]]:
 
     possible_merges.append((reachables, req_straits,req_melds))
     #return possible_merges
-    return reachables_straits, reachables_melds, req_straits,  req_melds
+    return reachables_straits, reachables_melds, req_straits,  req_melds, sets_completed
 
 
 def set_all_rules(world: RummyWorld) -> None:
@@ -71,7 +76,7 @@ def set_all_rules(world: RummyWorld) -> None:
 def set_all_entrance_rules(world: RummyWorld) -> None:
     pass
 
-def setCardReqRules(world: RummyWorld, rem_trys=15) -> list:
+def setCardReqRules(world: RummyWorld, rem_trys=200) -> list:
     solvable = True
 
     create_card_order(world)
@@ -83,9 +88,10 @@ def setCardReqRules(world: RummyWorld, rem_trys=15) -> list:
     rules_list = list([False_() for _ in range(COPYS_OF_CARDS*MAX_NUMBERS * MAX_COLORS) ])
 
     # we fill backwards
-    for i in range((COPYS_OF_CARDS*MAX_NUMBERS * MAX_COLORS) // CARD_PER_ITEM +3, NUMBER_STARTING_CARDS - 1, -1):
+    for i in range((COPYS_OF_CARDS*MAX_NUMBERS * MAX_COLORS) // CARD_PER_ITEM +2, NUMBER_STARTING_CARDS - 2, -1):
         assert len(available_cards) >= CARD_PER_ITEM * NUMBER_STARTING_CARDS, "available cards to small to continue"
-        reachables_straits, reachables_melds, req_strait_num, req_meld_num = requremenst_for_merge(world, available_cards.copy())
+        assert i+1>=NUMBER_STARTING_CARDS, f"did go to low, {i+1} compared to {NUMBER_STARTING_CARDS}"
+        reachables_straits, reachables_melds, req_strait_num, req_meld_num, _ = requremenst_for_merge(world, available_cards.copy())
         reachables = reachables_straits +  reachables_melds
 
 
@@ -97,21 +103,22 @@ def setCardReqRules(world: RummyWorld, rem_trys=15) -> list:
         # this asserts that the goal is reachables
         #assert reachables > 0, "Needs to have locations be reachables"
         # wants to have at least 2 merges possible from start
-        if not (reachables >= 9):
+        if not (reachables_straits >= REQUIRED_CARDS_TO_START or reachables_melds >= REQUIRED_CARDS_TO_START):
             print(f"Needs to have more than {reachables} locations be reachables with {i * CARD_PER_ITEM} == {len(available_cards)} cards left")
             solvable = False
+            break
 
         # this sets the rule for all previous merges
 
         for j in range(reachables_straits): rules_list[j] |= _rule_strait
         for j in range(reachables_melds): rules_list[j] |= _rule_meld
-        for j in range(reachables): rules_list[j] |= _rule_strait & _rule_meld
+        #for j in range(min(reachables,)): rules_list[j] |= _rule_strait & _rule_meld
 
 
         # this just removes avalible cards for next passthrou
         available_cards = available_cards[0:i * CARD_PER_ITEM]
 
-    if not solvable:
+    if solvable == False:
         world.random.shuffle(world.card_order)
         if rem_trys > 0:
             return setCardReqRules(world,rem_trys=rem_trys-1)
@@ -120,7 +127,7 @@ def setCardReqRules(world: RummyWorld, rem_trys=15) -> list:
     return rules_list
 
 
-
+@staticmethod
 def set_all_location_rules(world: RummyWorld) -> None:
     for card in world.card_order:
         pass
@@ -130,13 +137,20 @@ def set_all_location_rules(world: RummyWorld) -> None:
     rules_list = setCardReqRules(world)
 
     # makes the first 3 locations more reachable
-    reachables_straits, reachables_melds, req_straits,req_melds= requremenst_for_merge(world, world.card_order[0:NUMBER_STARTING_CARDS * CARD_PER_ITEM])
+    reachables_straits, reachables_melds, req_straits,req_melds, _= requremenst_for_merge(world, world.card_order[0:NUMBER_STARTING_CARDS * CARD_PER_ITEM])
+    assert len(world.card_order[0:NUMBER_STARTING_CARDS * CARD_PER_ITEM]) == NUMBER_STARTING_CARDS * CARD_PER_ITEM, f"the lenght was{len(world.card_order[0:NUMBER_STARTING_CARDS * CARD_PER_ITEM])}"
     reachables = reachables_straits + reachables_melds
 
-    start_item = world.random.choice(enum_to_list(MOVES)) if (req_straits >= 3 and req_melds >= 3) else (MOVES.STRAIT if req_straits >= 3 else MOVES.MELD)
+    valid_start = []
+    if reachables_straits >= REQUIRED_CARDS_TO_START:
+        valid_start.append(MOVES.STRAIT)
+    if reachables_melds >= REQUIRED_CARDS_TO_START:
+        valid_start.append(MOVES.MELD)
+    assert len(valid_start) >= 1 , "need to have valid start items"
+    start_item = world.random.choice(valid_start)
 
     # this code lowers the requirement for the first 3 merges, so the generator doesn't complain
-    for i in range(9):
+    for i in range(REQUIRED_CARDS_TO_START):
         rules_list[i] |= Has(ITEMS.CARDS.value, NUMBER_STARTING_CARDS) & Has(start_item)
     world.push_precollected(world.create_item(start_item))
 

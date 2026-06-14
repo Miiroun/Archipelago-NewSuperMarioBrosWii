@@ -41,8 +41,8 @@ def create_events(world: RummyWorld) -> None:
                 world.card_order.append(RummyCard(color, symbol))
 
     for card in set(world.card_order):
-        world.get_region(RUMMY_REGION).add_event(card.get_name(), card.get_name(), location_type=RummyLocation,
-                                                 item_type=items.RummyItem)
+        pass
+        #world.get_region(RUMMY_REGION).add_event(card.get_name(), card.get_name(), location_type=RummyLocation,item_type=items.RummyItem)
 
     world.get_region(RUMMY_REGION).add_event("Victory", "Victory", location_type=RummyLocation, item_type=items.RummyItem)
 

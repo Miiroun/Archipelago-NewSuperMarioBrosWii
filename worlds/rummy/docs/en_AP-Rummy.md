@@ -1,4 +1,4 @@
-# Rummy
+# AP-Rummy Glossary
 
 ## Where is the options page?
 
@@ -6,24 +6,24 @@ The [player options page for this game](../player-options) contains all the opti
 config file.
 
 ## What is a Rummy game?
+- Read [wikipedia](https://en.wikipedia.org/wiki/Rummy).
 
+# Goal
+- Merging all cards
 
+# Locations
+- Merges
 
-## What rules does a tile need to follow
-
+# Items
+- Cards : unlock more playing cards
+- Progressive straits and melds : needed to make longer merges
+- Traps are shuffling your cards and un-doing merges
 
 
 ## Credit
 Miiroun
 - for developing
 
-NewSoupVi
-- Developing AP-quest which large parts of the code bas is based on
-
-KabGames
-- design of playing cards
-- https://kaboff.itch.io/cards-pixel-art-pack-64x96
-
 
 # AI
-The only AI used is pycharm-linter
+The only generative AI used for this project is pycharm-linter.
