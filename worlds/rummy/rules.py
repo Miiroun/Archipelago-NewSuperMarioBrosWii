@@ -76,7 +76,7 @@ def set_all_rules(world: RummyWorld) -> None:
 def set_all_entrance_rules(world: RummyWorld) -> None:
     pass
 
-def setCardReqRules(world: RummyWorld, rem_trys=200) -> list:
+def setCardReqRules(world: RummyWorld, rem_trys=500) -> list:
     solvable = True
 
     create_card_order(world)
@@ -95,8 +95,8 @@ def setCardReqRules(world: RummyWorld, rem_trys=200) -> list:
         reachables = reachables_straits +  reachables_melds
 
 
-        _rule_strait    = Has(MOVES.STRAIT, req_strait_num-2)  & Has(ITEMS.CARDS, i)
-        _rule_meld      = Has(MOVES.MELD, req_meld_num-2)      & Has(ITEMS.CARDS, i)
+        _rule_strait    = Has(MOVES.STRAIT, req_strait_num-2)  & Has(ITEMS.CARDS, i+1)
+        _rule_meld      = Has(MOVES.MELD, req_meld_num-2)      & Has(ITEMS.CARDS, i+1)
 
         #print(f"rule: {_rule.to_dict()} for card mult {i} and cards left {len(available_cards)} ")
 

@@ -30,8 +30,8 @@ components.append(
         game_name=f"{RUMMY_NAME}",
         component_type=Type.CLIENT,
         supports_uri=True,
-        icon="docs/img/completed_board.png"
+        #icon="docs/img/completed_board.png"
     )
 )
 
-icon_paths[f"{RUMMY_NAME}",] = f"ap:{__name__}/assets/component_icon.png"
+#icon_paths[f"{RUMMY_NAME}",] = f"ap:{__name__}/assets/component_icon.png"

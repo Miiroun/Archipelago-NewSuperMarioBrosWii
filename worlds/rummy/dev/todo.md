@@ -3,7 +3,6 @@
 # BUGS
 - resize correctly
 - remove extra move thats added to itempool
-- logic not 100% correct?
 
 
 # EXTRA FEATURES
