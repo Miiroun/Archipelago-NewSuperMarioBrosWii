@@ -56,7 +56,7 @@ def create_all_items(world: RummyWorld) -> None:
 
     # TODO should remove the once that push precollected
     itempool += [world.create_item(ITEMS.CARDS.value) for _ in range(1, math.ceil(
-        ((MAX_NUMBERS * MAX_COLORS) * COPYS_OF_CARDS + 1) / CARD_PER_ITEM) - NUMBER_STARTING_CARDS + EXTRA_CARDS)]
+        ((world.options.max_number.value * len(world.options.colors.value)) * world.options.copys_of_cards.value + 1) / world.options.card_per_item.value) - world.options.number_of_starting_card_items.value + world.options.extra_card_items.value)]
     # itempool += [world.create_item(name_symbol_item(symbol)) for symbol in SYMBOLS]
     # itempool += [world.create_item(name_color_item(color)) for color in COLORS]
     itempool += [world.create_item(MOVES.MELD) for _ in range(2)]
@@ -75,7 +75,7 @@ def create_all_items(world: RummyWorld) -> None:
     itempool += [world.create_filler() for _ in range(needed_number_of_filler_items)]
     world.multiworld.itempool += itempool
 
-    for _ in range(NUMBER_STARTING_CARDS):
+    for _ in range(world.options.number_of_starting_card_items.value):
         world.push_precollected(world.create_item(ITEMS.CARDS.value))
     # world.push_precollected(world.create_item(name_symbol_item(world.random.choice(SYMBOLS))))
     # world.push_precollected(world.create_item(name_color_item(world.random.choice(COLORS))))

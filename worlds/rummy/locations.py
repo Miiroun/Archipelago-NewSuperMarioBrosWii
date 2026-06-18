@@ -35,10 +35,10 @@ def create_regular_locations(world: RummyWorld) -> None:
 
 def create_events(world: RummyWorld) -> None:
     world.card_order = []
-    for color in COLORS:
-        for symbol in SYMBOLS:
-            for _ in range(COPYS_OF_CARDS):
-                world.card_order.append(RummyCard(color, symbol))
+    for color in world.options.colors.value:
+        for symbol in range(1, world.options.max_number.value + 1):
+            for _ in range(world.options.copys_of_cards.value):
+                world.card_order.append(RummyCard(color, str(symbol)))
 
     for card in set(world.card_order):
         pass

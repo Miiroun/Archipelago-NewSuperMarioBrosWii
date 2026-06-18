@@ -6,4 +6,14 @@ AP-Rummy:
   ################
   progression_balancing: 50
   accessibility: full
-  num_starting_locations: 0
+
+
+  colors: ['RED', 'BLUE', 'WHITE', 'BLACK']
+
+  #max_number: 13
+  #card_per_item : 2
+  #card_merges_possible_from_start: 9
+  #copys_of_cards: 1
+  #number_of_starting_card_items: 8
+  #extra_card_items: 3
+

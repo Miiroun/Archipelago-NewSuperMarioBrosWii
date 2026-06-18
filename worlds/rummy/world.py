@@ -10,6 +10,7 @@ from rule_builder.cached_world import CachedRuleBuilderWorld
 from . import items, locations, regions, rules, web_world
 from . import options as rummy_options  # rename due to a name conflict with World.options
 from .Common import *
+from .options import vailidate_options
 from .settings import RummySettings
 
 
@@ -43,6 +44,12 @@ class RummyWorld(CachedRuleBuilderWorld):
 
     card_order : List[RummyCard]
 
+    def generate_early(self) -> None:
+        if hasattr(self.multiworld, "re_gen_passthrough"):
+            if self.game in self.multiworld.re_gen_passthrough:
+                pass
+        vailidate_options(self)
+
     def create_regions(self) -> None:
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
@@ -61,15 +68,22 @@ class RummyWorld(CachedRuleBuilderWorld):
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
+    option_names_ = {"colors", "max_number", "card_per_item", "copys_of_cards", "number_of_starting_card_items",
+                    "card_merges_possible_from_start", "extra_card_items"}
     def fill_slot_data(self) -> Mapping[str, Any]:
-        slot_data = {}#self.options.as_dict()
+        slot_data = self.options.as_dict(*self.option_names_)
         slot_data["card_order"] = list(map(str, self.card_order))
-        slot_data["CARD_PER_ITEM"] = CARD_PER_ITEM
+        slot_data["CARD_PER_ITEM"] = self.options.card_per_item.value
         return slot_data
 
     def overwrite_options(self, slot_data: dict[str, Any]):
-        pass
-        #self.options.ASDSAD.value = slot_data["ASDSAD"]
+        option_set: set = self.option_names_-{"colors"}
+        set_options = {"colors"}
+        for item in (option_set & slot_data.keys()) - set_options:
+            setattr(getattr(self.options, item), item, slot_data[item])
+        for item in set_options:
+            setattr(getattr(self.options, item), item, set(slot_data[item]))
+
 
     @staticmethod
     def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -80,7 +94,7 @@ class RummyWorld(CachedRuleBuilderWorld):
         num_prog_items =  state.prog_items[self.player][ITEMS.CARDS.value]
         #for item in state.prog_items[self.player]:print(item)
 
-        reachables_straits, reachables_melds, req_straits, req_melds, sets_completed = rules.requremenst_for_merge(self, self.card_order[0:
+        reachables_straits, reachables_melds, req_straits, req_melds, sets_completed = rules.requirement_for_merge(self, self.card_order[0:
             num_prog_items * CARD_PER_ITEM])
         return [{"type":"text","text":f"The client expects you to be able to complete the following sets:"
         f"{sets_completed}, either as straits or as melds. It expects you to be able to get {reachables_straits} straits and "
