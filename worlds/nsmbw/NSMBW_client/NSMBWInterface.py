@@ -2,7 +2,10 @@ import logging
 import time
 from enum import Enum
 
-from typing import Dict, Optional
+from typing import Dict, Optional, List
+
+import win32gui
+
 from ..Common import *
 from Utils import is_frozen
 from . import keyboard
@@ -275,29 +278,55 @@ class NSMBWInterface():
             address += -4
 
         return address
-    def clear_cache(self):
-        #if self.is_in_level() or self.is_in_worldmap():
-        logger.info("Clearing JIT cache by loading savestate")
-        wait_long = 0.2
-        wait_short = 0.1
-        time.sleep(wait_short)
+
+    @staticmethod
+    def save_state(slot : int, do_logging=True):
+        wait_long   = 0.2
+        wait_short  = 0.1
+
+        if do_logging:
+            logger.info(f"Saved savestate to slot {slot}")
+
+
+        time.sleep(wait_long)
         keyboard.release("shift")
         time.sleep(wait_short)
         keyboard.press("shift")
         time.sleep(wait_short)
-        keyboard.press("F8")
+        keyboard.press(f"F{slot}")
         time.sleep(wait_short)
-        keyboard.release("F8")
+        keyboard.release(f"F{slot}")
         time.sleep(wait_short)
         keyboard.release("shift")
         time.sleep(wait_long)
         #asyncio.sleep(1)
 
+    @staticmethod
+    def load_state(slot : int, do_logging=True):
+        wait_long   = 0.2
+        wait_short  = 0.1
+
+        if do_logging:
+            logger.info(f"loaded savestate from slot {slot}")
+
         keyboard.press("F8")
         time.sleep(wait_short)
         keyboard.release("F8")
         time.sleep(wait_long)
+
+    def clear_cache(self):
+        #if self.is_in_level() or self.is_in_worldmap():
+        logger.info("Clearing JIT cache by loading savestate")
+
+
+        #pyautogui.getWindowsWithTitle("Dolphin")[0].activate()
+        #handle = win32gui.FindWindow(0, "Dolphin")
+        #win32gui.SetForegroundWindow(handle)
+        self.save_state(8, do_logging=False)
+        self.load_state(8, do_logging=False)
+
         #asyncio.sleep(1)
+        # should maybe put this behind actual checking
         logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
                     " JIT cache manualy (JIT -> clear chache).")
 
@@ -317,6 +346,15 @@ class NSMBWInterface():
         else:
             return False
 
+    def apply_patch(self, patch : CodePatch, clear : bool=False):
+        self.write_instruction(patch.addr, patch.code, clear)
+
+    def add_number(self, address : int, update_value: int, max : int = 99):
+        prev_value = int(self.dolphin_client.read_address(address, 1))
+        value = prev_value + update_value
+        if value >= max:
+            value = max
+        self.dolphin_client.write_address(address, int_to_bytes(value, 1))
 
     async def handle_unlocked_moves(self, unlocked_moves, slot_data):
         self.should_clear = 0
@@ -505,7 +543,7 @@ class NSMBWInterface():
             button_off_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x00'
             button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
 
-            if not ITEM.MOVEMENT.run in slot_data_dont_rando:
+            if not ITEM.MOVEMENT.Run in slot_data_dont_rando:
                 address = self.memory_addresses.address_run
                 if not ITEM.MOVEMENT.Run in unlocked_moves:
                     self.write_instruction(address, PowerPCInstructions.instru_lhz + b'\x03\xff\xff')
@@ -547,6 +585,11 @@ class NSMBWInterface():
 
         if self.should_clear >= 1:
             self.clear_cache()
+
+    async def patch_runtime_on_load(self):
+        patches : List[CodePatch] = []
+        for _patch in patches:
+            self.apply_patch(_patch)
 
     def patch_goomba_speed(self):
         address = self.memory_addresses.goomba_walk
@@ -703,6 +746,10 @@ class NSMBWInterface():
     def set_question_switch_timer(self,data : bytes):
         address = self.memory_addresses.address_question_switch
         self.dolphin_client.write_pointer(address,0x0488, data)
+    def set_coin_count(self, data : bytes):
+        address = self.memory_addresses.coins
+        self.dolphin_client.write_address(address, data)
+
     def update_inventory_items(self, type_num : int, increase : int):
         amount = bytes_to_int(self.get_inventory_items(type_num))
         amount += increase
@@ -727,4 +774,5 @@ class NSMBWInterface():
         if time.time() - self.deathtimer >= 2:
             if self.write_instruction(address, b'\x48\x00\x00\x28', clear=True):
                 print("Set mario to alive")
+
 

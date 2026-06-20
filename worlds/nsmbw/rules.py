@@ -123,7 +123,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             offset = 1 if world_num in [7,8] else 0
             loc_name = world.get_location(f"World{world_num}_tower")
             world.set_rule(loc_name, rules.Has(name_base(world_num, 7+offset)))
-            loc_name = world.get_location(f"World{world_num}_castle")
+            loc_name = world.get_location(name_world_clear(world_num))
             world.set_rule(loc_name, rules.Has(name_base(world_num, 8+offset)))
 
     HM_COUNT = 65

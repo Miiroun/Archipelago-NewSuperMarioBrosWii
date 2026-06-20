@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Any
 
 
 def bytes_to_int(byte : bytes, signed=False) -> int:
@@ -17,3 +17,22 @@ def map_nd(list_obj : list, func : Callable) -> list:
         else:
             new_list[i] = func(list_obj[i])
     return new_list
+
+def cast_object_to_type(_object, _type) -> Any:
+    match _type:
+        case type(1):
+            return int(_object)
+        case type(1.0):
+            return float(_object)
+        case type(False):
+            return bool(_object)
+        case type(""):
+            return str(_object)
+        case type([]):
+            return list(_object)
+        case type(set()):
+            return set(_object)
+        case type(dict()):
+            return dict(_object)
+        case _:
+            raise TypeError(f"Type {type(_object)} of object {_object} is not supported")

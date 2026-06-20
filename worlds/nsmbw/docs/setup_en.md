@@ -6,6 +6,7 @@
 - [NSMBW AP-World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - A legally dumped copy of New Super Mario Bros Wii (US rev 2) (both .iso and .wbfs works)
   - If this is not the edition of your copy, see [en_NSMBW.md](../docs/en_NSMBW.md) for list of features known to be broken on other versions.
+  - If you need help with dumping your copy, you can look at this [tutorial](https://horizon.miraheze.org/wiki/Obtain_Original_Game_Files).
 - [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) (Optionally) 
 
 
@@ -17,8 +18,9 @@
    - If you want to play with a lower location count disable star coins (231 locations).
    - See [en_NSMBW.md](../docs/en_NSMBW.md) for all options, etc.
 4) Note that the ap client is bundled with launcher.
-5) Inside the client press CONNECT (when you are on the world map in game) and then enter your player name (from the yaml).
-6) If you care about your dolphin savefiles then back them up.
+5) Open dolphin, go to options → Configuration → Interface → Hotkeys Require Window Focus → off, this is important for death-link and movement to work correctly
+6) Inside the client press CONNECT (when you are on the world map in game) and then enter your player name (from the yaml).
+7) If you care about your dolphin savefiles then back them up.
 
 
 ## How to play
@@ -31,7 +33,7 @@
 6) Open the in game world-select menu and move to the world you have unlocked.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
 8) Make save-states to save the game and run /save. (Do NOT save when you are in world 9, it will delete your save)
-
+   - Don't use in game feature and make a new save state after every level
 
 ## Tracker 
 You can optionally use the built-in universal tracker extension to track available locations.

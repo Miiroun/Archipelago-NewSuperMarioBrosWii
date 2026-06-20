@@ -14,6 +14,7 @@ from Utils import visualize_regions
 from typing import ClassVar
 
 from .Common import *
+from .Utils import cast_object_to_type
 from .items import NSMBWItem
 
 
@@ -119,11 +120,8 @@ class NSMBWworld(World):
     # UT-tracket imlementation
     def overwrite_options(self, slot_data: dict[str, Any]):
         option_set : set = self.options.__dict__.keys() - self.default_options_set
-        set_options = {"dont_rando_move", "filler_items", "trap_items"}
-        for item in (option_set & slot_data.keys()) -set_options:
-            setattr(getattr(self.options, item), item, slot_data[item])
-        for item in set_options:
-            setattr(getattr(self.options, item), item, set(slot_data[item]))
+        for item in (option_set & slot_data.keys()):
+            setattr(getattr(self.options, item), "value", cast_object_to_type(slot_data[item], type(getattr(getattr(self.options, item),"value"))))
         self.star_coin_req_per_world_9_level = slot_data["star_coin_req_per_world_9_level"]
 
 
@@ -138,7 +136,7 @@ class NSMBWworld(World):
 
     def explain_rule(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         specific_rules = {
-            "1-1" : [JSONMessagePart({"text": " You should have no trouble beating the first level in the game, jsut get a world1 item and it will be unlocked on the world-map.", "type":"text"})]
+            #"1-1" : [JSONMessagePart({"text": " You should have no trouble beating the first level in the game, just get a world1 item and it will be unlocked on the world-map.", "type":"text"})]
         }
 
         if target_name in specific_rules.keys():    

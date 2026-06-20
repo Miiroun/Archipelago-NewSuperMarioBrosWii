@@ -21,7 +21,6 @@ LOCATION_NAME_GROUPS = {}
 
 
 # Starcoins and level clear
-LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 world_set = set()
 for world_num in range(1,9+1): # worlds
     level_set = set()
@@ -36,10 +35,10 @@ for world_num in range(1,9+1): # worlds
 
     # add location for beating castles and towers
     if world_num != 9:
-        LOCATION_NAME_TO_ID.update({f"World{world_num}_castle" : 2000+100*world_num + 1})
+        LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 2000+100*world_num + 1})
         LOCATION_NAME_TO_ID.update({f"World{world_num}_tower" : 2000+100*world_num + 2})
 LOCATION_NAME_GROUPS.update({"Starcoins" : world_set })
-LOCATION_NAME_GROUPS.update({"Castles" : set(f"World{world_num}_castle"for world_num in range(1,8+1)) })
+LOCATION_NAME_GROUPS.update({"Castles" : set(name_world_clear(world_num) for world_num in range(1,8+1)) })
 LOCATION_NAME_GROUPS.update({"Towers" : set(f"World{world_num}_tower" for world_num in range(1,8+1)) })
 
 
@@ -104,7 +103,7 @@ def make_locations_priority(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
                 pass
-                #world.get_location(f"World{world_num}_castle").progress_type = LocationProgressType.PRIORITY
+                #world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
                 #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
     if world.options.include_hintmovies.value == True:
         for i in DEPRIO_HM:
@@ -136,7 +135,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
         if world_num != 9:
             level_location = get_location_names_with_ids([f"World{world_num}_tower"])
             regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
-            level_location = get_location_names_with_ids([f"World{world_num}_castle"])
+            level_location = get_location_names_with_ids([name_world_clear(world_num)])
             regions[2 * world_num - 2 + 1].add_locations(level_location, NSMBWLocation)
 
     if world.options.include_shortcuts.value == True:

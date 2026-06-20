@@ -1,6 +1,9 @@
 from enum import StrEnum
 
+
 game_name = "NSMBW"
+
+LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 
 
 class ITEM:
@@ -39,10 +42,13 @@ class ITEM:
         GoombaTrap = "Goomba_trap"
         DeathTrap = "Death_trap"
         TimeTrap = "Time_trap"
+        RobberyTrap = "Robbery_trap"
 
     class FILLER(StrEnum):
         FillInventory = "fill_inventory"
         OneUps = "1ups"
+        CoinOne = "Coin x01"
+        CoinFifty = "Coin x50"
 
     StarCoin = "Starcoin"
     Time = "Time_left"
@@ -93,6 +99,13 @@ def name_starcoin(world_num : int, level_num : int, scnum : int) -> str:
 def name_secret(world_num : int, level_num : int) -> str:
     return f"Secret_exit{name_base(world_num,level_num)}"
 
+def name_world_clear(world_num : int) ->  str:
+    assert 1 <= world_num <= 8
+    return f"World{world_num}_clear"
+def name_tower_clear(world_num : int) -> str:
+    assert 1 <= world_num <= 8
+    return f"World{world_num}_tower" #f"Tower{world_num}_clear" #
+
 def name_hintmovie(i:int) -> str:
     from worlds.nsmbw.NSMBW_client.NSMBWInterface import HINTMOVIE_COUNT
     assert 1 <= i <= HINTMOVIE_COUNT
@@ -101,3 +114,18 @@ def name_hintmovie(i:int) -> str:
 def name_inventory(i : int) -> str:
     assert 1 <= i <= 999
     return f"Inventory_powerup_{i:03}"
+
+def level_bijection(name : str ) -> tuple[int, int]:
+    for world_num in range(1,9+1):
+        for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
+            if name_level(world_num, level_num) == name:
+                return world_num, level_num
+    raise ValueError(f"Level: {name} not found")
+
+def sc_bijection(name : str ) -> tuple[int, int, int]:
+    for world_num in range(1,9+1):
+        for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
+            for sc_num in range(1,3+1):
+                if name_starcoin(world_num,level_num,sc_num) == name:
+                    return world_num, level_num, sc_num
+    raise ValueError(f"SC: {name} not found")

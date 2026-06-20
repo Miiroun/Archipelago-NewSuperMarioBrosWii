@@ -187,7 +187,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
         ],
         [  # world 2
             [normal_move, [True_(), True_(), carry | propeller_o | mini_o]],  # -1
-            [normal_move & question_switch, [question_switch & p_switch, climb & (carry | propeller_o | logic_hard) & question_switch, mini & wall_jump & (carry | ground_pound) & question_switch]],  # -2
+            [normal_move & question_switch& pipe & button_down & button_up, [question_switch & p_switch, climb & (carry | propeller_o | logic_hard) & question_switch, mini & wall_jump & (carry | ground_pound) & question_switch]],  # -2
             [normal_move & pipe& button_down & button_up, [True_(), True_(), (run | propeller_o | mini_o | (star & logic_hard)) ]],  # -3
             [normal_move  & pipe & button_down & button_up& (climb | (propeller_o | (mini_o & wall_jump)) | (logic_hard & wall_jump & run & super_mario))  , [climb , propeller , (propeller | (mini_o & wall_jump)) ], propeller & (wall_jump | run) ],  # -4 # this was orignaly propeller_o for sc2, sc3 and secret exit, but locations must be accessible independent of setting, so changed it to just propeller_o
             [normal_move, [True_(), yoshi | carry | propeller_o | (wall_jump & (mini_o | run | super_mario)) | (logic_hard & ice_peng_o), True_()]],  # -5

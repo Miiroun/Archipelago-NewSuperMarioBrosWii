@@ -74,10 +74,13 @@ config file.
 - Only save file 2 will work to play on.
 - Death link is sometimes sent on connect.
 - Carry shells movement is weired : you can pick it up but not put it down
+- Jumping in wind softlocks you
 - Known Issues for other game versions
   - ALL others : inventory features (remove fill_inventor and inventory checks)
   - EU1: entier movement (dont turn on)
   - US1: Star and swim movement (add these to dont rando moves if you have movement rando on)
+- Don't go to the game menu with archipelago connected, this means don't use quick save in game: instead make save states.
+
 
 ## Client commands
 - /toogle_deathlink
@@ -135,7 +138,7 @@ config file.
   - Help is appreciated, both coding playtesting and logic. Begin by reading [dev_docs](../dev_files/dev_docs) and then ask in discord.
 - Bugs?
   - Expect bugs, it is still in development.
-  - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948).
+  - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948), make sure to mention your game revision.
 
 ## Debug tips
 - Restart launcher and computer after installing if the client doesn't show up in launcher or something doesn't work.

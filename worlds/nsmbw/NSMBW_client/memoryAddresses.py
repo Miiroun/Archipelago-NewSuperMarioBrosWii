@@ -7,7 +7,13 @@ import Utils
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 from ..Common import *
 
+class CodePatch:
+    addr: int
+    code: bytes
 
+    def __init__(self, addr: int, code: bytes) -> None:
+        self.addr = addr
+        self.code = code
 
 class SymbolReader(object):
     def __init__(self, _file):
@@ -154,6 +160,11 @@ class MemoryAddresses(object):
         self.goomba_walk = self.map_between("E2", 0x80ad2870)
 
 
+        self.coins = self.map_between("E2", 0x80354EA3)
+        ## patches
+
+
+
     def map_between(self, ver_from : str, address : int) -> int:
         mapper_from = self.mappers[ver_from]
         mapper_to = self.mappers[self.this_version]
@@ -189,6 +200,6 @@ class MemoryAddresses(object):
         return new_address
 
 
-
-
+    def create_patch(self,ver_from : str,  addr: int, code: bytes) -> CodePatch:
+        return CodePatch(self.map_between(ver_from, addr), code)
 

@@ -171,6 +171,7 @@ def create_all_items(world: NSMBWworld) -> None:
 
 
 
+
         # Archipelago requires that each world submits as many locations as it submits items.
     # This is where we can use our filler and trap items.
     # APQuest has two of these: The Confetti Cannon and the Math Trap.

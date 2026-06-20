@@ -25,8 +25,13 @@
 
 # Playtesting
 - Only developed on Windows
-- Have test on WSL (Windows subsystem linux) and at-least boots
+- Have test on WSL (Windows subsystem linux) and it at least boots
 
 # Fill errors
 - Are cause my magical deamons
 - Free starting locations tends to alleviate issues, with current setup it clears 10_000 generations of fuzzer without fail if it can add starting locations when some options are turned off.
+
+
+# Why not riivolution patch build from kamek?
+- Because I dont have the skill and understanding of how it / c++ works
+- and I want to simplify setup with only one set, and I think I need some form of external memory monitoring

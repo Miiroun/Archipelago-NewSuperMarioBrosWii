@@ -21,7 +21,8 @@ class TestHardModeOff(NSMBWWorld):
 
         with self.subTest("make sure locations reachable"):
             self.assertTrue(self.world.get_location(name_level(1, 1)).can_reach(self.multiworld.state))
-            self.assertTrue(self.world.get_location(name_starcoin(1, 2, 1)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_level(1, 2)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_starcoin(1, 2, 1)).can_reach(self.multiworld.state))
 
 
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
@@ -32,7 +33,6 @@ class TestHardModeOff(NSMBWWorld):
             self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
             self.collect_by_name(ITEM.MOVEMENT.SpinJump)
             self.assertTrue(self.world.get_location(name_starcoin(1,1,1)).can_reach(self.multiworld.state))
-
 
 
 
@@ -52,7 +52,8 @@ class TestHardModeOn(NSMBWWorld):
 
         with self.subTest("make sure locations reachable"):
             self.assertTrue(self.world.get_location(name_level(1, 1)).can_reach(self.multiworld.state))
-            self.assertTrue(self.world.get_location(name_starcoin(1, 2, 1)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_level(1, 2)).can_reach(self.multiworld.state))
+            self.assertFalse(self.world.get_location(name_starcoin(1, 2, 1)).can_reach(self.multiworld.state))
 
         with self.subTest("Test if 1-1 is reachable with star or needs propeller"):
             self.assertFalse(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
