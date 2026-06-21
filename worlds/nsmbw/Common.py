@@ -43,12 +43,15 @@ class ITEM:
         DeathTrap = "Death_trap"
         TimeTrap = "Time_trap"
         RobberyTrap = "Robbery_trap"
+        ShrinkTrap = "Shrink_trap"
+        LiteratureTrap = "Literature_trap"
 
     class FILLER(StrEnum):
         FillInventory = "fill_inventory"
-        OneUps = "1ups"
+        OneUps = "1-ups"
         CoinOne = "Coin x01"
         CoinFifty = "Coin x50"
+        PowerUp = "Filler Power-up"
 
     StarCoin = "Starcoin"
     Time = "Time_left"
@@ -115,6 +118,10 @@ def name_inventory(i : int) -> str:
     assert 1 <= i <= 999
     return f"Inventory_powerup_{i:03}"
 
+def name_world_unlock(world_num : int):
+    assert 1 <= world_num <= 9
+    return f"World{world_num}_progressive"
+
 def level_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,9+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
@@ -129,3 +136,6 @@ def sc_bijection(name : str ) -> tuple[int, int, int]:
                 if name_starcoin(world_num,level_num,sc_num) == name:
                     return world_num, level_num, sc_num
     raise ValueError(f"SC: {name} not found")
+
+def get_name_base_of_last_level_in_world(world_num : int) -> str:
+    return f"{world_num}-{mod_level_name(world_num,LEVELS_PER_WORLD[world_num-1])}"

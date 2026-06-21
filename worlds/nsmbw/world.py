@@ -71,10 +71,10 @@ class NSMBWworld(World):
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
 
-        #-----------------------------remove these after bugfix
-        #state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
-        #state.update_reachable_regions(self.player)
-        #visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
+        #-----------------------------todo remove these after bugfix
+        state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
+        state.update_reachable_regions(self.player)
+        visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
 
     def generate_early(self) -> None:
         if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -109,6 +109,8 @@ class NSMBWworld(World):
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
+
+    # "do NOT copy this option handling code, it is really not god and causes issues"
     default_options_set = {"progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints', 'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items'}
     def fill_slot_data(self) -> Mapping[str, Any]:
         option_list : list = list(self.options.__dict__.keys()- self.default_options_set)

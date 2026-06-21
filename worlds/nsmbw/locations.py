@@ -112,50 +112,44 @@ def make_locations_priority(world: NSMBWworld) -> None:
 
 
 def create_regular_locations(world: NSMBWworld) -> None:
-    regions = []
-    for i in range(1, 9+1):
-        regions.append(world.get_region(f"World_{i}_1"))
-        if i != 9:
-            regions.append(world.get_region(f"World_{i}_2"))
     menu_region = world.get_region("Menu")
 
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             for sc in range(1, 3+1):
                 level_location = get_location_names_with_ids([name_starcoin(world_num, level_num, sc)])
-                half_world = 0 if (level_num < 4 or world_num == 9) else 1
                 if world.options.randomize_coins:
-                    regions[2*world_num-2+half_world].add_locations(level_location, NSMBWLocation)
+                    world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)
                 else:
-                    regions[2 * world_num - 2+half_world].add_locations(level_location, NSMBWLocation)
+                    world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)
                     location = world.get_location(name_starcoin(world_num, level_num, sc))
                     location.place_locked_item(world.create_item(ITEM.StarCoin))
                     #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", ITEM.StarCoin, location_type=NSMBWLocation, item_type=items.NSMBWItem)
         # add location for beating castles and towers
         if world_num != 9:
             level_location = get_location_names_with_ids([f"World{world_num}_tower"])
-            regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
+            world.get_region(f"{world_num}-T").add_locations(level_location, NSMBWLocation)
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
-            regions[2 * world_num - 2 + 1].add_locations(level_location, NSMBWLocation)
+            world.get_region(get_name_base_of_last_level_in_world(world_num)).add_locations(level_location, NSMBWLocation)
 
     if world.options.include_shortcuts.value == True:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit[0]
             level_num = secret_exit[1]
             level_location = get_location_names_with_ids([name_secret(world_num, level_num)])
-            regions[2*world_num - 2].add_locations(level_location, NSMBWLocation)
+            world.get_region(name_base(world_num,level_num)).add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
     if world.options.include_hintmovies.value == True:
         for i in range(1, num_hintmovies+1):
             hintmovie_location = get_location_names_with_ids([name_hintmovie(i)])
-            regions[0].add_locations(hintmovie_location, NSMBWLocation)
+            world.get_region("World1").add_locations(hintmovie_location, NSMBWLocation)
 
     if world.options.include_level_completion.value == True:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 flagpole = get_location_names_with_ids([name_level(world_num, level_num)])
-                regions[world_num * 2 - 2 ].add_locations(flagpole, NSMBWLocation)
+                world.get_region(name_base(world_num, level_num)).add_locations(flagpole, NSMBWLocation)
 
     # gives player starter location that automaticly checks
     for i in range(1, world.options.include_starting_locations + 1):
@@ -167,19 +161,12 @@ def create_regular_locations(world: NSMBWworld) -> None:
         menu_region.add_locations(inventory_loc, NSMBWLocation)
 
 def create_events(world: NSMBWworld) -> None:
-    regions = []
-    for i in range(1, 9+1):
-        regions.append(world.get_region(f"World_{i}_1"))
-        if i != 9:
-            regions.append(world.get_region(f"World_{i}_2"))
-
-
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-            flagpole = f"{name_base(world_num, level_num)}"
-            regions[world_num*2 - 2 ].add_event(flagpole,name_base(world_num, level_num), location_type=NSMBWLocation, item_type=items.NSMBWItem)
+            flagpole = name_base(world_num, level_num)
+            world.get_region(name_base(world_num, level_num)).add_event(flagpole,name_base(world_num, level_num), location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
     #events could be usefully for merging split paths
 
-    regions[2*(8-1)+1].add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    world.get_region(name_base(8, 9)).add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 

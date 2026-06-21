@@ -32,9 +32,9 @@ important_items = {ITEM.MOVEMENT.SpinJump, ITEM.MOVEMENT.Jump, ITEM.MOVEMENT.Run
                    ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.ButtonRight}
 
 for i in range(1,9+1):
-    ITEM_NAME_TO_ID.update({f"World{i}" : 200 + i})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({f"World{i}" : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"Worlds" : set(f"World{i}" for i in range(1,9+1))})
+    ITEM_NAME_TO_ID.update({name_world_unlock(i) : 200 + i})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({name_world_unlock(i) : ItemClassification.progression})
+ITEM_NAME_GROUPS.update({"Worlds" : set(name_world_unlock(i) for i in range(1,9+1))})
 
 # could add movement rando as checks
 
@@ -105,7 +105,7 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 def create_all_items(world: NSMBWworld) -> None:
     starting_world_num = world.options.starting_world.value
     excluded_items : set = set()
-    excluded_items.update({f"World{starting_world_num}"})
+    excluded_items.update({name_world_unlock(starting_world_num)})
     extra_start_items = {
         3: {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}, 4 : {ITEM.MOVEMENT.Swim, ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp},
         5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}, 7:{ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}, 8 : {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.Run, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
@@ -139,9 +139,9 @@ def create_all_items(world: NSMBWworld) -> None:
             itempool.append(world.create_item(ITEM.StarCoin))
     for i in range(1, 9+1):
         if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
-            itempool.append(world.create_item(f"World{i}"))
+            itempool.append(world.create_item(name_world_unlock(i)))
         if i != 9:
-            itempool.append(world.create_item(f"World{i}"))
+            itempool.append(world.create_item(name_world_unlock(i)))
 
     if world.options.randomize_movement.value in [RandomizeMovement.option_on]:
         for i in range(len(MOVEMENT_UNLOCKS)):

@@ -52,6 +52,7 @@ class DontRandoMovement(ItemSet):
     """
 
     display_name = "Dont Rando these Movements"
+    valid_keys = set(MOVEMENT_UNLOCKS)
     default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value}
 
 
@@ -101,15 +102,6 @@ class IncludeShortcuts(Toggle):
     """
     display_name = "Include Shortcuts"
     default = True
-
-class EnableSuperPowers(Toggle):
-    """
-    Not currently implemented
-    Adds extra powers like double jump to item pool
-    """
-    display_name = "Enable Super Powers"
-    default = False
-    visibility  = Option.visibility.none
 
 class LogicDifficulty(Choice):
     """
@@ -234,6 +226,7 @@ class FillerItems(ItemSet):
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Filler Items"
+    valid_keys = set(FILLER)
     default = set(FILLER)
 
 class TrapItems(ItemSet):
@@ -241,6 +234,7 @@ class TrapItems(ItemSet):
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Trap Items"
+    valid_keys = set(TRAPS)
     default = set(TRAPS)
 
 
@@ -277,7 +271,6 @@ class NSMBWOptions(PerGameCommonOptions):
 
     death_link : DeathLink
     death_link_group : DeathLinkGroup
-    enable_superpowers : EnableSuperPowers
     starcoin_collect_immediately : StarCoinCollectImmediately
 
 
@@ -332,7 +325,6 @@ option_groups = [
         "Other",
         [
             DeathLink,
-            EnableSuperPowers,
             StarCoinCollectImmediately
         ],
     ),
@@ -422,10 +414,10 @@ def adjust_options(world):
 
     if world.options.include_starting_locations.value <= req_start_loc:
         print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
-        world.options.include_starting_locations.value = min(req_start_loc, req_start_loc_max)
+        #world.options.include_starting_locations.value = min(req_start_loc, req_start_loc_max)
 
 
-    MAX_ALLOWED_BOWSER_SC = 190
+    MAX_ALLOWED_BOWSER_SC = 200
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
         world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
         print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}")

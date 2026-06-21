@@ -17,7 +17,7 @@ class TestHardModeOff(NSMBWWorld):
     }
 
     def test_1_1(self) -> None:
-        self.collect_by_name("World1")
+        self.collect_by_name(name_world_unlock(1))
 
         with self.subTest("make sure locations reachable"):
             self.assertTrue(self.world.get_location(name_level(1, 1)).can_reach(self.multiworld.state))
@@ -48,7 +48,7 @@ class TestHardModeOn(NSMBWWorld):
     }
 
     def test_1_1(self) -> None:
-        self.collect_by_name("World1")
+        self.collect_by_name(name_world_unlock(1))
 
         with self.subTest("make sure locations reachable"):
             self.assertTrue(self.world.get_location(name_level(1, 1)).can_reach(self.multiworld.state))

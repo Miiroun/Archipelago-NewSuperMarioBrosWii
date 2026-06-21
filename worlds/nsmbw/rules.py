@@ -31,16 +31,8 @@ def set_all_rules(world: NSMBWworld) -> None:
 
 
 def set_all_entrance_rules(world: NSMBWworld) -> None:
-    enterances = []
-    for i in range(1, 9 + 1):
-        enterances.append(world.get_entrance( f"From menu to World {i} connection"))  # rules.Has(f"World{i}_unlock")
-        if i != 9:
-            enterances.append(world.get_entrance(f"World {i} internal connection"))  # rules.HasAll(f"World{i}_unlock")
-
-    for i in range(1, 9 + 1):
-        world.set_rule(enterances[2*i-2], rules.Has(f"World{i}"))
-        if i != 9:
-            world.set_rule(enterances[2*i+1-2], rules.HasAll(f"World{i}"))
+    pass
+    #rules are set when connecting regions
 
 
 
@@ -52,7 +44,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     #    if i != 9:
     #        regions.append(world.get_region(f"World_{i}_2"))
 
-    # this is transcribing raw ruels-------------------------------------
+    # this is transcribing raw ruels, assering they are of correct length -------------------------------------
     level_req = specific_level_requierments(world)
     if world.options.logic_difficulty.value == LogicDifficulty.option_normal:
         assert len(level_req) == len(LEVELS_PER_WORLD), "Make sure lists is of correct size"
@@ -64,67 +56,20 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 # should maybe assert that is rule
                 for sc in range(3):pass
                 if (world_num+1,level_num+1, 2) in SECRET_EXIT:pass
-    # transcribing ends--------------------------------
+    # transcribing ends-------------------------------------------------------------------------------
 
 
-    level_connections = get_levlel_connections()
 
-
-    if len(world.star_coin_req_per_world_9_level) == 0:
-        world.star_coin_req_per_world_9_level = list(0 for _ in range(8))
-        match world.options.world9_unlock_condition.value:
-            case World9UnlockCondition.option_linear:
-                for i in range(8):
-                    world.star_coin_req_per_world_9_level[i] = 20*(i+1)
-            case World9UnlockCondition.option_gaussian:
-                for i in range(8):
-                    world.star_coin_req_per_world_9_level[i] = int(round( world.random.normalvariate(20*8/2,40)))
-                    if world.star_coin_req_per_world_9_level[i] <0:
-                        world.star_coin_req_per_world_9_level[i] = -world.star_coin_req_per_world_9_level[i]
-                    if world.star_coin_req_per_world_9_level[i] > 231:
-                        world.star_coin_req_per_world_9_level[i] = 231
-            case _:
-                raise ValueError(f"Case {world.options.world9_unlock_condition.value} is not valid")
 
     #sets basic rules for each level
     #
-    first_level_second_half = [4,4,4,4,4,5,4,4]
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1]+1):
-            flagpole = world.get_location(f"{name_base(world_num, level_num)}")
-            connection_rules = rules.False_()
-            for connection in level_connections[world_num-1][level_num-1]:
-                connection_rules |= rules.Has(name_base(world_num, connection))
-            if connection_rules == rules.False_(): # maybe have to use ==, not sure
-                connection_rules = rules.Has(f"World{world_num}", count=1)
-            if world_num != 9:
-                if level_num == first_level_second_half[world_num-1]:
-                    connection_rules &= rules.Has(f"World{world_num}", count=2)
-            elif world_num == 9:
-                assert len(world.star_coin_req_per_world_9_level) == 8
-                clear_rule &= rules.Has(ITEM.StarCoin,count=world.star_coin_req_per_world_9_level[level_num-1])
-
-            clear_rule = level_req[world_num-1][level_num-1][0]
-            world.set_rule(flagpole, connection_rules & clear_rule)
-
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
                 star_coin = world.get_location(name_starcoin(world_num, level_num, sc))
                 sc_logic = level_req[world_num - 1][level_num - 1][1][sc - 1]
-                world.set_rule(star_coin,rules.Has(name_base(world_num, level_num)) & sc_logic )
-
-
-
-            if world.options.include_level_completion:
-                completed_level = world.get_location(name_level(world_num, level_num)) # reel location
-                world.set_rule(completed_level, rules.Has(name_base(world_num, level_num))) #event location
-
-        if world_num != 9:
-            offset = 1 if world_num in [7,8] else 0
-            loc_name = world.get_location(f"World{world_num}_tower")
-            world.set_rule(loc_name, rules.Has(name_base(world_num, 7+offset)))
-            loc_name = world.get_location(name_world_clear(world_num))
-            world.set_rule(loc_name, rules.Has(name_base(world_num, 8+offset)))
+                world.set_rule(star_coin, sc_logic )
 
     HM_COUNT = 65
     hm_req = specific_hintmovie_requierments(world)
@@ -149,7 +94,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) )
     for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))
-        worlds_list = list(f"World{j}" for j in range(1,9+1))
+        worlds_list = list(name_world_unlock(world_num) for world_num in range(1,9+1))
         worlds_list += worlds_list
         worlds_list.pop()
         req_world_com = min(17-2, (i // 5)+1)

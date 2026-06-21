@@ -2,6 +2,7 @@ import json
 import os
 import traceback
 from enum import IntEnum
+from random import Random
 
 import Utils
 from Utils import is_frozen
@@ -229,6 +230,8 @@ class NSMBWContext(SuperContext):
 
         self.handled_num = -1
 
+        self.random = Random()
+
 
     async def server_auth(self, password_requested: bool = False):
         #try:
@@ -262,6 +265,8 @@ class NSMBWContext(SuperContext):
                 if tracker_loaded:
                     args.setdefault("slot_data", dict())
                 Utils.async_start(self.handle_load())
+
+                self.handle_load()
                 self.update_memory_to_server_on_load()
 
             case "RoomInfo":
@@ -960,7 +965,7 @@ class NSMBWContext(SuperContext):
 
                 case ITEM.TRAPS.LoosePowerupTrap:
                     for player_num in range(PLAYER_COUNT):
-                        self.game_interface.set_powerupstate(b'\x00', player_num)
+                        self.game_interface.set_powerupstate(b'\x01', player_num)
 
                 case ITEM.TRAPS.DeathTrap:
                     await self.game_interface.kill_player()
@@ -968,6 +973,24 @@ class NSMBWContext(SuperContext):
                 case ITEM.TRAPS.RobberyTrap:
                     logger.info("You got robbed of your coins.")
                     self.game_interface.set_coin_count(b'\x00')
+
+                case ITEM.TRAPS.ShrinkTrap:
+                    for player_num in range(PLAYER_COUNT):
+                        self.game_interface.set_powerupstate(b'\x00', player_num)
+
+
+                case ITEM.TRAPS.LiteratureTrap:
+                    match self.random.randint(1,2):
+                        case 1:
+                            for letter in "Once upon a time ... there was plummer ... name ... Mario.".split():
+                                logger.info(letter)
+                                await asyncio.sleep(0.1)
+                        case 2:
+                            for letter in "Once upon a time ... there was plummer ... name ... Luigi.".split():
+                                logger.info(letter)
+                                await asyncio.sleep(0.1)
+
+
 
                 case _:
                     logger.info(f"Trap {trap} is not implemented")
@@ -999,6 +1022,9 @@ class NSMBWContext(SuperContext):
                     logger.info("You got 50 coins")
                     self.game_interface.add_number(self.game_interface.memory_addresses.coins,50, 99)
 
+                case ITEM.FILLER.PowerUp:
+                    for player_num in range(PLAYER_COUNT):
+                        self.game_interface.set_powerupstate(int_to_bytes(self.random.randint(1,PLAYER_COUNT+1),1) , player_num)
 
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
@@ -1011,6 +1037,11 @@ class NSMBWContext(SuperContext):
                 #is_dead = (self.game_interface.get_player_status() == b'\x01') and (self.game_interface.get_in_stage_flag()[3] == 0)
                 is_dead = self.game_interface.get_lives_count(player_num) < self.prev_lifecount[player_num]
                 self.prev_lifecount[player_num] = self.game_interface.get_lives_count(player_num)
+
+                if self.prev_lifecount[player_num] == 0 and (not self.game_interface.is_in_level() or not self.game_interface.is_in_level()) and (is_dead):
+                    is_dead = False
+                    print("Overwrote sending death because looks like game is closing")
+
                 if is_dead:
                     print("player is dead")
                     #logger.info("You died and sent death link")

@@ -28,9 +28,9 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
         [3, (2,1), Has(ITEM.StarCoin, count=1)],  # 09
         [0, (2,2), Has(ITEM.StarCoin, count=95)],  # 10
         [3, (2,2), Has(ITEM.StarCoin, count=150)],  # 11
-        [5, (2,3), Has(ITEM.StarCoin, count=1)]  ,# 12
-        [5, (2,4), rule_completed_everything] , # 13 #find every normal adn secret goal in world1-9
-        [5, (2,5), Has(name_base(1,8))],  # 14
+        [5, (2,3), rule_completed_everything]  ,# 12
+        [5, (2,4), Has(ITEM.StarCoin, count=20)] , # 13 #find every normal adn secret goal in world1-9
+        [5, (2,5), Has(name_base(2,8))],  # 14
         [5, (2,5), Has(ITEM.StarCoin, count=215)],  # 15
         [10, (2,6), Has(ITEM.StarCoin, count=25)],  # 16
         [0, (3,1), Has(ITEM.StarCoin, count=65)] , # 17
@@ -278,95 +278,104 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
     return level_rules
 
-def get_levlel_connections():
+def get_level_connections() -> List[List[List[int]]]:
     connections = []
     connections += [
         [ # world 1
-            [], #-1
-            [1],#-2
-            [2],#-3
-            [7],#-4
-            [4],#-5
-            [4],#-6
-            [3],# -Tower
-            [5,6] # -Caslte
+            [1],
+            [2], #-1
+            [3],#-2
+            [7],#-3
+            [5,6],#-4
+            [8],#-5
+            [8],#-6
+            [4],# -Tower
+            [] # -Caslte
         ],
         [  # world 2
-            [],  # -1
-            [],  # -2
-            [1,2],  # -3
-            [7],  # -4
-            [4],  # -5
-            [4],  # -6
-            [3],  # -Tower
-            [5,6]  # -Caslte
+            [1,2],
+            [3],  # -1
+            [3],  # -2
+            [7],  # -3
+            [5,6,8],  # -4
+            [],  # -5
+            [],  # -6
+            [4],  # -Tower
+            []  # -Caslte
         ],
         [  # world 3
-            [],  # -1
-            [1],  # -2
-            [2],  # -3
-            [7],  # -4
-            [4],  # -5
-            [2],  # -6
-            [2],  # -Tower
-            [5]  # -Caslte
+            [1],
+            [2],  # -1
+            [3,6,7],  # -2
+            [],  # -3
+            [5],  # -4
+            [8],  # -5
+            [],  # -6
+            [4],  # -Tower
+            []  # -Caslte
         ],
         [  # world 4
-            [],  # -1
-            [1],  # -2
-            [1],  # -3
-            [7],  # -4
+            [1],
+            [2,3],  # -1
+            [7],  # -2
+            [7],  # -3
+            [5],  # -4
             [6],  # -5
-            [4],  # -6
-            [2,3],  # -Tower
-            [5],  # -Caslte
-            [8] #airship
+            [8],  # -6
+            [4],  # -Tower
+            [9],  # -Caslte
+            [] #airship
         ],
         [  # world 5
-            [],  # -1
-            [1],  # -2
-            [1],  # -3
-            [7],  # -4
-            [4],  # -5
-            [5],  # -6
-            [2,3],  # -Tower
-            [5,6]  # -Caslte
+            [1],
+            [2,3],  # -1
+            [7],  # -2
+            [7],  # -3
+            [5,6,8],  # -4
+            [],  # -5
+            [],  # -6
+            [4],  # -Tower
+            []  # -Caslte
         ],
         [  # world 6
-            [],  # -1
-            [1],  # -2
-            [1],  # -3
-            [2],  # -4
-            [7],  # -5
-            [5],  # -6
-            [4],  # -Tower
-            [6],  # -Caslte
-            [8] # - airship
+            [1,2],
+            [2],  # -1
+            [3],  # -2
+            [4],  # -3
+            [7],  # -4
+            [6],  # -5
+            [8],  # -6
+            [5],  # -Tower
+            [9],  # -Caslte
+            [] # - airship
         ],
         [  # world 7
-            [],  # -1
-            [1],  # -2
-            [2],  # -3
-            [8],  # -4
-            [4],  # -5
-            [5],  # -6
-            [8], # - 7
-            [3],  # -Tower
-            [6]  # -Caslte
+            [1],
+            [2],  # -1
+            [3],  # -2
+            [8],  # -3
+            [5],  # -4
+            [9],  # -5
+            [9],  # -6
+            [4], # - 7 # ghosthouse
+            [6,7],  # -Tower
+            []  # -Caslte
         ],
         [  # world 8
-            [],  # -1
-            [1],  # -2
-            [2],  # -3
-            [8],  # -4
-            [4],  # -5
-            [5],  # -6
+            [1],
+            [2],  # -1
+            [3,7],  # -2
+            [8],  # -3
+            [5],  # -4
+            [6],  # -5
+            [10],  # -6
             [2], # -7
-            [3],  # -Tower
-            [10],  # -Caslte
-            [6] #- airship
+            [4],  # -Tower
+            [],  # -Caslte
+            [9] #- airship
         ],
         [  # world 9
+            [1,2,3,4,5,6,7,8],
             [],  # -1
             [],  # -2
             [],  # -3

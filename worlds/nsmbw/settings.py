@@ -10,6 +10,7 @@ class NSMBWSettings(settings.Group):
     class GameFilePath(settings.UserFilePath):
         """A path to your game file, preferable that  it ends with either .iso or .wbfs"""
         required = True
+        valid_file_extensions = [".iso", ".wbfs"]
 
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
@@ -22,6 +23,7 @@ class NSMBWSettings(settings.Group):
         """Optional path to an external UTpack (not yet created)"""
         required = False  # You can comment this to force users to have the poptracker map
         ut_dialog_name = "Select Poptracker pack"  # Optional: customize the dialog message
+        valid_file_extensions = [".zip"]
 
     class CollectLevel(settings.IntEnum):
         """Set this to specify how client should respond to a location being remotly collected

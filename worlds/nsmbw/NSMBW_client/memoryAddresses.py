@@ -6,6 +6,8 @@ from pathlib import Path
 import Utils
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 from ..Common import *
+from ..Utils import int_to_bytes
+
 
 class CodePatch:
     addr: int
@@ -161,8 +163,15 @@ class MemoryAddresses(object):
 
 
         self.coins = self.map_between("E2", 0x80354EA3)
-        ## patches
 
+        ## patches ---------------------------------------------------
+
+        #Skip title screen movies
+        # credit to mkwcat for creating this
+        self.skipp_title_screen = [
+            self.create_patch("P1",  0x80781FB8, int_to_bytes(0x60000000, 4)),
+            self.create_patch("P1",  0x80781FBC, int_to_bytes(0x38600000, 4))
+        ]
 
 
     def map_between(self, ver_from : str, address : int) -> int:

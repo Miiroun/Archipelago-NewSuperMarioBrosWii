@@ -20,12 +20,12 @@ def map_nd(list_obj : list, func : Callable) -> list:
 
 def cast_object_to_type(_object, _type) -> Any:
     match _type:
+        case type(False):
+            return bool(_object)
         case type(1):
             return int(_object)
         case type(1.0):
             return float(_object)
-        case type(False):
-            return bool(_object)
         case type(""):
             return str(_object)
         case type([]):

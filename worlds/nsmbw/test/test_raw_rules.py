@@ -22,7 +22,7 @@ class TestRawRules(NSMBWWorld):
 
     def test_1_1(self):
         """Test some of 1-1"""
-        self.collect_by_name("World1")
+        self.collect_by_name(name_world_unlock(1))
 
 
         complete1_1 = self.world.get_location(name_level(1, 1))
@@ -43,11 +43,11 @@ class TestRawRules(NSMBWWorld):
 
     def test_bowser(self):
         """Test reaching bowsers"""
-        self.collect_by_name("World8")
-        self.collect_by_name("World8")
+        self.collect_by_name(name_world_unlock(8))
+        self.collect_by_name(name_world_unlock(8))
         self.assertFalse(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state))
 
-        self.collect_by_name("World1")
+        self.collect_by_name(name_world_unlock(1))
         for _ in range(100):
             self.collect_by_name(ITEM.StarCoin)
         self.assertTrue(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state))
