@@ -118,7 +118,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             for sc in range(1, 3+1):
                 level_location = get_location_names_with_ids([name_starcoin(world_num, level_num, sc)])
-                if world.options.randomize_coins:
+                if world.options.randomize_starcoins:
                     world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)
                 else:
                     world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)

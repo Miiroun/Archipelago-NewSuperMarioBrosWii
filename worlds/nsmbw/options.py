@@ -203,6 +203,7 @@ class DeathLink(DeathLink):
     """
     display_name = "Death Link"
     default = False
+
 class DeathLinkGroup(FreeText):
     """Death Link only applies to players with an identical Group name.
     Games that don't support the Group option count as having an empty group name."""
@@ -237,6 +238,14 @@ class TrapItems(ItemSet):
     valid_keys = set(TRAPS)
     default = set(TRAPS)
 
+class SaveStateSlot(Range):
+    """
+    Which save state slot the client should use to auto save too
+    """
+    display_name = "Save Slot"
+    range_start = 1
+    range_end = 7
+    default = 7
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName".
@@ -245,7 +254,7 @@ class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
     include_shortcuts : IncludeShortcuts
     include_hintmovies : IncludeHintMovies
-    randomize_coins: RandomizeStarCoins
+    randomize_starcoins: RandomizeStarCoins
     include_inventory_powerups : IncludeNumberInventoryItems
     include_starting_locations : IncludeStartingItems
 
@@ -272,7 +281,7 @@ class NSMBWOptions(PerGameCommonOptions):
     death_link : DeathLink
     death_link_group : DeathLinkGroup
     starcoin_collect_immediately : StarCoinCollectImmediately
-
+    save_state_slot : SaveStateSlot
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
@@ -309,7 +318,7 @@ option_groups = [
             LogicDifficulty,
             LogicOutsidePowerups,
             World9UnlockCondition,
-            StartingWorld
+            StartingWorld,
         ]
     ),
     OptionGroup(
@@ -325,7 +334,9 @@ option_groups = [
         "Other",
         [
             DeathLink,
-            StarCoinCollectImmediately
+            DeathLinkGroup,
+            StarCoinCollectImmediately,
+            SaveStateSlot,
         ],
     ),
 ]
@@ -335,7 +346,7 @@ option_presets = {
         "include_level_completion": IncludeLevelCompletion.default,
         "include_shortcuts": IncludeShortcuts.default,
         "include_hintmovies": IncludeHintMovies.default,
-        "randomize_coins": RandomizeStarCoins.default,
+        "randomize_starcoins": RandomizeStarCoins.default,
 
         "randomize_movement": RandomizeMovement.default,
         "dont_rando_move": DontRandoMovement.default,
@@ -355,7 +366,7 @@ option_presets = {
         "include_level_completion": IncludeLevelCompletion.option_false,
         "include_shortcuts": IncludeShortcuts.option_false,
         "include_hintmovies": IncludeHintMovies.option_false,
-        "randomize_coins": RandomizeStarCoins.option_false,
+        "randomize_starcoins": RandomizeStarCoins.option_false,
         "starting_world": 1,
         "include_inventory_powerups": 0,
         "include_starting_locations": 0,
@@ -374,7 +385,7 @@ option_presets = {
         "include_level_completion": IncludeLevelCompletion.option_true,
         "include_shortcuts": IncludeShortcuts.option_true,
         "include_hintmovies": IncludeHintMovies.option_true,
-        "randomize_coins": RandomizeStarCoins.option_true,
+        "randomize_starcoins": RandomizeStarCoins.option_true,
         "starting_world": "random",
         "include_inventory_powerups" : 999,
         "include_starting_locations" : 0,
@@ -399,21 +410,22 @@ def adjust_options(world):
     req_start_loc = -10
     req_start_loc_max = 10
     if (world.options.include_hintmovies.value == False):
-        print(f"(NSMBW generation error) Turning off include_hintmovies can cause fill errors with a low amount of num_starting_locations.")
+        #print(f"(NSMBW generation error) Turning off include_hintmovies can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if (world.options.include_level_completion.value == False):
-            print(f"(NSMBW generation error) Turning off include_level_completion can cause fill errors with a low amount of num_starting_locations.")
+            #print(f"(NSMBW generation error) Turning off include_level_completion can cause fill errors with a low amount of num_starting_locations.")
             req_start_loc += 30
             req_start_loc_max += 15
-    if (world.options.randomize_coins.value == False):
-        print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
+    if (world.options.randomize_starcoins.value == False):
+        #print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 15
     if (world.options.include_shortcuts.value == False):
-        print(f"(NSMBW generation error) Turning off include_shortcuts can cause fill errors with a low amount of num_starting_locations.")
+        #print(f"(NSMBW generation error) Turning off include_shortcuts can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
 
     if world.options.include_starting_locations.value <= req_start_loc:
-        print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
+        print(f"Low amount of locations detected in nsmbw, this can cause fill errors if generate alone")
+        #print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
         #world.options.include_starting_locations.value = min(req_start_loc, req_start_loc_max)
 
 

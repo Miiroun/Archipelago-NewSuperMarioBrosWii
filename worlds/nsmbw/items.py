@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from BaseClasses import Item, ItemClassification
 from .Common import *
@@ -100,28 +100,32 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 
     return NSMBWItem(name, classification, ITEM_NAME_TO_ID[name], world.player)
 
+pip_essen = {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
+extra_start_items : Dict[int,set]= {
+    1: set(), 2: set(),3: pip_essen,
+    4 : {ITEM.MOVEMENT.Swim}|pip_essen,
+    5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Swim} | pip_essen,
+    6: set(), 7: {ITEM.MOVEMENT.Swim} | pip_essen,
+    8 : {ITEM.MOVEMENT.Run} | pip_essen
+}
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
 def create_all_items(world: NSMBWworld) -> None:
-    starting_world_num = world.options.starting_world.value
+    starting_world_num : int = world.options.starting_world.value
     excluded_items : set = set()
     excluded_items.update({name_world_unlock(starting_world_num)})
-    extra_start_items = {
-        3: {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}, 4 : {ITEM.MOVEMENT.Swim, ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp},
-        5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}, 7:{ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}, 8 : {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.Run, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
-    }
+
     if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
-        excluded_items.update({ITEM.MOVEMENT.ButtonRight})
+        excluded_items.update(world.options.dont_rando_move.value)
+        excluded_items.update({ITEM.MOVEMENT.ButtonRight} | pip_essen)
         if not ((ITEM.MOVEMENT.SpinJump in excluded_items) or ( ITEM.MOVEMENT.Jump in excluded_items)):
             if world.random.randint(0,1) == 0:
                 excluded_items.update({ITEM.MOVEMENT.SpinJump})
             else:
                 excluded_items.update({ITEM.MOVEMENT.Jump})
 
-        if starting_world_num in extra_start_items:
-            excluded_items.update(extra_start_items[starting_world_num])
+        excluded_items.update(extra_start_items[starting_world_num])
 
-        excluded_items.update(world.options.dont_rando_move.value)
 
     # This is the function in which we will create all the items that this world submits to the multiworld item pool.
     # There must be exactly as many items as there are locations.
@@ -134,7 +138,7 @@ def create_all_items(world: NSMBWworld) -> None:
 
     itempool: list[Item] = []
 
-    if world.options.randomize_coins.value == True:
+    if world.options.randomize_starcoins.value == True:
         for _ in range(77*3):
             itempool.append(world.create_item(ITEM.StarCoin))
     for i in range(1, 9+1):

@@ -37,6 +37,7 @@ class NSMBWworld(World):
     options: nsmbw_option.NSMBWOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
 
     settings: nsbmw_settings.NSMBWSettings
+    settings_key = nsbmw_settings.NSMBWSettings.settings_key
 
     # Our world class must have a static location_name_to_id and item_name_to_id defined.
     # We define these in regions.py and items.py respectively, so we just set them here.
@@ -72,9 +73,9 @@ class NSMBWworld(World):
         locations.create_all_locations(self)
 
         #-----------------------------todo remove these after bugfix
-        state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
-        state.update_reachable_regions(self.player)
-        visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
+        #state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
+        #state.update_reachable_regions(self.player)
+        #visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
 
     def generate_early(self) -> None:
         if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -123,7 +124,7 @@ class NSMBWworld(World):
     def overwrite_options(self, slot_data: dict[str, Any]):
         option_set : set = self.options.__dict__.keys() - self.default_options_set
         for item in (option_set & slot_data.keys()):
-            setattr(getattr(self.options, item), "value", cast_object_to_type(slot_data[item], type(getattr(getattr(self.options, item),"value"))))
+            setattr(getattr(self.options, item), "value", cast_object_to_type(slot_data[item], getattr(getattr(self.options, item),"value")))
         self.star_coin_req_per_world_9_level = slot_data["star_coin_req_per_world_9_level"]
 
 

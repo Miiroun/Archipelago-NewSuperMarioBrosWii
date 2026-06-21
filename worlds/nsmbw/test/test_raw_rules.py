@@ -15,8 +15,8 @@ class TestRawRules(NSMBWWorld):
 
     def test_inventory(self):
         """Test Inventory powerups inventory"""
-        self.assertTrue(self.world.get_location("Inventory_powerup_001").can_reach(self.multiworld.state))
-        self.assertFalse(self.world.get_location("Inventory_powerup_006").can_reach(self.multiworld.state))
+        self.assertTrue(self.world.get_location(name_inventory(1)).can_reach(self.multiworld.state))
+        self.assertFalse(self.world.get_location(name_inventory(6)).can_reach(self.multiworld.state))
 
 
 

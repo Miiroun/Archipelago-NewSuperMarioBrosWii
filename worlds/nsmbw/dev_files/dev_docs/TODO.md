@@ -1,8 +1,8 @@
 ## NOW
-- create system for temorary buffs : control revers, moonjump, speed etc etc
 - vissuliz region
 - rework order that check if in level / worldmap : have in menu be first but also default
   - us dme to improve
+- save which index prossesing items left off on
 
 ## Super short term
 - Fix dying -> freeze
@@ -13,7 +13,6 @@
   - exists specific memory location
 - Run save on disconnect
 - I think something with level completion is bugged
-- Death link aren't received properly?
 - Look at playthrough and see if that says something wrong
 - Is something problematic with UT option overwrite, with types changing?: Might be with type bools
 - Write some docs on how poptrackers work
@@ -22,7 +21,7 @@
   - climb sometimes softlocks you : solve this with /kill : docs 
 - https://github.com/randovania/py-dolphin-memory-engine/issues/10
   - create a gecko code that loads the instruction for me??
-  - or just relly on people turning off keybinds require focus
+  - or just really on people turning off keybinds require focus
 - Message : only connect on the world map
 - Ask to get added to index
 - Work on skipping intro cutsceen
@@ -30,11 +29,9 @@
 - Logic bug hint movie 12
 - Only check for death when in between old states: double protection
 - Send link to glossary in client: Maybe open as window?
-- Add disclaimer about AI
 - Add error if incompatible versions are used
 - Set inventory powerups to last clear location on server on connect: update when new recived
-- Add docs for settings: 
-  - talk about them in glosory
+
 - Implement light geck-code parsing
 - Add component to slot data: "don't copy me"
 - Try getting version control to work
@@ -43,8 +40,6 @@
 - Store traps when not in level
 - Figure out how levels are stored in memory/ how its decisided which level to load
 - Add contact me on discord if you want to work on this : want help from moder with experience
-- Add a post in dc about ai
-  - Disclosure: ai more clearly and newansed in credit
 - Add image to client launcher
 - Make collection a setting : Client command to change it
 - --hook worlds.tracker.fuzzer_hook:Hook
@@ -52,6 +47,8 @@
 - Reverse control trap??
 - How / where is the games level / enemy info loaded : look at mod tools, figure out if can replace
 - decompile some level files, look at their structure, same with world map
+- double check that early items work
+- option to specify which slot to save to?
 
 
 ## Playtest
@@ -92,7 +89,7 @@
 - yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
 - Closing game sends deathlink
 - Bug? : if amount support received > 99 it'll send out inventory locations
-- Deathlink broken : I think messege is not recived by client
+- Deathlink broken : I think messege is not recived by client, problems with receiving
 - 8-T_sc2 not sending
 - Says in go mode with just 1 world 8 and other requirements
 - Doesnt open dolpin on start
@@ -202,6 +199,8 @@
   - One of set world level / level world changes ingame level: can be used for level rando
 - Do something with coin battles?
   - Maybe have location for collecting at least % in levels, each level is an item
+- Get rid of keyboard
+  - Can do this by creating a instruction write wrapper that writes instruction to data and then have function in game load it instead: icbi followed by isync
 
 ## Features I (Miiroun) will not implement
 - Native wii support

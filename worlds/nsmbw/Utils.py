@@ -20,19 +20,19 @@ def map_nd(list_obj : list, func : Callable) -> list:
 
 def cast_object_to_type(_object, _type) -> Any:
     match _type:
-        case type(False):
+        case bool():
             return bool(_object)
-        case type(1):
+        case int():
             return int(_object)
-        case type(1.0):
+        case float():
             return float(_object)
-        case type(""):
+        case str():
             return str(_object)
-        case type([]):
+        case list():
             return list(_object)
-        case type(set()):
+        case set():
             return set(_object)
-        case type(dict()):
+        case dict():
             return dict(_object)
         case _:
             raise TypeError(f"Type {type(_object)} of object {_object} is not supported")

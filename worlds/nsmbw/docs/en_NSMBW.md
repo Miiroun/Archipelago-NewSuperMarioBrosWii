@@ -38,11 +38,20 @@ config file.
     - pipe
 - Filler items
   - Inventory fill (one of every powerup)
-  - 1ups
+  - 1ups 
+  - Coin x01
+  - Coin x50
+  - Filler Power-up
 - Traps
   - Loose powerup trap
   - Goomba speed trap
   - Death trap
+  - Time trap 
+  - Robbery trap
+  - Shrink trap
+  - Literature trap
+  - Throw trap 
+  - Reverse Control trap
 
 
 ## Locations
@@ -53,12 +62,21 @@ config file.
 
 
 ## Options
+Options are specific to generation and are changed each multiworld, this is not a comprehensive list.
 - Starting world is selectable in option
 - Most locations and items can be turned on/off in options
 - You can select your requirement for reaching bowser in your goal
 - You can select normal or hard rules, with normal being trivial to figure out and hard REQUIRING skips and trix. 
   - Normal rules is highly recommended
 - You can also select if you want brining powerups from outside the level to be considered in logic.
+
+## Settings
+Settings can be found in host.yaml in the "nsmbw_settings" category and are playthrough agnostic.
+- game_file_path (either .wbfs or .iso)
+- auto_open(if the client should open and close dolphin automatically)
+- collect_level (where location collected from afar should be marked in game, 0 = off, 1 = on except final levels, 2 = on)
+- ut_pack_path (ignore for now, this is for if a UT-compatible pop-tracker is made)
+- save_file_path (the file location (relative to /archipelago/) which the client uses to save files)
 
 
 ## Known quirks / bugs
@@ -78,9 +96,9 @@ config file.
 - Known Issues for other game versions
   - ALL others : inventory features (remove fill_inventor and inventory checks)
   - EU1: entier movement (dont turn on)
-  - US1: Star and swim movement (add these to dont rando moves if you have movement rando on)
+  - US1: Star and swim movement (add these to don't rando moves if you have movement rando on)
 - Don't go to the game menu with archipelago connected, this means don't use quick save in game: instead make save states.
-
+- On Linux you will need to give the client root access for it to properly access save states
 
 ## Client commands
 - /toogle_deathlink

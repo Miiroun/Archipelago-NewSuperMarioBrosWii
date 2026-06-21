@@ -4,11 +4,15 @@ from enum import Enum
 
 from typing import Dict, Optional, List
 
-import win32gui
-
 from ..Common import *
 from Utils import is_frozen
-from . import keyboard
+try:
+    from . import keyboard
+except ImportError as e:
+    print(e)
+    print("for now you will need to give the client root access on linux")
+    raise ImportError("for now you will need to give the client root access on linux")
+
 from . import PowerPCInstructions
 from .dolphin_interface_client import *
 from ..Utils import bytes_to_int, int_to_bytes
@@ -110,6 +114,7 @@ class NSMBWInterface():
                 self.memory_addresses = MemoryAddresses(version_name)
 
 
+
             # The first read of the address will be null if the client is faster than the emulator
             #self.current_game = None
             #for version in GAME_VERSIONS:
@@ -133,9 +138,15 @@ class NSMBWInterface():
 
 
             if self.current_game:
+                if not self.is_in_worldmap():
+                    logger.info("You need to be on the worldmap to connect to the server")
+                    # raise ValueError("You need to be on the worldmap to connect to the server")
+                    return False
                 self.logger.info(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}")
+                return True
         except DolphinException as e:
-            logger.error(f"An excpetion {e} happend when connecting to dolphin")
+            logger.error(f"An exception {e} happened when connecting to dolphin")
+        return False
 
 
     def disconnect_from_game(self):
@@ -281,7 +292,7 @@ class NSMBWInterface():
 
     @staticmethod
     def save_state(slot : int, do_logging=True):
-        wait_long   = 0.2
+        wait_long   = 0.4
         wait_short  = 0.1
 
         if do_logging:
@@ -303,18 +314,20 @@ class NSMBWInterface():
 
     @staticmethod
     def load_state(slot : int, do_logging=True):
-        wait_long   = 0.2
+        wait_long   = 0.4
         wait_short  = 0.1
 
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
 
-        keyboard.press("F8")
         time.sleep(wait_short)
-        keyboard.release("F8")
+        keyboard.press(f"F{slot}")
+        time.sleep(wait_short)
+        keyboard.release(f"F{slot}")
         time.sleep(wait_long)
 
     def clear_cache(self):
+        self.should_clear = 0
         #if self.is_in_level() or self.is_in_worldmap():
         logger.info("Clearing JIT cache by loading savestate")
 
@@ -322,8 +335,11 @@ class NSMBWInterface():
         #pyautogui.getWindowsWithTitle("Dolphin")[0].activate()
         #handle = win32gui.FindWindow(0, "Dolphin")
         #win32gui.SetForegroundWindow(handle)
+        time.sleep(0.3)
         self.save_state(8, do_logging=False)
+        time.sleep(0.5)
         self.load_state(8, do_logging=False)
+        time.sleep(0.3)
 
         #asyncio.sleep(1)
         # should maybe put this behind actual checking
@@ -350,7 +366,7 @@ class NSMBWInterface():
         self.write_instruction(patch.addr, patch.code, clear)
 
     def add_number(self, address : int, update_value: int, max : int = 99):
-        prev_value = int(self.dolphin_client.read_address(address, 1))
+        prev_value = bytes_to_int(self.dolphin_client.read_address(address, 1))
         value = prev_value + update_value
         if value >= max:
             value = max
@@ -591,9 +607,12 @@ class NSMBWInterface():
         for _patch in patches:
             self.apply_patch(_patch)
 
-    def patch_goomba_speed(self):
+    def patch_goomba_speed(self, norm=False):
         address = self.memory_addresses.goomba_walk
-        self.write_instruction(address, int_to_bytes(0x40000000, 4) + int_to_bytes(0xc0000000, 4), clear=True)  # f2.0 # f-2.0
+        if not norm:
+            self.write_instruction(address, int_to_bytes(0x40000000, 4) + int_to_bytes(0xc0000000, 4), clear=True)  # f2.0 # f-2.0
+        else:
+            self.write_instruction(address, int_to_bytes(0x3f000000, 4) + int_to_bytes(0xbf000000, 4), clear=True)  # f2.0 # f-2.0
 
     # just created
     def get_sc(self):

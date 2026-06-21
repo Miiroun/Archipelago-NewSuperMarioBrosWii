@@ -8,54 +8,56 @@ LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 
 class ITEM:
     class POWERUP(StrEnum):
-        Super_Mushroom = "Super_Mushroom"
-        Fire_Flower = "Fire_Flower"
-        Mini_Mushroom = "Mini_Mushroom"
-        Propeller_Mushroom = "Propeller_Mushroom"
-        Penguin_Suit = "Penguin_Suit"
-        Ice_Flower = "Ice_Flower"
+        Super_Mushroom = "Super Mushroom"
+        Fire_Flower = "Fire Flower"
+        Mini_Mushroom = "Mini Mushroom"
+        Propeller_Mushroom = "Propeller Mushroom"
+        Penguin_Suit = "Penguin Suit"
+        Ice_Flower = "Ice Flower"
 
     class MOVEMENT(StrEnum):
-        GroundPound = "ground_pound"
-        WallJump = "wall_jump"
-        Crouch = "crouch"
-        Yoshi = "yoshi"
-        Swim = "swim"
+        GroundPound = "Ground pound"
+        WallJump = "Wall jump"
+        Crouch = "Crouch"
+        Yoshi = "Yoshi"
+        Swim = "Swim"
         PSwitch = "p-switch"
         RedSwitch = "!-switch"
-        Star = "star"
-        Climb = "climb"
-        Carry = "carry"
-        Door = "door"
+        Star = "Star"
+        Climb = "Climb"
+        Carry = "Carry"
+        Door = "Door"
         QuestSwitch = "?-switch"
-        SpinJump = "spin_jump"
-        Pipe = "pipe"
-        Jump = "jump"
-        Run = "run"
-        ButtonLeft = "button_left"
-        ButtonRight = "button_right"
-        ButtonUp = "button_up"
-        ButtonDown = "button_down"
+        SpinJump = "Spin_jump"
+        Pipe = "Pipe"
+        Jump = "Jump"
+        Run = "Run"
+        ButtonLeft = "Button left"
+        ButtonRight = "Button right"
+        ButtonUp = "Button up"
+        ButtonDown = "Button down"
 
     class TRAPS(StrEnum):
-        LoosePowerupTrap = "Loose_powerup_trap"
-        GoombaTrap = "Goomba_trap"
-        DeathTrap = "Death_trap"
-        TimeTrap = "Time_trap"
-        RobberyTrap = "Robbery_trap"
-        ShrinkTrap = "Shrink_trap"
-        LiteratureTrap = "Literature_trap"
+        LoosePowerupTrap = "Loose powerup trap"
+        GoombaTrap = "Goomba trap"
+        DeathTrap = "Death trap"
+        TimeTrap = "Time trap"
+        RobberyTrap = "Robbery trap"
+        ShrinkTrap = "Shrink trap"
+        LiteratureTrap = "Literature trap"
+        ThrowTrap = "Throw trap"
+        ReverseControlTrap = "Reverse Control trap"
 
     class FILLER(StrEnum):
-        FillInventory = "fill_inventory"
+        FillInventory = "fill inventory"
         OneUps = "1-ups"
         CoinOne = "Coin x01"
         CoinFifty = "Coin x50"
         PowerUp = "Filler Power-up"
 
     StarCoin = "Starcoin"
-    Time = "Time_left"
-    GlitchedLogic = "glitched_logic"
+    Time = "Time left"
+    GlitchedLogic = "glitched logic"
 
 
 
@@ -104,10 +106,10 @@ def name_secret(world_num : int, level_num : int) -> str:
 
 def name_world_clear(world_num : int) ->  str:
     assert 1 <= world_num <= 8
-    return f"World{world_num}_clear"
+    return f"World{world_num} clear"
 def name_tower_clear(world_num : int) -> str:
     assert 1 <= world_num <= 8
-    return f"World{world_num}_tower" #f"Tower{world_num}_clear" #
+    return f"World{world_num} 1/2 clear" #f"Tower{world_num}_clear" #
 
 def name_hintmovie(i:int) -> str:
     from worlds.nsmbw.NSMBW_client.NSMBWInterface import HINTMOVIE_COUNT
@@ -116,11 +118,18 @@ def name_hintmovie(i:int) -> str:
 
 def name_inventory(i : int) -> str:
     assert 1 <= i <= 999
-    return f"Inventory_powerup_{i:03}"
+    return f"Inventory powerup {i:03}"
 
 def name_world_unlock(world_num : int):
     assert 1 <= world_num <= 9
     return f"World{world_num}_progressive"
+
+def base_bijection(name : str ) -> tuple[int, int]:
+    for world_num in range(1,9+1):
+        for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
+            if name_base(world_num, level_num) == name:
+                return world_num, level_num
+    raise ValueError(f"Level: {name} not found")
 
 def level_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,9+1):

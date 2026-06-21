@@ -21,12 +21,9 @@ def launch_NSMBW_client(*args):
         multiprocessing.freeze_support()
         logger.info("main")
         parser = get_base_parser()
-        path = r"custom_worlds/nsmbw.apworld" if Utils.is_frozen() else os.path.abspath(pathlib.Path()) + r"\\worlds\\nsmbw"
-
-        parser.add_argument("apnsmbw_file", default=path, type=str, nargs="?", help="Path to an apnsmbw file")
         parser_args = parser.parse_args()
 
-        ctx = NSMBWContext(parser_args.connect, parser_args.password, parser_args.apnsmbw_file)
+        ctx = NSMBWContext(parser_args.connect, parser_args.password)
 
         ctx.auth = args.name
 
