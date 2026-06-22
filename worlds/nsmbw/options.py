@@ -247,6 +247,16 @@ class SaveStateSlot(Range):
     range_end = 7
     default = 7
 
+class ModifierMultiplierPercentage(Range):
+    """
+    A percentage which to multiply the modifier time with.
+    Will still clear on death.
+    """
+    display_name = "Modifier Multiplier Percentage"
+    range_start = 1
+    range_end = 1000
+    default = 100
+
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName".
 @dataclass
@@ -281,7 +291,9 @@ class NSMBWOptions(PerGameCommonOptions):
     death_link : DeathLink
     death_link_group : DeathLinkGroup
     starcoin_collect_immediately : StarCoinCollectImmediately
+
     save_state_slot : SaveStateSlot
+    modifier_multiplier_percentage : ModifierMultiplierPercentage
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
@@ -337,6 +349,7 @@ option_groups = [
             DeathLinkGroup,
             StarCoinCollectImmediately,
             SaveStateSlot,
+            ModifierMultiplierPercentage
         ],
     ),
 ]

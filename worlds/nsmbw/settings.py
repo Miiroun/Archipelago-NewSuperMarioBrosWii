@@ -26,14 +26,15 @@ class NSMBWSettings(settings.Group):
         valid_file_extensions = [".zip"]
 
     class CollectLevel(settings.IntEnum):
-        """Set this to specify how client should respond to a location being remotly collected
-        0 = ignore, 1= update if not imortant (castle / final level), 2= update even if important ( for same slot coop)
+        """
+        Set this to specify how client should respond to a location being remotely collected
+        0 = ignore, 1= update if not important (castle / final level), 2= update even if important ( for same slot coop)
         """
         required = True
 
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
-    game_file_path: settings.Union[GameFilePath, str] = GameFilePath("nsmbw.wbfs")
+    game_file_path: settings.Union[GameFilePath, str] = GameFilePath("nsmbw")
     auto_open: AutoOpenGame | bool = True
     collect_level : CollectLevel | int = 1
     ut_pack_path: Union[UTPackPath, str] = UTPackPath("nsmbw\\Poptracker_pack_NSMBW.zip")

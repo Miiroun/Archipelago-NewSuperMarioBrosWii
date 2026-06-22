@@ -7,10 +7,10 @@
 * Report issues that are found in the AP-discord thread (or GitHub)
 
 ## Instructions for how to contribute code
-* Either fork the github repository or ask me (miiroun) to give you a branch. The latter is preferred.
+* Either fork the git-hub repository or ask me (miiroun) to give you a branch. The latter is preferred.
 * Create your changes.
-* Make a pull request towards my dev branch ( NSMBW_miiroun_dev)
-
+* Make a pull request towards the main branch (NSMBW)
+* Help from experienced NSMBW moders is highly appreciated, (contact me on discord (miiroun) if you want to work together on this)
 
 
 # Logic

@@ -1,5 +1,5 @@
 import io
-import typing
+from typing import List, Dict
 import zipfile
 from pathlib import Path
 
@@ -164,6 +164,8 @@ class MemoryAddresses(object):
 
         self.coins = self.map_between("E2", 0x80354EA3)
 
+        self.main_menu_adress = self.map_between("E2", 0x81028e82)
+
         ## patches ---------------------------------------------------
 
         #Skip title screen movies
@@ -172,6 +174,12 @@ class MemoryAddresses(object):
             self.create_patch("P1",  0x80781FB8, int_to_bytes(0x60000000, 4)),
             self.create_patch("P1",  0x80781FBC, int_to_bytes(0x38600000, 4))
         ]
+
+        self.skipp_intro_cutsceen = [
+
+        ]
+
+        self.patches : List[List[CodePatch]] = [self.skipp_title_screen, self.skipp_intro_cutsceen]
 
 
     def map_between(self, ver_from : str, address : int) -> int:
@@ -189,7 +197,7 @@ class MemoryAddresses(object):
         return self.map_between(ver_from, address)
 
 
-    def hard_code(self, mem_addresses : typing.Dict[str, int], default : str = "E2" ) -> int:
+    def hard_code(self, mem_addresses : Dict[str, int], default : str = "E2" ) -> int:
         val : int
         if self.this_version in mem_addresses.keys():
             val = mem_addresses[self.this_version]

@@ -96,13 +96,13 @@ def assert_valid_level(world_num : int, level_num : int) -> None:
     assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1]
 
 def name_level(world_num : int, level_num : int) -> str:
-    return f"{name_base(world_num,level_num)}_clear"
+    return f"{name_base(world_num,level_num)} clear"
 
 def name_starcoin(world_num : int, level_num : int, scnum : int) -> str:
-    return f"{name_base(world_num,level_num)}_sc{scnum}"
+    return f"{name_base(world_num,level_num)} sc{scnum}"
 
 def name_secret(world_num : int, level_num : int) -> str:
-    return f"Secret_exit{name_base(world_num,level_num)}"
+    return f"{name_base(world_num,level_num)} Secret exit"
 
 def name_world_clear(world_num : int) ->  str:
     assert 1 <= world_num <= 8
@@ -122,7 +122,7 @@ def name_inventory(i : int) -> str:
 
 def name_world_unlock(world_num : int):
     assert 1 <= world_num <= 9
-    return f"World{world_num}_progressive"
+    return f"World{world_num} progressive"
 
 def base_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,9+1):

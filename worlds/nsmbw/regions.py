@@ -76,7 +76,7 @@ def connect_regions(world: NSMBWworld) -> None:
             for con_lev_num in org_lev_num:
                 assert type(con_lev_num) == int, "should be an integer"
                 _rule = level_rules[world_num - 1][con_lev_num-1][0]
-                if mod_level_name(world_num,con_lev_num) == "T":
+                if mod_level_name(world_num,i) == "T":
                     _rule &= rules.Has( name_world_unlock(world_num), count=2)
 
                 if world_num == 9:

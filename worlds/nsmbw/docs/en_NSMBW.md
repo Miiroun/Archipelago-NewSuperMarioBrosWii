@@ -79,7 +79,7 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - save_file_path (the file location (relative to /archipelago/) which the client uses to save files)
 
 
-## Known quirks / bugs
+## Known quirks / bugs / help with debug
 - Starting a new save plays then ending animation instead of the starting one. This is just a visual glitch, if you enter the created savefile agin it should work.
 - You will always start in world 1, and will have to manually move to a world that you have unlocked with the worldmap.
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
@@ -99,6 +99,9 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
   - US1: Star and swim movement (add these to don't rando moves if you have movement rando on)
 - Don't go to the game menu with archipelago connected, this means don't use quick save in game: instead make save states.
 - On Linux you will need to give the client root access for it to properly access save states
+- Climb movement have issues, you can't leve vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
+- If you are connected to the game on the title screen then it will read of data in save slot 1 and might send all locations, be careful. Dont go to the main menu when you are connected to client.
+
 
 ## Client commands
 - /toogle_deathlink
@@ -123,6 +126,12 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
   - A debug command that trys to rehook dolphin.
 - /movements
   - Gives you a list of all movements you have and have not received.
+- /change_collection_level
+  - Changes your collection level, useful if you want to do this
+- /toggle_auto_open
+  - Toggles if the client should auto open dolphin and other features
+- /change_save_slot
+  - Changed the save slot that is auto-used
 - Tracker commands (extrapolated)
   - /explain [location]
     - Helpful to figure out why something is in logic, run e.g. /explain 1-1 for more helpful debug

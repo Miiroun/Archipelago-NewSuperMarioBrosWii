@@ -1,17 +1,21 @@
 import logging
 import time
+import zlib
 from enum import Enum
+import sys
+sys.set_int_max_str_digits(0)
 
 from typing import Dict, Optional, List
 
 from ..Common import *
 from Utils import is_frozen
+logger = logging.getLogger("Client")
 try:
     from . import keyboard
 except ImportError as e:
     print(e)
-    print("for now you will need to give the client root access on linux")
-    raise ImportError("for now you will need to give the client root access on linux")
+    logger.error("for now you will need to give the client root access on linux")
+    #raise ImportError("for now you will need to give the client root access on linux")
 
 from . import PowerPCInstructions
 from .dolphin_interface_client import *
@@ -56,7 +60,6 @@ GAME_VERSIONS = {
 GAMELEVELS_PER_WORLD = LEVELS_PER_WORLD
 
 
-logger = logging.getLogger("Client")
 
 class NSMBWInterface():
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with game"""
@@ -158,14 +161,15 @@ class NSMBWInterface():
             connected = self.dolphin_client.is_connected()
             if not connected or self.current_game is None:
                 return ConnectionState.DISCONNECTED
-            elif self.is_in_level():
-                return ConnectionState.IN_GAME
-            elif self.is_in_worldmap():
-                return ConnectionState.IN_WORLDMAP
             elif self.is_in_menu():
                 return ConnectionState.IN_MENU
+            elif self.is_in_worldmap():
+                return ConnectionState.IN_WORLDMAP
+            elif self.is_in_level():
+                return ConnectionState.IN_GAME
             else:
-                raise ConnectionError("Faild to connect to server")
+                print("Temporarily lost connection to dolphin")
+                #raise ConnectionError("Faild to connect to server")
         except DolphinException:
             return ConnectionState.DISCONNECTED
 
@@ -174,23 +178,21 @@ class NSMBWInterface():
         """Check if the player is in the actual game rather than the main menu"""
 
         player_status = self.get_record_state()[0]
-        worlmap_status = self.get_on_map()[0]
-        #return player_status == b'\x00' or player_status == b'\x01'
-        #print(f"status {worlmap_status}")
-
-        in_stage_flag = self.get_in_stage_flag()[3] == 1
-        is_not_on_world_map = worlmap_status != 1
         is_normal_record = player_status == 0
+
+        is_in_stage = self.get_in_stage_flag()[3] == 1
+        is_not_on_world_map = not self.is_in_worldmap()
+        is_not_on_main_menu = not self.is_in_menu()
 
 
         #return worlmap_status == 0)
-        return in_stage_flag and is_not_on_world_map and is_normal_record
+        return is_in_stage and is_not_on_world_map and is_not_on_main_menu and is_normal_record
 
     def is_in_worldmap(self) -> bool:
         return 1 == self.get_on_map()[0]
 
     def is_in_menu(self):
-        return True
+        return self.get_in_main_menu() == b'\x01'
         #print(f"record state {self.get_record_state()}")
         return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
@@ -292,6 +294,7 @@ class NSMBWInterface():
 
     @staticmethod
     def save_state(slot : int, do_logging=True):
+        assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
         wait_short  = 0.1
 
@@ -314,6 +317,7 @@ class NSMBWInterface():
 
     @staticmethod
     def load_state(slot : int, do_logging=True):
+        assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
         wait_short  = 0.1
 
@@ -603,9 +607,10 @@ class NSMBWInterface():
             self.clear_cache()
 
     async def patch_runtime_on_load(self):
-        patches : List[CodePatch] = []
-        for _patch in patches:
-            self.apply_patch(_patch)
+        for _patch in self.memory_addresses.patches:
+            for subpatch in _patch:
+                self.apply_patch(subpatch)
+        self.clear_cache()
 
     def patch_goomba_speed(self, norm=False):
         address = self.memory_addresses.goomba_walk
@@ -615,10 +620,10 @@ class NSMBWInterface():
             self.write_instruction(address, int_to_bytes(0x3f000000, 4) + int_to_bytes(0xbf000000, 4), clear=True)  # f2.0 # f-2.0
 
     # just created
-    def get_sc(self):
+    def get_sc(self) -> bytes:
         address = self.memory_addresses.sc_currentlevel
         return self.dolphin_client.read_address(address,4*3)
-    def get_level_world(self):
+    def get_level_world(self) -> bytes:
         address = self.memory_addresses.level_world
         return self.dolphin_client.read_address(address,1)
     def get_level_stats(self, world_num,level_num) -> bytes: # should make this take in world as paramiter
@@ -626,17 +631,17 @@ class NSMBWInterface():
         #return self.dolphin_client.read_address(address,4)
         dMj2dGame_c_address = self.get_dMj2dGame_c_address() +0x3
         offset = self.memory_offset_level_stats(world_num,level_num)  #magic numer to make line up with old
-        return self.dolphin_client.read_address(dMj2dGame_c_address+0x6c+offset, 4)
-    def get_inventory_items(self, type_num : int):
+        return self.dolphin_client.read_address(dMj2dGame_c_address+0x6c+offset, 1) #4
+    def get_inventory_items(self, type_num : int) -> bytes:
         address = self.memory_addresses.inventory_items + type_num -1
         return self.dolphin_client.read_address(address,1)
-    def get_world_level(self):
+    def get_world_level(self) -> bytes:
         address = self.memory_addresses.world_level# + self.save_file_offset()
         return self.dolphin_client.read_address(address,1)
-    def get_level_level(self):
+    def get_level_level(self) -> bytes:
         address = self.memory_addresses.level_level
         return self.dolphin_client.read_address(address,1)
-    def get_hm_stats(self, hm_num):
+    def get_hm_stats(self, hm_num) -> bytes:
         #address = self.memory_addresses.hm_stats +hm_num
         #address = self.memory_addresses.save_file_2_pointer # 0x06FC
         dMj2dGame_c_address = self.get_dMj2dGame_c_address() + hm_num + 0x6fc
@@ -644,13 +649,14 @@ class NSMBWInterface():
         #print(f"new hm {dMj2dGame_c_address : x}")
         #print(f"diffrance hm {address-dMj2dGame_c_address : x}")
         return self.dolphin_client.read_address(dMj2dGame_c_address,1)
-    def get_worldstats_selectmenu(self, world_num):
+    def get_worldstats_selectmenu(self, world_num) -> bytes:
+        assert 1<= world_num <= 9
         #address = self.memory_addresses.world_stats # + self.save_file_offset()
         #return self.dolphin_client.read_address(address,1)
         dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x32 + (world_num-1) - 0xa60
         return self.dolphin_client.read_address(dMj2dGame_c_address+0x32, 1)
 
-    def get_powerupstate(self, player_num):
+    def get_powerupstate(self, player_num : int) -> bytes:
         #dMj2dGame_c_address = self.get_dMj2dGame_c_address()
         #powerup_state = self.dolphin_client.read_address(dMj2dGame_c_address+0x2e+player_num*4, 1)
         #print(f"old powerup: {self.memory_addresses.powerup_state[player_num]:x}")
@@ -660,44 +666,44 @@ class NSMBWInterface():
         address = self.memory_addresses.powerup_state[player_num]
         powerup_state = self.dolphin_client.read_address(address,1)
         return powerup_state
-    def get_player_status(self):
+    def get_player_status(self) -> bytes:
         address = self.memory_addresses.player_status+3 # beacuse 4 bytes
         return self.dolphin_client.read_address(address,1)
-    def get_savefile_num(self):
+    def get_savefile_num(self) -> int:
         address = self.get_dSaveMng_c_address() +0x6
         num =  bytes_to_int(self.dolphin_client.read_address(address,1))+1
         # print(f"dSaveMng_c = {dSaveMng_c_address}")
         # print(f"Diffrance = {dSaveMng_c_address +0x6 -self.memory_addresses.savefile_num }")
         assert 1 <= num <= 3, f"Save file num needs to be in range, which {num} is not"
         return num
-    def get_time_left(self):
+    def get_time_left(self) -> bytes:
         address = self.memory_addresses.time_left
         return self.dolphin_client.read_address(address,4)
-    def get_on_map(self):
+    def get_on_map(self) -> bytes:
         address = self.memory_addresses.on_map+3 # beacuse 4 bytes
         return self.dolphin_client.read_address(address,1)
-    def get_map_world(self):
+    def get_map_world(self) -> bytes:
         address = self.memory_addresses.map_world
         return self.dolphin_client.read_address(address,1)
-    def get_record_state(self):
+    def get_record_state(self) -> bytes:
         address = self.memory_addresses.game_recording_state+3 # beacuse 4byte number
         return self.dolphin_client.read_address(address,1)
-    def get_in_stage_flag(self):
+    def get_in_stage_flag(self) -> bytes:
         address = self.memory_addresses.in_stage_flag
         return self.dolphin_client.read_address(address,4)
     def get_lives_count(self, playey_num):
         address = self.memory_addresses.mario_lifecount[playey_num]+3
         return self.dolphin_client.read_address(address,1)[0]
-    def get_water_state(self):
+    def get_water_state(self) -> bytes:
         address = self.memory_addresses.water_speed_if_in
         return self.dolphin_client.read_address(address,4)
 
-    def get_dSaveMng_c_address(self):
+    def get_dSaveMng_c_address(self) -> int:
         pointer_dSaveMng_c_pointer = self.memory_addresses.dSaveMng_c_pointer
         dSaveMng_c_address = bytes_to_int(self.dolphin_client.read_address(pointer_dSaveMng_c_pointer, 4)) +0x20
         return dSaveMng_c_address
 
-    def get_dMj2dGame_c_address(self):
+    def get_dMj2dGame_c_address(self) -> int:
         current_file = self.get_savefile_num()-1
         #print(f"current_file = {current_file}")
         #print(F"Other file = {self.dolphin_client.read_pointer(pointer_dSaveMng_c_pointer, 0x6, 1)}")
@@ -710,9 +716,13 @@ class NSMBWInterface():
         dMj2dGame_c_address = dSaveMng_c_address+offset
         #print(f"dMj2dGame_c_address_offset {dMj2dGame_c_address_offset:x}")
         return dMj2dGame_c_address  # this extra here was added by trial and error, but proberbly shouldnt be there
+    def get_in_main_menu(self) -> bytes:
+        address = self.memory_addresses.main_menu_adress
+        return self.dolphin_client.read_address(address,1)
 
 
     def set_worldstats(self,world_num : int, status : bytes):
+        assert 1 <= world_num <= 9
         #address = self.memory_addresses.world_stats + (world_num-1) # + self.save_file_offset()
         #self.dolphin_client.write_address(address, status)
         dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x32 + (world_num-1)
@@ -768,6 +778,25 @@ class NSMBWInterface():
     def set_coin_count(self, data : bytes):
         address = self.memory_addresses.coins
         self.dolphin_client.write_address(address, data)
+
+
+    def update_check_sum(self):
+        # didnt manage to make this one work
+        return
+        address_begin = self.get_dMj2dGame_c_address()
+        address_check_sum = self.get_dMj2dGame_c_address() + 0x97c
+        data : bytes = self.dolphin_client.read_address(address_begin,0x97c-2)
+        print(f"data {data}, data as int {bytes_to_int(data) : x}")
+
+        current_sum = self.dolphin_client.read_address(address_check_sum,4)
+        print(f"current_sum int: {bytes_to_int(current_sum)  : x}, current sum bytes{current_sum}")
+        new_sum = zlib.crc32(data) # signed -> unsigned
+        print(f"new sum{new_sum : x}")
+        print(f"new sum, formatted {new_sum^ 0xffffffff : x}")
+        print(f"sum diff {new_sum - bytes_to_int(current_sum) : x}")
+
+        return
+        self.dolphin_client.write_address(address_check_sum,bytes_to_int(new_sum, 4))
 
     def update_inventory_items(self, type_num : int, increase : int):
         amount = bytes_to_int(self.get_inventory_items(type_num))
