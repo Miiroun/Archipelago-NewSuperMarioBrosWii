@@ -138,12 +138,6 @@ class MemoryAddresses(object):
         #80057650 removes both walk and run speed
         # 8042bb20 # speed mult value
         self.address_big_jump = self.map_between("P1", 0x8005e758)
-        self.address_run = self.map_between("P1",0x8005e610)
-        self.address_button_left = self.map_between("P1", 0x8005e510)
-        self.address_button_right = self.map_between("P1", 0x8005e520)
-        self.address_button_up = self.map_between("P1", 0x8005e4f0)
-        self.address_button_down = self.map_between("P1", 0x8005e500)
-
 
 
         self.death_address = self.map_between("E2",0x800555DC)
@@ -161,9 +155,6 @@ class MemoryAddresses(object):
         #self.water_movement_speed  =self.map_between("P1", 0x80935b18)
         self.water_speed_if_in = self.hard_code({ "E2" : 0x8154C8DA}) #self.map_between("P1", 0x8154C8DA)
 
-        self.goomba_walk = self.map_between("E2", 0x80ad2870)
-
-
         self.coins = self.map_between("E2", 0x80354EA3)
 
         self.main_menu_adress = self.map_between("E2", 0x81028e82)
@@ -171,16 +162,44 @@ class MemoryAddresses(object):
 
         # movement etc patches
         self.patch_check_point = self.create_patch("P1",0x807E215C, instru_6000, origin=instru_beq + val_0014, name="check point")
-        self.patch_spin_jump = self.create_patch("P1", 0x8005e780, intru_lbz_r3 + val_0000, origin=intru_lbz_r3 + val_0017, name="spin_jump")
+        self.patch_spin_jump = self.create_patch("P1", 0x8005e780, instru_lbz_r3 + val_0000, origin=instru_lbz_r3 + val_0017, name="spin_jump")
 
         self.patch_climb_pole = [self.create_patch("E2", 0x80072180, PowerPCInstructions.instru_li + PowerPCInstructions.reg_r0,origin =  b'\x94\x21\xff\xb0', name="climb_pole1"),
                                  self.create_patch("E2", 0x80072184, PowerPCInstructions.instru_return,origin=b'\x7c\x08\x02\xa6', name = "climb_pole2")]
         self.patch_climb_ladder = self.create_patch(f"E2", 0x800d1dc0,PowerPCInstructions.instru_return, b"\x2c\x05" + PowerPCInstructions.reg_r0, name="climb_ladder")
-        self.patch_climb_tarzan_vine = self.create_patch("E2", 0x80137320, PowerPCInstructions.instru_return, PowerPCInstructions.intru_stwu + b"\xff\xc0", "climb_tarzan")
-        self.patch_climb_vine_still = self.create_patch("E2", 0x80132c70, PowerPCInstructions.instru_return, PowerPCInstructions.intru_stwu + b"\xff\xc0", "vine_still")
-        self.patch_climb_vine_fall = self.create_patch("E2", 0x801327f0, PowerPCInstructions.instru_return, PowerPCInstructions.intru_stwu + b"\xff\xc0", "vine_fall")
+        self.patch_climb_tarzan_vine = self.create_patch("E2", 0x80137320, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "climb_tarzan")
+        self.patch_climb_vine_still = self.create_patch("E2", 0x80132c70, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_still")
+        self.patch_climb_vine_fall = self.create_patch("E2", 0x801327f0, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_fall")
 
-        self.patch_throw = self.create_patch("P1", 0x8005e680,PowerPCInstructions.instru_return, PowerPCInstructions.intru_b + b'\xff\x50', "throw")
+        button_off_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x00'
+        button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
+
+
+        self.patch_throw = self.create_patch("P1", 0x8005e680,PowerPCInstructions.instru_return, b'\x4b\xff\xff\x50', "throw")
+
+        self.patch_carry_shell = [self.create_patch("P1", 0x8005e5f0, b'\x38\x00\x00\x00', button_on_instru,"carry_shell1"),
+                                  self.create_patch("P1", 0x8005e5fc, b'\x38\x00\x00\x00', button_on_instru,"carry_shell2")]
+
+        self.patch_button_run = self.create_patch("P1",0x8005e610,PowerPCInstructions.instru_lhz + b'\x03\xff\xff', button_on_instru,"button_run")
+        self.patch_button_right = self.create_patch("P1", 0x8005e520, button_off_instru,button_on_instru,"button_right")
+        self.patch_button_left = self.create_patch("P1", 0x8005e510,button_off_instru,button_on_instru, "button_left")
+        self.patch_button_up = self.create_patch("P1", 0x8005e4f0, button_off_instru,button_on_instru,"button_up")
+        self.patch_button_down = self.create_patch("P1", 0x8005e500,button_off_instru,button_on_instru, "button_down")
+
+        self.patch_button_right_reverse = self.create_patch("P1", 0x8005e524, b'\x54\x03\x07\x38', b'\x54\x03\x07\x7a', "button_right_reverse")
+        self.patch_button_left_reverse = self.create_patch("P1", 0x8005e514, b'\x54\x03\x07\x38', b'\x54\x03\x07\x7a', "button_left_reverse")
+
+
+        self.patch_goomba_speed = [self.create_patch("E2", 0x80ad2870, int_to_bytes(0x40000000, 4),int_to_bytes(0x3f000000, 4), "goomba_speed1" ), # f2.0 # f-2.0
+                                   self.create_patch("E2", 0x80ad2874, int_to_bytes(0xc0000000, 4),int_to_bytes(0xbf000000, 4), "goomba_speed1" )]# f2.0 # f-2.0
+
+        self.patch_player_super_speed = [self.create_patch("P1", 0x80376ca0, b'\x40\xa0\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk"),
+                                         self.create_patch("P1", 0x80376ca8, b'\x41\x20\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
+                                         self.create_patch("P1", 0x80376ca8, b'\x41\x20\x00\x00', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
+
+        self.patch_player_slow_speed = [self.create_patch("P1", 0x80376ca0, b'\x3f\x40\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk"),
+                                         self.create_patch("P1", 0x80376ca8, b'\x40\x00\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
+                                         self.create_patch("P1", 0x80376ca8, b'\x3d\x4c\xcc\xcd', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
 
 
         ## patch patches ---------------------------------------------------
@@ -198,7 +217,7 @@ class MemoryAddresses(object):
         patch_skipp_intro_cutscene = [
             #self.create_patch("P1", 0x809191C8, instru_noop, origin=instru_li + val_0008),
             #self.create_patch("P1", 0x809191D8, instru_noop, origin= instru_b)
-            self.create_patch("P1", 0x809191c4, instru_b, origin=instru_beq + val_0018, name="skipp_intro")
+            self.create_patch("P1", 0x809191c4, instru_b+b'\x00\x00\x18', origin=instru_beq + val_0018, name="skipp_intro")
 
         ]
 
@@ -209,19 +228,28 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x80776B3C, instru_li + val_0001, name="final_castle")
         ]
 
-        # from mkwcat pipe rando, want to find way to reverese
-        #// Always go to the next world when the castle level is completed
-        #kmWrite32(0x808CC968, 0x41820050);
-        #kmWrite32(0x808CC970, 0x41820048);
-        #kmWrite32(0x808CC9E0, 0x38600001);
+        #// Always go to the next world when the castle level is completed, reversed from mkwcat pipe rando
+        patch_skipp_move_next_world = [self.create_patch("P1", 0x808cc9e0, instru_noop, name="skipp_move_next_world")]
 
-        #Always can save patches
-        #kmWrite32(0x8077AA7C, 0x60000000); // message
-        #kmWrite32(0x8092FD00, 0x38000002); // button behavior
+
+        #Always can save patches, from mkwcat pipe rando
+        patch_allways_save = [
+            self.create_patch("P1", 0x8077AA7C, int_to_bytes(0x60000000, 4), name="patch_allways_save_message"),
+            self.create_patch("P1", 0x8092FD00, int_to_bytes(0x38000002, 4), name="patch_allways_save_button_behavior")
+        ]
+
+        # Exit Course Anytime [mkwcat] https://github.com/mkwcat/gecko-codes/blob/master/source/nsmbw/Exit-Course-Anytime.cpp
+        exit_course_anytime = self.create_patch("P1", 0x800B4EA8,instru_li + b'\x03' + b'\x01' , name="exit_course_anytime")
+
+
 
         # this put all patches in a list that is called on connect
+        self.patches : List[List[CodePatch] | CodePatch] = [
+            patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
+            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime
+        ]
 
-        self.patches : List[List[CodePatch] | CodePatch] = [patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen]
+        # address 0x80162fb8 might be good to create a branch from
 
 
     def map_between(self, ver_from : str, address : int) -> int:
@@ -260,7 +288,7 @@ class MemoryAddresses(object):
 
 
     def create_patch(self,ver_from : str,  addr: int, code: bytes, origin : bytes |None = None, name : str = "") -> CodePatch:
-        assert len(code) == 4, f"Code {code} should be 4 bytes"
+        assert len(code) == 4, f"Code {code} with name {name} should be 4 bytes"
         if origin is not None:
             assert len(origin) == 4, f"Origin {origin} should be 4 bytes"
         return CodePatch(self.map_between(ver_from, addr), code, origin, name)

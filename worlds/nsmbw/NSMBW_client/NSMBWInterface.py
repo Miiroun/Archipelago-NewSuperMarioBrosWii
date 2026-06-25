@@ -7,7 +7,7 @@ from enum import Enum
 import sys
 sys.set_int_max_str_digits(0)
 
-from typing import Dict, Optional, List, Iterable
+from typing import Optional, Iterable
 
 from ..Common import *
 
@@ -20,11 +20,9 @@ except ImportError as e:
     logger.error("for now you will need to give the client root access on linux")
     #raise ImportError("for now you will need to give the client root access on linux")
 
-from . import PowerPCInstructions
 from .dolphin_interface_client import *
 from ..Utils import bytes_to_int, int_to_bytes
 from ..items import ITEM_NAME_TO_ID
-from ..locations import LEVELS_PER_WORLD
 
 from .memoryAddresses import *
 
@@ -192,13 +190,14 @@ class NSMBWInterface():
 
 
         #return worlmap_status == 0)
+        #print(f"is_in_stage and is_not_on_world_map and is_not_on_main_menu and is_normal_record {is_in_stage} {is_not_on_world_map} {is_not_on_main_menu}  {is_normal_record}")
         return is_in_stage and is_not_on_world_map and is_not_on_main_menu and is_normal_record
 
     def is_in_worldmap(self) -> bool:
         return 1 == self.get_on_map()[0]
 
     def is_in_menu(self):
-        return self.get_in_main_menu() == b'\x01'
+        return self.get_in_main_menu() == b'\x01' and (bytes_to_int(self.get_level_level()) + 1 != 21) # for some reason this triggers in 4-G
         #print(f"record state {self.get_record_state()}")
         return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
@@ -383,12 +382,13 @@ class NSMBWInterface():
         else:
             return False
 
-    def apply_patch(self, patch : CodePatch | Iterable, clear : bool=False, reverse : bool=False):
+    def apply_patch(self, patch : CodePatch | Iterable, reverse : bool=False, double_check : bool = True):
+        clear: bool = False
         # this allows recursive patching
         if isinstance(patch, Iterable):
             for subpatch in patch:
                 assert isinstance(subpatch, CodePatch | Iterable)
-                self.apply_patch(subpatch, clear=False, reverse = reverse)
+                self.apply_patch(subpatch, reverse = reverse, double_check = double_check)
             if clear and self.should_clear >= 1:
                 self.clear_cache()
             return
@@ -396,7 +396,7 @@ class NSMBWInterface():
         # this applies patch
         if not patch.origin is None:
             current_bytes = self.dolphin_client.read_address(patch.addr, len(patch.code))
-            if not current_bytes in [val_0000+val_0000,patch.code, patch.origin]: # ignores a write to 00000000, since tried to load patch before game data
+            if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
                 raise ValueError(f"bytes {current_bytes} at addr {patch.addr} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
         if not reverse:
             self.write_instruction(patch.addr, patch.code, clear)
@@ -555,12 +555,12 @@ class NSMBWInterface():
                 #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
                 #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
                 #else:
-                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffe0)
-                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffd0)
+                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffe0)
+                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffd0)
 
             if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
                 #cary_shell
-                self.apply_patch(self.memory_addresses.patch_throw, ITEM.MOVEMENT.Carry in unlocked_moves)
+                self.apply_patch(self.memory_addresses.patch_carry_shell, ITEM.MOVEMENT.Carry in unlocked_moves)
 
 
             if not ITEM.MOVEMENT.Pipe in slot_data_dont_rando:
@@ -568,7 +568,7 @@ class NSMBWInterface():
                 if not ITEM.MOVEMENT.Pipe in unlocked_moves:
                     self.write_instruction(address, PowerPCInstructions.instru_return)
                 else:
-                    self.write_instruction(address, PowerPCInstructions.intru_stwu + PowerPCInstructions.val_ffc0)
+                    self.write_instruction(address, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffc0)
 
             if not ITEM.MOVEMENT.Jump in slot_data_dont_rando:
                 address = self.memory_addresses.address_big_jump
@@ -581,36 +581,17 @@ class NSMBWInterface():
             button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
 
             if not ITEM.MOVEMENT.Run in slot_data_dont_rando:
-                address = self.memory_addresses.address_run
-                if not ITEM.MOVEMENT.Run in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_lhz + b'\x03\xff\xff')
-                else:
-                    self.write_instruction(address, button_on_instru)
+                self.apply_patch(self.memory_addresses.patch_button_run, ITEM.MOVEMENT.Run in unlocked_moves)
 
             if not ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando:
-                address = self.memory_addresses.address_button_right
-                if not ITEM.MOVEMENT.ButtonRight in unlocked_moves:
-                    self.write_instruction(address, button_off_instru)
-                else:
-                    self.write_instruction(address, button_on_instru)
+                self.apply_patch(self.memory_addresses.patch_button_right, ITEM.MOVEMENT.ButtonRight in unlocked_moves)
             if not ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando:
-                address = self.memory_addresses.address_button_left
-                if not ITEM.MOVEMENT.ButtonLeft in unlocked_moves:
-                    self.write_instruction(address, button_off_instru)
-                else:
-                    self.write_instruction(address, button_on_instru)
+                print(f"butt left {ITEM.MOVEMENT.ButtonLeft in unlocked_moves}")
+                self.apply_patch(self.memory_addresses.patch_button_left, ITEM.MOVEMENT.ButtonLeft in unlocked_moves)
             if not ITEM.MOVEMENT.ButtonUp in slot_data_dont_rando:
-                address = self.memory_addresses.address_button_up
-                if not ITEM.MOVEMENT.ButtonUp in unlocked_moves:
-                    self.write_instruction(address, button_off_instru)
-                else:
-                    self.write_instruction(address, button_on_instru)
+                self.apply_patch(self.memory_addresses.patch_button_up, ITEM.MOVEMENT.ButtonUp in unlocked_moves)
             if not ITEM.MOVEMENT.ButtonDown in slot_data_dont_rando:
-                address = self.memory_addresses.address_button_down
-                if not ITEM.MOVEMENT.ButtonDown in unlocked_moves:
-                    self.write_instruction(address, button_off_instru)
-                else:
-                    self.write_instruction(address, button_on_instru)
+                self.apply_patch(self.memory_addresses.patch_button_down, ITEM.MOVEMENT.ButtonDown in unlocked_moves)
 
 
             if not ITEM.MOVEMENT.SpinJump in slot_data_dont_rando:
@@ -619,18 +600,9 @@ class NSMBWInterface():
             if not ITEM.MOVEMENT.CheckPoint in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_check_point, reverse = ITEM.MOVEMENT.CheckPoint in unlocked_moves)
 
-        if self.should_clear >= 1:
-            self.clear_cache()
-
     async def patch_runtime_on_load(self):
-        self.apply_patch(self.memory_addresses.patches, clear=True)
+        self.apply_patch(self.memory_addresses.patches)
 
-    def patch_goomba_speed(self, norm=False):
-        address = self.memory_addresses.goomba_walk
-        if not norm:
-            self.write_instruction(address, int_to_bytes(0x40000000, 4) + int_to_bytes(0xc0000000, 4), clear=True)  # f2.0 # f-2.0
-        else:
-            self.write_instruction(address, int_to_bytes(0x3f000000, 4) + int_to_bytes(0xbf000000, 4), clear=True)  # f2.0 # f-2.0
 
     # just created
     def get_sc(self) -> bytes:

@@ -192,7 +192,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move, [climb, True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), run | (mini_o | (star_o & logic_hard)) | (propeller & (climb | outside_powerups))]],  # -6
             [normal_move &tower_rules, [True_(), wall_jump | propeller_o, True_()]],  # -7 1-T
-            [normal_move & door, [True_(), True_(), (propeller_o | wall_jump) & p_switch]],  # -8 1-C
+            [normal_move & door & get_time_rule(world, 200), [True_(), True_(), (propeller_o | wall_jump) & p_switch]],  # -8 1-C
         ],
         [  # world 2
             [normal_move, [True_(), True_(), carry | propeller_o | mini_o]],  # -1
@@ -233,7 +233,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move, [True_(), True_(), carry]],  # -5
             [normal_move & door & question_switch, [door & question_switch, door & question_switch, door & question_switch], door & question_switch],  # -6 5-Ghosthouse
             [normal_move&tower_rules & (carry | wall_jump | propeller_o), [True_(), True_(), super_mario]],  # -7 5-T
-            [normal_move& door, [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
+            [normal_move & door & get_time_rule(world, 150), [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
         ],
         [  # world 6
             [normal_move, [True_(), True_(), True_()]],  # -1

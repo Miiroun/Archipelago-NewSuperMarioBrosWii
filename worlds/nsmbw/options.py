@@ -69,13 +69,17 @@ class RandomizePowerups(Choice):
 
 class RandomizeTime(Range):
     """
-    Will make your starting time be separated into discreet section. Select O if you want to disable this option.
+    Will make your starting time be separated into discreet section and you will start with one.
+    E.g. if 5 then you will start with 100 mario seconds and each time item will give you 100 more,
+    if 2 then start with 250 mario seconds and one time that unlocks 250 more.
+    Select O if you want to disable this option.
     """
 
     range_start = 0
-    range_end = 10
+    range_end = 5
+    #range_end = 10
     #range_end = 20
-    default = 0
+    default = 2
     #default = 5
 
     #visibility = Option.visibility.complex_ui
@@ -160,6 +164,14 @@ class IncludeNumberInventoryItems(Range):
     range_end = 999
     default = 40
 
+class MakeWorldCompPriority(Toggle):
+    """
+    Makes half world comp and world comp locations priority,
+    Have a small increase in solo generation failers (0.5 %)
+    """
+    display_name = "Make World Completion Priority"
+    default = True
+
 class BowserCastleStarUnlock(Range):
     """
     This setting applies requirements of at least x star coins to unlock final level
@@ -202,6 +214,7 @@ class DeathLinkGroup(FreeText):
 class AmountSupportReceived(Range):
     """
     This setting will set the amount of 1ups and powerups send to inventory when receiving their corresponding items.
+    If set to -1 it will randomize between 1 and 10 each time you get an item
     """
     display_name = "Amount Support items received from ap-items"
     range_start = -1
@@ -253,6 +266,7 @@ class NSMBWOptions(PerGameCommonOptions):
     include_hintmovies : IncludeHintMovies
     randomize_starcoins: RandomizeStarCoins
     include_inventory_powerups : IncludeNumberInventoryItems
+    make_world_comp_priority : MakeWorldCompPriority
 
 
     randomize_movement : RandomizeMovement
@@ -291,6 +305,7 @@ option_groups = [
             IncludeHintMovies,
             RandomizeStarCoins,
             IncludeNumberInventoryItems,
+            MakeWorldCompPriority,
         ],
     ),
     OptionGroup(

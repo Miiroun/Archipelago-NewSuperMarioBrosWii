@@ -36,10 +36,10 @@ for world_num in range(1,9+1): # worlds
     # add location for beating castles and towers
     if world_num != 9:
         LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 2000+100*world_num + 1})
-        LOCATION_NAME_TO_ID.update({f"World{world_num}_tower" : 2000+100*world_num + 2})
+        LOCATION_NAME_TO_ID.update({name_tower_clear(world_num) : 2000+100*world_num + 2})
 LOCATION_NAME_GROUPS.update({"Starcoins" : world_set })
 LOCATION_NAME_GROUPS.update({"Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)) })
-LOCATION_NAME_GROUPS.update({"Towers" : set(f"World{world_num}_tower" for world_num in range(1,8+1)) })
+LOCATION_NAME_GROUPS.update({"Towers" : set(name_tower_clear(world_num) for world_num in range(1,8+1)) })
 
 
 
@@ -98,9 +98,9 @@ def make_locations_priority(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
-                pass
-                #world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
-                #world.get_location(f"World{world_num}_tower").progress_type = LocationProgressType.PRIORITY
+                if world.options.make_world_comp_priority.value == True:
+                    world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
+                    world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
     if world.options.include_hintmovies.value == True:
         for i in DEPRIO_HM:
             hm = world.get_location(name_hintmovie(i))
@@ -123,7 +123,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
                     #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", ITEM.StarCoin, location_type=NSMBWLocation, item_type=items.NSMBWItem)
         # add location for beating castles and towers
         if world_num != 9:
-            level_location = get_location_names_with_ids([f"World{world_num}_tower"])
+            level_location = get_location_names_with_ids([name_tower_clear(world_num)])
             world.get_region(f"{world_num}-T").add_locations(level_location, NSMBWLocation)
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
             world.get_region(get_name_base_of_last_level_in_world(world_num)).add_locations(level_location, NSMBWLocation)

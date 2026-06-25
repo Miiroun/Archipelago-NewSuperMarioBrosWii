@@ -27,7 +27,7 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     ITEM.GlitchedLogic : ItemClassification.progression,
 }
 
-important_items = {ITEM.MOVEMENT.SpinJump, ITEM.MOVEMENT.Jump, ITEM.MOVEMENT.Run, ITEM.MOVEMENT.Pipe,
+important_items = {ITEM.MOVEMENT.Jump, ITEM.MOVEMENT.Run, ITEM.MOVEMENT.Pipe,
                    ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp, ITEM.POWERUP.Super_Mushroom,
                    ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.ButtonRight}
 

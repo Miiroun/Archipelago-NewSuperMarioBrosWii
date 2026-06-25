@@ -48,6 +48,8 @@ class ITEM:
         LiteratureTrap = "Literature trap"
         ThrowTrap = "Throw trap"
         ReverseControlTrap = "Reverse Control trap"
+        MovementLockTrap   = "Movement lock trap"
+        SlowTrap    = "Slow Trap"
 
     class FILLER(StrEnum):
         FillInventory = "fill inventory"
@@ -55,7 +57,8 @@ class ITEM:
         CoinOne     = "Coin x01"
         CoinTen     = "Coin x10"
         CoinFifty   = "Coin x50"
-        PowerUp = "Filler Power-up"
+        PowerUp = "Random Power-up"
+        SuperSpeed = "Super Speed"
 
     StarCoin = "Starcoin"
     Time = "Time left"
@@ -77,7 +80,7 @@ PLAYER_COUNT = 1
 def mod_level_name(worldnum : int, levelnum : int) -> str:
     shift = 1 if worldnum in [7,8] else 0
     new_level = levelnum - shift
-    if (worldnum, levelnum) in [(3,6),(5,6),(7,7)]:
+    if (worldnum, levelnum) in [(3,6),(4,6),(5,6),(7,7)]:
         return "G"
     if worldnum !=9:
         if new_level == 7:

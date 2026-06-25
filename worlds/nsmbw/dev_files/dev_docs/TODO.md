@@ -1,9 +1,9 @@
 ## Super short term
 - do short playthrough, starting at world8, no bowser req
-- fix carry shell? search where used in ghidra
 
 ## Playtest
-
+- test  gosthuse, airship send sc imiditly
+- Test if on connect packets update correctly for collection
 
 ## Bugs to fix
 - Inventory item doesn't work on other versions
@@ -15,18 +15,17 @@
   - Kill when in water
 - Us pipe rando patches : always move next world → never
   - Look at pipe rando code for different patches : always move to next world seems useful
-- fix UT-autotab
+- fix UT-autotab : actually works?
 - Hint movies does not work on other save files?
 - Inventory powerups only work savefile 2 : make a part of dSave pointer
 - Derefrense player  pointer
 - Add support for multiplayer and other savefile support
 - Add enemy ambush and toad rescue
-- Ask to get added to index: when doing next release
 - PERSISTANTSTORAGE instead of local save file
-- I have issue with fuzzing with hooks, UT and global_mutation
+- I have issue with fuzzing with hooks: UT 
 - Do playhtough, document completion times for time logic
 - Fix so work with multiple dolphin instances (so players can have all games open at same time)
-
+- Movement lock trap doesn't work with move rando
 
 
 ## Broken versions
@@ -103,9 +102,15 @@
   - Sandstorm
   - Darkness
   - Meteor
-  - Stun / freez trap
+  - Stun / freez trap : mario → ice block
+  - Spawn enemies
+  - Auto scroll
+  - Speed up / slow down game clock
+  - Ice physics
 - FILLER 
   - Gain this levels check point
+  - Get toad house (beginning of world)
+  - Insta kill all enemies
 - Features from gecko
   - Speed trap
   - fall damage trap
@@ -113,12 +118,9 @@
 
 ## Game patches
 - Coin worlds single player
-- Skipp intro cutscene
 - Skipp playing hint movies when buying them
 - Update world map - file
 - AP-images for toad houses
-- Not move forward to next world after completing previous
-- allways leave level
 
 
 ## Long term
@@ -128,6 +130,8 @@
   - Maybe have location for collecting at least % in levels, each level is an item
 - Get rid of keyboard
   - Can do this by creating a instruction write wrapper that writes instruction to data and then have function in game load it instead: icbi followed by isync
+- Fix so work with multiple dolphin instances
+
 
 ## Features I (Miiroun) will not implement
 - Native wii support
