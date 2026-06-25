@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Tuple, List
 
 from BaseClasses import Item, ItemClassification
 from .Common import *
@@ -35,6 +35,16 @@ for i in range(1,9+1):
     ITEM_NAME_TO_ID.update({name_world_unlock(i) : 200 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({name_world_unlock(i) : ItemClassification.progression})
 ITEM_NAME_GROUPS.update({"Worlds" : set(name_world_unlock(i) for i in range(1,9+1))})
+
+nicks : List[Tuple[str,str]] = [
+    ("spin", ITEM.MOVEMENT.SpinJump.value),
+    ("mushroom", ITEM.POWERUP.Super_Mushroom.value)
+]
+for world_num in range(1,9+1):
+    nicks.append((f"World{world_num}", name_world_unlock(world_num)))
+
+for nick in nicks:
+    ITEM_NAME_GROUPS.update({nick[0]: {nick[1]}})
 
 # could add movement rando as checks
 
@@ -90,9 +100,9 @@ def get_random_filler_item_name(world: NSMBWworld) -> str:
 
 
     if world.random.randint(0, 99) < world.options.trap_chance:
-        return str( world.random.choice(list(world.options.trap_items.value)) )
+        return str( world.random.choice(sorted(list(world.options.trap_items.value))) )
     else:
-        return str( world.random.choice(list(world.options.filler_items.value)) )
+        return str( world.random.choice(sorted(list(world.options.filler_items.value))) )
 
 def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSMBWItem:
 
@@ -102,11 +112,13 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 
 pip_essen = {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
 extra_start_items : Dict[int,set]= {
-    1: set(), 2: set(),3: pip_essen,
-    4 : {ITEM.MOVEMENT.Swim}|pip_essen,
+    1: set(),
+    2: set(),
+    3: pip_essen,
+    4 : {ITEM.MOVEMENT.Swim} | pip_essen,
     5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Swim} | pip_essen,
     6: set(), 7: {ITEM.MOVEMENT.Swim} | pip_essen,
-    8 : {ITEM.MOVEMENT.Run} | pip_essen
+    8 : {ITEM.MOVEMENT.Run, ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.Jump} | pip_essen
 }
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
@@ -120,9 +132,9 @@ def create_all_items(world: NSMBWworld) -> None:
         excluded_items.update({ITEM.MOVEMENT.ButtonRight} | pip_essen)
         if not ((ITEM.MOVEMENT.SpinJump in excluded_items) or ( ITEM.MOVEMENT.Jump in excluded_items)):
             if world.random.randint(0,1) == 0:
-                excluded_items.update({ITEM.MOVEMENT.SpinJump})
+                excluded_items.update({ITEM.MOVEMENT.SpinJump.value})
             else:
-                excluded_items.update({ITEM.MOVEMENT.Jump})
+                excluded_items.update({ITEM.MOVEMENT.Jump.value})
 
         excluded_items.update(extra_start_items[starting_world_num])
 
@@ -261,8 +273,8 @@ def create_all_items(world: NSMBWworld) -> None:
     # will not make you start in world 9
 
     #print(f" excluded movements: {excluded_items}")
-    for _item in excluded_items:
+    for _item in sorted(list(excluded_items)):
         world.push_precollected(world.create_item(_item))
-    world.options.dont_rando_move.value = excluded_items.copy()
+    world.options.dont_rando_move.value = excluded_items.copy() & set(MOVEMENT_UNLOCKS)
 
 

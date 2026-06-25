@@ -14,10 +14,10 @@ config file.
 
 ## Items
 - Progression items
-  - 17 World unlocks (are progressive, requires 2 to unlock whole world except world 9) e.g. World1, World2
+  - 17 World unlocks (are progressive, requires 2 to unlock whole world except world 9) e.g. World1 progressive, World2 progressive ...
   - 231 Star coins (so many star coins), used for buying hint movies, unlocking world 9 levels and bowser 
   - The amount of in game time you have to complete a level. You select in the option how many times you divide the 500 mario seconds in.
-  - 6 Power-up unlocks
+  - 6 Power-up unlocks (star counted as a move)
   - Move unlocks (needs to be unlocked before can be used) (some of these are experimental and currently locked)
     - button up/down/right/left
     - run
@@ -36,10 +36,12 @@ config file.
     - climb ( pole, ladders, ledge and vines)
     - door
     - pipe
+    - Checkpoint
 - Filler items
   - Inventory fill (one of every powerup)
   - 1ups 
   - Coin x01
+  - Coin x10
   - Coin x50
   - Filler Power-up
 - Traps
@@ -55,9 +57,9 @@ config file.
 
 
 ## Locations
-- Completing normal levels and collecting their star coins. (77 levels and 231 star coins) e.g. 1-1_clear, 1-1_sc1
+- Completing normal levels and collecting their star coins. (77 levels and 231 star coins) e.g. 1-1 Clear, 1-1 sc1, 2-C = 2-Castle, 3-G = 3-Ghosthouse, 4-A = 4-Airship
 - Buying hint movies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if you need help with unlocking them. e.g. Hintmovie01
-- Completing towers, castles and secret exits that unlock cannons ( 8 towers, 8 castles and 8 secret exits) World1_tower, Secret_exit1-3
+- Completing towers, castles and secret exits that unlock cannons ( 8 towers, 8 castles and 8 secret exits) World1 tower, 1-3 Secret exit
 - Getting powerups to inventory (from toad-houses or enemy ambushes) e.g. Inventory_powerup_001
 
 
@@ -101,7 +103,12 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - On Linux you will need to give the client root access for it to properly access save states
 - Climb movement have issues, you can't leve vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
 - If you are connected to the game on the title screen then it will read of data in save slot 1 and might send all locations, be careful. Dont go to the main menu when you are connected to client.
-
+- Generation failure:
+  - Either problem around start : increase location count in multiworld
+  - Or set accessibility: full, nsmbw have problems generation with one game that has another accessibility setting if bowser_star_coin req is too high
+- loading save state sends lots of inventory items
+- The clock might not display modified time correctly, but is accurate.
+- Star will display visually as active when not, if not unlocked and bring it from inventory
 
 ## Client commands
 - /toogle_deathlink

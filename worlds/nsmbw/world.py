@@ -5,7 +5,7 @@ from BaseClasses import CollectionState, ItemClassification, MultiWorld
 from NetUtils import JSONMessagePart
 from worlds.AutoWorld import World
 
-from . import items, locations, regions, rules, web_world
+from . import items, locations, regions, rules, web_world, raw_rules
 from . import options as nsmbw_option
 from . import settings as nsbmw_settings
 
@@ -118,6 +118,7 @@ class NSMBWworld(World):
         slot_data = self.options.as_dict(*option_list)
         #slot_data["version"]  = self.world_version
         slot_data["star_coin_req_per_world_9_level"] = self.star_coin_req_per_world_9_level
+        slot_data["NSMBW_Version"] = self.world_version
         return slot_data
 
     # UT-tracket imlementation
@@ -146,6 +147,27 @@ class NSMBWworld(World):
             return specific_rules[target_name]
         else:
             return []
+
+    def explain_more(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
+        text : str| None = None
+        rule_list = raw_rules.specific_level_requierments(self)
+        try:
+            world_num, level_num = level_bijection(target_name)
+            text = repr(rule_list[world_num-1][level_num-1][0].to_dict())
+        except ValueError:
+            try:
+                world_num, level_num = base_bijection(target_name)
+                text = repr(rule_list[world_num - 1][level_num - 1][0].to_dict())
+            except ValueError:
+                try:
+                    world_num, level_num, sc_num = sc_bijection(target_name)
+                    text = repr(rule_list[world_num - 1][level_num - 1][1][sc_num-1].to_dict())
+                except ValueError:
+                    text = f"{target_name} is not a valid level or star coin name and can therefor not be explained more"
+        if text is not None:
+            return [{"type":"text","text":text}]
+        else:
+            return None
 
     def map_page_index(data: Any) -> int:
         try:

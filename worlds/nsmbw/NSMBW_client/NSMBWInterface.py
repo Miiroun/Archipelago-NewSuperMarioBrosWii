@@ -1,13 +1,16 @@
+import asyncio
 import logging
 import time
+import traceback
 import zlib
 from enum import Enum
 import sys
 sys.set_int_max_str_digits(0)
 
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Iterable
 
 from ..Common import *
+
 from Utils import is_frozen
 logger = logging.getLogger("Client")
 try:
@@ -79,10 +82,11 @@ class NSMBWInterface():
     should_clear : int
 
 
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self, logger: Logger, log_color) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
         self.should_clear = 0
+        self.log_color = log_color
 
 
 
@@ -96,9 +100,10 @@ class NSMBWInterface():
 
             try:
                 game_rev: Optional[int] = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS + 7, 1)[0]
-            except:
+            except Exception as e:
                 game_rev = None
-
+                logger.error(traceback.format_exc())
+                logger.error(f"error {e}, when trying to read game revision")
 
             #print("seraching for game rev")
             #print((game_id, game_rev))
@@ -142,12 +147,13 @@ class NSMBWInterface():
 
             if self.current_game:
                 if not self.is_in_worldmap():
-                    logger.info("You need to be on the worldmap to connect to the server")
+                    logger.info("It is recommended to be on the worldmap instead of main menu when connecting to the archipelago server")
                     # raise ValueError("You need to be on the worldmap to connect to the server")
-                    return False
+                    #return False
                 self.logger.info(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}")
                 return True
         except DolphinException as e:
+            logger.error(traceback.format_exc())
             logger.error(f"An exception {e} happened when connecting to dolphin")
         return False
 
@@ -292,8 +298,7 @@ class NSMBWInterface():
 
         return address
 
-    @staticmethod
-    def save_state(slot : int, do_logging=True):
+    def save_state(self, slot : int, do_logging=True):
         assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
         wait_short  = 0.1
@@ -301,22 +306,26 @@ class NSMBWInterface():
         if do_logging:
             logger.info(f"Saved savestate to slot {slot}")
 
+        try:
+            time.sleep(wait_long)
+            keyboard.release("shift")
+            time.sleep(wait_short)
+            keyboard.press("shift")
+            time.sleep(wait_short)
+            keyboard.press(f"F{slot}")
+            time.sleep(wait_short)
+            keyboard.release(f"F{slot}")
+            time.sleep(wait_short)
+            keyboard.release("shift")
+            time.sleep(wait_long)
+            #asyncio.sleep(1)
+        except Exception as e:
+            logger.info(traceback.format_exc())
+            self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message", "red")
 
-        time.sleep(wait_long)
-        keyboard.release("shift")
-        time.sleep(wait_short)
-        keyboard.press("shift")
-        time.sleep(wait_short)
-        keyboard.press(f"F{slot}")
-        time.sleep(wait_short)
-        keyboard.release(f"F{slot}")
-        time.sleep(wait_short)
-        keyboard.release("shift")
-        time.sleep(wait_long)
-        #asyncio.sleep(1)
 
-    @staticmethod
-    def load_state(slot : int, do_logging=True):
+
+    def load_state(self, slot : int, do_logging=True):
         assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
         wait_short  = 0.1
@@ -324,16 +333,23 @@ class NSMBWInterface():
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
 
-        time.sleep(wait_short)
-        keyboard.press(f"F{slot}")
-        time.sleep(wait_short)
-        keyboard.release(f"F{slot}")
-        time.sleep(wait_long)
+        try:
+            time.sleep(wait_short)
+            keyboard.press(f"F{slot}")
+            time.sleep(wait_short)
+            keyboard.release(f"F{slot}")
+            time.sleep(wait_long)
+
+        except Exception as e:
+            logger.info(traceback.format_exc())
+            self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message", "red")
+
 
     def clear_cache(self):
-        self.should_clear = 0
+        if self.should_clear == 0:
+            raise ValueError(f"shouldn't clear")
         #if self.is_in_level() or self.is_in_worldmap():
-        logger.info("Clearing JIT cache by loading savestate")
+        #logger.info("Clearing JIT cache by loading savestate")
 
 
         #pyautogui.getWindowsWithTitle("Dolphin")[0].activate()
@@ -345,11 +361,12 @@ class NSMBWInterface():
         self.load_state(8, do_logging=False)
         time.sleep(0.3)
 
+        self.should_clear = 0
+
         #asyncio.sleep(1)
         # should maybe put this behind actual checking
-        logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
-                    " JIT cache manualy (JIT -> clear chache).")
-
+        #logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
+        #            " JIT cache manualy (JIT -> clear chache).")
 
 
 
@@ -358,16 +375,35 @@ class NSMBWInterface():
         if current_value != data:
             self.dolphin_client.write_address(address, data)
             #logger.info("Instruction changed")
+            self.should_clear += 1
+
             if clear:
                 self.clear_cache()
-            else:
-                self.should_clear += 1
             return True
         else:
             return False
 
-    def apply_patch(self, patch : CodePatch, clear : bool=False):
-        self.write_instruction(patch.addr, patch.code, clear)
+    def apply_patch(self, patch : CodePatch | Iterable, clear : bool=False, reverse : bool=False):
+        # this allows recursive patching
+        if isinstance(patch, Iterable):
+            for subpatch in patch:
+                assert isinstance(subpatch, CodePatch | Iterable)
+                self.apply_patch(subpatch, clear=False, reverse = reverse)
+            if clear and self.should_clear >= 1:
+                self.clear_cache()
+            return
+
+        # this applies patch
+        if not patch.origin is None:
+            current_bytes = self.dolphin_client.read_address(patch.addr, len(patch.code))
+            if not current_bytes in [val_0000+val_0000,patch.code, patch.origin]: # ignores a write to 00000000, since tried to load patch before game data
+                raise ValueError(f"bytes {current_bytes} at addr {patch.addr} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
+        if not reverse:
+            self.write_instruction(patch.addr, patch.code, clear)
+        elif hasattr(patch, "origin"):
+            self.write_instruction(patch.addr, patch.origin, clear)
+        else:
+            raise ValueError(f"patch {patch} {patch.name} is not a valid patch, tried to reverse without origin set")
 
     def add_number(self, address : int, update_value: int, max : int = 99):
         prev_value = bytes_to_int(self.dolphin_client.read_address(address, 1))
@@ -461,6 +497,7 @@ class NSMBWInterface():
 
             if not ITEM.MOVEMENT.Swim in unlocked_moves:
                 if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
+                    logger.info("The floor is lava, but water is actually the floor, so don't touch it.")
                     await self.kill_player()
                     self.set_water_state(int_to_bytes(0,4))
                 else:
@@ -473,47 +510,30 @@ class NSMBWInterface():
             #        await self.kill_player()
             #    else:
             #        pass
-            if not ITEM.MOVEMENT.Climb in slot_data_dont_rando:
-                #climb_pole
-                address = self.memory_addresses.address_hang_pole
-                if not ITEM.MOVEMENT.Climb in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_load_im + PowerPCInstructions.reg_r0 + PowerPCInstructions.instru_return)
-                else:
-                    self.write_instruction(address, b'\x94\x21\xff\xb0' +b'\x7c\x08\x02\xa6')
-
+            if not ITEM.MOVEMENT.PSwitch in slot_data_dont_rando:
                 if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
-                    self.set_p_switch_timer(int_to_bytes(0,4))
+                    self.set_p_switch_timer(int_to_bytes(0, 4))
 
+            if not ITEM.MOVEMENT.Star in slot_data_dont_rando:
                 if not ITEM.MOVEMENT.Star in unlocked_moves:
-                    self.set_star_timer(int_to_bytes(0,4))
+                    self.set_star_timer(int_to_bytes(0, 4))
+
+
+            if not ITEM.MOVEMENT.Climb in slot_data_dont_rando:
+                # climb pole
+                self.apply_patch(self.memory_addresses.patch_climb_pole, reverse= ITEM.MOVEMENT.Climb in unlocked_moves)
+
 
                 #climb_ladders
-                address = self.memory_addresses.address_hang_ladder
-                if not ITEM.MOVEMENT.Climb in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_return)
-                else:
-                    self.write_instruction(address, b"\x2c\x05" + PowerPCInstructions.reg_r0)
-                #return
-
+                #self.apply_patch(self.memory_addresses.patch_climb_ladder, reverse= ITEM.MOVEMENT.Climb in unlocked_moves)
 
                 # this causes game to crash / freez when climb fence
                 #climb_vine
-                #address_stand_still = self.memory_addresses.address_climb_vine_still
-                #address_fall = self.memory_addresses.address_climb_vine_fall
-                #if not "climb" in unlocked_moves:
-                #    self.write_instruction(address_stand_still, PowerPCInstructions.instru_return)
-                #    self.write_instruction(address_fall, PowerPCInstructions.instru_return)
-                #else:
-                #    self.write_instruction(address_stand_still, PowerPCInstructions.intru_stwu + b"\xff\xc0")
-                #    self.write_instruction(address_fall, PowerPCInstructions.intru_stwu + b"\xff\xc0")
+                #self.apply_patch(self.memory_addresses.patch_climb_vine_still, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
+                #self.apply_patch(self.memory_addresses.patch_climb_vine_fall, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
 
-                #return
                 #swing_vine
-                address = self.memory_addresses.address_tarzan_vine
-                if not ITEM.MOVEMENT.Climb in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_return)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.intru_stwu + b"\xff\xc0")
+                self.apply_patch(self.memory_addresses.patch_climb_tarzan_vine, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
 
                 #return
             if not ITEM.MOVEMENT.Door in slot_data_dont_rando:
@@ -540,11 +560,8 @@ class NSMBWInterface():
 
             if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
                 #cary_shell
-                address = self.memory_addresses.address_carry_shell
-                if not ITEM.MOVEMENT.Carry in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_return)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.intru_b + b'\xff\x50')
+                self.apply_patch(self.memory_addresses.patch_throw, ITEM.MOVEMENT.Carry in unlocked_moves)
+
 
             if not ITEM.MOVEMENT.Pipe in slot_data_dont_rando:
                 address = self.memory_addresses.address_pipe
@@ -597,20 +614,16 @@ class NSMBWInterface():
 
 
             if not ITEM.MOVEMENT.SpinJump in slot_data_dont_rando:
-                address = self.memory_addresses.address_spinjump
-                if not ITEM.MOVEMENT.SpinJump in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0000)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.intru_lbz_r3 + PowerPCInstructions.val_0017)
+                self.apply_patch(self.memory_addresses.patch_spin_jump, reverse = ITEM.MOVEMENT.SpinJump in unlocked_moves)
+
+            if not ITEM.MOVEMENT.CheckPoint in slot_data_dont_rando:
+                self.apply_patch(self.memory_addresses.patch_check_point, reverse = ITEM.MOVEMENT.CheckPoint in unlocked_moves)
 
         if self.should_clear >= 1:
             self.clear_cache()
 
     async def patch_runtime_on_load(self):
-        for _patch in self.memory_addresses.patches:
-            for subpatch in _patch:
-                self.apply_patch(subpatch)
-        self.clear_cache()
+        self.apply_patch(self.memory_addresses.patches, clear=True)
 
     def patch_goomba_speed(self, norm=False):
         address = self.memory_addresses.goomba_walk
@@ -810,13 +823,9 @@ class NSMBWInterface():
     async def kill_player(self):
         address = self.memory_addresses.death_address
         if self.write_instruction(address, b'\x60\x00\x00\x00', clear=True):
-            if not is_frozen():
-                logger.info("Killing player")
-        #await asyncio.sleep(1)
-        #time.sleep(2) # to much of wait?
-        #why doesnt asyncrio work here?????
-        # this could be moved to a chck if died
-        self.deathtimer = time.time()
+            print("Killing player")
+            self.deathtimer = time.time()
+
     async def alive_player(self):
         address = self.memory_addresses.death_address
         if time.time() - self.deathtimer >= 2:
@@ -824,3 +833,16 @@ class NSMBWInterface():
                 print("Set mario to alive")
 
 
+    async def force_hook(self):
+        for i in range(1, 30):
+            if i % 5:
+                logger.info(f"Trying to hook, attempt {i} / 30")
+            try:
+                self.dolphin_client.connect()
+                logger.info(f"Successfully force connected")
+                return
+            except Exception as e:
+                logger.error(traceback.format_exc())
+                logger.error(f"Failed to connect to dolphin with error {e}")
+            await asyncio.sleep(1)
+        logger.info(f"Did not manage to force connect")

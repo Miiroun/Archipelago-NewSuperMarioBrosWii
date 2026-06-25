@@ -63,9 +63,9 @@ def connect_regions(world: NSMBWworld) -> None:
                 for i in range(8):
                     world.star_coin_req_per_world_9_level[i] = int(round( world.random.normalvariate(20*8/2,40)))
                     if world.star_coin_req_per_world_9_level[i] <0:
-                        world.star_coin_req_per_world_9_level[i] = -world.star_coin_req_per_world_9_level[i]
-                    if world.star_coin_req_per_world_9_level[i] > 231:
-                        world.star_coin_req_per_world_9_level[i] = 231
+                        world.star_coin_req_per_world_9_level[i] = 0
+                    if world.star_coin_req_per_world_9_level[i] > 231-10: # 10 is margin
+                        world.star_coin_req_per_world_9_level[i] = 231-10
             case _:
                 raise ValueError(f"Case {world.options.world9_unlock_condition.value} is not valid")
 

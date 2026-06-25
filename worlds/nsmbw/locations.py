@@ -38,14 +38,14 @@ for world_num in range(1,9+1): # worlds
         LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 2000+100*world_num + 1})
         LOCATION_NAME_TO_ID.update({f"World{world_num}_tower" : 2000+100*world_num + 2})
 LOCATION_NAME_GROUPS.update({"Starcoins" : world_set })
-LOCATION_NAME_GROUPS.update({"Castles" : set(name_world_clear(world_num) for world_num in range(1,8+1)) })
+LOCATION_NAME_GROUPS.update({"Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)) })
 LOCATION_NAME_GROUPS.update({"Towers" : set(f"World{world_num}_tower" for world_num in range(1,8+1)) })
 
 
 
 # last num is if secret or normal exit 1== normal, 2==secret
 SECRET_EXIT = [(1, 3, 2), (2, 4, 2), (2, 6, 2), (3, 5, 2), (3, 6, 2), (4, 6, 2),
-               (4, 7, 2), (5, 6, 2), (6, 5, 2), (6, 6, 2), (7, 7, 2), (8, 7, 1)] #, (7, 6, 1)
+               (4, 7, 2), (5, 6, 2), (6, 5, 2), (6, 6, 2), (7, 6, 1), (7, 7, 2), (8, 7, 1)]
 for secret_exit in SECRET_EXIT:
     world_num = secret_exit[0]
     level_num = secret_exit[1]
@@ -58,10 +58,6 @@ for i in range(1,num_hintmovies +1):
     LOCATION_NAME_TO_ID.update({name_hintmovie(i): 3000 + i})
 LOCATION_NAME_GROUPS.update({"Hintmovies" : set(name_hintmovie(i) for  i in range(1,num_hintmovies +1)) })
 
-
-for i in range(1,100+1):
-    LOCATION_NAME_TO_ID.update({f"starter_location{i}": 4000 + i})
-LOCATION_NAME_GROUPS.update({"Starter_locations" : set(f"starter_location{i}" for i in range(1,100+1)) })
 
 world_set = set()
 for world_num in range(1, 9 + 1):  # worlds
@@ -151,11 +147,6 @@ def create_regular_locations(world: NSMBWworld) -> None:
                 flagpole = get_location_names_with_ids([name_level(world_num, level_num)])
                 world.get_region(name_base(world_num, level_num)).add_locations(flagpole, NSMBWLocation)
 
-    # gives player starter location that automaticly checks
-    for i in range(1, world.options.include_starting_locations + 1):
-       starter_location = get_location_names_with_ids([f"starter_location{i}"])
-       menu_region.add_locations(starter_location, NSMBWLocation)
-
     for i in range(1, world.options.include_inventory_powerups + 1):
         inventory_loc = get_location_names_with_ids([name_inventory(i)])
         menu_region.add_locations(inventory_loc, NSMBWLocation)
@@ -164,7 +155,7 @@ def create_events(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             flagpole = name_base(world_num, level_num)
-            world.get_region(name_base(world_num, level_num)).add_event(flagpole,name_base(world_num, level_num), location_type=NSMBWLocation, item_type=items.NSMBWItem)
+            world.get_region(name_base(world_num, level_num)).add_event(flagpole,name_base(world_num, level_num), location_type=NSMBWLocation, item_type=items.NSMBWItem, show_in_spoiler=False)
 
     #events could be usefully for merging split paths
 

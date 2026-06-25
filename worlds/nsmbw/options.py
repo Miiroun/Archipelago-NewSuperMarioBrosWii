@@ -30,7 +30,7 @@ class StarCoinCollectImmediately(Toggle):
     display_name = "Star Coin Collect immediately"
     default = False
 
-    #visibility = Option.visibility.none
+    visibility = Option.visibility.none
 
 
 class RandomizeMovement(Choice):
@@ -42,7 +42,7 @@ class RandomizeMovement(Choice):
     option_off = 0
     option_on = 2
 
-    default = option_off
+    default = option_on
     #visibility  = Option.visibility.none
 
 class DontRandoMovement(ItemSet):
@@ -51,7 +51,7 @@ class DontRandoMovement(ItemSet):
     Turning on the default moves here can and will cause issue, they are experimental
     """
 
-    display_name = "Dont Rando these Movements"
+    display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
     default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value}
 
@@ -151,19 +151,6 @@ class World9UnlockCondition(Choice):
 
     default = option_gaussian
 
-class IncludeStartingItems(Range):
-    """
-    Gives you an amount of free locations that are automatically checked.
-    This option is here to create a few free checks that helps with restrictive start errors.
-    Put to at least ~25 if you disable both check hint movies and check level completion and have IncludeNumberInventoryItems = 0
-    otherwise you can keep it at 0.
-    """
-
-    display_name = "Include Starting Items"
-    range_start = 0
-    range_end = 100
-    default = 0
-
 class IncludeNumberInventoryItems(Range):
     """
     A location that gets collected when you collect a powerup to your inventory, e.g. from a toad house or beating overworld enemy.
@@ -217,7 +204,7 @@ class AmountSupportReceived(Range):
     This setting will set the amount of 1ups and powerups send to inventory when receiving their corresponding items.
     """
     display_name = "Amount Support items received from ap-items"
-    range_start = 1
+    range_start = -1
     range_end = 100
 
     default = 5
@@ -249,7 +236,7 @@ class SaveStateSlot(Range):
 
 class ModifierMultiplierPercentage(Range):
     """
-    A percentage which to multiply the modifier time with.
+    A percentage which to multiply the type time with.
     Will still clear on death.
     """
     display_name = "Modifier Multiplier Percentage"
@@ -266,7 +253,6 @@ class NSMBWOptions(PerGameCommonOptions):
     include_hintmovies : IncludeHintMovies
     randomize_starcoins: RandomizeStarCoins
     include_inventory_powerups : IncludeNumberInventoryItems
-    include_starting_locations : IncludeStartingItems
 
 
     randomize_movement : RandomizeMovement
@@ -305,7 +291,6 @@ option_groups = [
             IncludeHintMovies,
             RandomizeStarCoins,
             IncludeNumberInventoryItems,
-            IncludeStartingItems,
         ],
     ),
     OptionGroup(
@@ -367,7 +352,6 @@ option_presets = {
         "randomize_time": RandomizeTime.default,
         "starting_world": StartingWorld.default,
         "include_inventory_powerups": IncludeNumberInventoryItems.default,
-        "include_starting_locations": IncludeStartingItems.default,
         "logic_difficulty" : LogicDifficulty.default,
         "death_link": DeathLink.default,
 
@@ -382,7 +366,6 @@ option_presets = {
         "randomize_starcoins": RandomizeStarCoins.option_false,
         "starting_world": 1,
         "include_inventory_powerups": 0,
-        "include_starting_locations": 0,
 
         "randomize_movement": RandomizeMovement.option_off,
         "dont_rando_move": set(MOVEMENT_UNLOCKS),
@@ -401,7 +384,6 @@ option_presets = {
         "randomize_starcoins": RandomizeStarCoins.option_true,
         "starting_world": "random",
         "include_inventory_powerups" : 999,
-        "include_starting_locations" : 0,
 
         "randomize_movement": RandomizeMovement.option_on,
         "dont_rando_move": set(),
@@ -435,14 +417,25 @@ def adjust_options(world):
     if (world.options.include_shortcuts.value == False):
         #print(f"(NSMBW generation error) Turning off include_shortcuts can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
-
-    if world.options.include_starting_locations.value <= req_start_loc:
-        print(f"Low amount of locations detected in nsmbw, this can cause fill errors if generate alone")
+    if 0 <= req_start_loc:
+        print(f"(NSMBW generation error) Low amount of locations detected in nsmbw, this can cause fill errors if generate alone")
         #print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
         #world.options.include_starting_locations.value = min(req_start_loc, req_start_loc_max)
 
+    if world.options.include_inventory_powerups.value >= 200:
+        print(f"(NSMBW generation error) You have include_inventory_powerups set to {world.options.include_inventory_powerups.value} which is >= 200"
+              f"consider lowering this to get a more enjoyable experience.")
 
-    MAX_ALLOWED_BOWSER_SC = 200
+    # this tries to prevent num loc > num items
+    if ((loc := world.options.include_shortcuts.value * 12 + world.options.include_level_completion.value * 71 +
+        world.options.include_hintmovies.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
+         <= 5+
+        ((itm := world.options.randomize_movement.value >= 1) * len(MOVEMENT_UNLOCKS) + world.options.randomize_time.value
+         +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
+        raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
+                          f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
+
+    MAX_ALLOWED_BOWSER_SC = 231-5
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
         world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
         print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}")

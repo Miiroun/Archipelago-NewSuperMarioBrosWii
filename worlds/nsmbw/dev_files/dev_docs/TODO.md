@@ -1,67 +1,32 @@
 ## Super short term
-- rework order that check if in level / worldmap : have in menu be first but also default
-  - us dme to improve
-- save which index prossesing items left off on
-- Add error if incompatible versions are used
-- fix setting locations to external state
-
+- do short playthrough, starting at world8, no bowser req
+- fix carry shell? search where used in ghidra
 
 ## Playtest
-- Does fill inventory work on us rev2?
-- Powerup logic_o seams not working?
-- SAVE REMOVED POWERUPS TO SLOTDATA
-- test that deathlink groups and deathlink both works
-- test options for world9
-- Playtest star coin collect directly instead of after level completion
-- Playtest that logic is fixed
-- double check that early items work
-- death-link
 
 
 ## Bugs to fix
-- Castle check is for airship not castle in client
 - Inventory item doesn't work on other versions
-- 8-t_sc2 not collected
-- Something is broken with star coin generation logic
-  - tracker ISSUE?
-- Jumping in wind softlooks you (2-4)
-- DOLPHIN CONNECTION ISSUE
-  - Re-add dolphin stats command
-  - Look at other Wii games and see what they do to solve on connect
-  - how to print stack trace stack trace för dolphin nog connecting
-  - Test what happens when try to connect when already connected
-- Black screen like time rando with it disabled
-- Climb softlocks jump in wind
-- yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
-- Closing game sends death-link
-- Bug? : if amount support received > 99 it'll send out inventory locations
-- Death-link broken : I think message is not received by client, problems with receiving
-- 8-T_sc2 not sending
-- Says in go mode with just 1 world 8 and other requirements
 
 
 ## Short term
-- add some cashing for received checks, so doesn't double count already accounted for items when relogs
-- change to option of collects star coin on level completion or when you get them
 - Multiplayer support
   - find other player pointers : for lives and powerups
   - Kill when in water
-- Have a vote in discord about if riivolution patch
-- Try debuging about intro cutscene : look at patch in ghidra
 - Us pipe rando patches : always move next world → never
   - Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab
-- Work on multiplayer support
 - Hint movies does not work on other save files?
 - Inventory powerups only work savefile 2 : make a part of dSave pointer
-- Design icon for client : apstyle
 - Derefrense player  pointer
 - Add support for multiplayer and other savefile support
 - Add enemy ambush and toad rescue
-- Allow setting AmountSupportReceived to -1 for random each time
 - Ask to get added to index: when doing next release
 - PERSISTANTSTORAGE instead of local save file
-- Work on skipping intro cutscene
+- I have issue with fuzzing with hooks, UT and global_mutation
+- Do playhtough, document completion times for time logic
+- Fix so work with multiple dolphin instances (so players can have all games open at same time)
+
 
 
 ## Broken versions
@@ -84,13 +49,11 @@
 - Create functions that are called at start/end of level instead of continuously? (to optimize code)
   - Remove having to loop though all checks each frame?
 - Bases on death messages create an ingame text message
-- Skipp cutscenes
-- Allow for filtered messages
-- Change how world9 and peach function for better savestates
+- Change how world9 and peach function for better savestates : edit how worlds unlock, could try follow save address in dolphin
 - make all levels unlock from start of world
 - Riivolution patch that changes world map unlock order and which level required to leave
 - Use persistent storage? for save file data instead of creating files?
-- Implement light geck-code parsing
+- Implement light geck-code parsing?
 - World enemies
   - exists specific memory location
 - Rescue toad on world map
@@ -111,15 +74,22 @@
   - create a gecko code that loads the instruction for me??
   - or just really on people turning off keybinds require focus
   - In theory I could write some PowerPC assembly that invalidates the cache internally but then I'd have to somehow make it detect external memory modifications and adapt to it. My problem with this method is to find a function to hook onto safely.
+- Reenable part of climb that dissabled due to freezes
+- Design icon for client : apstyle or mario head
 
 
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap
   - Marios animation start from back of world
-- Starts playing ending sequence when new file, or doesnt set start world
+- Starts playing ending sequence when new file, or doesn't set start world
 - Sneak freezes game
 - Hint movies that requires all level completion don't work in game
 - Maybe update how shell carry works
+- yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
+- DOLPHIN CONNECTION ISSUE
+- game randomly freezes : inconsistent experience
+- Sometimes game doesn't want to load, freezes on fade to black
+- loading save state sends lots of inventory items
 
 ## Features
 - Save toad / kill world enemy = hint/check
@@ -133,6 +103,7 @@
   - Sandstorm
   - Darkness
   - Meteor
+  - Stun / freez trap
 - FILLER 
   - Gain this levels check point
 - Features from gecko

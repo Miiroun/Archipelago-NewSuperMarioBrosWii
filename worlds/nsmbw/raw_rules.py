@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List
 
 from rule_builder.rules import *
 from rule_builder.options import OptionFilter
-from .options import RandomizeMovement, RandomizePowerups, LogicOutsidePowerups, LogicDifficulty
+from .options import RandomizeMovement, RandomizePowerups, LogicOutsidePowerups, LogicDifficulty, DontRandoMovement
 from .Common import *
 
 if TYPE_CHECKING:
@@ -88,51 +88,59 @@ def specific_hintmovie_requierments(world: NSMBWworld) -> List:
 def get_time_rule(world : NSMBWworld, time : int) -> Rule[TWorld]:
     _amount_items_needed = math.ceil( (time/500) * world.options.randomize_time.value)
     _rule = Has(ITEM.Time, count=_amount_items_needed)
+    if _amount_items_needed <= 1:
+        _rule = True_()
 
     return _rule
+
+# this is option filters, turn options to true if not enabled
+filter_mov_on = OptionFilter(RandomizeMovement, RandomizeMovement.option_on)
+filter_move_off = OptionFilter(RandomizeMovement, RandomizeMovement.option_off)
+filter_mov = [filter_move_off] # [filter_mov_on,filter_mov_on_spin]
+
+filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
+filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
+filter_pow_on_no_mus = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_except_mushroom)
+filter_pow_off = OptionFilter(RandomizePowerups, RandomizePowerups.option_off)
+filter_pow = [filter_pow_off] #[filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
+
+
+
+def filter_move_dontrando(opt_name : str):
+    """This option-filter just hides default moves from /explain, can be confusing, but should improve readability """
+    return filter_mov | True_(options=[OptionFilter(DontRandoMovement,opt_name, operator="contains")], filtered_resolution=False)
 
 
 def specific_level_requierments(world: NSMBWworld) -> list:
     # Logic done by:
     # REACT : powerups, all levels
 
-    # this is option filters, turn options to true if not enabled
-    filter_mov_on = OptionFilter(RandomizeMovement, RandomizeMovement.option_on)
-    filter_move_off = OptionFilter(RandomizeMovement, RandomizeMovement.option_off)
-    filter_mov = [filter_move_off] # [filter_mov_on,filter_mov_on_spin]
-
-    filter_pow_on = OptionFilter(RandomizePowerups, RandomizePowerups.option_on)
-    filter_pow_on_prog = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_progressive)
-    filter_pow_on_no_mus = OptionFilter(RandomizePowerups, RandomizePowerups.option_on_except_mushroom)
-    filter_pow_off = OptionFilter(RandomizePowerups, RandomizePowerups.option_off)
-    filter_pow = [filter_pow_off] #[filter_pow_on,filter_pow_on_prog,filter_pow_on_no_mus]
-
 
     # create rules that are true if their option filters are off or if have its item
-    button_right = Has(ITEM.MOVEMENT.ButtonRight) | filter_mov
-    button_left = Has(ITEM.MOVEMENT.ButtonLeft) | filter_mov
-    button_up = Has(ITEM.MOVEMENT.ButtonUp) | filter_mov
-    button_down = Has(ITEM.MOVEMENT.ButtonDown) | filter_mov
-    jump = Has(ITEM.MOVEMENT.Jump)  | filter_mov
-    run = Has(ITEM.MOVEMENT.Run) | filter_mov
+    button_right = Has(ITEM.MOVEMENT.ButtonRight) | filter_move_dontrando(ITEM.MOVEMENT.ButtonRight)
+    button_left = Has(ITEM.MOVEMENT.ButtonLeft) | filter_move_dontrando(ITEM.MOVEMENT.ButtonLeft)
+    button_up = Has(ITEM.MOVEMENT.ButtonUp) | filter_move_dontrando(ITEM.MOVEMENT.ButtonUp)
+    button_down = Has(ITEM.MOVEMENT.ButtonDown) | filter_move_dontrando(ITEM.MOVEMENT.ButtonDown)
+    jump = Has(ITEM.MOVEMENT.Jump)  | filter_move_dontrando(ITEM.MOVEMENT.Jump)
+    run = Has(ITEM.MOVEMENT.Run) | filter_move_dontrando(ITEM.MOVEMENT.Run)
 
-    ground_pound = (Has(ITEM.MOVEMENT.GroundPound)  & button_down)| filter_mov
-    wall_jump = (Has(ITEM.MOVEMENT.WallJump)  & jump)| filter_mov
-    carry = Has(ITEM.MOVEMENT.Carry) | filter_mov
-    climb = (Has(ITEM.MOVEMENT.Climb) & button_up)| filter_mov
-    spin_jump = Has(ITEM.MOVEMENT.SpinJump) | filter_mov
-    swim = Has(ITEM.MOVEMENT.Swim) | filter_mov
-    crouch = (Has(ITEM.MOVEMENT.Crouch) & button_down)| filter_mov
+    ground_pound = (Has(ITEM.MOVEMENT.GroundPound)  & button_down)  | filter_move_dontrando(ITEM.MOVEMENT.GroundPound)
+    wall_jump = (Has(ITEM.MOVEMENT.WallJump)  & jump) | filter_move_dontrando(ITEM.MOVEMENT.WallJump)
+    carry = Has(ITEM.MOVEMENT.Carry) | filter_mov  | filter_move_dontrando(ITEM.MOVEMENT.Carry)
+    climb = (Has(ITEM.MOVEMENT.Climb) & button_up)  | filter_move_dontrando(ITEM.MOVEMENT.Climb)
+    spin_jump = Has(ITEM.MOVEMENT.SpinJump) | filter_move_dontrando(ITEM.MOVEMENT.SpinJump)
+    swim = Has(ITEM.MOVEMENT.Swim) | filter_move_dontrando(ITEM.MOVEMENT.Swim)
+    crouch = (Has(ITEM.MOVEMENT.Crouch) & button_down) | filter_move_dontrando(ITEM.MOVEMENT.Crouch)
 
-    question_switch = Has(ITEM.MOVEMENT.QuestSwitch) | filter_mov
-    p_switch = Has(ITEM.MOVEMENT.PSwitch) | filter_mov
-    red_block = Has(ITEM.MOVEMENT.RedSwitch)  | filter_mov
+    question_switch = Has(ITEM.MOVEMENT.QuestSwitch) | filter_move_dontrando(ITEM.MOVEMENT.QuestSwitch)
+    p_switch = Has(ITEM.MOVEMENT.PSwitch) | filter_move_dontrando(ITEM.MOVEMENT.PSwitch)
+    red_block = Has(ITEM.MOVEMENT.RedSwitch)  | filter_move_dontrando(ITEM.MOVEMENT.RedSwitch)
 
-    yoshi = Has(ITEM.MOVEMENT.Yoshi)  | filter_mov
-    star = Has(ITEM.MOVEMENT.Star) | filter_mov
+    yoshi = Has(ITEM.MOVEMENT.Yoshi)  | filter_move_dontrando(ITEM.MOVEMENT.Yoshi)
+    star = Has(ITEM.MOVEMENT.Star) | filter_move_dontrando(ITEM.MOVEMENT.Star)
 
-    door = (Has(ITEM.MOVEMENT.Door) & button_up) | filter_mov
-    pipe = Has(ITEM.MOVEMENT.Pipe) | filter_mov
+    door = (Has(ITEM.MOVEMENT.Door) & button_up) | filter_move_dontrando(ITEM.MOVEMENT.Door)
+    pipe = Has(ITEM.MOVEMENT.Pipe) | filter_move_dontrando(ITEM.MOVEMENT.Pipe)
 
 
 
@@ -147,10 +155,10 @@ def specific_level_requierments(world: NSMBWworld) -> list:
     fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
 
     #other rules
-    outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | Has(ITEM.GlitchedLogic) # and with this rule
+    outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | get_glitch_rule(world) # and with this rule
     # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
-    logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)] | Has(ITEM.GlitchedLogic)
-    logic_easy = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
+    logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)] | get_glitch_rule(world)
+    logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
 
     # more powerup stuff
     ice_peng = ice | peng
@@ -171,6 +179,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
     tower_rules = door & button_left
 
+    # want to change to CanReachRegion, but unshure how to put in a count for it
     bowser_world_clear_list  = list([name_base(world_num,level_num) for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
     bowser_clear_rule = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
 
@@ -252,8 +261,8 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
         ],
         [  # world 8
-            [normal_move & run & pipe& button_down & button_up, [True_(), carry, True_()]],  # -1
-            [normal_move, [True_(), True_(), True_()]],  # -2
+            [normal_move & jump & run & pipe & button_up & (button_left | logic_hard), [True_(), carry, True_()]],  # -1
+            [normal_move & button_left & pipe& button_down, [True_(), True_(), True_()]],  # -2
             [normal_move, [True_(), True_(), True_()]],  # -3
             [normal_move & swim & question_switch, [question_switch,question_switch,question_switch]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
@@ -390,3 +399,9 @@ def get_level_connections() -> List[List[List[int]]]:
 
 
     return connections
+
+def get_glitch_rule(world):
+    if getattr(world.multiworld, "generation_is_fake", False):
+        return Has(ITEM.GlitchedLogic)
+    else:
+        return False_()

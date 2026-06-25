@@ -4,6 +4,8 @@ import zipfile
 from pathlib import Path
 
 import Utils
+from . import PowerPCInstructions
+from .PowerPCInstructions import *
 from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 from ..Common import *
 from ..Utils import int_to_bytes
@@ -12,10 +14,17 @@ from ..Utils import int_to_bytes
 class CodePatch:
     addr: int
     code: bytes
+    origin : bytes | None
+    name : str | None
 
-    def __init__(self, addr: int, code: bytes) -> None:
+    def __init__(self, addr: int, code: bytes, origin : bytes | None = None , name : str | None = None) -> None:
+        assert len(code) == 4, f"code needs to have length 4, has length {len(code)}"
+        if not origin is None:
+            assert len(origin) == 4, f"origin needs to have length 4, has length {len(origin)}"
         self.addr = addr
         self.code = code
+        self.origin = origin
+        self.name = name
 
 class SymbolReader(object):
     def __init__(self, _file):
@@ -116,21 +125,14 @@ class MemoryAddresses(object):
         self.address_hang_ground = self.map_between("E2",0x80135810)
         self.address_hang_water = self.map_from_symbol("_ZN7dAcPy_c19checkCliffHangWaterEv")
 
-        self.address_hang_pole = self.map_between("E2", 0x80072180)
-        self.address_hang_ladder = self.map_between(f"E2", 0x800d1dc0)
         self.address_vine = self.map_between("E2", 0x8154C818) # 43=hang vine, 45= normal
         self.address_p_switch = self.map_between("E2", 0x815E4338)
         self.address_star = self.map_between("E2", 0x8154C874)
-        self.address_climb_vine_still = self.map_between("E2", 0x80132c70)
-        self.address_climb_vine_fall = self.map_between("E2", 0x801327f0)
-        self.address_tarzan_vine = self.map_between("E2", 0x80137320)
         self.address_door = self.map_between("E2",0x8002b2a4)
         self.address_question_switch = self.map_between("E2", 0x8042A078) #pointer, other guess 0x8042A1D8
 
-        self.address_spinjump = self.map_between("P1", 0x8005e780)
         self.address_kani_walk = self.map_between("P1", 0x80135670)
         self.address_kani_hang = self.map_between("P1", 0x80135b00)
-        self.address_carry_shell = self.map_between("P1", 0x8005e680)
         self.address_pipe = self.map_between("P1", 0x8004f300)
 
         #80057650 removes both walk and run speed
@@ -166,20 +168,60 @@ class MemoryAddresses(object):
 
         self.main_menu_adress = self.map_between("E2", 0x81028e82)
 
-        ## patches ---------------------------------------------------
+
+        # movement etc patches
+        self.patch_check_point = self.create_patch("P1",0x807E215C, instru_6000, origin=instru_beq + val_0014, name="check point")
+        self.patch_spin_jump = self.create_patch("P1", 0x8005e780, intru_lbz_r3 + val_0000, origin=intru_lbz_r3 + val_0017, name="spin_jump")
+
+        self.patch_climb_pole = [self.create_patch("E2", 0x80072180, PowerPCInstructions.instru_li + PowerPCInstructions.reg_r0,origin =  b'\x94\x21\xff\xb0', name="climb_pole1"),
+                                 self.create_patch("E2", 0x80072184, PowerPCInstructions.instru_return,origin=b'\x7c\x08\x02\xa6', name = "climb_pole2")]
+        self.patch_climb_ladder = self.create_patch(f"E2", 0x800d1dc0,PowerPCInstructions.instru_return, b"\x2c\x05" + PowerPCInstructions.reg_r0, name="climb_ladder")
+        self.patch_climb_tarzan_vine = self.create_patch("E2", 0x80137320, PowerPCInstructions.instru_return, PowerPCInstructions.intru_stwu + b"\xff\xc0", "climb_tarzan")
+        self.patch_climb_vine_still = self.create_patch("E2", 0x80132c70, PowerPCInstructions.instru_return, PowerPCInstructions.intru_stwu + b"\xff\xc0", "vine_still")
+        self.patch_climb_vine_fall = self.create_patch("E2", 0x801327f0, PowerPCInstructions.instru_return, PowerPCInstructions.intru_stwu + b"\xff\xc0", "vine_fall")
+
+        self.patch_throw = self.create_patch("P1", 0x8005e680,PowerPCInstructions.instru_return, PowerPCInstructions.intru_b + b'\xff\x50', "throw")
+
+
+        ## patch patches ---------------------------------------------------
 
         #Skip title screen movies
-        # credit to mkwcat for creating this
-        self.skipp_title_screen = [
-            self.create_patch("P1",  0x80781FB8, int_to_bytes(0x60000000, 4)),
-            self.create_patch("P1",  0x80781FBC, int_to_bytes(0x38600000, 4))
+        # credit to mkwcat for creating this patch
+        patch_skipp_title_screen = [
+            self.create_patch("P1",  0x80781FB8, int_to_bytes(0x60000000, 4), origin = instru_beq + val_0010),
+            self.create_patch("P1",  0x80781FBC, int_to_bytes(0x38600000, 4), origin = instru_li + val_0001)
         ]
 
-        self.skipp_intro_cutsceen = [
+        # skip cutscene played when new file created
+        # inspired by NSMBWerPlus https://github.com/Ryguy0777/NSMBWerPlus/blob/master/Kamek/bugfixes.yaml (doesnt work)
+        # this (functioning) is my (miirouns) creation, you are allowed to use it without credit
+        patch_skipp_intro_cutscene = [
+            #self.create_patch("P1", 0x809191C8, instru_noop, origin=instru_li + val_0008),
+            #self.create_patch("P1", 0x809191D8, instru_noop, origin= instru_b)
+            self.create_patch("P1", 0x809191c4, instru_b, origin=instru_beq + val_0018, name="skipp_intro")
 
         ]
 
-        self.patches : List[List[CodePatch]] = [self.skipp_title_screen, self.skipp_intro_cutsceen]
+        #these 3 are from mkwcat pipe rando, line 580->587 https://github.com/mkwcat/nsmbw-pipe-randomizer/blob/master/src/nsmbw-random-pipe.cpp
+        patch_show_all_world_sc_screen = [
+            self.create_patch("P1", 0x807749A8, instru_li + val_0001, name="world"),
+            self.create_patch("P1", 0x80776B00, instru_li + val_0001, name="airship"),
+            self.create_patch("P1", 0x80776B3C, instru_li + val_0001, name="final_castle")
+        ]
+
+        # from mkwcat pipe rando, want to find way to reverese
+        #// Always go to the next world when the castle level is completed
+        #kmWrite32(0x808CC968, 0x41820050);
+        #kmWrite32(0x808CC970, 0x41820048);
+        #kmWrite32(0x808CC9E0, 0x38600001);
+
+        #Always can save patches
+        #kmWrite32(0x8077AA7C, 0x60000000); // message
+        #kmWrite32(0x8092FD00, 0x38000002); // button behavior
+
+        # this put all patches in a list that is called on connect
+
+        self.patches : List[List[CodePatch] | CodePatch] = [patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen]
 
 
     def map_between(self, ver_from : str, address : int) -> int:
@@ -217,6 +259,9 @@ class MemoryAddresses(object):
         return new_address
 
 
-    def create_patch(self,ver_from : str,  addr: int, code: bytes) -> CodePatch:
-        return CodePatch(self.map_between(ver_from, addr), code)
+    def create_patch(self,ver_from : str,  addr: int, code: bytes, origin : bytes |None = None, name : str = "") -> CodePatch:
+        assert len(code) == 4, f"Code {code} should be 4 bytes"
+        if origin is not None:
+            assert len(origin) == 4, f"Origin {origin} should be 4 bytes"
+        return CodePatch(self.map_between(ver_from, addr), code, origin, name)
 

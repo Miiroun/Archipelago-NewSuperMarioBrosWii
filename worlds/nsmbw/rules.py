@@ -79,7 +79,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             location = world.get_location(name_hintmovie(hm_num))
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-            hm_rule = ((rules.Has(ITEM.StarCoin, count=total_cost)|(rules.Has(ITEM.GlitchedLogic) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
+            hm_rule = ((rules.Has(ITEM.StarCoin, count=total_cost)|(get_glitch_rule(world) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
             world.set_rule(location, hm_rule)
 
     if world.options.include_shortcuts.value == True:
@@ -99,7 +99,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         worlds_list.pop()
         req_world_com = min(17-2, (i // 5)+1)
         # hades soft logic thats ored with glitched logic, but also make sure you have climb
-        invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | rules.Has("glitched_logic")
+        invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | Has(ITEM.GlitchedLogic)
         if i < 5:
             invent_rule &= rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovement, RandomizeMovement.option_off)]
         world.set_rule(invent_pow, invent_rule)

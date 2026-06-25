@@ -28,7 +28,7 @@ class ITEM:
         Carry = "Carry"
         Door = "Door"
         QuestSwitch = "?-switch"
-        SpinJump = "Spin_jump"
+        SpinJump = "Spin jump"
         Pipe = "Pipe"
         Jump = "Jump"
         Run = "Run"
@@ -36,6 +36,7 @@ class ITEM:
         ButtonRight = "Button right"
         ButtonUp = "Button up"
         ButtonDown = "Button down"
+        CheckPoint = "Check point"
 
     class TRAPS(StrEnum):
         LoosePowerupTrap = "Loose powerup trap"
@@ -51,8 +52,9 @@ class ITEM:
     class FILLER(StrEnum):
         FillInventory = "fill inventory"
         OneUps = "1-ups"
-        CoinOne = "Coin x01"
-        CoinFifty = "Coin x50"
+        CoinOne     = "Coin x01"
+        CoinTen     = "Coin x10"
+        CoinFifty   = "Coin x50"
         PowerUp = "Filler Power-up"
 
     StarCoin = "Starcoin"
@@ -93,7 +95,7 @@ def name_base(world_num : int, level_num : int) -> str:
 def assert_valid_level(world_num : int, level_num : int) -> None:
     from worlds.nsmbw.locations import LEVELS_PER_WORLD
     assert 1 <= world_num <= 9
-    assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1]
+    assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"Level {level_num} is not valid for world {world_num}"
 
 def name_level(world_num : int, level_num : int) -> str:
     return f"{name_base(world_num,level_num)} clear"
@@ -105,7 +107,7 @@ def name_secret(world_num : int, level_num : int) -> str:
     return f"{name_base(world_num,level_num)} Secret exit"
 
 def name_world_clear(world_num : int) ->  str:
-    assert 1 <= world_num <= 8
+    assert 1 <= world_num <= 8, f"world_num {world_num} is not valid"
     return f"World{world_num} clear"
 def name_tower_clear(world_num : int) -> str:
     assert 1 <= world_num <= 8
@@ -117,7 +119,7 @@ def name_hintmovie(i:int) -> str:
     return f"Hintmovie{i:02}"
 
 def name_inventory(i : int) -> str:
-    assert 1 <= i <= 999
+    assert 1 <= i <= 999, f" i: {i} is too large"
     return f"Inventory powerup {i:03}"
 
 def name_world_unlock(world_num : int):
