@@ -32,7 +32,7 @@ class DolphinClient:
             self.dolphin.hook()
         if not self.dolphin.is_hooked():
             raise DolphinException(
-                "Could not connect to Dolphin, verify that you have a game running in the emulator"
+                "Could not connect to Dolphin, verify that you have a game running in the emulator and that you dont have multiple instances open."
             )
 
     def disconnect(self):

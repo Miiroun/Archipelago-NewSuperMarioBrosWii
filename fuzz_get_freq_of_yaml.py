@@ -7,11 +7,13 @@ import yaml
 import json
 #import scipy
 
+map_name = "nsmbw"
+#map_name = "multi
 
 game_name_cap = "NSMBW"
 
 meta_file = "fuzz_output/report.json"
-option_yaml = lambda num, error: f"fuzz_output/{error}/{'multi'}/{num}/{num}-0.yaml"
+option_yaml = lambda num, error: f"fuzz_output/{error}/{map_name}/{num}/{num}-0.yaml"
 
 # load yamls
 with open(meta_file, "r") as f:
@@ -57,32 +59,32 @@ def prossess_options(options):
             #print(option)
             #print(option_counter)
             #print(f"Percent Diff: {percent_diff : %}")
-            to_print = f"""
+            to_print = (f"""
                     {option}
                     Percent Diff: {percent_diff: %}
                     option_counter: {option_counter}
-                    """
-            options_counter.append([option, percent_diff, option_counter, to_print])
-        elif isinstance(options[option], Number): #this runs for range options
+                    """)
+            options_counter.append([option, percent_diff, to_print])
+        elif isinstance(options[option][0], Number): #this runs for range options
             avr = np.average(options[option])
             std = np.std(options[option])
 
 
-            percent_diff = avr/std
-            to_print = f"""
+            percent_diff = std/avr
+            to_print = (f"""
                     {option}
                     Percent Diff: {percent_diff: %}
                     mean {avr}
                     standard_deviatin: {std}
                     option_counter: {option_counter.most_common(5)}
-                    """
+                    """)
             #                       name,   sort_key,   text
             options_counter.append([option, percent_diff, to_print])
         else:
-            to_print = f"""
+            to_print = (f"""
                     {option}
                     option_counter: {option_counter.most_common()}
-                    """
+                    """)
             options_counter.append([option, 0, to_print])
 
 
@@ -103,11 +105,11 @@ def prossess_options(options):
 
 
 print("============================================================================")
-for failure_type in meta_text["errors"]['multi']:
+for failure_type in meta_text["errors"][map_name]:
     if prossess_error_seperate:
         options = collections.defaultdict(list)
 
-    for yam_num in meta_text["errors"]['multi'][failure_type]:
+    for yam_num in meta_text["errors"][map_name][failure_type]:
         with open(option_yaml(yam_num, "timeout" if failure_type == "<class 'TimeoutError'>" else "error"), "r") as f:
             option_text = yaml.safe_load(f)
         for option in option_text[game_name_cap]:

@@ -1,4 +1,4 @@
-from typing import Callable, Any
+from typing import Callable, Any, Counter
 
 
 def bytes_to_int(byte : bytes, signed=False) -> int:

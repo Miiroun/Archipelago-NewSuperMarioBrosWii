@@ -1,14 +1,15 @@
 null:
   progression_balancing: 50
-#NSMBW:
+NSMBW:
   ################
   # Game Options #
   ################
-  #progression_balancing: 50
-#  accessibility: full
+  progression_balancing: 50
+  #accessibility: full
   #include_starting_locations: 0
   #randomize_movement: 'on'
   #randomize_powerups: 'on'
+  #make_world_comp_priority : 'false'
 
 #empty:
 #  accessibility: full

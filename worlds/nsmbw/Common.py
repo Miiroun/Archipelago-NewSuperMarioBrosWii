@@ -59,6 +59,7 @@ class ITEM:
         CoinFifty   = "Coin x50"
         PowerUp = "Random Power-up"
         SuperSpeed = "Super Speed"
+        #ToadHouse = "Toad House"
 
     StarCoin = "Starcoin"
     Time = "Time left"

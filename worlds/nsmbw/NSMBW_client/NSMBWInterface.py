@@ -90,6 +90,8 @@ class NSMBWInterface():
 
     def connect_to_game(self):
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
+        #if get_num_dolphin_instances() != 2:
+        #    self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
         try:
             self.dolphin_client.connect()
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
@@ -115,7 +117,7 @@ class NSMBWInterface():
                             " of your game. Play at your own risk. When you find errors, please report them in the "
                             "discord and mention your game version, so that they might be fixed.")
                     #message : JSONMessagePart = [{"type": "color", "color": "red", "text":text }]
-                    logger.info(text)
+                    self.log_color(text, "red")
 
                 self.memory_addresses = MemoryAddresses(version_name)
 
@@ -135,8 +137,9 @@ class NSMBWInterface():
                 and self.game_id_error != game_id
                 and game_id != b"\x00\x00\x00\x00\x00\x00"
             ):
-                self.logger.info(
-                    f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version"
+                self.log_color(
+                    f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version",
+                    "red"
                 )
                 self.game_id_error = game_id
                 if self.game_rev:
@@ -148,11 +151,11 @@ class NSMBWInterface():
                     logger.info("It is recommended to be on the worldmap instead of main menu when connecting to the archipelago server")
                     # raise ValueError("You need to be on the worldmap to connect to the server")
                     #return False
-                self.logger.info(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}")
+                self.log_color(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}", "blue")
                 return True
         except DolphinException as e:
-            logger.error(traceback.format_exc())
-            logger.error(f"An exception {e} happened when connecting to dolphin")
+            logger.info(traceback.format_exc())
+            self.log_color(f"Exception: {e} happened when connecting to dolphin", "red")
         return False
 
 
@@ -369,15 +372,13 @@ class NSMBWInterface():
 
 
 
-    def write_instruction(self, address: int, data: bytes, clear : bool=False) -> bool:
+    def write_instruction(self, address: int, data: bytes) -> bool:
         current_value = self.dolphin_client.read_address(address, len(data))
         if current_value != data:
             self.dolphin_client.write_address(address, data)
             #logger.info("Instruction changed")
             self.should_clear += 1
 
-            if clear:
-                self.clear_cache()
             return True
         else:
             return False
@@ -399,9 +400,9 @@ class NSMBWInterface():
             if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
                 raise ValueError(f"bytes {current_bytes} at addr {patch.addr} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
         if not reverse:
-            self.write_instruction(patch.addr, patch.code, clear)
+            self.write_instruction(patch.addr, patch.code)
         elif hasattr(patch, "origin"):
-            self.write_instruction(patch.addr, patch.origin, clear)
+            self.write_instruction(patch.addr, patch.origin)
         else:
             raise ValueError(f"patch {patch} {patch.name} is not a valid patch, tried to reverse without origin set")
 
@@ -412,7 +413,7 @@ class NSMBWInterface():
             value = max
         self.dolphin_client.write_address(address, int_to_bytes(value, 1))
 
-    async def handle_unlocked_moves(self, unlocked_moves, slot_data):
+    async def handle_unlocked_moves(self, unlocked_moves, slot_data, current_mod):
         self.should_clear = 0
         slot_data_movement = slot_data["randomize_movement"]
         slot_data_dont_rando = slot_data["dont_rando_move"]
@@ -583,10 +584,9 @@ class NSMBWInterface():
             if not ITEM.MOVEMENT.Run in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_button_run, ITEM.MOVEMENT.Run in unlocked_moves)
 
-            if not ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando:
+            if not (ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando or ITEM.TRAPS.MovementLockTrap == current_mod):
                 self.apply_patch(self.memory_addresses.patch_button_right, ITEM.MOVEMENT.ButtonRight in unlocked_moves)
-            if not ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando:
-                print(f"butt left {ITEM.MOVEMENT.ButtonLeft in unlocked_moves}")
+            if not (ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando or ITEM.TRAPS.MovementLockTrap == current_mod):
                 self.apply_patch(self.memory_addresses.patch_button_left, ITEM.MOVEMENT.ButtonLeft in unlocked_moves)
             if not ITEM.MOVEMENT.ButtonUp in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_button_up, ITEM.MOVEMENT.ButtonUp in unlocked_moves)
@@ -598,7 +598,7 @@ class NSMBWInterface():
                 self.apply_patch(self.memory_addresses.patch_spin_jump, reverse = ITEM.MOVEMENT.SpinJump in unlocked_moves)
 
             if not ITEM.MOVEMENT.CheckPoint in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_check_point, reverse = ITEM.MOVEMENT.CheckPoint in unlocked_moves)
+                self.apply_patch(self.memory_addresses.patch_check_point, reverse = ITEM.MOVEMENT.CheckPoint in unlocked_moves, double_check=False)
 
     async def patch_runtime_on_load(self):
         self.apply_patch(self.memory_addresses.patches)
@@ -618,7 +618,7 @@ class NSMBWInterface():
         offset = self.memory_offset_level_stats(world_num,level_num)  #magic numer to make line up with old
         return self.dolphin_client.read_address(dMj2dGame_c_address+0x6c+offset, 1) #4
     def get_inventory_items(self, type_num : int) -> bytes:
-        address = self.memory_addresses.inventory_items + type_num -1
+        address = self.get_dMj2dGame_c_address()+0x9 + type_num -1 # this is wrong, looked at powerupsAvailable
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self) -> bytes:
         address = self.memory_addresses.world_level# + self.save_file_offset()
@@ -719,7 +719,7 @@ class NSMBWInterface():
         address = self.memory_addresses.powerup_state[player_num]
         self.dolphin_client.write_address(address, powerup_state)
     def set_inventory_items(self, value, type_num):
-        address = self.memory_addresses.inventory_items + type_num -1
+        address = self.get_dMj2dGame_c_address()+0x9 + type_num -1
         self.dolphin_client.write_address(address, value)
     def set_level_stats(self, world_num, level_num, data : bytes):
         dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x3
@@ -763,6 +763,15 @@ class NSMBWInterface():
     def set_coin_count(self, data : bytes):
         address = self.memory_addresses.coins
         self.dolphin_client.write_address(address, data)
+    def set_toad_house(self, data : bytes, world_num : int):
+        address = self.get_dMj2dGame_c_address()+ 0x10 +world_num -1
+        #print(f"toad add1 {address : x}")
+        self.dolphin_client.write_address(address, data) # toadLevelIdx
+
+        #address = self.get_dMj2dGame_c_address()+ 0x742 +world_num -1
+        #print(f"toad add2 {address : x}")
+        #self.dolphin_client.write_address(address, data) #toadLocation
+
 
 
     def update_check_sum(self):
@@ -785,23 +794,25 @@ class NSMBWInterface():
 
     def update_inventory_items(self, type_num : int, increase : int):
         amount = bytes_to_int(self.get_inventory_items(type_num))
+        #print(f"amount {amount}, bytes {self.get_inventory_items(type_num)}")
         amount += increase
-        if amount >99:
+        if amount > 99:
             amount = 99
         self.set_inventory_items( int_to_bytes(amount, 1), type_num)
+        #print(f"after added {self.get_inventory_items(type_num)}, in ints {bytes_to_int(self.get_inventory_items(type_num))}")
 
 
 
     async def kill_player(self):
         address = self.memory_addresses.death_address
-        if self.write_instruction(address, b'\x60\x00\x00\x00', clear=True):
+        if self.write_instruction(address, b'\x60\x00\x00\x00'):
             print("Killing player")
             self.deathtimer = time.time()
 
     async def alive_player(self):
         address = self.memory_addresses.death_address
         if time.time() - self.deathtimer >= 2:
-            if self.write_instruction(address, b'\x48\x00\x00\x28', clear=True):
+            if self.write_instruction(address, b'\x48\x00\x00\x28'):
                 print("Set mario to alive")
 
 

@@ -82,21 +82,15 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 
 
 ## Known quirks / bugs / help with debug
-- Starting a new save plays then ending animation instead of the starting one. This is just a visual glitch, if you enter the created savefile agin it should work.
 - You will always start in world 1, and will have to manually move to a world that you have unlocked with the worldmap.
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
 - For some features (death link and move rando) the game will overwrite savestate 8 in dolphin. (It does this to clear the JIT cache).
 - If you have movement rando selected, you will be given some movement abilities to start out with to be able to grab your checks. You will always have button_right and either spin or big_jump.
 - The client will ask for a pop-tracker pack, you can ignore it for now as it is still in development.
 - With movement rando on and not having the item climb will cause a soft lock if you encounter a ledge (like in 6-1). You are free from the softlock if you do /kill.
-- Dying in 7-6, 8-3 and 8-5 causes game to freeze, make save states when you play through these levels.
 - Sometimes mario is invisible on the worldmap
 - Only save file 2 will work to play on.
-- Death link is sometimes sent on connect.
-- Carry shells movement is weired : you can pick it up but not put it down
-- Jumping in wind softlocks you
 - Known Issues for other game versions
-  - ALL others : inventory features (remove fill_inventor and inventory checks)
   - EU1: entier movement (dont turn on)
   - US1: Star and swim movement (add these to don't rando moves if you have movement rando on)
 - Don't go to the game menu with archipelago connected, this means don't use quick save in game: instead make save states.
@@ -109,6 +103,7 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - loading save state sends lots of inventory items
 - The clock might not display modified time correctly, but is accurate.
 - Star will display visually as active when not, if not unlocked and bring it from inventory
+- Rarely caches when loading a world map world, if encountered please report this issue
 
 ## Client commands
 - /toogle_deathlink

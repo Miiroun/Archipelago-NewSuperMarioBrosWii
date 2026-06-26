@@ -16,7 +16,7 @@ class TestRawRules(NSMBWWorld):
     def test_inventory(self):
         """Test Inventory powerups inventory"""
         self.assertTrue(self.world.get_location(name_inventory(1)).can_reach(self.multiworld.state))
-        self.assertFalse(self.world.get_location(name_inventory(6)).can_reach(self.multiworld.state))
+        self.assertFalse(self.world.get_location(name_inventory(9)).can_reach(self.multiworld.state))
 
 
 
@@ -45,6 +45,7 @@ class TestRawRules(NSMBWWorld):
         """Test reaching bowsers"""
         self.collect_by_name(name_world_unlock(8))
         self.collect_by_name(name_world_unlock(8))
+        self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
         self.assertFalse(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state))
 
         self.collect_by_name(name_world_unlock(1))

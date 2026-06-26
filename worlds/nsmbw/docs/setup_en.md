@@ -25,6 +25,7 @@
 
 ## How to play
 1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
+   - On linux you will need to do this with root access.
 2) This should prompt you for your game file. (You can change it later in host.yaml).
 3) Clear save file 2 (you can make a copy of it if you care about it). Then select savefile 2 to play on.
 4) After you have entered the world map press CONNECT in the client, and enter your slot name and password.
@@ -33,6 +34,7 @@
 7) Make save-states to save the game and run /save.
    - Do NOT save when you are in world 9, it can delete your save
    - Don't use the in game save feature and make a new save state after every level
+   - To close the game run /exit
 
 ## Tracker 
 - You can optionally use the built-in universal tracker extension to track available locations.

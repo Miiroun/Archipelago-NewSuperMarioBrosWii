@@ -73,7 +73,7 @@ class MemoryAddresses(object):
 
         self.level_world = self.map_between("E2",0x80315B9F)
         #self.level_stat = self.map_between("E2",0x80C8084F)
-        self.inventory_items = self.map_between("E2",0x80C807E9)
+        #self.inventory_items = self.map_between("E2",0x80C807E9)
 
         self.world_level = self.map_between("E2",0x80315B9C)
         self.level_level = self.map_between("E2",0x80315B9D)
@@ -195,11 +195,11 @@ class MemoryAddresses(object):
 
         self.patch_player_super_speed = [self.create_patch("P1", 0x80376ca0, b'\x40\xa0\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk"),
                                          self.create_patch("P1", 0x80376ca8, b'\x41\x20\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
-                                         self.create_patch("P1", 0x80376ca8, b'\x41\x20\x00\x00', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
+                                         self.create_patch("P1", 0x80376cac, b'\x41\x20\x00\x00', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
 
         self.patch_player_slow_speed = [self.create_patch("P1", 0x80376ca0, b'\x3f\x40\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk"),
                                          self.create_patch("P1", 0x80376ca8, b'\x40\x00\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
-                                         self.create_patch("P1", 0x80376ca8, b'\x3d\x4c\xcc\xcd', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
+                                         self.create_patch("P1", 0x80376cac, b'\x3d\x4c\xcc\xcd', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
 
 
         ## patch patches ---------------------------------------------------

@@ -1,3 +1,6 @@
+from typing import Counter
+
+from BaseClasses import MultiWorld
 from Options import *
 from .Common import *
 
@@ -28,9 +31,7 @@ class StarCoinCollectImmediately(Toggle):
     otherwise will send them on level completion
     """
     display_name = "Star Coin Collect immediately"
-    default = False
-
-    visibility = Option.visibility.none
+    default = True
 
 
 class RandomizeMovement(Choice):
@@ -43,7 +44,6 @@ class RandomizeMovement(Choice):
     option_on = 2
 
     default = option_on
-    #visibility  = Option.visibility.none
 
 class DontRandoMovement(ItemSet):
     """
@@ -53,7 +53,7 @@ class DontRandoMovement(ItemSet):
 
     display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
-    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value}
+    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value}
 
 
 class RandomizePowerups(Choice):
@@ -74,15 +74,15 @@ class RandomizeTime(Range):
     if 2 then start with 250 mario seconds and one time that unlocks 250 more.
     Select O if you want to disable this option.
     """
+    display_name  = "Randomize Time, BETA (logic sometimes problematic)"
 
     range_start = 0
-    range_end = 5
+    range_end = 25
     #range_end = 10
     #range_end = 20
-    default = 2
+    default = 0
     #default = 5
 
-    #visibility = Option.visibility.complex_ui
 
 class IncludeHintMovies(Toggle):
     """
@@ -166,11 +166,11 @@ class IncludeNumberInventoryItems(Range):
 
 class MakeWorldCompPriority(Toggle):
     """
-    Makes half world comp and world comp locations priority,
-    Have a small increase in solo generation failers (0.5 %)
+    Makes half world completion and world completion locations priority,
     """
     display_name = "Make World Completion Priority"
-    default = True
+    default = False
+    #visibility = Visibility.complex_ui
 
 class BowserCastleStarUnlock(Range):
     """
@@ -222,21 +222,23 @@ class AmountSupportReceived(Range):
 
     default = 5
 
-class FillerItems(ItemSet):
+class FillerItems(OptionCounter):
     """
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Filler Items"
     valid_keys = set(FILLER)
-    default = set(FILLER)
+    min = 0
+    default = dict(Counter(FILLER * 10))
 
-class TrapItems(ItemSet):
+class TrapItems(OptionCounter):
     """
     Select which filler items you want to have be possible to generate.
     """
     display_name = "Trap Items"
     valid_keys = set(TRAPS)
-    default = set(TRAPS)
+    min = 0
+    default = dict(Counter(TRAPS * 10))
 
 class SaveStateSlot(Range):
     """
@@ -249,10 +251,10 @@ class SaveStateSlot(Range):
 
 class ModifierMultiplierPercentage(Range):
     """
-    A percentage which to multiply the type time with.
-    Will still clear on death.
+    A percentage which to multiply modifier time with.
+    Modifiers still clears on death.
     """
-    display_name = "Modifier Multiplier Percentage"
+    display_name = "Modifier time Multiplier Percentage"
     range_start = 1
     range_end = 1000
     default = 100
@@ -416,6 +418,9 @@ option_presets = {
 
 
 def adjust_options(world):
+    if world.options.include_level_completion.value + world.options.randomize_starcoins.value <= 0 and len(world.multiworld.player_ids) == 1:
+        raise OptionError(f"(NSMBW generation error) Turn on at least one of include_level_completion or randomize_starcoins when generation alone")
+
     # This section tests if to many location options are turned off and tries to compensate for it.
     req_start_loc = -10
     req_start_loc_max = 10
@@ -461,21 +466,13 @@ def adjust_options(world):
         world.options.dont_rando_move.value &= movement_set
 
 
-    filler_set = set(FILLER)
-    if len(world.options.filler_items.value - filler_set) > 0:
-        print(f"(NSMBW generation error) Texts {world.options.filler_items.value - filler_set} are not a valid filler item.")
-        world.options.filler_items.value &= filler_set
     if world.options.trap_chance.value != 100:
-        if len(world.options.filler_items.value) == 0:
+        if len(list(Counter(world.options.filler_items.value).elements())) == 0:
             print("(NSMBW generation error) You need to have at least one filler item.")
-            world.options.filler_items.value = filler_set
+            world.options.filler_items.value = dict(Counter(FILLER))
 
 
-    trap_set = set(TRAPS)
-    if len(world.options.trap_items.value - trap_set) > 0:
-        print(f"(NSMBW generation error) Texts {world.options.trap_items.value - trap_set} are not a valid trap item.")
-        world.options.filler_items.value &= trap_set
     if world.options.trap_chance.value != 0:
-        if len(world.options.trap_items.value) == 0:
+        if len(list(Counter(world.options.trap_items.value).elements())) == 0:
             print("(NSMBW generation error) You need to have at least one trap item.")
-            world.options.trap_items.value = trap_set
+            world.options.trap_items.value = dict(Counter(TRAPS))

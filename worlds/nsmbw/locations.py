@@ -99,8 +99,8 @@ def make_locations_priority(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world_num != 9:
                 if world.options.make_world_comp_priority.value == True:
-                    world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
                     world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
+                    world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
     if world.options.include_hintmovies.value == True:
         for i in DEPRIO_HM:
             hm = world.get_location(name_hintmovie(i))

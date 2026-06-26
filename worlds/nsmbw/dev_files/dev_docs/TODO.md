@@ -1,12 +1,8 @@
 ## Super short term
-- do short playthrough, starting at world8, no bowser req
 
 ## Playtest
-- test  gosthuse, airship send sc imiditly
-- Test if on connect packets update correctly for collection
 
 ## Bugs to fix
-- Inventory item doesn't work on other versions
 
 
 ## Short term
@@ -15,9 +11,8 @@
   - Kill when in water
 - Us pipe rando patches : always move next world → never
   - Look at pipe rando code for different patches : always move to next world seems useful
-- fix UT-autotab : actually works?
+- fix UT-autotab : actually works? : needs to just update on switch and not death
 - Hint movies does not work on other save files?
-- Inventory powerups only work savefile 2 : make a part of dSave pointer
 - Derefrense player  pointer
 - Add support for multiplayer and other savefile support
 - Add enemy ambush and toad rescue
@@ -25,19 +20,22 @@
 - I have issue with fuzzing with hooks: UT 
 - Do playhtough, document completion times for time logic
 - Fix so work with multiple dolphin instances (so players can have all games open at same time)
-- Movement lock trap doesn't work with move rando
-
+- Inventory pow dpesnt work on other save files
+- Improve how random filler / traps are choosen
+- toad resqu location
+- toad house doesnt work to set, proberbly needs to update other location too
+  - toad add1  80c807f0
+  - toad add2  80c80f22
 
 ## Broken versions
 # EU 1
 - Movement
-- Inventory
 
 # EU 2
-- Inventory
+- Skipp intro
+- Filler on other save files, in level check failing?
 
 # US 1
-- Inventory
 - Star and water
 
 
@@ -59,6 +57,9 @@
   - exists specific memory location
 - Protocol
   - Damage-link
+  - Trap link
+  - Energy link?
+  - Gifting?
   - Filler link
     - Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
 - Improve level handling by actually changing the proper addresses
@@ -75,20 +76,23 @@
   - In theory I could write some PowerPC assembly that invalidates the cache internally but then I'd have to somehow make it detect external memory modifications and adapt to it. My problem with this method is to find a function to hook onto safely.
 - Reenable part of climb that dissabled due to freezes
 - Design icon for client : apstyle or mario head
+- Fix a better way of doing hint movie logic
 
 
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap
   - Marios animation start from back of world
-- Starts playing ending sequence when new file, or doesn't set start world
 - Sneak freezes game
 - Hint movies that requires all level completion don't work in game
-- Maybe update how shell carry works
-- yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
 - DOLPHIN CONNECTION ISSUE
 - game randomly freezes : inconsistent experience
-- Sometimes game doesn't want to load, freezes on fade to black
 - loading save state sends lots of inventory items
+- !switch doesnt block levels like 8-5 which are instant
+- goomba patch errors when level has goomba: rough write
+- sometimes loading world crashes game
+  - yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
+  - ask for sead
+
 
 ## Features
 - Save toad / kill world enemy = hint/check
@@ -109,7 +113,7 @@
   - Ice physics
 - FILLER 
   - Gain this levels check point
-  - Get toad house (beginning of world)
+  - Get toad house (beginning of world) : toad house is in MJ..game.. files, should be easy tm
   - Insta kill all enemies
 - Features from gecko
   - Speed trap
