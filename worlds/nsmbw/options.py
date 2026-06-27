@@ -13,7 +13,7 @@ class TrapChance(Range):
 
     range_start = 0
     range_end = 100
-    default = 30
+    default = 15
 
 
 class RandomizeStarCoins(Toggle):

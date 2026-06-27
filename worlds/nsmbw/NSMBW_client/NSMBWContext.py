@@ -116,7 +116,10 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.current_mod != "":
             logger.info(f"Modifier {self.ctx.current_mod} with time left {self.ctx.current_mod_end_time-time.time()}.")
         else:
-            logger.info("No type active")
+            if Utils.is_frozen():
+                logger.info(f"No type active")
+            else:
+                logger.info(f"No type active, mod '{self.ctx.current_mod} time left {self.ctx.current_mod_end_time-time.time()}")
 
     def _cmd_save(self):
         """
@@ -204,6 +207,11 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """Force restart the Dolphin hook process (unhook + fresh re-hook), runs 30 times"""
         # this command is inspired by  https://github.com/toent/Archipelago-MKWii/blob/main/worlds/mkwii/MKWii%20Client/mkwii_client.py#L107
         Utils.async_start(self.ctx.game_interface.force_hook())
+
+    def _cmd_match_server_state(self):
+        if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
+            logger.info(f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
+        self.ctx.update_memory_to_server_on_load()
 
 status_messages = {
     ConnectionState.IN_GAME: "In level",
@@ -514,8 +522,10 @@ class NSMBWContext(SuperContext):
         if self.connection_state == ConnectionState.DISCONNECTED:
             if self.game_interface.connect_to_game():
                 if Utils.get_settings()["nsmbw_settings"].auto_open:
-                    Utils.async_start(self.handle_load())
-                    Utils.async_start(self.game_interface.patch_runtime_on_load())
+                    await self.handle_load()
+                    await self.game_interface.patch_runtime_on_load()
+                    await asyncio.sleep(1)
+                    self.update_memory_to_server_on_load()
                 else:
                     self.update_memory_to_server_on_load()
 
@@ -1216,10 +1226,10 @@ class NSMBWContext(SuperContext):
                 case ITEM.FILLER.SuperSpeed:
                     self.modifiers.append(Modifier(ITEM.FILLER.SuperSpeed, 90))
 
-                case ITEM.FILLER.ToadHouse:
-                    logger.info(f" Time for a shopping spree")
-                    for world_num in range(1,9+1):
-                        self.game_interface.set_toad_house(self.random.choice([b'\x05',b'\x06',b'\x07']), world_num)
+                #case ITEM.FILLER.ToadHouse:
+                #    logger.info(f" Time for a shopping spree")
+                #    for world_num in range(1,9+1):
+                #        self.game_interface.set_toad_house(self.random.choice([b'\x05',b'\x06',b'\x07']), world_num)
 
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
@@ -1318,8 +1328,7 @@ class NSMBWContext(SuperContext):
                     logger.info("Shells are now back to normal.")
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_throw, reverse=True)
                 case ITEM.TRAPS.ReverseControlTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right_reverse,reverse=True)
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left_reverse,reverse=True)
+                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_reverse,reverse=True)
                 case ITEM.TRAPS.MovementLockTrap:
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right,reverse=True)
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left,reverse=True)
@@ -1352,8 +1361,7 @@ class NSMBWContext(SuperContext):
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_throw, reverse=False)
                 case ITEM.TRAPS.ReverseControlTrap:
                     logger.info(f"Did you put your controller upside down?")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right_reverse, reverse=False)
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left_reverse, reverse=False)
+                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_reverse, reverse=False)
                 case ITEM.TRAPS.MovementLockTrap:
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right,reverse=False)
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left,reverse=False)

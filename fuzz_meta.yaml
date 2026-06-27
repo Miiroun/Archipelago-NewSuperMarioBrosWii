@@ -1,15 +1,62 @@
 null:
   progression_balancing: 50
 NSMBW:
-  ################
-  # Game Options #
-  ################
-  progression_balancing: 50
-  #accessibility: full
-  #include_starting_locations: 0
-  #randomize_movement: 'on'
-  #randomize_powerups: 'on'
-  #make_world_comp_priority : 'false'
+  progression_balancing: normal
+  accessibility: full
+  include_level_completion: true
+  include_shortcuts: true
+  include_hintmovies: true
+  randomize_starcoins: true
+  include_inventory_powerups: 40
+  make_world_comp_priority: false
+  randomize_movement: 'on'
+  dont_rando_move:
+  - Button left
+  - Jump
+  - Run
+  randomize_powerups: on_except_mushroom
+  randomize_time: 0
+  bowser_star_unlock: 100
+  bowser_world_unlock: 2
+  logic_difficulty: normal
+  logic_outside_powerup: allow
+  starting_world: random
+  world9_unlock_condition: gaussian
+  amount_support_received: 5
+  filler_items:
+    fill inventory: 10
+    1-ups: 10
+    Coin x01: 10
+    Coin x10: 10
+    Coin x50: 10
+    Random Power-up: 10
+    Super Speed: 10
+  trap_items:
+    Loose powerup trap: 10
+    Goomba trap: 10
+    Death trap: 10
+    Time trap: 10
+    Robbery trap: 10
+    Shrink trap: 10
+    Literature trap: 10
+    Throw trap: 10
+    Reverse Control trap: 10
+    Movement lock trap: 10
+    Slow Trap: 10
+  trap_chance: 15
+  death_link: false
+  death_link_group: ''
+  starcoin_collect_immediately: true
+  save_state_slot: 7
+  modifier_multiplier_percentage: 100
+  local_items: []
+  non_local_items: []
+  start_inventory: {}
+  start_hints: []
+  start_location_hints: []
+  exclude_locations: []
+  priority_locations: []
+
 
 #empty:
 #  accessibility: full

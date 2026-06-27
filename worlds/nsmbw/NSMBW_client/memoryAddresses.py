@@ -186,8 +186,8 @@ class MemoryAddresses(object):
         self.patch_button_up = self.create_patch("P1", 0x8005e4f0, button_off_instru,button_on_instru,"button_up")
         self.patch_button_down = self.create_patch("P1", 0x8005e500,button_off_instru,button_on_instru, "button_down")
 
-        self.patch_button_right_reverse = self.create_patch("P1", 0x8005e524, b'\x54\x03\x07\x38', b'\x54\x03\x07\x7a', "button_right_reverse")
-        self.patch_button_left_reverse = self.create_patch("P1", 0x8005e514, b'\x54\x03\x07\x38', b'\x54\x03\x07\x7a', "button_left_reverse")
+        self.patch_button_reverse = [self.create_patch("P1", 0x8005e524, b'\x54\x03\x07\x38', b'\x54\x03\x07\x7a', "button_right_reverse"),
+                                     self.create_patch("P1", 0x8005e514, b'\x54\x03\x07\x7a', b'\x54\x03\x07\x38', "button_left_reverse")]
 
 
         self.patch_goomba_speed = [self.create_patch("E2", 0x80ad2870, int_to_bytes(0x40000000, 4),int_to_bytes(0x3f000000, 4), "goomba_speed1" ), # f2.0 # f-2.0

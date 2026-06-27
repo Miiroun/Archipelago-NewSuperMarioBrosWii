@@ -584,9 +584,9 @@ class NSMBWInterface():
             if not ITEM.MOVEMENT.Run in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_button_run, ITEM.MOVEMENT.Run in unlocked_moves)
 
-            if not (ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando or ITEM.TRAPS.MovementLockTrap == current_mod):
+            if (not ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando) and (ITEM.TRAPS.MovementLockTrap != current_mod):
                 self.apply_patch(self.memory_addresses.patch_button_right, ITEM.MOVEMENT.ButtonRight in unlocked_moves)
-            if not (ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando or ITEM.TRAPS.MovementLockTrap == current_mod):
+            if (not ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando) and (ITEM.TRAPS.MovementLockTrap != current_mod):
                 self.apply_patch(self.memory_addresses.patch_button_left, ITEM.MOVEMENT.ButtonLeft in unlocked_moves)
             if not ITEM.MOVEMENT.ButtonUp in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_button_up, ITEM.MOVEMENT.ButtonUp in unlocked_moves)

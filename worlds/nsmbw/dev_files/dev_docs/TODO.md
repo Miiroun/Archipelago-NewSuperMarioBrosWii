@@ -1,4 +1,6 @@
 ## Super short term
+- test fussing on default yaml : 6 % generation failure
+
 
 ## Playtest
 
@@ -36,7 +38,7 @@
 - Filler on other save files, in level check failing?
 
 # US 1
-- Star and water
+- Star and swim
 
 
 ## Mid term
