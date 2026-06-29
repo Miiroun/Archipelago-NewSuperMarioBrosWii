@@ -92,7 +92,7 @@ class MemoryAddresses(object):
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
 
-        self.powerup_state = [self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})] # might be offsey with 0x2d08+0x1
+        self.powerup_state = [self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})] # might be offsey with 0x2d08+0x1 
         assert len(self.powerup_state) == PLAYER_COUNT, f"Powerup_state address list is of wrong size {len(self.powerup_state)}"
 
         # memory map doesnt work for this for some reason

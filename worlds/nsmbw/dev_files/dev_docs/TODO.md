@@ -1,11 +1,31 @@
 ## Super short term
-- test fussing on default yaml : 6 % generation failure
+- test fussing on default yaml : 6 % generation failure alone
+- PlayerGravity # gravity filler ?
+- Just look in memory where store player data, follow intruc, find size -> multiplayer
+  - dAcPy_c__data : length 0x2d08
+  - daPlBase_c::GravityData
+  - daPlBase_c__data
+  - daPlBase_c__vt : hold func pointers
+- multiplayer
+  - Separate powerup unlocks?
+- handle deathlink better
+- Remove cost from hint movies???
+  - PRO: no logic trouble, no imposilbe seeds
+  - CON: star coins does less
 
 
 ## Playtest
+- multiplayer
+- deathlink amnisty
+- death-trap no deathlink
+
 
 ## Bugs to fix
-
+- still sends false deathlinks
+- overwrite level comp ?
+  - Heya! So I had an issue with save states. Everything worked fine during the first bit of an AP I did, Everything continued to work fine till this morning after about an hour of game time. For some reason my save states were automatically being loaded instead of saved, and while I did have back-up save states, I did have an issue of that messing with future aspects as all my levels I completed with star coins suddenly went uncleared. The only thing that was unlocked was secret exit paths in levels I cleared with a secret exit but couldn't get that fixed afterwards. I did use the recent version posted not long ago so i'm unsure if this was an issue on my end I could have fixed or not.
+  - I had a back-up save state in Worlds 3 & 9, which were the two worlds I was focusing on and I believe the issues started after beating 9-8 or 9-3? The world 3 back-up state was only a few levels behind (like 2 or 3). However after beating like one or two levels, the game started loading a state it made itself in World 4. So whenever I tried loading the World 9 or World 3 state, things ended up breaking and even one of my back-up states got messed up as the game auto-stated the same moment I save stated. Luckily it was only one of them (I usually make two states just in case) but, yeah the issues started in world 9 but carried over even into world 3 where world 9 was never even touched on that particular state.
+- Deathlink are not receiving (for 1 player)
 
 ## Short term
 - Multiplayer support
@@ -15,19 +35,19 @@
   - Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab : actually works? : needs to just update on switch and not death
 - Hint movies does not work on other save files?
-- Derefrense player  pointer
+- Dereference player  pointer
 - Add support for multiplayer and other savefile support
 - Add enemy ambush and toad rescue
 - PERSISTANTSTORAGE instead of local save file
 - I have issue with fuzzing with hooks: UT 
-- Do playhtough, document completion times for time logic
+- Do playthrough, document completion times for time logic
 - Fix so work with multiple dolphin instances (so players can have all games open at same time)
-- Inventory pow dpesnt work on other save files
-- Improve how random filler / traps are choosen
+- Inventory pow doesn't work on other save files
 - toad resqu location
-- toad house doesnt work to set, proberbly needs to update other location too
+- toad house doesn't work to set, probably needs to update other location too
   - toad add1  80c807f0
   - toad add2  80c80f22
+
 
 ## Broken versions
 # EU 1
@@ -79,18 +99,18 @@
 - Reenable part of climb that dissabled due to freezes
 - Design icon for client : apstyle or mario head
 - Fix a better way of doing hint movie logic
+- Red coin sanity
 
 
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap
   - Marios animation start from back of world
 - Sneak freezes game
-- Hint movies that requires all level completion don't work in game
+- Hint movies that requires all level completion don't work in game : vertify still problem
 - DOLPHIN CONNECTION ISSUE
 - game randomly freezes : inconsistent experience
-- loading save state sends lots of inventory items
 - !switch doesnt block levels like 8-5 which are instant
-- goomba patch errors when level has goomba: rough write
+- goomba patch errors when level doesn't goomba: rough write
 - sometimes loading world crashes game
   - yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
   - ask for sead

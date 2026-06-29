@@ -104,11 +104,13 @@ def get_random_filler_item_name(world: NSMBWworld) -> str:
     # DO NOT use a bare random object from Python's built-in random module.
 
 
-
-    if world.random.randint(0, 99) < world.options.trap_chance:
-        return str( world.random.choice(sorted(list(Counter(world.options.trap_items.value).elements()))) )
+    _list : List[Tuple[str,int]] # converts the dict to a sorted string for determinism
+    if world.random.randint(1, 100) <= world.options.trap_chance:
+        _list = sorted(list(world.options.trap_items.value.items()))
     else:
-        return str( world.random.choice(sorted(list(Counter(world.options.filler_items.value).elements()))) )
+        _list = sorted(list(world.options.filler_items.value.items()))
+    # *zip(*_list) is the reverse of zip()
+    return str( world.random.choices(*zip(*_list), k=1)[0]  )
 
 def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSMBWItem:
 

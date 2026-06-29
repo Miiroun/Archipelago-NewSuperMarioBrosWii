@@ -210,6 +210,16 @@ class DeathLinkGroup(FreeText):
     rich_text_doc = True
     default = ""
 
+class DeathLinkAmnesty(Range):
+    """
+    The amount of deaths required to send a deathlink.
+    Keep at 1 for every death to send.
+    """
+    display_name = "Death Link Amnesty"
+    range_start = 1
+    range_end = 25
+
+    default = 1
 
 class AmountSupportReceived(Range):
     """
@@ -229,7 +239,7 @@ class FillerItems(OptionCounter):
     display_name = "Filler Items"
     valid_keys = set(FILLER)
     min = 0
-    default = dict(Counter(FILLER * 10))
+    default = dict(Counter(FILLER * 10)) # this is a really ineffective way of doing this, since we create a temp list 10 times the length of FILLER
 
 class TrapItems(OptionCounter):
     """
@@ -238,7 +248,7 @@ class TrapItems(OptionCounter):
     display_name = "Trap Items"
     valid_keys = set(TRAPS)
     min = 0
-    default = dict(Counter(TRAPS * 10))
+    default = dict(Counter(TRAPS * 10)) # this is a really ineffective way of doing this, since we create a temp list 10 times the length of TRAPS
 
 class SaveStateSlot(Range):
     """
@@ -469,10 +479,10 @@ def adjust_options(world):
     if world.options.trap_chance.value != 100:
         if len(list(Counter(world.options.filler_items.value).elements())) == 0:
             print("(NSMBW generation error) You need to have at least one filler item.")
-            world.options.filler_items.value = dict(Counter(FILLER))
+            world.options.filler_items.value = world.options.filler_items.default
 
 
     if world.options.trap_chance.value != 0:
         if len(list(Counter(world.options.trap_items.value).elements())) == 0:
             print("(NSMBW generation error) You need to have at least one trap item.")
-            world.options.trap_items.value = dict(Counter(TRAPS))
+            world.options.trap_items.value = world.options.trap_items.default

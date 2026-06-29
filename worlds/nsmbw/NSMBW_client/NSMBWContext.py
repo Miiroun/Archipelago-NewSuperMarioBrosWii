@@ -156,6 +156,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         time.sleep(1)
         Utils.async_start(self.ctx.game_interface.kill_player())
+        self.ctx.is_pending_death_link_reset = True
+
 
     def _cmd_refresh(self):
         """
@@ -274,6 +276,8 @@ class NSMBWContext(SuperContext):
 
     manifest_version : str
 
+    death_link_amnesty_count : int
+
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
             super().__init__(server_address, password)
@@ -309,6 +313,8 @@ class NSMBWContext(SuperContext):
         self.save_time = time.time()
         self.unlocked_worlds = [0 for _ in range(1, 9 + 1)]
 
+        self.death_link_amnesty_count = 0
+
 
 
     async def server_auth(self, password_requested: bool = False):
@@ -333,6 +339,10 @@ class NSMBWContext(SuperContext):
                 #need to set username somewhere
 
                 self.slot_data = args["slot_data"]
+                # checks for new slot_data values to be compatible
+                if "death_link_amnesty" not in self.slot_data.keys():
+                    self.slot_data["death_link_amnesty"] = 1
+
                 self.death_link_enabled = self.slot_data["death_link"]
                 self.death_link_group = self.slot_data["death_link_group"]
                 if self.death_link_enabled:
@@ -1150,6 +1160,7 @@ class NSMBWContext(SuperContext):
                 case ITEM.TRAPS.DeathTrap:
                     logger.info(f"You fell for a death trap")
                     await self.game_interface.kill_player()
+                    self.is_pending_death_link_reset = True
 
                 case ITEM.TRAPS.RobberyTrap:
                     logger.info("I took some off your coins.")
@@ -1247,7 +1258,7 @@ class NSMBWContext(SuperContext):
             if current_lives > self.prev_lifecount[player_num]:
                 self.prev_lifecount[player_num] = self.game_interface.get_lives_count(player_num)
 
-            if is_dead and self.game_interface.get_in_stage_flag()[3] == 0 and (not self.game_interface.is_in_level() or not self.game_interface.is_in_level()): #self.prev_lifecount[player_num] == 0:
+            if is_dead and self.game_interface.get_in_stage_flag()[3] == 0 and (not self.game_interface.is_in_level() or not self.game_interface.is_in_menu()): #self.prev_lifecount[player_num] == 0:
                 is_dead = False
                 print("Overwrote sending death because looks like game is closing")
 
@@ -1260,9 +1271,13 @@ class NSMBWContext(SuperContext):
                 #logger.info("You died and sent death link")
             if self.death_link_enabled:
                 if is_dead and (self.is_pending_death_link_reset == False) and self.slot:
-                    print(f"is sending deathlink")
-                    death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
-                    await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
+                    self.death_link_amnesty_count += 1
+                    if self.death_link_amnesty_count >= self.slot_data["death_link_amnesty"]:
+                        print(f"is sending deathlink")
+                        death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
+                        await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
+                    else:
+                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data["death_link_amnesty_count"]}")
                     self.is_pending_death_link_reset = True
                 elif (not is_dead) and (self.is_pending_death_link_reset == True) and (time.time() > self.game_interface.deathtimer):
                     self.is_pending_death_link_reset = False

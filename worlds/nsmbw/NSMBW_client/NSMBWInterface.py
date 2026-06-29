@@ -311,6 +311,7 @@ class NSMBWInterface():
         try:
             time.sleep(wait_long)
             keyboard.release("shift")
+            keyboard.release(f"F{slot}")
             time.sleep(wait_short)
             keyboard.press("shift")
             time.sleep(wait_short)
@@ -336,6 +337,9 @@ class NSMBWInterface():
             logger.info(f"loaded savestate from slot {slot}")
 
         try:
+            time.sleep(wait_short)
+            keyboard.release("shift")
+            keyboard.release(f"F{slot}")
             time.sleep(wait_short)
             keyboard.press(f"F{slot}")
             time.sleep(wait_short)
