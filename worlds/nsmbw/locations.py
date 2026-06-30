@@ -28,18 +28,24 @@ for world_num in range(1,9+1): # worlds
         for sc in range(1,3+1):
             LOCATION_NAME_TO_ID.update({name_starcoin(world_num, level_num, sc): 10000 + 1000 * world_num + 10 * level_num + sc})
         sc_set = set(name_starcoin(world_num, level_num, sc) for sc in range(1, 3 + 1))
-        LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}_Level{level_num}": sc_set})
+        LOCATION_NAME_GROUPS.update({f"Starcoins World{world_num} Level{level_num}": sc_set,})
         level_set |= sc_set
-    LOCATION_NAME_GROUPS.update({f"Starcoins_World{world_num}": level_set})
+    LOCATION_NAME_GROUPS.update({f"Starcoins World{world_num}": level_set,
+                                 f"Starcoin 1 World{world_num}": set(name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
+                                 f"Starcoin 2 World{world_num}": set(name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
+                                 f"Starcoin 3 World{world_num}": set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) })
     world_set |= level_set
 
     # add location for beating castles and towers
     if world_num != 9:
         LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 2000+100*world_num + 1})
         LOCATION_NAME_TO_ID.update({name_tower_clear(world_num) : 2000+100*world_num + 2})
-LOCATION_NAME_GROUPS.update({"Starcoins" : world_set })
-LOCATION_NAME_GROUPS.update({"Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)) })
-LOCATION_NAME_GROUPS.update({"Towers" : set(name_tower_clear(world_num) for world_num in range(1,8+1)) })
+LOCATION_NAME_GROUPS.update({"Starcoins" : world_set,
+                             "Starcoin 1" : set((name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) for world_num in range(1,9+1)),
+                             "Starcoin 2" : set((name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) for world_num in range(1, 9 + 1)),
+                             "Starcoin 3" : set((name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) for world_num in range(1, 9 + 1)),
+                             "Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)),
+                             "Towers" : set(name_tower_clear(world_num) for world_num in range(1,8+1)) })
 
 
 

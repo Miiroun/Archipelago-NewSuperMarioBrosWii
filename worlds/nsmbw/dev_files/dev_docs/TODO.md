@@ -12,6 +12,7 @@
 - Remove cost from hint movies???
   - PRO: no logic trouble, no imposilbe seeds
   - CON: star coins does less
+- lower req for grinding poweruops
 
 
 ## Playtest
@@ -26,6 +27,9 @@
   - Heya! So I had an issue with save states. Everything worked fine during the first bit of an AP I did, Everything continued to work fine till this morning after about an hour of game time. For some reason my save states were automatically being loaded instead of saved, and while I did have back-up save states, I did have an issue of that messing with future aspects as all my levels I completed with star coins suddenly went uncleared. The only thing that was unlocked was secret exit paths in levels I cleared with a secret exit but couldn't get that fixed afterwards. I did use the recent version posted not long ago so i'm unsure if this was an issue on my end I could have fixed or not.
   - I had a back-up save state in Worlds 3 & 9, which were the two worlds I was focusing on and I believe the issues started after beating 9-8 or 9-3? The world 3 back-up state was only a few levels behind (like 2 or 3). However after beating like one or two levels, the game started loading a state it made itself in World 4. So whenever I tried loading the World 9 or World 3 state, things ended up breaking and even one of my back-up states got messed up as the game auto-stated the same moment I save stated. Luckily it was only one of them (I usually make two states just in case) but, yeah the issues started in world 9 but carried over even into world 3 where world 9 was never even touched on that particular state.
 - Deathlink are not receiving (for 1 player)
+- Climb is locked even though it is excluded : 5 vines etc
+- 1-castle comp message send when it shouldn't
+
 
 ## Short term
 - Multiplayer support
@@ -140,7 +144,7 @@
 - Features from gecko
   - Speed trap
   - fall damage trap
-
+- Make penguin progressive
 
 ## Game patches
 - Coin worlds single player
@@ -157,6 +161,8 @@
 - Get rid of keyboard
   - Can do this by creating a instruction write wrapper that writes instruction to data and then have function in game load it instead: icbi followed by isync
 - Fix so work with multiple dolphin instances
+- Add support for other mods: pipe rando, mkwcat 8player, newer (needs logic), etc
+  - Needs to create new memory map (on the fly? or need to create it for all editions), would be helpful for using the memory patch with the randomizer
 
 
 ## Features I (Miiroun) will not implement

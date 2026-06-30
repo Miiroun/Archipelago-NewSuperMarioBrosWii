@@ -15,6 +15,11 @@ Communities that helped
 - Horizon & NSMBW Hacking Depo discord servers (for knowledge about the game)
 
 
+NSMBW_logo:
+- Image by miiroun
+- Remixed of archipelago logo by Krista Corkos and Christopher Wilson, lisensed under [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/)
+- Based on star coins in mario, made by nintendo
+
 \
 Community projects used
 - Archipelago
@@ -46,12 +51,12 @@ NSMBW projects used
 Original game
 - Nintendo
 
+
 AI-usage
 Gemini & ChatGPT 
   - decoding assembly and reading address maps
 Pycharm linter
   - linter, a line completion tool built into py-charm
-
 
 
 \

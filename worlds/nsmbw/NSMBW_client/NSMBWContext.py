@@ -841,7 +841,7 @@ class NSMBWContext(SuperContext):
                 elif secret_exit[2] == 2:
                     byte_to_check = 0x20
                 else:
-                    raise ValueError("Somthing is wrong with SECRET_EXIT")
+                    raise ValueError(f"Something is wrong with SECRET_EXIT, {secret_exit} not in {SECRET_EXIT}")
 
 
                 if level_stats & byte_to_check == byte_to_check:

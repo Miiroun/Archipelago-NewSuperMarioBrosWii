@@ -148,8 +148,9 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
   - Can't unlock canons
   - The unlocks from world 9 requires 10 starcoin items / world number  to unlock
 - Multiplayer?
-  - Multiplayer is currently not supported
-  - You can play but only mario will be restricted to some of the unlocks
+  - You can play NSMBW multiplay 2 ways:
+    1) Same-slot co-op: Both connect to the same archipelago slot separately. This entails you play seperate levels but a level completed for you get marked for your friend. Run /change_collection_level 2 for a better experience
+    2) Local/Dolphin net-play: Not supported for powerups, deathlink and start + swim movement.
 -  Tracker?
   - A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
 - Where is Rivvolution patch?
