@@ -1,4 +1,10 @@
 ## TODO
+- make solo playable
+- Volume slide
+- In logic
+- Auto scroll text chat
+- doesnt work librebrowser
+- clearify that no bricks left = goal
 
 # BUGS
 - resize correctly
