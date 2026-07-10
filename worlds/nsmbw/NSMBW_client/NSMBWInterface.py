@@ -95,7 +95,8 @@ class NSMBWInterface():
         try:
             self.dolphin_client.connect()
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
-
+            if game_id == b"\x00\x00\x00\x00\x00\x00" or len(game_id) < 6:
+                return False
             #print("gameeid:",game_id) # remove later
 
             try:
