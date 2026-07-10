@@ -5,6 +5,10 @@ import traceback
 import zlib
 from enum import Enum
 import sys
+import os
+import shutil
+import subprocess
+import platform
 sys.set_int_max_str_digits(0)
 
 from typing import Optional, Iterable
@@ -300,6 +304,37 @@ class NSMBWInterface():
 
         return address
 
+    def _linux_send_hotkey(self, combo: str) -> bool:
+        """Deliver a Dolphin hotkey on Linux via the compositor + xdotool.
+
+        Dolphin ignores background XSendEvent injection, so its window must be focused before sending. Focus is compositor specific and overridable via the NSMBW_FOCUS_CMD env var (whitespace-separated). Returns True on success, False if the tools are missing or the send failed.
+        """
+        if shutil.which("xdotool") is None:
+            self.log_color(
+                    "xdotool not found; install it for automatic save/load states on Linux, " 
+                    f"or make the state manually in slot. Skipping hotkey '{combo}'.",
+                    "red",
+                    )
+            return False
+        window_class = "dolphin-emu"
+        focus_cmd = os.environ.get(
+                "NSMBW_FOCUS_CMD",
+                f"hyprctl dispatch focuswindow class:{window_class}",
+                )
+        try:
+            subprocess.run(focus_cmd.split(), check=False, capture_output=True)
+            time.sleep(0.05)
+            subprocess.run(
+                    ["xdotool", "key", "--clearmodifiers", combo],
+                    check=True,
+                    capture_output=True,
+                    )
+            return True
+        except Exception as e:
+            logger.info(traceback.format_exc())
+            self.log_color(f"Error {e} when sending hotkey '{combo}' via xdotool", "red")
+            return False
+
     def save_state(self, slot : int, do_logging=True):
         assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
@@ -307,6 +342,10 @@ class NSMBWInterface():
 
         if do_logging:
             logger.info(f"Saved savestate to slot {slot}")
+
+        if platform.system() == "Linux":
+            self._linux_send_hotkey(f"shift+F{slot}")
+            return
 
         try:
             time.sleep(wait_long)
@@ -335,6 +374,10 @@ class NSMBWInterface():
 
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
+
+        if platform.system() == "Linux":
+            self._linux_send_hotkey(f"F{slot}")
+            return
 
         try:
             time.sleep(wait_short)
