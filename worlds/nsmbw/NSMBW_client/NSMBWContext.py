@@ -11,6 +11,7 @@ import os
 import pathlib
 import time
 import traceback
+import zipfile
 from dataclasses import dataclass
 from enum import IntEnum
 from random import Random
@@ -447,18 +448,22 @@ class NSMBWContext(SuperContext):
 
 
     async def dolphin_sync_task_func(self):
-        apnsmbw_file = r"custom_worlds/nsmbw.apworld" if Utils.is_frozen() else os.path.abspath(pathlib.Path()) + r"\\worlds\\nsmbw"
+        # archipelago.json lives at nsmbw/archipelago.json; this module is
+        # at nsmbw/NSMBW_client/NSMBWContext.py. Locate it relative to
+        # __file__ so it works from any cwd, packed .apworld or unpacked.
+        _module_dir = pathlib.Path(__file__).resolve().parent
+        _nsmbw_dir = _module_dir.parent
+        _apworld_zip = _nsmbw_dir.parent
+        apnsmbw_file = _apworld_zip
 
         if apnsmbw_file:
             text : str
             try:
-                if Utils.is_frozen():
-                    #text = importlib.resources.read_text(self.apnsmbw_file, r"archipelago.json")
-                    with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
-                        path = zipfile.Path(zf, at=r"nsmbw/archipelago.json")
-                        text = path.read_text(encoding='UTF-8')
+                if zipfile.is_zipfile(_apworld_zip):
+                    with zipfile.ZipFile(_apworld_zip) as zf:
+                        text = zipfile.Path(zf, at="nsmbw/archipelago.json").read_text(encoding="UTF-8")
                 else:
-                    with open(apnsmbw_file+r"\\archipelago.json", "r") as f:
+                    with open(_nsmbw_dir / "archipelago.json", "r", encoding="UTF-8") as f:
                         text = f.read()
                 manifest = json.loads(text)
                 version = manifest["world_version"]
