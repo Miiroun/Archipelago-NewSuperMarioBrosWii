@@ -1,5 +1,6 @@
 ## Super short term
-- test fussing on default yaml : 6 % generation failure alone
+- test fussing on default yaml : 8 % generation failure alone 
+  - problem with unittest completion
 - PlayerGravity # gravity filler ?
 - Just look in memory where store player data, follow intruc, find size -> multiplayer
   - dAcPy_c__data : length 0x2d08
@@ -12,24 +13,15 @@
 - Remove cost from hint movies???
   - PRO: no logic trouble, no impossible seeds
   - CON: star coins does less
-  - Soltion : make option so player consnets
-- lower req for grinding powerups?
-- Search wiki for spin: 1-5 8-A etc carry_block
-- loose pow trap correct damage
+  - Solution : make option so player consnets
+- Search wiki for carry_block
+- lose pow trap correct damage
 - Add command for clearing inventory  : lower to at least 5
-- Have someone with connection issues try running in administrator mode
-- look at PR's
 - I need to save modifiers so no issue when saving or loading save state
 - Revise not implemented logic
 - Rename movement to abilities?
-- Read and think about indygibb solution
-- Create command to clear mod: add all mod with 0time
 - Consult with react, but spin should only be needed for 1-5 and 8-A and carry block
-- merge new UT
 - Add better keyboard library support
-- give credit to IndyGibb and update AI usage
-- test new read mainfest works on frozzen and linux
-- Playtest on linux so the root error is apparent
 
 
 ## Playtest
@@ -39,7 +31,10 @@
 - /kill no deathlink
 - do complete playthrough, add spin jump and jump logic + time logic
 - Deathlink group
-
+- Playtest on linux so the root error is apparent
+- test new read manifest works on frozen and linux
+- Have someone with connection issues try running in administrator mode
+- clear_inventory and clear_mod
 
 ## Bugs to fix
 - still sends false deathlinks
@@ -47,7 +42,7 @@
   - Heya! So I had an issue with save states. Everything worked fine during the first bit of an AP I did, Everything continued to work fine till this morning after about an hour of game time. For some reason my save states were automatically being loaded instead of saved, and while I did have back-up save states, I did have an issue of that messing with future aspects as all my levels I completed with star coins suddenly went uncleared. The only thing that was unlocked was secret exit paths in levels I cleared with a secret exit but couldn't get that fixed afterwards. I did use the recent version posted not long ago so i'm unsure if this was an issue on my end I could have fixed or not.
   - I had a back-up save state in Worlds 3 & 9, which were the two worlds I was focusing on and I believe the issues started after beating 9-8 or 9-3? The world 3 back-up state was only a few levels behind (like 2 or 3). However after beating like one or two levels, the game started loading a state it made itself in World 4. So whenever I tried loading the World 9 or World 3 state, things ended up breaking and even one of my back-up states got messed up as the game auto-stated the same moment I save stated. Luckily it was only one of them (I usually make two states just in case) but, yeah the issues started in world 9 but carried over even into world 3 where world 9 was never even touched on that particular state.
 - Climb is locked even though it is excluded : 5 vines etc
-- 1-castle comp message shows when it shouldn't
+- 1-C comp message shows when it shouldn't
 - to carry anything over your head (i.e. propeller block (as pictured below), ice block (pictured mid-throw below), pow block (as pictured below), light block (as pictured below), barrel (as pictured below), or other player (as pictured below)), you need spin jump AND carry 
   - change logic
 - Spin jump no logic, also no logic without normal jump

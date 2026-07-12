@@ -487,11 +487,11 @@ class TrackerGameContext(CommonContext):
             self.tracker_hinted_locs_label.text = f"Hinted: [color={get_ut_color('hinted_in_logic')}]{len(updateTracker_ret.hinted_locations)}[/color]"
         if hasattr(self, "tracker_go_mode_label"):
             if self.tracker_core.multiworld.has_beaten_game(updateTracker_ret.state,current_world.player):
-                self.tracker_go_mode_label.text = f"Go mode: [color={get_ut_color("in_logic")}]Yes[/color]"
+                self.tracker_go_mode_label.text = f"Go mode: [color={get_ut_color('in_logic')}]Yes[/color]"
             elif updateTracker_ret.glitches_state and self.tracker_core.multiworld.has_beaten_game(updateTracker_ret.glitches_state,current_world.player):
-                self.tracker_go_mode_label.text = f"Go mode: [color={get_ut_color("glitched")}]Glitched[/color]"
+                self.tracker_go_mode_label.text = f"Go mode: [color={get_ut_color('glitched')}]Glitched[/color]"
             else:
-                self.tracker_go_mode_label.text = f"Go mode: [color={get_ut_color("out_of_logic")}]No[/color]"
+                self.tracker_go_mode_label.text = f"Go mode: [color={get_ut_color('out_of_logic')}]No[/color]"
 
         return updateTracker_ret
 
@@ -1524,13 +1524,13 @@ class TrackerGameContext(CommonContext):
         if hasattr(current_world,"explain_rule"):
             docstring = inspect.getdoc(current_world.explain_rule)
             if docstring:
-                sReturn += f"explain overrides:\n    {'\n    '.join(docstring.split('\n'))}"
+                sReturn += f"explain overrides:\n    {f'{chr(92)}    '.join(docstring.split({chr(92)}))}"
         if hasattr(current_world,"get_logical_path"):
             docstring = inspect.getdoc(current_world.get_logical_path)
             if docstring:
                 if sReturn:
                     sReturn += "\n"
-                sReturn += f"get_logical_path overrides:\n    {'\n    '.join(docstring.split('\n'))}"
+                sReturn += f"get_logical_path overrides:\n    {f'{chr(92)}    '.join(docstring.split({chr(92)}))}"
 
         return sReturn
 

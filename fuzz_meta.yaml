@@ -1,6 +1,6 @@
 null:
-  progression_balancing: 50
-NSMBW:
+  progression_balancing: 50 #
+NSMBW: #
   progression_balancing: normal
   accessibility: full
   include_level_completion: true

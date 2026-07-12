@@ -14,7 +14,7 @@ import traceback
 from dataclasses import dataclass
 from enum import IntEnum
 from random import Random
-from typing import Literal
+from typing import Literal, get_args
 
 import Utils
 
@@ -43,6 +43,7 @@ class ModifiedState(IntEnum):
     UNMODIFIED = 0
     MODWOLD1_8 = 1
     MODALLWORLDS = 2
+
 
 @dataclass
 class Modifier:
@@ -120,6 +121,12 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"No type active")
             else:
                 logger.info(f"No type active, mod '{self.ctx.current_mod} time left {self.ctx.current_mod_end_time-time.time()}")
+
+    def _cmd_refresh_mod(self):
+        """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
+        self.ctx.current_mod_end_time = 0
+        self.ctx.modifiers = list(Modifier(name, 0) for name in list(get_args(Modifier.type)))
+        logger.info(f"Successfully cleared all modifiers")
 
     def _cmd_save(self):
         """
@@ -215,6 +222,18 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
         self.ctx.update_memory_to_server_on_load()
+
+    def _cmd_clear_inventory(self):
+        """Clears your inventory of powerups (except 5).
+        Useful if you want to grind inventory_powerups but have a full inventory"""
+        for pow_num in range(1,POWERUP_COUNT+2):
+            current_pow = bytes_to_int(self.ctx.game_interface.get_inventory_items(pow_num))
+            set_pow = min(current_pow, 5)
+            self.ctx.game_interface.set_inventory_items(pow_num, set_pow)
+
+
+        logger.info(f"Successfully cleared your inventory of powerups")
+
 
 status_messages = {
     ConnectionState.IN_GAME: "In level",

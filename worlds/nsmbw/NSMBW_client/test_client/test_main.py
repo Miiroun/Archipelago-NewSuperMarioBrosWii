@@ -9,7 +9,7 @@ import pytest
 ctx = NSMBWContext("localhost:38281", "", real=False)
 
 
-pytest_plugins = ('anyio',)
+#pytest_plugins = ('anyio',)
 
 @pytest.mark.asyncio
 async def test_item_handling_exists():
