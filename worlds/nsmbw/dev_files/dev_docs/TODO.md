@@ -54,6 +54,7 @@
 - Deathlink groups desync if reconnect to client
 - Somehow accidentally sets deathlink group
 - we finished our archipelago! there was one more issue i had, and this one made me cave and finally copy my save file 1 slot and switch to save file 2: inventory powerup slot checks 31-40 weren't being granted when i fulfilled their criteria. switching save file slots didn't fix it, so the host released those ten checks manually. i had 40 checks and checks 1-30 worked fine. also of note is that the issues i listed last time still occurred on save file 2. i saw all of them again except for anything about weird enemy ai. and one more: on rare occasion when playing a level, the star coin HUD element will show a star coin as collected when you haven't actually collected it yet. it tends to update itself to fix this error soon after you notice it, like when going into a pipe or beating the level
+- Empty causes errors in GitHub CI because no docs??? : captilized wrong
 
 
 ## Short term
