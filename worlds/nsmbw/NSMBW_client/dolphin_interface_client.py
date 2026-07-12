@@ -24,7 +24,8 @@ class DolphinClient:
         try:
             self.__assert_connected()
             return True
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     def connect(self):
@@ -47,6 +48,7 @@ class DolphinClient:
             self.dolphin.read_bytes(GC_GAME_ID_ADDRESS, 1)
         except RuntimeError as e:
             self.disconnect()
+            print(e)
             raise DolphinException(e)
 
     def verify_target_address(self, target_address: int, read_size: int):

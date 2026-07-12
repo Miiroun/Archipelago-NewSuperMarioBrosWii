@@ -169,6 +169,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         A command to try and rehook dolphin
         """
         self.ctx.game_interface.dolphin_client.connect()
+        time.sleep(0.01)
 
     def _cmd_movements(self):
         """

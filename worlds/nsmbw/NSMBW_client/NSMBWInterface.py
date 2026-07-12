@@ -90,10 +90,11 @@ class NSMBWInterface():
 
     def connect_to_game(self):
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
-        #if get_num_dolphin_instances() != 2:
-        #    self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
+        if get_num_dolphin_instances() != 2 and Utils.is_windows:
+            self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
         try:
             self.dolphin_client.connect()
+            time.sleep(0.1)
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
 
             #print("gameeid:",game_id) # remove later
@@ -110,7 +111,7 @@ class NSMBWInterface():
             self.current_game = None
             if (game_id, game_rev) in GAME_VERSIONS:
                 self.current_game = str(game_id)
-                self.game_rev = int(game_rev)
+                self.game_rev = game_rev
                 version_name = GAME_VERSIONS[(game_id, game_rev)]
                 if version_name not in SUPPORTED_VERSIONS:
                     text = ("The client is only playtested for game version E2 (US rev2) and this is not the version"
@@ -353,7 +354,9 @@ class NSMBWInterface():
 
     def clear_cache(self):
         if self.should_clear == 0:
-            raise ValueError(f"shouldn't clear")
+            #raise ValueError(f"shouldn't clear")
+            print(f"shouldn't clear chache when not needed")
+            return
         #if self.is_in_level() or self.is_in_worldmap():
         #logger.info("Clearing JIT cache by loading savestate")
 
@@ -826,10 +829,15 @@ class NSMBWInterface():
                 logger.info(f"Trying to hook, attempt {i} / 30")
             try:
                 self.dolphin_client.connect()
-                logger.info(f"Successfully force connected")
-                return
+                time.sleep(0.1)
+                if self.dolphin_client.is_connected():
+                    self.log_color(f"Successfully force connected", "green")
+                    return
+                else:
+                    logger.error(f"Failed to connect without error, prints last error that occured")
+                    logger.error(traceback.format_exc())
             except Exception as e:
                 logger.error(traceback.format_exc())
-                logger.error(f"Failed to connect to dolphin with error {e}")
+                self.log_color(f"Failed to connect to dolphin with error {e}", "red")
             await asyncio.sleep(1)
-        logger.info(f"Did not manage to force connect")
+        self.log_color(f"Did not manage to force connect", "red")

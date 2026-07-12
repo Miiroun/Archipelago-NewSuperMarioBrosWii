@@ -53,7 +53,7 @@ class DontRandoMovement(ItemSet):
 
     display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
-    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value}
+    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value}
 
 
 class RandomizePowerups(Choice):
@@ -120,7 +120,7 @@ class LogicDifficulty(Choice):
 
 class LogicOutsidePowerups(Choice):
     """
-    Sett this to allow if you want solution involving bringing powerups from outside the level to be in logic.
+    Set this to allow if you want solution involving bringing powerups from outside the level to be in logic.
     """
     display_name = "Logic Outside Power-ups"
     option_disallow = 0
@@ -166,7 +166,7 @@ class IncludeNumberInventoryItems(Range):
 
 class MakeWorldCompPriority(Toggle):
     """
-    Makes half world completion and world completion locations priority,
+    Makes half world completion and world completion priority locations, e.g. they will have a good item.
     """
     display_name = "Make World Completion Priority"
     default = False

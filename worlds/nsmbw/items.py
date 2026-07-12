@@ -122,7 +122,7 @@ pip_essen = {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonU
 extra_start_items : Dict[int,set]= {
     1: set() |pip_essen,
     2: {ITEM.MOVEMENT.Jump} | pip_essen,
-    3: pip_essen,
+    3: {ITEM.MOVEMENT.Pipe},
     4 : {ITEM.MOVEMENT.Swim} | pip_essen,
     5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Swim} | pip_essen,
     6: set() | pip_essen,
