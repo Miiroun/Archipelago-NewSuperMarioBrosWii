@@ -12,12 +12,14 @@ from typing import Optional, Iterable
 from ..Common import *
 
 from Utils import is_frozen
+
 logger = logging.getLogger("Client")
 try:
     from . import keyboard
 except ImportError as e:
+    print(traceback.format_exc())
     print(e)
-    logger.error("for now you will need to give the client root access on linux")
+    logger.info("for now you will need to give the client root access on linux")
     #raise ImportError("for now you will need to give the client root access on linux")
 
 from .dolphin_interface_client import *

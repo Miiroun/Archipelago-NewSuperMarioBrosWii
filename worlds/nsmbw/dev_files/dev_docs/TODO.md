@@ -23,12 +23,13 @@
 - Revise not implemented logic
 - Rename movement to abilities?
 - Read and think about indygibb solution
-- Add micro delay after connecting : race condtion?
 - Create command to clear mod: add all mod with 0time
 - Consult with react, but spin should only be needed for 1-5 and 8-A and carry block
 - merge new UT
 - Add better keyboard library support
 - give credit to IndyGibb and update AI usage
+- test new read mainfest works on frozzen and linux
+- Playtest on linux so the root error is apparent
 
 
 ## Playtest

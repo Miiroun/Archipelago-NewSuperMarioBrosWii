@@ -429,7 +429,7 @@ class NSMBWContext(SuperContext):
 
 
     async def shutdown(self):
-        if Utils.get_settings()["nsmbw_settings"].auto_open:
+        if Utils.get_settings()["nsmbw_settings"].auto_open and self.username is not None:
             Utils.async_start(self.handle_save())
         await super().shutdown()
 
@@ -448,18 +448,16 @@ class NSMBWContext(SuperContext):
 
 
     async def dolphin_sync_task_func(self):
-        apnsmbw_file = r"custom_worlds/nsmbw.apworld" if Utils.is_frozen() else os.path.abspath(pathlib.Path()) + r"\\worlds\\nsmbw"
+        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else pathlib.Path() / "worlds" / "nsmbw"
 
         if apnsmbw_file:
             text : str
             try:
                 if Utils.is_frozen():
-                    #text = importlib.resources.read_text(self.apnsmbw_file, r"archipelago.json")
                     with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
-                        path = zipfile.Path(zf, at=r"nsmbw/archipelago.json")
-                        text = path.read_text(encoding='UTF-8')
+                        text = zipfile.Path(zf, at="nsmbw/archipelago.json").read_text(encoding='UTF-8')
                 else:
-                    with open(apnsmbw_file+r"\\archipelago.json", "r") as f:
+                    with open(apnsmbw_file / "archipelago.json", "r", encoding="UTF-8") as f:
                         text = f.read()
                 manifest = json.loads(text)
                 version = manifest["world_version"]
@@ -616,10 +614,9 @@ class NSMBWContext(SuperContext):
 
         print(f"Seedname {self.seed_name}")
         if self.seed_name != "" and (not (self.seed_name is None)):
-            path = f"{get_settings()['nsmbw_settings'].save_file_path}\\nsmbw_saves"
-            directory = Path(path)
+            path = Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves"
             try:
-                directory.mkdir(parents=True)
+                path.mkdir(parents=True)
                 print(f"Directory '{path}' created successfully.")
             except FileExistsError:
                 print(f"Directory '{path}' already exists.")
@@ -634,7 +631,7 @@ class NSMBWContext(SuperContext):
                 "handled_num" : self.handled_num,
                 "save_slot" : self.save_slot,
             }
-            with open(f"{path}\\{self.seed_name}.json", "w+") as file_name:
+            with open(path / f"{self.seed_name}.json", "w+") as file_name:
                 json.dump(data, file_name)
             logger.info("Saved to file")
         else:
@@ -645,7 +642,7 @@ class NSMBWContext(SuperContext):
 
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
-                with open(f"{get_settings()['nsmbw_settings'].save_file_path}\\nsmbw_saves\\{self.seed_name}.json", "r") as file_name:
+                with open(get_settings()['nsmbw_settings'].save_file_path / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
                     data = json.load(file_name)
                 self.completed_levels = data["completed_levels"]
@@ -905,7 +902,7 @@ class NSMBWContext(SuperContext):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
                 self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x07, 1))
-                logger.info(f"Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data["bowser_star_unlock"]} star coins and you have {self.starcoin_count}, Require {self.slot_data["bowser_world_unlock"]} worlds completed and you have {completed_worlds}).")
+                logger.info(f"Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data['bowser_star_unlock']} star coins and you have {self.starcoin_count}, Require {self.slot_data['bowser_world_unlock']} worlds completed and you have {completed_worlds}).")
             # if previously completed 8-arship and now unlocked bowser
             if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
                 if level_name in self.completed_levels:
@@ -1280,7 +1277,7 @@ class NSMBWContext(SuperContext):
                         death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
                         await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
                     else:
-                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data["death_link_amnesty_count"]}")
+                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data['death_link_amnesty_count']}")
                     self.is_pending_death_link_reset = True
                 elif (not is_dead) and (self.is_pending_death_link_reset == True) and (time.time() > self.game_interface.deathtimer):
                     self.is_pending_death_link_reset = False

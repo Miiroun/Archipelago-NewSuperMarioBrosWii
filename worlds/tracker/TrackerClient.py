@@ -68,6 +68,17 @@ def get_ut_color(color: str)->str:
 class TrackerCommandProcessor(ClientCommandProcessor):
     ctx: "TrackerGameContext"
 
+    def __init__(self, ctx: CommonContext):
+        super().__init__(ctx)
+        try:
+            from worlds.tracker_addons import UT_FUNCTIONS
+            for name, function in UT_FUNCTIONS.items():
+                if name not in self.commands:
+                    function.__doc__ = f"Provided by : {function.__module__}\n{function.__doc__}"
+                    self.commands[name] = function
+        except Exception as e:
+            pass #just ignore it if it doesn't work, it's fine
+
     def get_help_text(self) -> str:
         sReturn = super().get_help_text() #get the normal response
         new_text = self.ctx.get_help_text()
@@ -213,28 +224,6 @@ class TrackerCommandProcessor(ClientCommandProcessor):
         self.ctx.updateTracker()
         logger.info("Reset ignored locations.")
 
-    def _cmd_next_progression(self):
-        """Finds all items that will unlock a check immediately when collected, and a best guess of how many new checks they will unlock."""
-        updateTracker(self.ctx)
-        baseLocs = len(self.ctx.tracker_core.locations_available)
-        counter = Counter()
-        goal_items = []
-        items_to_check = {item.name for item in self.ctx.tracker_core.multiworld.get_items() if item.player == self.ctx.tracker_core.player_id and item.advancement}
-        for item in items_to_check:
-            self.ctx.tracker_core.manual_items.append(item)
-            update_ret = updateTracker(self.ctx)
-            newlocs = len(self.ctx.tracker_core.locations_available) - baseLocs
-            if newlocs:
-                counter[item] = newlocs
-            if self.ctx.tracker_core.multiworld.completion_condition[self.ctx.tracker_core.player_id](update_ret.state):
-                goal_items.append(item)
-            self.ctx.tracker_core.manual_items.pop()
-        if not counter:
-            logger.info("No item will unlock any checks right now.")
-        for (item, count) in counter.most_common():
-            logger.info(f"{item} unlocks {count} check{'s' if count > 1 else ''}{' (and goal)' if item in goal_items else ''}.")
-        updateTracker(self.ctx)
-
     def _cmd_toggle_auto_tab(self):
         """Toggle the auto map tabbing function"""
         self.ctx.auto_tab = not self.ctx.auto_tab
@@ -285,6 +274,11 @@ class TrackerCommandProcessor(ClientCommandProcessor):
             if self.ctx.tracker_core.launch_multiworld is not None:
                 known_slots = [f"{slot_name} ({self.ctx.tracker_core.launch_multiworld.worlds[slot_id].game})" for slot_name, slot_id in self.ctx.tracker_core.launch_multiworld.world_name_lookup.items() if self.ctx.tracker_core.launch_multiworld.worlds[slot_id].game != "Archipelago"]
                 logger.error(f"Known slots = [{', '.join(known_slots)}]")
+            current_world = self.ctx.tracker_core.get_current_world()
+            if current_world:
+                version = getattr(current_world,"world_version",None)
+                if version:
+                    logger.error(f"Local World reports version = {version}")
         from worlds import failed_world_loads
         if failed_world_loads:
             logger.error(f"Worlds that failed to load [{', '.join(failed_world_loads)}]")
@@ -292,7 +286,6 @@ class TrackerCommandProcessor(ClientCommandProcessor):
             connected_cls = AutoWorld.AutoWorldRegister.world_types.get(self.ctx.game)
             if self.ctx.checksums[self.ctx.game] != connected_cls.get_data_package_data()["checksum"]:
                 logger.error(f"Local checksum = {self.ctx.checksums[self.ctx.game]} | remote checksum = {connected_cls.get_data_package_data()['checksum']}")
-
 
 def cmd_load_map(self: TrackerCommandProcessor, map_id: str = "0"):
     """Force a poptracker map id to be loaded"""
@@ -382,7 +375,7 @@ class TrackerGameContext(CommonContext):
         self.quit_after_update = print_list or print_count
         self.print_list = print_list
         self.print_count = print_count
-        self.location_icon = None
+        self.location_icons = []
         self.root_pack_path = None
         self.map_id = None
         self.defered_entrance_datastorage_keys = []
@@ -1049,7 +1042,7 @@ class TrackerGameContext(CommonContext):
                     self.color_4="#"+get_ut_color("collected")
 
         class VisualTracker(BoxLayout):
-            location_icon: ApLocationIcon
+            location_icons: list[ApLocationIcon]
 
             def load_coords(self, coords: dict[tuple, tuple[list[int], int | None]], defered_coords: dict[tuple, tuple[list[str], int | None]],
                             ldefered_coords: dict[tuple, tuple[list[str], int | None]], use_split, default_loc_size: int = 65) \
@@ -1078,9 +1071,26 @@ class TrackerGameContext(CommonContext):
                     self.ids.location_canvas.add_widget(temp_loc)
                     for event_name in sections:
                         ldeferredDict[event_name].append(temp_loc)
-                self.ids.location_canvas.add_widget(self.location_icon)
+                self.location_icons = []
                 return returnDict, deferredDict, ldeferredDict
 
+            def update_location_icon_widgets(self, ctx: TrackerGameContext, location_icons: list[tuple[int, int, str]]):
+                #I could just clear all icon widgets and recreate them every time one changes, probably not a big performance loss tbh,
+                #but reusing the existing widgets on changes and only adding/removing when necessary seems like the more proper way
+
+                for i, (x, y, ref) in enumerate(location_icons):
+                    if i < len(self.location_icons):
+                        self.location_icons[i].source = f"{ctx.root_pack_path}/{ref}"
+                        self.location_icons[i].pos = (x, y)
+                    else:
+                        location_icon = ApLocationIcon(source=f"{ctx.root_pack_path}/{ref}", pos=(x, y), size=(ctx.ui.loc_icon_size, ctx.ui.loc_icon_size))
+                        self.ids.location_canvas.add_widget(location_icon)
+                        self.location_icons.append(location_icon)
+
+                if len(self.location_icons) > len(location_icons):
+                    for icon in self.location_icons[len(location_icons):]:
+                        self.ids.location_canvas.remove_widget(icon)
+                    del self.location_icons[len(location_icons):]
 
         try:
             tracker = TrackerLayout(orientation="vertical")
@@ -1109,10 +1119,9 @@ class TrackerGameContext(CommonContext):
             tracker.add_widget(tracker_view)
 
             self.tracker_page = tracker_view
-            self.location_icon = ApLocationIcon()
+            self.location_icons = []
 
             map_content = VisualTracker()
-            map_content.location_icon = self.location_icon
             self.map_page_coords_func = map_content.load_coords
             if self.gen_error is not None:
                 for line in self.gen_error.split("\n"):
@@ -1129,6 +1138,7 @@ class TrackerGameContext(CommonContext):
             if value:
                 if not test:
                     test.append(self.add_client_tab("Map Page", map_content))
+                    self.ctx.map_page = map_content
             else:
                 if test:
                     map_tab = test.pop()
@@ -1149,6 +1159,10 @@ class TrackerGameContext(CommonContext):
         from kivy.metrics import dp
         from kivy.animation import Animation
         from kvui import ImageLoader
+        try:
+            from worlds.tracker_addons import UT_ADDONS_VERSION
+        except ImportError:
+            UT_ADDONS_VERSION = None
 
         class TrackerManager(ui):
             source = StringProperty("")
@@ -1156,10 +1170,9 @@ class TrackerGameContext(CommonContext):
             loc_icon_size = NumericProperty(20)
             loc_border = NumericProperty(5)
             enable_map = BooleanProperty(False)
-            iconSource = StringProperty("")
             current_map = StringProperty("")
             auto_tab = BooleanProperty(True)
-            base_title = f"Tracker {UT_VERSION} for AP version"  # core appends ap version so this works
+            base_title = f"Tracker {UT_VERSION}{' Addons ' if UT_ADDONS_VERSION else ' '}{UT_ADDONS_VERSION if UT_ADDONS_VERSION else '' } for AP version"  # core appends ap version so this works
 
             def build(self):
                 class TrackerHintLabel(HintLabel):
@@ -1328,6 +1341,9 @@ class TrackerGameContext(CommonContext):
                     logger.warning("*****\nWarning: the local datapackage for the connected game does not match the server's datapackage\n*****")
                     logger.error(f"Local checksum = {self.checksums[self.game]} | remote checksum = {connected_cls.get_data_package_data()['checksum']}")
                 self.tracker_core.initalize_tracker_core(connected_cls,args["slot_data"])
+                if self.tracker_core.tracker_disabled:
+                    logger.error("World Author has requested UT be disabled on this world, please respect their decision")
+                    return
                 if not self.tracker_core.multiworld:
                     logger.error("Internal generation failed, something has gone wrong")
                     logger.error("Run the /faris_asked command and post the results in the discord")
@@ -1413,15 +1429,19 @@ class TrackerGameContext(CommonContext):
 
     def update_location_icon_coords(self):
         icon_key = self.tracker_world.location_setting_key
-        temp_ret = self.tracker_world.location_icon_coords(self.map_id,self.stored_data.get(icon_key, ""))
-        if temp_ret:
-            (x,y,ref) = temp_ret #should be a 3-tuple
-            if x < 0 or y < 0:
-                self.location_icon.size = (0,0)
-            else:
-                self.ui.iconSource = f"{self.root_pack_path}/{ref}"
-                self.location_icon.size = (self.ui.loc_icon_size, self.ui.loc_icon_size)
-                self.location_icon.pos = (x,y)
+        temp_rets = self.tracker_world.location_icon_coords(self.map_id,self.stored_data.get(icon_key, ""))
+
+        self.location_icons.clear()
+        if temp_rets:
+            if type(temp_rets) != list: #If it's the old callback that just returns a single tuple, we just put it in a single item list
+                temp_rets = [temp_rets]
+            for temp_ret in temp_rets:
+                (x,y,ref) = temp_ret #should be a 3-tuple
+                if x >= 0 and y >= 0:
+                    self.location_icons.append((x,y,ref))
+        if self.map_page:
+            self.map_page.update_location_icon_widgets(self, self.location_icons)
+            
 
     def update_defered_entrances(self, keys: list[str]):
         if self.defered_entrance_callback and keys:
@@ -1542,7 +1562,11 @@ def explain_more(ctx: TrackerGameContext, argument: str):
     if hasattr(current_world, "explain_more"):
         returned_json = current_world.explain_more(argument, state)
         if returned_json:
-            ctx.ui.print_json(returned_json)
+            if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                ctx.ui.print_json(returned_json)
+            else:
+                for message in returned_json:
+                    ctx.ui.print_json(message)
             return
         logger.info("Nothing to explain")
     logger.error("Current world to track doesn't support command /explain_more")
@@ -1563,12 +1587,20 @@ def explain(ctx: TrackerGameContext, dest_name: str):
     if hasattr(current_world,"explain_rule"):
         returned_json = current_world.explain_rule(dest_name,state)
         if returned_json:
-            ctx.ui.print_json(returned_json)
+            if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                ctx.ui.print_json(returned_json)
+            else:
+                for message in returned_json:
+                    ctx.ui.print_json(message)
             return
         elif tracker_struct.glitches_state is not None: #if this is None don't bother
             returned_json = current_world.explain_rule(dest_name,tracker_struct.glitches_state)
             if returned_json:
-                ctx.ui.print_json(returned_json)
+                if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                    ctx.ui.print_json(returned_json)
+                else:
+                    for message in returned_json:
+                        ctx.ui.print_json(message)
                 return
 
     from Utils import get_intended_text
@@ -1630,12 +1662,20 @@ def get_logical_path(ctx: TrackerGameContext, dest_name: str):
         state = tracker_struct.state
         returned_json = current_world.get_logical_path(dest_name,state)
         if returned_json:
-            ctx.ui.print_json(returned_json)
+            if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                ctx.ui.print_json(returned_json)
+            else:
+                for message in returned_json:
+                    ctx.ui.print_json(message)
             return
         elif tracker_struct.glitches_state is not None: #if this is None don't bother
             returned_json = current_world.get_logical_path(dest_name,tracker_struct.glitches_state)
             if returned_json:
-                ctx.ui.print_json(returned_json)
+                if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                    ctx.ui.print_json(returned_json)
+                else:
+                    for message in returned_json:
+                        ctx.ui.print_json(message)
                 return
 
     from Utils import get_intended_text
@@ -1701,7 +1741,11 @@ def get_logical_path(ctx: TrackerGameContext, dest_name: str):
                         if returned_json is None:
                             continue
                         if returned_json:
-                            ctx.ui.print_json(returned_json)
+                            if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                                ctx.ui.print_json(returned_json)
+                            else:
+                                for message in returned_json:
+                                    ctx.ui.print_json(message)
                             continue
                     returned_json = [{"type":"color","color":"blue","text":v}]
                     if hasattr(ent.access_rule,"explain_json"):
@@ -1709,12 +1753,20 @@ def get_logical_path(ctx: TrackerGameContext, dest_name: str):
                         returned_json.extend(ent.access_rule.explain_json(state))
                     ctx.ui.print_json(returned_json)
             if relevent_location:
+                if hasattr(current_world,"explain_spot"):
+                    returned_json = current_world.explain_spot(relevent_location,state)
+                    if returned_json:
+                        if isinstance(returned_json,list) and not isinstance(returned_json[0],list):
+                            ctx.ui.print_json(returned_json)
+                        else:
+                            for message in returned_json:
+                                ctx.ui.print_json(message)
+                        return
                 returned_json = [{"type":"text","text":"->"},{"type":"color","color":"green","text":relevent_location.name}]
                 if hasattr(relevent_location.access_rule,"explain_json"):
                     returned_json.append({"type":"text","text":":\n    "})
                     returned_json.extend(relevent_location.access_rule.explain_json(state))
                 ctx.ui.print_json(returned_json)
-        
         else:
             logger.info(f"{dest_name} not in logic")
 

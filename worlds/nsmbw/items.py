@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Tuple, List, Counter
+from typing import TYPE_CHECKING, Dict, Tuple, List
 
 from BaseClasses import Item, ItemClassification
 from .Common import *
