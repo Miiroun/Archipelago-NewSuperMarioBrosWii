@@ -69,7 +69,6 @@ class NSMBWInterface():
     connection_status: str
     logger: Logger
     _previous_message_size: int = 0
-    game_id_error: Optional[str] = None
     game_rev_error: int
     current_game: Optional[str] = ""
     game_rev : int
@@ -97,15 +96,16 @@ class NSMBWInterface():
             time.sleep(0.1)
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
             if game_id == b"\x00\x00\x00\x00\x00\x00" or len(game_id) < 6:
+                self.log_color(f"game_id {game_id} is blank, this is probably caused by a faild dolphin read.", "red")
                 return False
-            #print("gameeid:",game_id) # remove later
 
             try:
                 game_rev: Optional[int] = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS + 7, 1)[0]
             except Exception as e:
                 game_rev = None
-                logger.error(traceback.format_exc())
-                logger.error(f"error {e}, when trying to read game revision")
+                logger.info(traceback.format_exc())
+                self.log_color(f"error {e}, when trying to read game revision", "red")
+                return False
 
             #print("seraching for game rev")
             #print((game_id, game_rev))
@@ -120,32 +120,15 @@ class NSMBWInterface():
                             "discord and mention your game version, so that they might be fixed.")
                     #message : JSONMessagePart = [{"type": "color", "color": "red", "text":text }]
                     self.log_color(text, "red")
-
                 self.memory_addresses = MemoryAddresses(version_name)
+            else:
+                self.log_color(f"game_id {game_id}, game_rev {game_rev} not found in valid versions {GAME_VERSIONS}, connected to wrong game?.", "red")
+                return False
 
 
-
-            # The first read of the address will be null if the client is faster than the emulator
-            #self.current_game = None
-            #for version in GAME_VERSIONS:
-            #    if (
-            #        game_id == GAMES[version]["game_id"]
-            #        and game_rev == GAMES[version]["game_rev"]
-            #    ):
-            #       self.current_game = version
-            #        break
-            if (
-                self.current_game is None
-                and self.game_id_error != game_id
-                and game_id != b"\x00\x00\x00\x00\x00\x00"
-            ):
-                self.log_color(
-                    f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version",
-                    "red"
-                )
-                self.game_id_error = game_id
-                if self.game_rev:
-                    self.game_rev_error = game_rev
+            if self.current_game is None and game_id != b"\x00\x00\x00\x00\x00\x00":
+                self.log_color(f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version","red")
+                return False
 
 
             if self.current_game:
@@ -155,6 +138,10 @@ class NSMBWInterface():
                     #return False
                 self.log_color(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}", "blue")
                 return True
+            else:
+                self.log_color(f"Fail with dolphin connection somewhere", "red")
+                logger.info(f"Replicat this error in the debug launcher and post the error in the nsmbw discord")
+                logger.info(f"game_id {game_id}, current game {self.current_game},  rev {self.game_rev}")
         except DolphinException as e:
             logger.info(traceback.format_exc())
             self.log_color(f"Exception: {e} happened when connecting to dolphin", "red")
@@ -168,7 +155,7 @@ class NSMBWInterface():
     def get_connection_state(self):
         try:
             connected = self.dolphin_client.is_connected()
-            if not connected or self.current_game is None:
+            if not connected or self.current_game is None or self.memory_addresses is None:
                 return ConnectionState.DISCONNECTED
             elif self.is_in_menu():
                 return ConnectionState.IN_MENU

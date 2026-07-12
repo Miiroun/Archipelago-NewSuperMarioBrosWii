@@ -538,7 +538,9 @@ class NSMBWContext(SuperContext):
                     await asyncio.sleep(1)
                     self.update_memory_to_server_on_load()
                 else:
-                    self.update_memory_to_server_on_load()
+                    self.log_color(f"Dolphin connection faild", "red")
+                    await asyncio.sleep(1)
+
 
         elif self.connection_state == ConnectionState.IN_MENU:
             print("Game in menu")
@@ -614,7 +616,7 @@ class NSMBWContext(SuperContext):
 
         print(f"Seedname {self.seed_name}")
         if self.seed_name != "" and (not (self.seed_name is None)):
-            path = f"{get_settings()["nsmbw_settings"].save_file_path}\\nsmbw_saves"
+            path = f"{get_settings()['nsmbw_settings'].save_file_path}\\nsmbw_saves"
             directory = Path(path)
             try:
                 directory.mkdir(parents=True)
@@ -643,7 +645,7 @@ class NSMBWContext(SuperContext):
 
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
-                with open(f"{get_settings()["nsmbw_settings"].save_file_path}\\nsmbw_saves\\{self.seed_name}.json", "r") as file_name:
+                with open(f"{get_settings()['nsmbw_settings'].save_file_path}\\nsmbw_saves\\{self.seed_name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
                     data = json.load(file_name)
                 self.completed_levels = data["completed_levels"]
