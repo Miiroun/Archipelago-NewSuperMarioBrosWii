@@ -64,6 +64,13 @@ class NSMBWSettings(settings.Group):
         """
         required = True
 
+    class Use_xdotool(settings.Bool):
+        """
+        Linux only
+        Uses the external program xdotool instead of the python library keyboard to send keypresses for save-states
+        This is useful if you dont want to give root access or have other problems with keyboard.
+        """
+
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: settings.Union[GameFilePath, str] = GameFilePath(r"nsmbw.wbfs")
@@ -71,3 +78,4 @@ class NSMBWSettings(settings.Group):
     collect_level : CollectLevel | int = 1
     ut_pack_path: Union[UTPackPath, str] = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
     save_file_path : settings.Union[SaveFileLocation, str] = SaveFileLocation(rf"nsmbw/nsmbw_saves")
+    use_xdotool_instead_of_keyboard_linux_only : Use_xdotool | bool = False

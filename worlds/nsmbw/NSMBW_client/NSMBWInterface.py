@@ -5,10 +5,10 @@ import traceback
 import zlib
 from enum import Enum
 import sys
-import os
 import shutil
 import subprocess
-import platform
+import Utils
+
 sys.set_int_max_str_digits(0)
 
 from typing import Optional, Iterable
@@ -18,13 +18,14 @@ from ..Common import *
 from Utils import is_frozen
 
 logger = logging.getLogger("Client")
-try:
-    from . import keyboard
-except ImportError as e:
-    print(traceback.format_exc())
-    print(e)
-    logger.info("for now you will need to give the client root access on linux")
-    #raise ImportError("for now you will need to give the client root access on linux")
+if not (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only):
+    try:
+        from . import keyboard
+    except ImportError as e:
+        print(e)
+        logger.info("for now you will need to give the client root access on linux or use the host.yaml settting for xdotool.")
+else:
+    logger.info(f"is not importing keyboard, instead tries to use xdotool.")
 
 from .dolphin_interface_client import *
 from ..Utils import bytes_to_int, int_to_bytes
@@ -296,30 +297,12 @@ class NSMBWInterface():
         return address
 
     def _linux_send_hotkey(self, combo: str) -> bool:
-        """Deliver a Dolphin hotkey on Linux via the compositor + xdotool.
-
-        Dolphin ignores background XSendEvent injection, so its window must be focused before sending. Focus is compositor specific and overridable via the NSMBW_FOCUS_CMD env var (whitespace-separated). Returns True on success, False if the tools are missing or the send failed.
-        """
+        """Deliver a Dolphin hotkey on Linux via the compositor + xdotool."""
         if shutil.which("xdotool") is None:
-            self.log_color(
-                    "xdotool not found; install it for automatic save/load states on Linux, " 
-                    f"or make the state manually in slot. Skipping hotkey '{combo}'.",
-                    "red",
-                    )
+            self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
             return False
-        window_class = "dolphin-emu"
-        focus_cmd = os.environ.get(
-                "NSMBW_FOCUS_CMD",
-                f"hyprctl dispatch focuswindow class:{window_class}",
-                )
         try:
-            subprocess.run(focus_cmd.split(), check=False, capture_output=True)
-            time.sleep(0.05)
-            subprocess.run(
-                    ["xdotool", "key", "--clearmodifiers", combo],
-                    check=True,
-                    capture_output=True,
-                    )
+            subprocess.run(["xdotool", "key", "--clearmodifiers", combo],check=True,capture_output=True,)
             return True
         except Exception as e:
             logger.info(traceback.format_exc())
@@ -334,28 +317,25 @@ class NSMBWInterface():
         if do_logging:
             logger.info(f"Saved savestate to slot {slot}")
 
-        if platform.system() == "Linux":
-            self._linux_send_hotkey(f"shift+F{slot}")
-            return
-
         try:
-            time.sleep(wait_long)
-            keyboard.release("shift")
-            keyboard.release(f"F{slot}")
-            time.sleep(wait_short)
-            keyboard.press("shift")
-            time.sleep(wait_short)
-            keyboard.press(f"F{slot}")
-            time.sleep(wait_short)
-            keyboard.release(f"F{slot}")
-            time.sleep(wait_short)
-            keyboard.release("shift")
-            time.sleep(wait_long)
-            #asyncio.sleep(1)
+            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
+                self._linux_send_hotkey(f"shift+F{slot}")
+            else:
+                time.sleep(wait_long)
+                keyboard.release("shift")
+                keyboard.release(f"F{slot}")
+                time.sleep(wait_short)
+                keyboard.press("shift")
+                time.sleep(wait_short)
+                keyboard.press(f"F{slot}")
+                time.sleep(wait_short)
+                keyboard.release(f"F{slot}")
+                time.sleep(wait_short)
+                keyboard.release("shift")
+                time.sleep(wait_long)
         except Exception as e:
             logger.info(traceback.format_exc())
-            self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message", "red")
-
+            self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message. You could also use xdotool instead by enabling it in host.yaml.", "red")
 
 
     def load_state(self, slot : int, do_logging=True):
@@ -366,23 +346,21 @@ class NSMBWInterface():
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
 
-        if platform.system() == "Linux":
-            self._linux_send_hotkey(f"F{slot}")
-            return
-
         try:
-            time.sleep(wait_short)
-            keyboard.release("shift")
-            keyboard.release(f"F{slot}")
-            time.sleep(wait_short)
-            keyboard.press(f"F{slot}")
-            time.sleep(wait_short)
-            keyboard.release(f"F{slot}")
-            time.sleep(wait_long)
-
+            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
+                self._linux_send_hotkey(f"F{slot}")
+            else:
+                time.sleep(wait_short)
+                keyboard.release("shift")
+                keyboard.release(f"F{slot}")
+                time.sleep(wait_short)
+                keyboard.press(f"F{slot}")
+                time.sleep(wait_short)
+                keyboard.release(f"F{slot}")
+                time.sleep(wait_long)
         except Exception as e:
             logger.info(traceback.format_exc())
-            self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message", "red")
+            self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message. You could also use xdotool instead by enabling it in host.yaml.", "red")
 
 
     def clear_cache(self):
@@ -393,10 +371,6 @@ class NSMBWInterface():
         #if self.is_in_level() or self.is_in_worldmap():
         #logger.info("Clearing JIT cache by loading savestate")
 
-
-        #pyautogui.getWindowsWithTitle("Dolphin")[0].activate()
-        #handle = win32gui.FindWindow(0, "Dolphin")
-        #win32gui.SetForegroundWindow(handle)
         time.sleep(0.3)
         self.save_state(8, do_logging=False)
         time.sleep(0.5)
@@ -405,11 +379,8 @@ class NSMBWInterface():
 
         self.should_clear = 0
 
-        #asyncio.sleep(1)
-        # should maybe put this behind actual checking
         #logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
         #            " JIT cache manualy (JIT -> clear chache).")
-
 
 
     def write_instruction(self, address: int, data: bytes) -> bool:
