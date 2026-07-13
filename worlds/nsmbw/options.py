@@ -43,7 +43,7 @@ class RandomizeMovement(Choice):
     option_off = 0
     option_on = 2
 
-    default = option_on
+    default = option_off
 
 class DontRandoMovement(ItemSet):
     """

@@ -215,7 +215,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
         [  # world 3
             [normal_move & pipe, [(peng & crouch) | logic_hard, True_(), (peng & crouch) | (carry & logic_hard)]],  # -1
             [normal_move, [True_(), True_(), True_()]],  # -2
-            [normal_move , [(swim | mini_o | ((propeller_o | (peng & crouch)) & logic_hard) ) , True_(), (carry | propeller_o | (wall_jump & logic_hard)) ]],  # -3
+            [normal_move & button_down & button_up, [(swim | mini_o | ((propeller_o | (peng & crouch)) & logic_hard) ) , True_(), (carry | propeller_o | (wall_jump & logic_hard)) ]],  # -3
             [normal_move & red_block, [True_(), True_(), True_()]],  # -4
             [normal_move, [True_(), red_block, red_block], red_block],  # -5
             [normal_move & door & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthouse
@@ -244,9 +244,9 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move & door & get_time_rule(world, 150), [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
         ],
         [  # world 6
-            [normal_move, [True_(), True_(), logic_hard | propeller_o]],  # -1
+            [normal_move, [True_(), True_(), logic_hard | ice | peng_o | propeller_o]],  # -1
             [normal_move & pipe& button_down & button_up, [carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_()]],  # -2
-            [normal_move & pipe& button_down & button_up & (swim | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run))))  , [ True_(),p_switch, ((swim & super_mario) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run & carry))) ) ]],  # -3
+            [normal_move & pipe& button_down & button_up & (swim | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run))))   & question_switch, [ True_(),p_switch, (swim & super_mario) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run & carry) )) ]],  # -3
             [normal_move & question_switch, [(logic_hard | yoshi | propeller)& question_switch, (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)) & question_switch, (yoshi | propeller | wall_jump) & question_switch]],  # -4
             [normal_move, [True_(), True_(), climb & (carry | propeller_o)], climb],  # -5
             [normal_move & question_switch, [question_switch, question_switch, question_switch],question_switch],  # -6

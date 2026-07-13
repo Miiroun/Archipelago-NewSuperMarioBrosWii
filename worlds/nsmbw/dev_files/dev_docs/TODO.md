@@ -1,6 +1,4 @@
 ## Super short term
-- test fussing on default yaml : 8 % generation failure alone 
-  - problem with unittest completion
 - PlayerGravity # gravity filler ?
 - Just look in memory where store player data, follow intruc, find size -> multiplayer
   - dAcPy_c__data : length 0x2d08
@@ -14,14 +12,13 @@
   - PRO: no logic trouble, no impossible seeds
   - CON: star coins does less
   - Solution : make option so player consnets
-- Search wiki for carry_block
 - lose pow trap correct damage
 - I need to save modifiers so no issue when saving or loading save state
 - Revise not implemented logic
+  - Search wiki for carry_block
+  - Consult with react, but spin should only be needed for 1-5 and 8-A and carry block
 - Rename movement to abilities?
-- Consult with react, but spin should only be needed for 1-5 and 8-A and carry block
-- Add better keyboard library support
-- Look into PR and rework it how i want
+
 
 ## Playtest
 - multiplayer

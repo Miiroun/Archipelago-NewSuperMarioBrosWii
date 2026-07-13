@@ -34,8 +34,10 @@ def create_and_connect_regions(world: NSMBWworld) -> None:
 def create_all_regions(world: NSMBWworld) -> None:
     # Creating a region is as simple as calling the constructor of the Region class.
     menu_region = Region("Menu", world.player, world.multiworld)
+    peach_castle_region = Region("Peach castle", world.player, world.multiworld)
+    inventory_region = Region("Inventory", world.player, world.multiworld)
 
-    regions = [menu_region]
+    regions = [menu_region, peach_castle_region, inventory_region]
     for world_num in range(1,9+1):
         regions.append(Region(f"World{world_num}", world.player, world.multiworld))
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
@@ -50,6 +52,9 @@ def connect_regions(world: NSMBWworld) -> None:
     # you can get them at any time using world.get_region(...).
 
     menu_region = world.get_region("Menu")
+
+    world.get_region(f"World1").connect(world.get_region("Peach castle"))
+    menu_region.connect(world.get_region("Inventory"))
 
     connections = get_level_connections()
     level_rules = specific_level_requierments(world)

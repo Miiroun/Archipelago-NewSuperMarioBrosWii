@@ -145,7 +145,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
     if world.options.include_hintmovies.value == True:
         for i in range(1, num_hintmovies+1):
             hintmovie_location = get_location_names_with_ids([name_hintmovie(i)])
-            world.get_region("World1").add_locations(hintmovie_location, NSMBWLocation)
+            world.get_region("Peach castle").add_locations(hintmovie_location, NSMBWLocation)
 
     if world.options.include_level_completion.value == True:
         for world_num in range(1, 9+1):  # worlds
@@ -155,7 +155,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
 
     for i in range(1, world.options.include_inventory_powerups + 1):
         inventory_loc = get_location_names_with_ids([name_inventory(i)])
-        menu_region.add_locations(inventory_loc, NSMBWLocation)
+        world.get_region("Inventory").add_locations(inventory_loc, NSMBWLocation)
 
 def create_events(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
