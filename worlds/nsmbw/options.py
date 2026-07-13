@@ -158,8 +158,9 @@ class World9UnlockCondition(Choice):
 class IncludeNumberInventoryItems(Range):
     """
     A location that gets collected when you collect a powerup to your inventory, e.g. from a toad house or beating overworld enemy.
+    These locations are very grindy, do not increase above 100, or set to random on your first playthrough.
     """
-    display_name = "Include Inventory Items"
+    display_name = "Include Inventory Items (don't increase)"
     range_start = 0
     range_end = 999
     default = 40
@@ -250,6 +251,17 @@ class TrapItems(OptionCounter):
     min = 0
     default = dict(Counter(TRAPS * 10)) # this is a really ineffective way of doing this, since we create a temp list 10 times the length of TRAPS
 
+class PercentageFillerForcedLocal(Range):
+    """
+    Forces approximately x% of filler to be (early) local items
+    """
+    display_name = " (in dev, doesnt work) Percentage Filler Forced Local Only"
+    range_start = 0
+    range_end = 100
+
+    default = 0
+    visibility = Visibility.none
+
 class SaveStateSlot(Range):
     """
     Which save state slot the client should use to auto save too
@@ -295,6 +307,7 @@ class NSMBWOptions(PerGameCommonOptions):
     filler_items : FillerItems
     trap_items : TrapItems
     trap_chance: TrapChance
+    percentage_filler_forced_local : PercentageFillerForcedLocal
 
 
     bowser_star_unlock : BowserCastleStarUnlock
@@ -352,6 +365,7 @@ option_groups = [
             TrapItems,
             TrapChance,
             AmountSupportReceived,
+            PercentageFillerForcedLocal,
         ]
     ),
     OptionGroup(
@@ -486,3 +500,7 @@ def adjust_options(world):
         if len(list(Counter(world.options.trap_items.value).elements())) == 0:
             print("(NSMBW generation error) You need to have at least one trap item.")
             world.options.trap_items.value = world.options.trap_items.default
+
+    if world.options.percentage_filler_forced_local.value != 0:
+        world.options.percentage_filler_forced_local = 0
+        print("percentage_filler_forced_local is in dev and doesnt work")

@@ -5,8 +5,14 @@ from Options import PerGameCommonOptions
 
 class EmptyWebWorld(WebWorld):
     game_name = "Empty"
-    tutorials = []
-
+    tutorials = [Tutorial(
+        "Multiworld Setup Guide",
+        "A guide to setting up Empty for MultiWorld.",
+        "English",
+        "setup_en.md",
+        "setup/en",
+        ["Miiroun"],
+    )]
     option_groups = []
     options_presets = {}
 

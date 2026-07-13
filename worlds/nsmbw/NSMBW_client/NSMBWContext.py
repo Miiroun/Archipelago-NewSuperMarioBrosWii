@@ -449,6 +449,11 @@ class NSMBWContext(SuperContext):
 
     async def shutdown(self):
         if Utils.get_settings()["nsmbw_settings"].auto_open and self.username is not None:
+            # this make sures modifiers are cleared when exit
+            self.modifiers = []
+            self.current_mod_end_time = 0
+            Utils.async_start(self.handle_modifiers())
+            time.sleep(0.1)
             Utils.async_start(self.handle_save())
         await super().shutdown()
 

@@ -103,14 +103,26 @@ def get_random_filler_item_name(world: NSMBWworld) -> str:
     # This ensures that generating with the same generator seed twice yields the same output.
     # DO NOT use a bare random object from Python's built-in random module.
 
-
+    # *zip(*_list) is the reverse of zip()
     _list : List[Tuple[str,int]] # converts the dict to a sorted string for determinism
-    if world.random.randint(1, 100) <= world.options.trap_chance:
+    if world.random.randint(1, 100) <= world.options.trap_chance.value:
         _list = sorted(list(world.options.trap_items.value.items()))
+        item_name = str(world.random.choices(*zip(*_list), k=1)[0])
     else:
         _list = sorted(list(world.options.filler_items.value.items()))
-    # *zip(*_list) is the reverse of zip()
-    return str( world.random.choices(*zip(*_list), k=1)[0]  )
+        item_name = str(world.random.choices(*zip(*_list), k=1)[0])
+
+        # local_item is a set, so you cannot set amount, pokepelago implements this correctly but have to mimic logic in lots of weird ways I rather avoid
+        #https://github.com/dowlle/AppieArchipelago/blob/aa3bb80a0c6ade301769ce0e5034b53bd8303c28/worlds/pokepelago/__init__.py#L742
+        if world.random.randint(1, 100) <= world.options.percentage_filler_forced_local.value:
+            if item_name in world.multiworld.local_early_items[world.player].keys():
+                world.multiworld.local_early_items[world.player][item_name] += 1
+            else:
+                world.multiworld.local_early_items[world.player][item_name] = 1
+                #world.multiworld.local_items
+
+
+    return item_name
 
 def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSMBWItem:
 
