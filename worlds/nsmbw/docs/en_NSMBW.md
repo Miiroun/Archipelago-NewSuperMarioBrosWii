@@ -104,6 +104,10 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - The clock might not display modified time correctly, but is accurate.
 - Star will display visually as active when not, if not unlocked and bring it from inventory
 - Rarely caches when loading a world map world, if encountered please report this issue
+- Deathlink problems:
+  - If not received, try running /kill, if this does not work, make sure you have changed the dolphin settings in the set-up guide.
+  - If not sending, try turing off your deathlink group and then toggle deathlink off and on again.
+
 
 ## Client commands
 - /toogle_deathlink

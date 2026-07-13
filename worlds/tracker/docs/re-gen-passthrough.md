@@ -13,7 +13,7 @@ When this happens the World Dev needs to use one of a few hooks that UT provides
 The first method is `generation_is_fake`. This value is added to the multiworld object when UT is doing the internal generations so that worlds have the ability to not perform useless (for UT) randomization.  
 For example, if the world only creates the locations based on what items get randomly created, if this flag exists, the world can insteed create all locations, and depend on the "real" server only sending the items that got actually created to limit what locations are expected to be completed.  
 
-This can be checked in world logic with `hasattr(world.multiworld, "generation_is_fake")`  
+This can be checked in world logic with `getattr(world.multiworld, "generation_is_fake",False)`  
 
 # interpret_slot_data
 
@@ -41,6 +41,12 @@ This is to prevent a game trying to process a different game's `interpret_slot_d
 If the default use case for a world using interpret_slot_data is to force a regeneration, it might be useful to have UT skip the first generation (as it would just be thrown out anyway)
 
 By having a world set the `ut_can_gen_without_yaml` flag and creating a static `interpret_slot_data` UT will not perform the first global generation and will instead use the slot_data on connection to a multiworld to trigger a solo generation that is used for tracking
+
+# Disabling UT
+
+There are cases where the world dev knows that UT will have issues and doesn't have the time/will to add compatability.
+
+By having a world set the `disable_ut` flag to `True`, Universal Tracker will refuse to track that slot and instead display a message saying that the world dev has intentionally disabled UT
 
 # Location Alias
 

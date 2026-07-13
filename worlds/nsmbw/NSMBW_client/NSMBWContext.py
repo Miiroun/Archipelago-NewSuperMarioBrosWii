@@ -14,7 +14,7 @@ import traceback
 from dataclasses import dataclass
 from enum import IntEnum
 from random import Random
-from typing import Literal
+from typing import Literal, get_args
 
 import Utils
 
@@ -43,6 +43,7 @@ class ModifiedState(IntEnum):
     UNMODIFIED = 0
     MODWOLD1_8 = 1
     MODALLWORLDS = 2
+
 
 @dataclass
 class Modifier:
@@ -121,6 +122,12 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             else:
                 logger.info(f"No type active, mod '{self.ctx.current_mod} time left {self.ctx.current_mod_end_time-time.time()}")
 
+    def _cmd_refresh_mod(self):
+        """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
+        self.ctx.current_mod_end_time = 0
+        self.ctx.modifiers = list(Modifier(name, 0) for name in list(get_args(Modifier.type)))
+        logger.info(f"Successfully cleared all modifiers")
+
     def _cmd_save(self):
         """
         Load save file for client memory.
@@ -169,6 +176,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         A command to try and rehook dolphin
         """
         self.ctx.game_interface.dolphin_client.connect()
+        time.sleep(0.01)
 
     def _cmd_movements(self):
         """
@@ -214,6 +222,18 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
         self.ctx.update_memory_to_server_on_load()
+
+    def _cmd_clear_inventory(self):
+        """Clears your inventory of powerups (except 5).
+        Useful if you want to grind inventory_powerups but have a full inventory"""
+        for pow_num in range(1,POWERUP_COUNT+2):
+            current_pow = bytes_to_int(self.ctx.game_interface.get_inventory_items(pow_num))
+            set_pow = min(current_pow, 5)
+            self.ctx.game_interface.set_inventory_items(pow_num, set_pow)
+
+
+        logger.info(f"Successfully cleared your inventory of powerups")
+
 
 status_messages = {
     ConnectionState.IN_GAME: "In level",
@@ -428,7 +448,12 @@ class NSMBWContext(SuperContext):
 
 
     async def shutdown(self):
-        if Utils.get_settings()["nsmbw_settings"].auto_open:
+        if Utils.get_settings()["nsmbw_settings"].auto_open and self.username is not None:
+            # this make sures modifiers are cleared when exit
+            self.modifiers = []
+            self.current_mod_end_time = 0
+            Utils.async_start(self.handle_modifiers())
+            time.sleep(0.1)
             Utils.async_start(self.handle_save())
         await super().shutdown()
 
@@ -447,18 +472,16 @@ class NSMBWContext(SuperContext):
 
 
     async def dolphin_sync_task_func(self):
-        apnsmbw_file = r"custom_worlds/nsmbw.apworld" if Utils.is_frozen() else os.path.abspath(pathlib.Path()) + r"\\worlds\\nsmbw"
+        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else pathlib.Path() / "worlds" / "nsmbw"
 
         if apnsmbw_file:
             text : str
             try:
                 if Utils.is_frozen():
-                    #text = importlib.resources.read_text(self.apnsmbw_file, r"archipelago.json")
                     with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
-                        path = zipfile.Path(zf, at=r"nsmbw/archipelago.json")
-                        text = path.read_text(encoding='UTF-8')
+                        text = zipfile.Path(zf, at="nsmbw/archipelago.json").read_text(encoding='UTF-8')
                 else:
-                    with open(apnsmbw_file+r"\\archipelago.json", "r") as f:
+                    with open(apnsmbw_file / "archipelago.json", "r", encoding="UTF-8") as f:
                         text = f.read()
                 manifest = json.loads(text)
                 version = manifest["world_version"]
@@ -537,7 +560,9 @@ class NSMBWContext(SuperContext):
                     await asyncio.sleep(1)
                     self.update_memory_to_server_on_load()
                 else:
-                    self.update_memory_to_server_on_load()
+                    self.log_color(f"Dolphin connection faild", "red")
+                    await asyncio.sleep(1)
+
 
         elif self.connection_state == ConnectionState.IN_MENU:
             print("Game in menu")
@@ -613,10 +638,9 @@ class NSMBWContext(SuperContext):
 
         print(f"Seedname {self.seed_name}")
         if self.seed_name != "" and (not (self.seed_name is None)):
-            path = f"{get_settings()["nsmbw_settings"].save_file_path}\\nsmbw_saves"
-            directory = Path(path)
+            path = Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves"
             try:
-                directory.mkdir(parents=True)
+                path.mkdir(parents=True)
                 print(f"Directory '{path}' created successfully.")
             except FileExistsError:
                 print(f"Directory '{path}' already exists.")
@@ -631,7 +655,7 @@ class NSMBWContext(SuperContext):
                 "handled_num" : self.handled_num,
                 "save_slot" : self.save_slot,
             }
-            with open(f"{path}\\{self.seed_name}.json", "w+") as file_name:
+            with open(path / f"{self.seed_name}.json", "w+") as file_name:
                 json.dump(data, file_name)
             logger.info("Saved to file")
         else:
@@ -642,7 +666,7 @@ class NSMBWContext(SuperContext):
 
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
-                with open(f"{get_settings()["nsmbw_settings"].save_file_path}\\nsmbw_saves\\{self.seed_name}.json", "r") as file_name:
+                with open(get_settings()['nsmbw_settings'].save_file_path / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
                     data = json.load(file_name)
                 self.completed_levels = data["completed_levels"]
@@ -902,7 +926,7 @@ class NSMBWContext(SuperContext):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
                 self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x07, 1))
-                logger.info(f"Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data["bowser_star_unlock"]} star coins and you have {self.starcoin_count}, Require {self.slot_data["bowser_world_unlock"]} worlds completed and you have {completed_worlds}).")
+                logger.info(f"Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data['bowser_star_unlock']} star coins and you have {self.starcoin_count}, Require {self.slot_data['bowser_world_unlock']} worlds completed and you have {completed_worlds}).")
             # if previously completed 8-arship and now unlocked bowser
             if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
                 if level_name in self.completed_levels:
@@ -1277,7 +1301,7 @@ class NSMBWContext(SuperContext):
                         death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
                         await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
                     else:
-                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data["death_link_amnesty_count"]}")
+                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data['death_link_amnesty_count']}")
                     self.is_pending_death_link_reset = True
                 elif (not is_dead) and (self.is_pending_death_link_reset == True) and (time.time() > self.game_interface.deathtimer):
                     self.is_pending_death_link_reset = False
