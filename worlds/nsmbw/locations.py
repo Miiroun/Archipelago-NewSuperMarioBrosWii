@@ -41,9 +41,9 @@ for world_num in range(1,9+1): # worlds
         LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 2000+100*world_num + 1})
         LOCATION_NAME_TO_ID.update({name_tower_clear(world_num) : 2000+100*world_num + 2})
 LOCATION_NAME_GROUPS.update({"Starcoins" : world_set,
-                             "Starcoin 1" : set((name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) for world_num in range(1,9+1)),
-                             "Starcoin 2" : set((name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) for world_num in range(1, 9 + 1)),
-                             "Starcoin 3" : set((name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)) for world_num in range(1, 9 + 1)),
+                             "Starcoin 1" : set(name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1,9+1)),
+                             "Starcoin 2" : set(name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
+                             "Starcoin 3" : set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
                              "Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)),
                              "Towers" : set(name_tower_clear(world_num) for world_num in range(1,8+1)) })
 
@@ -56,7 +56,7 @@ for secret_exit in SECRET_EXIT:
     world_num = secret_exit[0]
     level_num = secret_exit[1]
     LOCATION_NAME_TO_ID.update({name_secret(world_num,level_num): 7000 + 100 * world_num + level_num})
-LOCATION_NAME_GROUPS.update({"Secret_exits" : set(name_secret(world_num,level_num) for world_num, level_num, _ in SECRET_EXIT) })
+LOCATION_NAME_GROUPS.update({"Secret exits" : set(name_secret(world_num,level_num) for world_num, level_num, _ in SECRET_EXIT) })
 
 #hint movies
 num_hintmovies = 65
@@ -72,12 +72,12 @@ for world_num in range(1, 9 + 1):  # worlds
         LOCATION_NAME_TO_ID.update({flagpole : 5000 + world_num*100 + level_num})
     level_set = set(name_level(world_num, level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
     world_set |= level_set
-    LOCATION_NAME_GROUPS.update({f"Level_completion_world{world_num}": level_set})
-LOCATION_NAME_GROUPS.update({"Level_completion" : world_set })
+    LOCATION_NAME_GROUPS.update({f"Level completion world{world_num}": level_set})
+LOCATION_NAME_GROUPS.update({"Level completion" : world_set })
 
 for i in range(1,1000):
     LOCATION_NAME_TO_ID.update({name_inventory(i) : 6000+i})
-LOCATION_NAME_GROUPS.update({"Inventory_powerups" : set(name_inventory(i) for i in range(1,1000))})
+LOCATION_NAME_GROUPS.update({"Inventory powerups" : set(name_inventory(i) for i in range(1,1000))})
 
 # Each Location instance must correctly report the "game" it belongs to.
 # To make this simple, it is common practice to subclass the basic Location class and override the "game" field.
@@ -132,7 +132,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
             level_location = get_location_names_with_ids([name_tower_clear(world_num)])
             world.get_region(f"{world_num}-T").add_locations(level_location, NSMBWLocation)
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
-            world.get_region(get_name_base_of_last_level_in_world(world_num)).add_locations(level_location, NSMBWLocation)
+            world.get_region(name_base(world_num,8 + (world_num in [4,6,7,8]))).add_locations(level_location, NSMBWLocation)
 
     if world.options.include_shortcuts.value == True:
         for secret_exit in SECRET_EXIT:

@@ -12,12 +12,14 @@ from typing import Optional, Iterable
 from ..Common import *
 
 from Utils import is_frozen
+
 logger = logging.getLogger("Client")
 try:
     from . import keyboard
 except ImportError as e:
+    print(traceback.format_exc())
     print(e)
-    logger.error("for now you will need to give the client root access on linux")
+    logger.info("for now you will need to give the client root access on linux")
     #raise ImportError("for now you will need to give the client root access on linux")
 
 from .dolphin_interface_client import *
@@ -69,7 +71,6 @@ class NSMBWInterface():
     connection_status: str
     logger: Logger
     _previous_message_size: int = 0
-    game_id_error: Optional[str] = None
     game_rev_error: int
     current_game: Optional[str] = ""
     game_rev : int
@@ -90,27 +91,30 @@ class NSMBWInterface():
 
     def connect_to_game(self):
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
-        #if get_num_dolphin_instances() != 2:
-        #    self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
+        if get_num_dolphin_instances() != 2 and Utils.is_windows:
+            self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
         try:
             self.dolphin_client.connect()
+            time.sleep(0.1)
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
-
-            #print("gameeid:",game_id) # remove later
+            if game_id == b"\x00\x00\x00\x00\x00\x00" or len(game_id) < 6:
+                self.log_color(f"game_id {game_id} is blank, this is probably caused by a faild dolphin read.", "red")
+                return False
 
             try:
                 game_rev: Optional[int] = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS + 7, 1)[0]
             except Exception as e:
                 game_rev = None
-                logger.error(traceback.format_exc())
-                logger.error(f"error {e}, when trying to read game revision")
+                logger.info(traceback.format_exc())
+                self.log_color(f"error {e}, when trying to read game revision", "red")
+                return False
 
             #print("seraching for game rev")
             #print((game_id, game_rev))
             self.current_game = None
             if (game_id, game_rev) in GAME_VERSIONS:
                 self.current_game = str(game_id)
-                self.game_rev = int(game_rev)
+                self.game_rev = game_rev
                 version_name = GAME_VERSIONS[(game_id, game_rev)]
                 if version_name not in SUPPORTED_VERSIONS:
                     text = ("The client is only playtested for game version E2 (US rev2) and this is not the version"
@@ -118,32 +122,15 @@ class NSMBWInterface():
                             "discord and mention your game version, so that they might be fixed.")
                     #message : JSONMessagePart = [{"type": "color", "color": "red", "text":text }]
                     self.log_color(text, "red")
-
                 self.memory_addresses = MemoryAddresses(version_name)
+            else:
+                self.log_color(f"game_id {game_id}, game_rev {game_rev} not found in valid versions {GAME_VERSIONS}, connected to wrong game?.", "red")
+                return False
 
 
-
-            # The first read of the address will be null if the client is faster than the emulator
-            #self.current_game = None
-            #for version in GAME_VERSIONS:
-            #    if (
-            #        game_id == GAMES[version]["game_id"]
-            #        and game_rev == GAMES[version]["game_rev"]
-            #    ):
-            #       self.current_game = version
-            #        break
-            if (
-                self.current_game is None
-                and self.game_id_error != game_id
-                and game_id != b"\x00\x00\x00\x00\x00\x00"
-            ):
-                self.log_color(
-                    f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version",
-                    "red"
-                )
-                self.game_id_error = game_id
-                if self.game_rev:
-                    self.game_rev_error = game_rev
+            if self.current_game is None and game_id != b"\x00\x00\x00\x00\x00\x00":
+                self.log_color(f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version","red")
+                return False
 
 
             if self.current_game:
@@ -153,6 +140,10 @@ class NSMBWInterface():
                     #return False
                 self.log_color(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}", "blue")
                 return True
+            else:
+                self.log_color(f"Fail with dolphin connection somewhere", "red")
+                logger.info(f"Replicat this error in the debug launcher and post the error in the nsmbw discord")
+                logger.info(f"game_id {game_id}, current game {self.current_game},  rev {self.game_rev}")
         except DolphinException as e:
             logger.info(traceback.format_exc())
             self.log_color(f"Exception: {e} happened when connecting to dolphin", "red")
@@ -166,7 +157,7 @@ class NSMBWInterface():
     def get_connection_state(self):
         try:
             connected = self.dolphin_client.is_connected()
-            if not connected or self.current_game is None:
+            if not connected or self.current_game is None or self.memory_addresses is None:
                 return ConnectionState.DISCONNECTED
             elif self.is_in_menu():
                 return ConnectionState.IN_MENU
@@ -353,7 +344,9 @@ class NSMBWInterface():
 
     def clear_cache(self):
         if self.should_clear == 0:
-            raise ValueError(f"shouldn't clear")
+            #raise ValueError(f"shouldn't clear")
+            print(f"shouldn't clear chache when not needed")
+            return
         #if self.is_in_level() or self.is_in_worldmap():
         #logger.info("Clearing JIT cache by loading savestate")
 
@@ -826,10 +819,15 @@ class NSMBWInterface():
                 logger.info(f"Trying to hook, attempt {i} / 30")
             try:
                 self.dolphin_client.connect()
-                logger.info(f"Successfully force connected")
-                return
+                time.sleep(0.1)
+                if self.dolphin_client.is_connected():
+                    self.log_color(f"Successfully force connected", "green")
+                    return
+                else:
+                    logger.error(f"Failed to connect without error, prints last error that occured")
+                    logger.error(traceback.format_exc())
             except Exception as e:
                 logger.error(traceback.format_exc())
-                logger.error(f"Failed to connect to dolphin with error {e}")
+                self.log_color(f"Failed to connect to dolphin with error {e}", "red")
             await asyncio.sleep(1)
-        logger.info(f"Did not manage to force connect")
+        self.log_color(f"Did not manage to force connect", "red")
