@@ -317,6 +317,10 @@ class NSMBWInterface():
         if do_logging:
             logger.info(f"Saved savestate to slot {slot}")
 
+        if platform.system() == "Linux":
+            self._linux_send_hotkey(f"shift+F{slot}")
+            return
+
         try:
             if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
                 self._linux_send_hotkey(f"shift+F{slot}")
@@ -345,6 +349,10 @@ class NSMBWInterface():
 
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
+
+        if platform.system() == "Linux":
+            self._linux_send_hotkey(f"F{slot}")
+            return
 
         try:
             if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
@@ -844,4 +852,5 @@ class NSMBWInterface():
                 logger.error(traceback.format_exc())
                 self.log_color(f"Failed to connect to dolphin with error {e}", "red")
             await asyncio.sleep(1)
+        logger.info(f"Did not manage to force connect")
         self.log_color(f"Did not manage to force connect", "red")
