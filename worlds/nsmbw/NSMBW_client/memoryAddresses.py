@@ -159,6 +159,17 @@ class MemoryAddresses(object):
 
         self.main_menu_adress = self.map_between("E2", 0x81028e82)
 
+        # retro archivments
+        # Who can move the moving platform in 7-4 [8-Bit]  0x15e456a or 0x15e4569
+
+        # 0x154ba0c player 1 pointer, : look into
+
+        # [640 bytes] Overworld enemy info 0xd25100
+
+        # [32-bit BE] [PAL] Red coins Pointer 0x42a1f0
+        # +0x114=[32-bit BE] Current Red Coins. Goes up to 0x7 then back to 0x0 when collecting the 8th one, so you need to also check that the timer at 0x42a078 did not run out
+        # +0x118=[32-bit BE] Current Red Coins for some stages. 1-5 (second set) 4-1, 4-3, 4-5, 5-3, 5-Castle
+
 
         # movement etc patches
         self.patch_check_point = self.create_patch("P1",0x807E215C, instru_6000, origin=instru_beq + val_0014, name="check point")

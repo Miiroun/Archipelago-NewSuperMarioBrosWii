@@ -1,7 +1,7 @@
 from . import dolphin_interface_client
 from .NSMBWInterface import *
 from ..locations import SECRET_EXIT
-from ..options import RandomizeMovement
+from ..options import RandomizeMovement, HintMovieShopPriceLogic
 from ..Common import *
 from .. import NSMBWworld
 from ..Utils import *
@@ -78,6 +78,19 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_deathlink_group(self, key : str = ""):
         """Update the deathlink group """
         Utils.async_start(self.ctx.update_death_link_group(key))
+        logger.info(f"Updated deathlink group to '{key}' ")
+
+    def _cmd_debug_deathlink(self):
+        """Gives some debug info if deathlink isn't working correctly.
+        If you have trouble with deathlink run this and post it in the nsmbw chanel in the archipelago discord"""
+        logger.info(f"Debug info about deathlink"
+                    f"dl enabled {self.ctx.death_link_enabled}"
+                    f"dl group '{self.ctx.death_link_group}'"
+                    f"dl goup in slot data {self.ctx.slot_data['death_link_group']}"
+                    f"current tags '{self.ctx.tags}")
+        if (f"DeathLink{self.ctx.death_link_group}" in self.ctx.tags) ^ (self.ctx.death_link_enabled): # xor ?
+            logger.info(f"there is a missmatch between group and tags, please report this")
+
 
     def _cmd_reapply_checks(self):
         """
@@ -362,6 +375,8 @@ class NSMBWContext(SuperContext):
                 # checks for new slot_data values to be compatible
                 if "death_link_amnesty" not in self.slot_data.keys():
                     self.slot_data["death_link_amnesty"] = 1
+                if "hint_movie_shop_price_logic" not in self.slot_data.keys():
+                    self.slot_data["hint_movie_shop_price_logic"] = HintMovieShopPriceLogic.option_ordered
 
                 self.death_link_enabled = self.slot_data["death_link"]
                 self.death_link_group = self.slot_data["death_link_group"]
@@ -1110,7 +1125,7 @@ class NSMBWContext(SuperContext):
                 for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                     level_stats = self.game_interface.get_level_stats(world_num,level_num)[0]
                     level_stats &= 0x30 # keeps level completion
-                    if i * 3 + 3  <= starcoin_count:
+                    if (i * 3 + 3  <= starcoin_count) or (self.slot_data["hint_movie_shop_price_logic"] == HintMovieShopPriceLogic.option_free):
                         level_stats |= 0x07
                     elif 3 * i + 2 == starcoin_count:
                         level_stats |= 0x03

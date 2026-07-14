@@ -92,6 +92,22 @@ class IncludeHintMovies(Toggle):
     display_name = "Include Hint Movies"
     default = True
 
+class HintMovieShopPriceLogic(Choice):
+    """
+    This option changes how logic for hint movies is decided.
+    free : hint movies does not cost starcoin items. (recommended)
+    ordered : logic assumes you buy the movies in order, doing otherwise messes with logic (and can very rarely make you seed unbeatable)
+    all : logic assumes you have all star coins before a movie is in logic. This causes them to be very late spheres
+    progressive (not implemented) : Groups hintmovies together and requires all in that group to be bought before unlocking next group.
+    """
+    display_name = "Hint Movie Shop Price Logic"
+    option_free = 0
+    option_ordered = 1
+    option_all = 2
+    option_progressive = 3
+
+    default = option_free
+
 class IncludeLevelCompletion(Toggle):
     """
     This makes completing a level into a location, adds 231 locations.
@@ -168,6 +184,7 @@ class IncludeNumberInventoryItems(Range):
 class MakeWorldCompPriority(Toggle):
     """
     Makes half world completion and world completion priority locations, e.g. they will have a good item.
+    Causes generation failures ~0.5% if enabled.
     """
     display_name = "Make World Completion Priority"
     default = False
@@ -302,6 +319,7 @@ class NSMBWOptions(PerGameCommonOptions):
     logic_outside_powerup : LogicOutsidePowerups
     starting_world: StartingWorld
     world9_unlock_condition : World9UnlockCondition
+    hint_movie_shop_price_logic : HintMovieShopPriceLogic
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems
@@ -473,16 +491,16 @@ def adjust_options(world):
     # this tries to prevent num loc > num items
     if ((loc := world.options.include_shortcuts.value * 12 + world.options.include_level_completion.value * 71 +
         world.options.include_hintmovies.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
-         <= 5+
+         <= 10+
         ((itm := world.options.randomize_movement.value >= 1) * len(MOVEMENT_UNLOCKS) + world.options.randomize_time.value
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
                           f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
 
-    MAX_ALLOWED_BOWSER_SC = 231-5
+    MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
         world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
-        print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}")
+        print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}, amount forcefully lowered")
 
     movement_set = set(MOVEMENT_UNLOCKS)
     if len(world.options.dont_rando_move.value - movement_set) > 0:
@@ -502,5 +520,9 @@ def adjust_options(world):
             world.options.trap_items.value = world.options.trap_items.default
 
     if world.options.percentage_filler_forced_local.value != 0:
-        world.options.percentage_filler_forced_local = 0
+        world.options.percentage_filler_forced_local.value = 0
         print("percentage_filler_forced_local is in dev and doesnt work")
+
+    if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_progressive:
+        print(f"(NSMBW generation error) Option progressive for hint_movie_shop_price_logic is not implemented, setting to default instead.") # raise OptionError
+        world.options.hint_movie_shop_price_logic.value = HintMovieShopPriceLogic.default

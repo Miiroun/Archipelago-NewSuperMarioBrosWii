@@ -79,7 +79,18 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             location = world.get_location(name_hintmovie(hm_num))
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
-            hm_rule = ((rules.Has(ITEM.StarCoin, count=total_cost)|(get_glitch_rule(world) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
+            match world.options.hint_movie_shop_price_logic:
+                case HintMovieShopPriceLogic.option_free:
+                    soft_logic = True_()
+                case HintMovieShopPriceLogic.option_ordered:
+                    soft_logic = rules.Has(ITEM.StarCoin, count=total_cost)
+                case HintMovieShopPriceLogic.option_all:
+                    soft_logic = rules.Has(ITEM.StarCoin, count=231)
+                case _:
+                    raise ValueError(f"option {world.options.hint_movie_shop_price_logic} is not acounted for")
+
+
+            hm_rule = ((soft_logic|(get_glitch_rule(world) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
             world.set_rule(location, hm_rule)
 
     if world.options.include_shortcuts.value == True:

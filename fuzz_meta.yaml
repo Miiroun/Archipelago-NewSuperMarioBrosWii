@@ -2,6 +2,7 @@ null:
   progression_balancing: 50 #
 NSMBW: #
   progression_balancing: normal
+  make_world_comp_priority: 'false'
 
 #empty:
 #  accessibility: full

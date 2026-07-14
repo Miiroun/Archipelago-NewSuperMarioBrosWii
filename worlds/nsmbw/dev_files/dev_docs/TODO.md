@@ -7,16 +7,12 @@
   - daPlBase_c__vt : hold func pointers
 - multiplayer
   - Separate powerup unlocks?
-- Remove cost from hint movies???
-  - PRO: no logic trouble, no impossible seeds
-  - CON: star coins does less
-  - Solution : make option so player consnets
-- I need to save modifiers so no issue when saving or loading save state
 - Rename:
   - movement to abilities?
   - dontrandomoves to default moves?
   - include option to sanity?
-
+- 37 / 10000 failures   make_world_comp_priority: 'true', 0 / 10000 make_world_comp_priority: 'false'
+- update doxs
 
 ## Playtest
 - multiplayer
@@ -29,6 +25,8 @@
 - test new read manifest works on frozen and linux
 - Have someone with connection issues try running in administrator mode
 - clear_inventory and clear_mod
+- assert early items are actually early, write test?
+- test hm options
 
 ## Bugs to fix
 - still sends false deathlinks
@@ -44,6 +42,7 @@
 - Somehow accidentally sets deathlink group
 - we finished our archipelago! there was one more issue i had, and this one made me cave and finally copy my save file 1 slot and switch to save file 2: inventory powerup slot checks 31-40 weren't being granted when i fulfilled their criteria. switching save file slots didn't fix it, so the host released those ten checks manually. i had 40 checks and checks 1-30 worked fine. also of note is that the issues i listed last time still occurred on save file 2. i saw all of them again except for anything about weird enemy ai. and one more: on rare occasion when playing a level, the star coin HUD element will show a star coin as collected when you haven't actually collected it yet. it tends to update itself to fix this error soon after you notice it, like when going into a pipe or beating the level
 - 9-5 ?switch doesnt disable
+
 
 ## Short term
 - Multiplayer support
@@ -66,6 +65,7 @@
   - toad add1  80c807f0
   - toad add2  80c80f22
 - Spin jump no logic, also no logic without normal jump
+- flagpool score as location?
 
 
 ## Broken versions
