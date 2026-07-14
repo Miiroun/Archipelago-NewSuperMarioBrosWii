@@ -5,6 +5,8 @@ game_name = "NSMBW"
 
 LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 
+HINTMOVIE_COUNT = 65
+LEVEL_COUNT = 77
 
 class ITEM:
     class POWERUP(StrEnum):
@@ -68,6 +70,7 @@ class ITEM:
 
 
 POWERUP_UNLOCK = list([c.value for c in ITEM.POWERUP])
+POWERUP_COUNT = len(POWERUP_UNLOCK)
 MOVEMENT_UNLOCKS = list([c.value for c in ITEM.MOVEMENT])
 
 TRAPS = list([c.value for c in ITEM.TRAPS])

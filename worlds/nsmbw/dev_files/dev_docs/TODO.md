@@ -7,17 +7,15 @@
   - daPlBase_c__vt : hold func pointers
 - multiplayer
   - Separate powerup unlocks?
-- handle deathlink better
 - Remove cost from hint movies???
   - PRO: no logic trouble, no impossible seeds
   - CON: star coins does less
   - Solution : make option so player consnets
-- lose pow trap correct damage
 - I need to save modifiers so no issue when saving or loading save state
-- Revise not implemented logic
-  - Search wiki for carry_block
-  - Consult with react, but spin should only be needed for 1-5 and 8-A and carry block
-- Rename movement to abilities?
+- Rename:
+  - movement to abilities?
+  - dontrandomoves to default moves?
+  - include option to sanity?
 
 
 ## Playtest
@@ -38,11 +36,6 @@
   - Heya! So I had an issue with save states. Everything worked fine during the first bit of an AP I did, Everything continued to work fine till this morning after about an hour of game time. For some reason my save states were automatically being loaded instead of saved, and while I did have back-up save states, I did have an issue of that messing with future aspects as all my levels I completed with star coins suddenly went uncleared. The only thing that was unlocked was secret exit paths in levels I cleared with a secret exit but couldn't get that fixed afterwards. I did use the recent version posted not long ago so i'm unsure if this was an issue on my end I could have fixed or not.
   - I had a back-up save state in Worlds 3 & 9, which were the two worlds I was focusing on and I believe the issues started after beating 9-8 or 9-3? The world 3 back-up state was only a few levels behind (like 2 or 3). However after beating like one or two levels, the game started loading a state it made itself in World 4. So whenever I tried loading the World 9 or World 3 state, things ended up breaking and even one of my back-up states got messed up as the game auto-stated the same moment I save stated. Luckily it was only one of them (I usually make two states just in case) but, yeah the issues started in world 9 but carried over even into world 3 where world 9 was never even touched on that particular state.
 - Climb is locked even though it is excluded : 5 vines etc
-- 1-C comp message shows when it shouldn't
-- to carry anything over your head (i.e. propeller block (as pictured below), ice block (pictured mid-throw below), pow block (as pictured below), light block (as pictured below), barrel (as pictured below), or other player (as pictured below)), you need spin jump AND carry 
-  - change logic
-- Spin jump no logic, also no logic without normal jump
-- Problem with desktop icon nsmbw? : Nsmbw desktop icon not work?
 - Can't leave vine without spin jump
 - Test and fix climb
 - i wanted to make note of some issues i encountered while playing this apworld. i've been playing on save file 1, first on accident and later i've just been sticking to it, because the game didn't have any gamebreaking problems with that and i thought this would be good to report in case the future is to make it so you can play on the other save files. it may be hard to tell where save file 1 is causing problems though, so i'm sorry if you can't make use of all this regardless:
@@ -50,10 +43,7 @@
 - Deathlink groups desync if reconnect to client
 - Somehow accidentally sets deathlink group
 - we finished our archipelago! there was one more issue i had, and this one made me cave and finally copy my save file 1 slot and switch to save file 2: inventory powerup slot checks 31-40 weren't being granted when i fulfilled their criteria. switching save file slots didn't fix it, so the host released those ten checks manually. i had 40 checks and checks 1-30 worked fine. also of note is that the issues i listed last time still occurred on save file 2. i saw all of them again except for anything about weird enemy ai. and one more: on rare occasion when playing a level, the star coin HUD element will show a star coin as collected when you haven't actually collected it yet. it tends to update itself to fix this error soon after you notice it, like when going into a pipe or beating the level
-- Empty causes errors in GitHub CI because no docs??? : captilized wrong?
-  - Unly issue on mac and linux, not windows
-  - windows have other site problems
-
+- 9-5 ?switch doesnt disable
 
 ## Short term
 - Multiplayer support
@@ -75,6 +65,7 @@
 - toad house doesn't work to set, probably needs to update other location too
   - toad add1  80c807f0
   - toad add2  80c80f22
+- Spin jump no logic, also no logic without normal jump
 
 
 ## Broken versions
@@ -152,6 +143,7 @@
 - sometimes loading world crashes game
   - yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
   - ask for sead
+- 1-C comp message shows when it shouldn't
 
 
 ## Features
@@ -197,7 +189,7 @@
 - Fix so work with multiple dolphin instances
 - Add support for other mods: pipe rando, mkwcat 8player, newer (needs logic), etc
   - Needs to create new memory map (on the fly? or need to create it for all editions), would be helpful for using the memory patch with the randomizer
-
+- Actual deathlink messages
 
 ## Features I (Miiroun) will not implement
 - Native wii support

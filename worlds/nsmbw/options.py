@@ -26,7 +26,6 @@ class RandomizeStarCoins(Toggle):
 
 class StarCoinCollectImmediately(Toggle):
     """
-    BETA
     If enabled will send checks for star coins directly when collected,
     otherwise will send them on level completion
     """
@@ -48,7 +47,8 @@ class RandomizeMovement(Choice):
 class DontRandoMovement(ItemSet):
     """
     Put movement items here if you want to play with movement except certain once.
-    Turning on the default moves here can and will cause issue, they are experimental
+    Turning on the default moves here can and will cause issue, they are experimental.
+    You will always start with other items in addition to these to make the first level in your starting world beatable
     """
 
     display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "

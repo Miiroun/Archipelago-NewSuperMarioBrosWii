@@ -1,10 +1,10 @@
 from . import dolphin_interface_client
 from .NSMBWInterface import *
-from ..locations import LOCATION_NAME_TO_ID, SECRET_EXIT
+from ..locations import SECRET_EXIT
 from ..options import RandomizeMovement
 from ..Common import *
 from .. import NSMBWworld
-from ..Utils import int_to_bytes, bytes_to_int, map_nd
+from ..Utils import *
 
 import json
 import os
@@ -228,7 +228,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Useful if you want to grind inventory_powerups but have a full inventory"""
         for pow_num in range(1,POWERUP_COUNT+2):
             current_pow = bytes_to_int(self.ctx.game_interface.get_inventory_items(pow_num))
-            set_pow = min(current_pow, 5)
+            set_pow = int_to_bytes(min(current_pow, 5),1)
             self.ctx.game_interface.set_inventory_items(pow_num, set_pow)
 
 
@@ -400,7 +400,7 @@ class NSMBWContext(SuperContext):
             .get(self.game, {}).get("location_name_groups", {})
                     for location_id in checked:
                         location = NSMBWworld.location_id_to_name[location_id]
-                        if location in set(loc_groups["Level_completion"]):
+                        if location in set(loc_groups["Level completion"]):
                             ## TODO need to handle if in peach castle etc
                             world_num, level_num = level_bijection(location)
                             skipp_levels = [(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9), (8, 9)]
@@ -506,22 +506,25 @@ class NSMBWContext(SuperContext):
                         await asyncio.sleep(1)
                         #return
                         continue
-                    connection_state = self.game_interface.get_connection_state()
-                    self.update_connection_status(connection_state)
-                    #print(f"connection state: {connection_state}")
+                    try:
+                        connection_state = self.game_interface.get_connection_state()
+                        self.update_connection_status(connection_state)
 
-                    #print(f"Connection state is {connection_state}")
-                    if connection_state == ConnectionState.IN_GAME:
-                        await self.handle_in_level()
-                    elif connection_state == ConnectionState.IN_WORLDMAP:
-                        await self.handle_in_worldmap()  # It will say the player is in menu sometimes
-                        await asyncio.sleep(0.01)
-                    elif connection_state == ConnectionState.IN_MENU:
-                        await self.handle_in_main_menu()
-                        await asyncio.sleep(0.01)
-                    else:
-                        await self._handle_game_not_ready()
-                        await asyncio.sleep(1)
+
+                        if connection_state == ConnectionState.IN_GAME:
+                            await self.handle_in_level()
+                        elif connection_state == ConnectionState.IN_WORLDMAP:
+                            await self.handle_in_worldmap()  # It will say the player is in menu sometimes
+                            await asyncio.sleep(0.01)
+                        elif connection_state == ConnectionState.IN_MENU:
+                            await self.handle_in_main_menu()
+                            await asyncio.sleep(0.01)
+                        else:
+                            await self._handle_game_not_ready()
+                            await asyncio.sleep(1)
+                    except Exception as e:
+                        logger.info(traceback.format_exc())
+                        self.log_color(f"Failed with error {e}. When handling client logic", "red")
 
 
                 else:
@@ -666,7 +669,7 @@ class NSMBWContext(SuperContext):
 
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
-                with open(get_settings()['nsmbw_settings'].save_file_path / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
+                with open(Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
                     data = json.load(file_name)
                 self.completed_levels = data["completed_levels"]
@@ -772,8 +775,8 @@ class NSMBWContext(SuperContext):
                     # 42: EndingCredits
 
                     location_name = name_starcoin(world_num, level_num, sc_num)
-                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                    if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
+                        checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                         if not is_frozen():
                             logger.info(f"Sent check from item{location_name}")
         self.locations_handled += checked_locations
@@ -796,9 +799,9 @@ class NSMBWContext(SuperContext):
 
                 def send_sc_check(sc_num=0):
                     location_name = name_starcoin(world_num, level_num, sc_num)
-                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
+                    if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                         print(f"Starcoin {sc_num} collected from {mod_level_name(world_num, level_num)}")
-                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                        checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                         if not is_frozen():
                             print(f"Sent check from item{location_name}")
                 if level_status & 1 == 1:
@@ -819,8 +822,8 @@ class NSMBWContext(SuperContext):
                 status = self.game_interface.get_hm_stats(hm_num - 1)
                 location_name = f"Hintmovie{hm_num:02}"
                 if status == b'\x01':
-                    if not LOCATION_NAME_TO_ID[location_name] in self.locations_handled:
-                        checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                    if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
+                        checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                         if not is_frozen():
                             print(f"Collected hintmovie at {checked_locations}")
 
@@ -844,8 +847,8 @@ class NSMBWContext(SuperContext):
                 level_status = self.game_interface.get_level_stats(world_num, level_num)[0]
                 if level_status & 16 == 16:
                     level_name = name_level(world_num, level_num)
-                    if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
-                        checked_locations.append(LOCATION_NAME_TO_ID[level_name])
+                    if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
+                        checked_locations.append(NSMBWworld.location_name_to_id[level_name])
                         if not is_frozen():
                             print(f"You collected a check for completing {level_name}")
 
@@ -869,8 +872,8 @@ class NSMBWContext(SuperContext):
 
 
                 if level_stats & byte_to_check == byte_to_check:
-                    if not LOCATION_NAME_TO_ID[exit_name] in self.locations_handled:
-                        checked_locations.append(LOCATION_NAME_TO_ID[exit_name])
+                    if not NSMBWworld.location_name_to_id[exit_name] in self.locations_handled:
+                        checked_locations.append(NSMBWworld.location_name_to_id[exit_name])
                         print(f"You collected a check for {exit_name}, but the cannon/exit will be locked to make the randomizer more interesting.")
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
 
@@ -882,8 +885,8 @@ class NSMBWContext(SuperContext):
                 level_num += 1 if world_num in  [7,8] else 0
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
                 if level_stats & 0x30 > 0:
-                    if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
-                        checked_locations.append(LOCATION_NAME_TO_ID[level_name])
+                    if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
+                        checked_locations.append(NSMBWworld.location_name_to_id[level_name])
                     if unlocked_worlds[world_num-1] <= 1:
                         if not (level_name in self.completed_levels):
                             self.completed_levels.append(level_name)
@@ -906,8 +909,8 @@ class NSMBWContext(SuperContext):
                     level_num += 1 if world_num in  [4,6,7,8] else 0
                     level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
                     if level_stats & 0x30 > 0:
-                        if not (LOCATION_NAME_TO_ID[level_name] in self.locations_handled):
-                            checked_locations.append(LOCATION_NAME_TO_ID[level_name])
+                        if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
+                            checked_locations.append(NSMBWworld.location_name_to_id[level_name])
                             logger.info(f"You collected a check for {level_name}, to unlock the next world, receive its AP-item.")
                         # do not need to acount for this no longer
                         #self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x07, 1))
@@ -958,7 +961,7 @@ class NSMBWContext(SuperContext):
             if self.prossesed_inventory_powerup_locations < self.slot_data["include_inventory_powerups"]:
                 self.prossesed_inventory_powerup_locations += 1
                 location_name = name_inventory(self.prossesed_inventory_powerup_locations)
-                checked_locations.append(LOCATION_NAME_TO_ID[location_name])
+                checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                 print(f"Location {location_name} checked")
 
         self.locations_handled += checked_locations
@@ -976,7 +979,7 @@ class NSMBWContext(SuperContext):
         i = 0
         for network_item in self.items_received:
             item_id = network_item.item
-            item_name = ITEM_ID_TO_NAME[item_id]
+            item_name = NSMBWworld.item_id_to_name[item_id]
             if item_id == 101:
                 self.starcoin_count += 1
             elif item_id == 102:
@@ -1176,7 +1179,7 @@ class NSMBWContext(SuperContext):
                     logger.info("What happened to your power up?")
                     for player_num in range(PLAYER_COUNT):
                         curr_pow = self.game_interface.get_powerupstate(player_num)
-                        if curr_pow != b'\x00':
+                        if curr_pow != b'\x01':
                             self.game_interface.set_powerupstate(b'\x01', player_num)
                         else:
                             self.game_interface.set_powerupstate(b'\x00', player_num)

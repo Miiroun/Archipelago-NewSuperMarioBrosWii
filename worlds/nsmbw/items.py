@@ -133,8 +133,8 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 pip_essen = {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
 extra_start_items : Dict[int,set]= {
     1: set() | pip_essen,
-    2: {ITEM.MOVEMENT.Jump, ITEM.MOVEMENT.QuestSwitch} | pip_essen,
-    3: {ITEM.MOVEMENT.Pipe},
+    2: {ITEM.MOVEMENT.Jump} | pip_essen,
+    3: pip_essen, #{ITEM.MOVEMENT.Pipe}
     4 : {ITEM.MOVEMENT.Swim} | pip_essen,
     5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Swim} | pip_essen,
     6: set() | pip_essen,

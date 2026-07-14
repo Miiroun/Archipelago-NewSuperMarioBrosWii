@@ -193,9 +193,9 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
     level_rules = [ # normal compleation rules
         [  # world 1
-            [normal_move & get_time_rule(world, 90), [propeller | (mini_o & (run | logic_hard)) | (run & (carry | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))]],  # -1
-            [normal_move & pipe & button_down , [button_up, p_switch | propeller_o, (super_mario & ground_pound) | propeller_o]],  # -2
-            [normal_move, [yoshi | propeller_o | (logic_hard & ((mini_o & (ground_pound | run)) | (run & (super_mario | ground_pound)) | carry)), yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario)), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry))], yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry & (super_mario | run))))],  # -3
+            [normal_move & get_time_rule(world, 90), [propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))]],  # -1
+            [normal_move & pipe & button_down , [button_up, p_switch | propeller_o, super_mario & ground_pound]],  # -2
+            [normal_move, [yoshi | propeller_o | (logic_hard & ((mini_o & (ground_pound | run)) | (run & (super_mario | ground_pound)) | carry_block)), yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario)), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry_shell))], yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry_shell & (super_mario | run))))],  # -3
             [normal_move & swim, [True_(), ice | peng_o | propeller_o | mini_o | logic_hard, ice | peng_o | logic_hard]],  # -4
             [normal_move & spin_jump, [climb, True_(), True_()]],  # -5
             [normal_move, [True_(), True_(), run | (mini_o | (star_o & logic_hard)) | (propeller & (climb | outside_powerups))]],  # -6
@@ -204,13 +204,13 @@ def specific_level_requierments(world: NSMBWworld) -> list:
         ],
         [  # world 2
             [normal_move & jump, [True_(), True_(), carry | propeller_o | mini_o]],  # -1
-            [normal_move & question_switch& pipe & button_down & button_up & jump, [question_switch & p_switch, climb & (carry | propeller_o | logic_hard) & question_switch, mini & wall_jump & (carry | ground_pound) & question_switch]],  # -2
+            [normal_move & pipe & button_down & button_up & jump, [(p_switch | ground_pound), climb & (carry | propeller_o | logic_hard), mini & wall_jump & (carry | ground_pound)]],  # -2
             [normal_move & pipe& button_down & button_up, [True_(), True_(), (run | propeller_o | mini_o | (star & logic_hard)) ]],  # -3
             [normal_move  & pipe & button_down & button_up& (climb | (propeller_o | (mini_o & wall_jump)) | (logic_hard & wall_jump & run & super_mario))  , [climb , propeller , (propeller | (mini_o & wall_jump)) ], propeller & (wall_jump | run) ],  # -4 # this was orignaly propeller_o for sc2, sc3 and secret exit, but locations must be accessible independent of setting, so changed it to just propeller_o
             [normal_move, [True_(), yoshi | carry | propeller_o | (wall_jump & (mini_o | run | super_mario)) | (logic_hard & ice_peng_o), True_()]],  # -5
-            [normal_move, [True_(), carry | propeller | mini_o, True_()], propeller | (mini_o & logic_hard) | p_switch],  # -6
-            [normal_move&tower_rules, [True_(), True_(), True_()]],  # -7 2-T
-            [normal_move & door, [True_(), super_mario , p_switch]],  # -8 2-C
+            [normal_move, [True_(), carry | propeller | mini_o, True_()], propeller | (mini_o & logic_hard)],  # -6
+            [normal_move & tower_rules, [True_(), True_(), True_()]],  # -7 2-T
+            [normal_move & door & ((p_switch) | ((ice | peng_o) & carry) | (peng_o & crouch)), [True_(), super_mario & (wall_jump | propeller_o), p_switch | ((ice | peng_o) & carry)]],  # -8 2-C
         ],
         [  # world 3
             [normal_move & pipe, [(peng & crouch) | logic_hard, True_(), (peng & crouch) | (carry & logic_hard)]],  # -1
@@ -220,7 +220,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move, [True_(), red_block, red_block], red_block],  # -5
             [normal_move & door & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthouse
             [normal_move&tower_rules, [True_(), carry, wall_jump | propeller_o]],  # -7 3-T
-            [normal_move, [True_(), True_(), True_()]],  # -8 3-C
+            [normal_move & door, [True_(), True_(), True_()]],  # -8 3-C
         ],
         [  # world 4
             [normal_move & swim & pipe& button_down & button_up, [ice_o | peng | propeller_o | (mini_o & (run | logic_hard)), ice_o | peng | propeller_o | mini_o | (logic_hard & wall_jump & run & ground_pound), peng | ice_o | mini_o | propeller_o | logic_hard]],  # -1
@@ -229,27 +229,27 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move & swim, [(peng | ice_o | propeller_o | mini_o) & p_switch, True_(), True_()]],  # -4
             [normal_move, [True_(), True_(), True_()]],  # -5
             [normal_move & door, [True_(), True_(), True_()], True_()],  # -6 4-G
-            [normal_move&tower_rules, [True_(), True_(), True_()], True_()],  # -7 4-T
+            [normal_move & tower_rules, [True_(), True_(), True_()], True_()],  # -7 4-T
             [normal_move & swim, [True_(), True_(), True_()]],  # -8 4-C
             [normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, [True_(), (carry & (ground_pound | propeller_o)) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_()]],  # -9 4-A
         ],
         [  # world 5
-            [normal_move & (climb | propeller_o) & (swim | logic_hard) & pipe& button_down & button_up, [(super_mario & ground_pound) | propeller_o, swim | (mini_o & (climb | run)), ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound))]],  # -1
-            [normal_move, [True_(), True_(), carry | propeller_o | (max_mini & logic_hard & outside_powerups)]],  # -2
+            [normal_move & (climb | propeller_o) & (swim | logic_hard) & pipe& button_down & button_up, [super_mario & ground_pound, swim | (mini_o & (climb | run)), ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound))]],  # -1
+            [normal_move, [True_(), True_(), (carry_block & spin_jump) | propeller_o | (max_mini & logic_hard & outside_powerups)]],  # -2
             [normal_move, [True_(), carry |((peng_o & crouch) & logic_hard), True_()]],  # -3
             [normal_move, [logic_hard | super_mario | run, logic_hard | carry | propeller_o, carry]],  # -4
             [normal_move, [True_(), True_(), carry]],  # -5
-            [normal_move & door & question_switch, [door & question_switch, door & question_switch, door & question_switch], door & question_switch],  # -6 5-Ghosthouse
-            [normal_move&tower_rules & (carry | wall_jump | propeller_o), [True_(), True_(), super_mario]],  # -7 5-T
+            [normal_move & door & ((question_switch & carry_block) | logic_hard), [True_(), True_(), True_() ], True_() ],  # -6 5-Ghosthouse
+            [normal_move& tower_rules & (carry | wall_jump | propeller_o), [True_(), True_(), super_mario]],  # -7 5-T
             [normal_move & door & get_time_rule(world, 150), [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
         ],
         [  # world 6
             [normal_move, [True_(), True_(), logic_hard | ice | peng_o | propeller_o]],  # -1
             [normal_move & pipe& button_down & button_up, [carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_()]],  # -2
             [normal_move & pipe& button_down & button_up & (swim | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run))))   & question_switch, [ True_(),p_switch, (swim & super_mario) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run & carry) )) ]],  # -3
-            [normal_move & question_switch, [(logic_hard | yoshi | propeller)& question_switch, (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)) & question_switch, (yoshi | propeller | wall_jump) & question_switch]],  # -4
+            [normal_move , [(logic_hard | yoshi | propeller), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump)]],  # -4
             [normal_move, [True_(), True_(), climb & (carry | propeller_o)], climb],  # -5
-            [normal_move & question_switch, [question_switch, question_switch, question_switch],question_switch],  # -6
+            [normal_move & (question_switch | logic_hard), [True_(), True_(), True_()],True_()],  # -6
             [normal_move&tower_rules, [True_(), wall_jump | propeller_o, wall_jump | propeller_o]],  # -7 6-T
             [normal_move& door, [True_(), True_(), True_()]],  # -8 6-C
             [normal_move & spin_jump, [ground_pound | propeller_o | (logic_hard & ((peng_o & crouch & wall_jump) | (carry & (ice | peng_o)))), ground_pound | propeller_o, ground_pound | propeller_o | (logic_hard & peng_o & crouch)]],  # -9 6-A
@@ -262,9 +262,9 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move, [True_(), True_(), True_()]],  # -4
             [normal_move & spin_jump, [True_(), propeller | p_switch, True_()]],  # -5
             [normal_move, [True_(), True_(), True_()]],  # -6
-            [normal_move & door & question_switch, [door & question_switch,  door & question_switch, (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))& door & question_switch], (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard)))) & door & question_switch],  #  7-Ghosthouse
+            [normal_move & door & question_switch, [True_(),  True_(), (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))], (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))],  #  7-Ghosthouse
             [normal_move&tower_rules& door, [True_(), True_(), True_()]],  # -8 7-T
-            [normal_move & (run | (super_mario & logic_hard)), [super_mario, True_(), wall_jump | propeller_o]],  # 7-C
+            [normal_move & door & (run | (super_mario & logic_hard)), [super_mario, True_(), wall_jump | propeller_o]],  # 7-C
 
 
         ],
@@ -272,12 +272,12 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move & jump & run & pipe & button_up & (button_left | logic_hard) & get_time_rule(world,150), [True_(), carry, True_()]],  # -1
             [normal_move & button_left & pipe& button_down & get_time_rule(world,100), [True_(), True_(), True_()]],  # -2
             [normal_move & (run | crouch) & get_time_rule(world,100), [True_(), True_(), True_()]],  # -3
-            [normal_move & swim & question_switch & get_time_rule(world,150), [question_switch,question_switch,question_switch]],  # -4
+            [normal_move & swim & question_switch & get_time_rule(world,150), [True_(),True_(),True_()]],  # -4
             [normal_move, [True_(), carry, True_()]],  # -5
             [normal_move & climb & jump & button_up & pipe, [True_(), climb & (propeller | wall_jump), True_()]],  # -6
             [normal_move & get_time_rule(world,200), [True_(), True_(), True_()]],  # -7
             [normal_move&tower_rules & get_time_rule(world,200), [True_(), True_(), True_()]],  # -8 8-T
-            [normal_move & bowser_clear_rule& door& button_down & pipe & ((propeller & crouch) | logic_hard), [True_(), True_(), True_()]],  # -9 8-C
+            [normal_move & bowser_clear_rule & door& button_down & pipe & ((propeller & crouch) | logic_hard), [True_(), True_(), True_()]],  # -9 8-C
             [normal_move & ground_pound & spin_jump , [True_(), True_(), propeller | (ground_pound & ((mini_o & (wall_jump | run)) | (logic_hard & run & carry)))]],  # -10 8-A
 
         ],
@@ -286,7 +286,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move & (mini_o | (run & climb) | swim | (peng_o & crouch & run)), [True_(), swim, (carry & ((mini_o & ground_pound) | (run & climb) | swim)) | (peng_o & crouch & run)]],  # -2
             [normal_move, [p_switch, (run | (propeller_o & logic_hard)) & p_switch, logic_hard | run | propeller_o | mini_o]],  # -3
             [normal_move & (run | propeller_o | mini_o | ice | peng_o), [wall_jump | propeller_o, carry | propeller_o, ice | peng_o]],  # -4
-            [normal_move & question_switch, [question_switch, question_switch, (ice_o | peng | propeller_o) & question_switch]],  # -5
+            [normal_move & (question_switch | wall_jump | propeller_o | logic_hard), [True_(), True_(), (ice_o | peng | propeller_o)]],  # -5
             [normal_move & (run | propeller_o | mini_o), [True_(), logic_hard | propeller_o | ((run | mini_o) & wall_jump), True_()]],  # -6
             [normal_move & (run | ((mini_o | wall_jump | propeller_o) & logic_hard)), [True_(), True_(), ((run | logic_hard) & (wall_jump | propeller_o))]],  # -7
             [normal_move, [carry | propeller | mini, True_(), True_()]],  # -8

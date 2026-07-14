@@ -36,7 +36,7 @@ class NSMBWworld(World):
     options_dataclass = nsmbw_option.NSMBWOptions
     options: nsmbw_option.NSMBWOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
 
-    settings: nsbmw_settings.NSMBWSettings
+    settings: ClassVar[nsbmw_settings.NSMBWSettings]
     settings_key = nsbmw_settings.NSMBWSettings.settings_key
 
     # Our world class must have a static location_name_to_id and item_name_to_id defined.

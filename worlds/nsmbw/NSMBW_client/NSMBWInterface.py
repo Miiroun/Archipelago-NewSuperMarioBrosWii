@@ -18,7 +18,7 @@ from ..Common import *
 from Utils import is_frozen
 
 logger = logging.getLogger("Client")
-if not (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only):
+if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only):
     try:
         from . import keyboard
     except ImportError as e:
@@ -29,7 +29,6 @@ else:
 
 from .dolphin_interface_client import *
 from ..Utils import bytes_to_int, int_to_bytes
-from ..items import ITEM_NAME_TO_ID
 
 from .memoryAddresses import *
 
@@ -41,14 +40,6 @@ class ConnectionState(Enum):
     SCOUTS_SENT = 4
     IN_WORLDMAP = 5
 
-# game constants
-HUD_MESSAGE_DURATION = 7.0
-HUD_MAX_MESSAGE_SIZE = 194
-
-HINTMOVIE_COUNT = 65
-LEVEL_COUNT = 77
-POWERUP_COUNT = len(POWERUP_UNLOCK)
-ITEM_ID_TO_NAME = {v: k for k, v in ITEM_NAME_TO_ID.items()}
 
 GAME_VERSIONS = {
     (b"SMNP01", 1) : "P1",
@@ -96,8 +87,9 @@ class NSMBWInterface():
 
     def connect_to_game(self):
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
-        if get_num_dolphin_instances() != 2 and Utils.is_windows:
-            self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
+        # This error message doesnt work, allways detecs as 0 for me
+        #if get_num_dolphin_instances() != 2 and Utils.is_windows:
+        #    self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")
         try:
             self.dolphin_client.connect()
             time.sleep(0.1)
@@ -837,10 +829,10 @@ class NSMBWInterface():
                     self.log_color(f"Successfully force connected", "green")
                     return
                 else:
-                    logger.error(f"Failed to connect without error, prints last error that occured")
-                    logger.error(traceback.format_exc())
+                    logger.info(f"Failed to connect but without error, prints last error that occurred")
+                    logger.info(traceback.format_exc())
             except Exception as e:
-                logger.error(traceback.format_exc())
+                logger.info(traceback.format_exc())
                 self.log_color(f"Failed to connect to dolphin with error {e}", "red")
             await asyncio.sleep(1)
         self.log_color(f"Did not manage to force connect", "red")
