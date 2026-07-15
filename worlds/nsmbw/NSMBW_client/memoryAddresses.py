@@ -178,7 +178,7 @@ class MemoryAddresses(object):
         self.patch_climb_pole = [self.create_patch("E2", 0x80072180, PowerPCInstructions.instru_li + PowerPCInstructions.reg_r0,origin =  b'\x94\x21\xff\xb0', name="climb_pole1"),
                                  self.create_patch("E2", 0x80072184, PowerPCInstructions.instru_return,origin=b'\x7c\x08\x02\xa6', name = "climb_pole2")]
         self.patch_climb_ladder = self.create_patch(f"E2", 0x800d1dc0,PowerPCInstructions.instru_return, b"\x2c\x05" + PowerPCInstructions.reg_r0, name="climb_ladder")
-        self.patch_climb_tarzan_vine = self.create_patch("E2", 0x80137320, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "climb_tarzan")
+        self.patch_climb_tarzan_vine = self.create_patch("P1", 0x80137460, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "climb_tarzan")
         self.patch_climb_vine_still = self.create_patch("E2", 0x80132c70, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_still")
         self.patch_climb_vine_fall = self.create_patch("E2", 0x801327f0, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_fall")
 

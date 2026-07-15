@@ -234,7 +234,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, [True_(), (carry & (ground_pound | propeller_o)) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_()]],  # -9 4-A
         ],
         [  # world 5
-            [normal_move & (climb | propeller_o) & (swim | logic_hard) & pipe& button_down & button_up, [super_mario & ground_pound, swim | (mini_o & (climb | run)), ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound))]],  # -1
+            [normal_move & (climb | propeller_o) & pipe, [super_mario & ground_pound, swim | mini_o, ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound))]],  # -1
             [normal_move, [True_(), True_(), (carry_block & spin_jump) | propeller_o | (max_mini & logic_hard & outside_powerups)]],  # -2
             [normal_move, [True_(), carry |((peng_o & crouch) & logic_hard), True_()]],  # -3
             [normal_move, [logic_hard | super_mario | run, logic_hard | carry | propeller_o, carry]],  # -4

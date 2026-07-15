@@ -11,45 +11,36 @@
   - movement to abilities?
   - dontrandomoves to default moves?
   - include option to sanity?
-- 37 / 10000 failures   make_world_comp_priority: 'true', 0 / 10000 make_world_comp_priority: 'false'
-- update doxs
+- update docs
+- button_down and button_up logic
+- request channel
 
 ## Playtest
 - multiplayer
 - deathlink amnesty
-- death-trap no deathlink
-- /kill no deathlink
 - do complete playthrough, add spin jump and jump logic + time logic
 - Deathlink group
 - Playtest on linux so the root error is apparent
 - test new read manifest works on frozen and linux
 - Have someone with connection issues try running in administrator mode
-- clear_inventory and clear_mod
-- assert early items are actually early, write test?
 - test hm options
 
 ## Bugs to fix
-- still sends false deathlinks
 - overwrite level comp ?
   - Heya! So I had an issue with save states. Everything worked fine during the first bit of an AP I did, Everything continued to work fine till this morning after about an hour of game time. For some reason my save states were automatically being loaded instead of saved, and while I did have back-up save states, I did have an issue of that messing with future aspects as all my levels I completed with star coins suddenly went uncleared. The only thing that was unlocked was secret exit paths in levels I cleared with a secret exit but couldn't get that fixed afterwards. I did use the recent version posted not long ago so i'm unsure if this was an issue on my end I could have fixed or not.
   - I had a back-up save state in Worlds 3 & 9, which were the two worlds I was focusing on and I believe the issues started after beating 9-8 or 9-3? The world 3 back-up state was only a few levels behind (like 2 or 3). However after beating like one or two levels, the game started loading a state it made itself in World 4. So whenever I tried loading the World 9 or World 3 state, things ended up breaking and even one of my back-up states got messed up as the game auto-stated the same moment I save stated. Luckily it was only one of them (I usually make two states just in case) but, yeah the issues started in world 9 but carried over even into world 3 where world 9 was never even touched on that particular state.
-- Climb is locked even though it is excluded : 5 vines etc
 - Can't leave vine without spin jump
-- Test and fix climb
+  - rework climb
 - i wanted to make note of some issues i encountered while playing this apworld. i've been playing on save file 1, first on accident and later i've just been sticking to it, because the game didn't have any gamebreaking problems with that and i thought this would be good to report in case the future is to make it so you can play on the other save files. it may be hard to tell where save file 1 is causing problems though, so i'm sorry if you can't make use of all this regardless:
   - oh yea one more. on occasion there was some weird enemy AI going on. a fire bro threw its fireball to the right when it was facing the left, probably just when it was about to turn to face the other way, and a few boos were able to pursue me regardless of the direction mario was facing while climbing on a pole, enabling them to move vertically pretty fast. maybe these things were just caused by lag?
-- Deathlink groups desync if reconnect to client
-- Somehow accidentally sets deathlink group
-- we finished our archipelago! there was one more issue i had, and this one made me cave and finally copy my save file 1 slot and switch to save file 2: inventory powerup slot checks 31-40 weren't being granted when i fulfilled their criteria. switching save file slots didn't fix it, so the host released those ten checks manually. i had 40 checks and checks 1-30 worked fine. also of note is that the issues i listed last time still occurred on save file 2. i saw all of them again except for anything about weird enemy ai. and one more: on rare occasion when playing a level, the star coin HUD element will show a star coin as collected when you haven't actually collected it yet. it tends to update itself to fix this error soon after you notice it, like when going into a pipe or beating the level
-- 9-5 ?switch doesnt disable
+  - enemy AI being weird
+- ?switch doesnt disable, is permanently on
 
 
 ## Short term
 - Multiplayer support
   - find other player pointers : for lives and powerups
   - Kill when in water
-- Us pipe rando patches : always move next world → never
-  - Look at pipe rando code for different patches : always move to next world seems useful
 - fix UT-autotab : actually works? : needs to just update on switch and not death
 - Hint movies does not work on other save files?
 - Dereference player  pointer
@@ -60,12 +51,15 @@
 - Do playthrough, document completion times for time logic
 - Fix so work with multiple dolphin instances (so players can have all games open at same time)
 - Inventory pow doesn't work on other save files
-- toad resqu location
+- toad rescue location
 - toad house doesn't work to set, probably needs to update other location too
   - toad add1  80c807f0
   - toad add2  80c80f22
 - Spin jump no logic, also no logic without normal jump
 - flagpool score as location?
+- Create notes in /explain more
+- Make secret exit items to reunlock them
+- assert early items are actually early, write test?
 
 
 ## Broken versions
@@ -130,6 +124,20 @@
 - Red coin sanity
 - Fix local_filler to not be early
 
+## ER
+- Create logic https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/entrance%20randomization.md**
+  - design new system
+    - needs named tuple
+  - have each entrance or subarea be its own region
+  - convert old logic to new logic
+  - separate pipes, doors etc into their own category
+- World
+  - implement er from docs
+  - send it in slot_data
+- Client
+  - read and convert slot_data
+  - Randomize pipes, doors, other transitions
+  - Starting on world map
 
 ## Difficult small bugs to fix
 - Sometimes invisible on worldmap
@@ -144,6 +152,8 @@
   - yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
   - ask for sead
 - 1-C comp message shows when it shouldn't
+- still sends false deathlinks
+- inventory_pow desyncing
 
 
 ## Features

@@ -357,7 +357,7 @@ class NSMBWInterface():
     def clear_cache(self):
         if self.should_clear == 0:
             #raise ValueError(f"shouldn't clear")
-            print(f"shouldn't clear chache when not needed")
+            print(f"shouldn't clear cache when not needed")
             return
         #if self.is_in_level() or self.is_in_worldmap():
         #logger.info("Clearing JIT cache by loading savestate")
@@ -498,21 +498,16 @@ class NSMBWInterface():
                     self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
                     self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
 
-            if not ITEM.MOVEMENT.Swim in unlocked_moves:
-                if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
-                    logger.info("The floor is lava, but water is actually the floor, so don't touch it.")
-                    await self.kill_player()
-                    self.set_water_state(int_to_bytes(0,4))
-                else:
-                    pass
-                    #print(bytes_to_int(self.get_water_state()))
+            if not ITEM.MOVEMENT.Swim in slot_data_dont_rando:
+                if not ITEM.MOVEMENT.Swim in unlocked_moves:
+                    if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
+                        logger.info("The floor is lava, but water is actually the floor, so don't touch it.")
+                        await self.kill_player()
+                        self.set_water_state(int_to_bytes(0,4))
+                    else:
+                        pass
+                        #print(bytes_to_int(self.get_water_state()))
 
-            #swing
-            #if not "climb" in unlocked_moves:
-            #    if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
-            #        await self.kill_player()
-            #    else:
-            #        pass
             if not ITEM.MOVEMENT.PSwitch in slot_data_dont_rando:
                 if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
                     self.set_p_switch_timer(int_to_bytes(0, 4))
@@ -538,18 +533,6 @@ class NSMBWInterface():
                 #swing_vine
                 self.apply_patch(self.memory_addresses.patch_climb_tarzan_vine, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
 
-                #return
-            if not ITEM.MOVEMENT.Door in slot_data_dont_rando:
-                address = self.memory_addresses.address_door
-                if not ITEM.MOVEMENT.Door in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
-
-                if not ITEM.MOVEMENT.QuestSwitch in unlocked_moves:
-                    self.set_question_switch_timer(int_to_bytes(0,4))
-
-
                 # sneak
                 # causes game to freez
                 #address_sneak_walk = self.memory_addresses.address_kani_walk
@@ -560,6 +543,25 @@ class NSMBWInterface():
                 #else:
                 #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffe0)
                 #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffd0)
+
+
+                #swing
+                #if not "climb" in unlocked_moves:
+                #    if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
+                #        await self.kill_player()
+                #    else:
+                #        pass
+            if not ITEM.MOVEMENT.Door in slot_data_dont_rando:
+                address = self.memory_addresses.address_door
+                if not ITEM.MOVEMENT.Door in unlocked_moves:
+                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff)
+                else:
+                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
+
+
+            if not ITEM.MOVEMENT.QuestSwitch in slot_data_dont_rando:
+                if not ITEM.MOVEMENT.QuestSwitch in unlocked_moves:
+                    self.set_question_switch_timer(int_to_bytes(0,4))
 
             if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
                 #cary_shell
@@ -580,8 +582,6 @@ class NSMBWInterface():
                 else:
                     self.write_instruction(address, PowerPCInstructions.instru_beq)
 
-            button_off_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x00'
-            button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
 
             if not ITEM.MOVEMENT.Run in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_button_run, ITEM.MOVEMENT.Run in unlocked_moves)
@@ -720,7 +720,7 @@ class NSMBWInterface():
     def set_powerupstate(self, powerup_state : bytes, player_num):
         address = self.memory_addresses.powerup_state[player_num]
         self.dolphin_client.write_address(address, powerup_state)
-    def set_inventory_items(self, value, type_num):
+    def set_inventory_items(self, value : bytes, type_num : int):
         address = self.get_dMj2dGame_c_address()+0x9 + type_num -1
         self.dolphin_client.write_address(address, value)
     def set_level_stats(self, world_num, level_num, data : bytes):

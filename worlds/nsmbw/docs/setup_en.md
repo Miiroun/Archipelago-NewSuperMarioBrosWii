@@ -30,9 +30,9 @@
 4) After you have entered the world map press CONNECT in the client, and enter your slot name and password.
 5) Open the in game world-select menu and move to the world you have unlocked.
 6) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
-7) Make save-states to save the game and run /save.
-   - Do NOT save when you are in world 9, it can delete your save
-   - Don't use the in game save feature and make a new save state after every level
+7) Make save-states to save the game and run /save often.
+   - Do NOT save when you are in world 9, it can delete your save.
+   - Don't use the in game save feature and make a new save state after every level clear.
    - To close the game run /exit
 
 

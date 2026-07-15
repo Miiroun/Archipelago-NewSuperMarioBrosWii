@@ -14,7 +14,7 @@ import traceback
 from dataclasses import dataclass
 from enum import IntEnum
 from random import Random
-from typing import Literal, get_args
+from typing import Literal, get_args, NamedTuple
 
 import Utils
 
@@ -45,10 +45,10 @@ class ModifiedState(IntEnum):
     MODALLWORLDS = 2
 
 
-@dataclass
-class Modifier:
-    type : Literal[ITEM.TRAPS.ThrowTrap, ITEM.TRAPS.ReverseControlTrap, ITEM.TRAPS.GoombaTrap, ITEM.TRAPS.MovementLockTrap,
+modifier_type_litteral = Literal[ITEM.TRAPS.ThrowTrap, ITEM.TRAPS.ReverseControlTrap, ITEM.TRAPS.GoombaTrap, ITEM.TRAPS.MovementLockTrap,
     ITEM.FILLER.SuperSpeed, ITEM.TRAPS.SlowTrap]
+class Modifier(NamedTuple):
+    type : modifier_type_litteral
     duration : float
 
 
@@ -83,11 +83,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_debug_deathlink(self):
         """Gives some debug info if deathlink isn't working correctly.
         If you have trouble with deathlink run this and post it in the nsmbw chanel in the archipelago discord"""
-        logger.info(f"Debug info about deathlink"
-                    f"dl enabled {self.ctx.death_link_enabled}"
-                    f"dl group '{self.ctx.death_link_group}'"
-                    f"dl goup in slot data {self.ctx.slot_data['death_link_group']}"
-                    f"current tags '{self.ctx.tags}")
+        logger.info(f"""Debug info about deathlink \n
+                    dl enabled: {self.ctx.death_link_enabled} \n
+                    dl group: '{self.ctx.death_link_group}' \n
+                    dl group in slot data: '{self.ctx.slot_data['death_link_group']}' \n
+                    current tags: {self.ctx.tags} \n
+                    Amnesty: {self.ctx.death_link_amnesty_count}/{self.ctx.slot_data['death_link_amnesty']}""")
+
         if (f"DeathLink{self.ctx.death_link_group}" in self.ctx.tags) ^ (self.ctx.death_link_enabled): # xor ?
             logger.info(f"there is a missmatch between group and tags, please report this")
 
@@ -138,8 +140,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_refresh_mod(self):
         """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
         self.ctx.current_mod_end_time = 0
-        self.ctx.modifiers = list(Modifier(name, 0) for name in list(get_args(Modifier.type)))
-        logger.info(f"Successfully cleared all modifiers")
+        self.ctx.modifiers = list(Modifier(name, 0.01) for name in get_args(modifier_type_litteral)) + self.ctx.modifiers
+        logger.info(f"Successfully refreshed all modifiers")
 
     def _cmd_save(self):
         """
@@ -202,7 +204,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             logger.info(f"And you are missing: {set(MOVEMENT_UNLOCKS) - set(self.ctx.unlocked_moves)-set_excl_move}")
             logger.info(f"With the following movements excluded: {set_excl_move & set(MOVEMENT_UNLOCKS)}")
         else:
-            logger.info("It appears you dont have movement rando enabled.")
+            logger.info("You dont have movement rando enabled.")
 
     def _cmd_change_collection_level(self, value):
         """
@@ -232,6 +234,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Utils.async_start(self.ctx.game_interface.force_hook())
 
     def _cmd_match_server_state(self):
+        """Syncs your in game completion to the archipelago multiservers completed locations"""
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
         self.ctx.update_memory_to_server_on_load()
@@ -242,7 +245,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         for pow_num in range(1,POWERUP_COUNT+2):
             current_pow = bytes_to_int(self.ctx.game_interface.get_inventory_items(pow_num))
             set_pow = int_to_bytes(min(current_pow, 5),1)
-            self.ctx.game_interface.set_inventory_items(pow_num, set_pow)
+            self.ctx.game_interface.set_inventory_items(set_pow, pow_num)
 
 
         logger.info(f"Successfully cleared your inventory of powerups")
@@ -690,12 +693,12 @@ class NSMBWContext(SuperContext):
                 self.completed_levels = data["completed_levels"]
                 #self.completed_levelstats = list(map(lambda x : x, map(lambda x : int_to_bytes(x,1), data["completed_levelstats"])))
 
-                if self.death_link_enabled != data["deathlink_enabled"] or self.death_link_group != "deathlink_group":
+                if self.death_link_enabled != data["deathlink_enabled"] or self.death_link_group != data["deathlink_enabled"]:
                     self.death_link_enabled = data["deathlink_enabled"]
-                    self.death_link_group = "deathlink_group"
+                    self.death_link_group = data["deathlink_group"]
                     await self.update_death_link_group(self.death_link_group)
                 self.death_link_enabled = data["deathlink_enabled"]
-                self.death_link_group = "deathlink_group"
+                self.death_link_group = data["deathlink_enabled"]
 
 
                 self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
