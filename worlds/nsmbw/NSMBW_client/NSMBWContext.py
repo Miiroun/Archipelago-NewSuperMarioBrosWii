@@ -65,9 +65,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_toggle_deathlink(self):
         """Toggle deathlink from client. Overrides default setting."""
-        self.ctx.death_link_enabled = not self.ctx.death_link_enabled
         Utils.async_start(
-            self.ctx.update_death_link(self.ctx.death_link_enabled),
+            self.ctx.update_death_link(not self.ctx.death_link_enabled),
             name="Update Deathlink",
         )
         message = (
@@ -381,11 +380,8 @@ class NSMBWContext(SuperContext):
                 if "hint_movie_shop_price_logic" not in self.slot_data.keys():
                     self.slot_data["hint_movie_shop_price_logic"] = HintMovieShopPriceLogic.option_ordered
 
-                self.death_link_enabled = self.slot_data["death_link"]
-                self.death_link_group = self.slot_data["death_link_group"]
-                if self.death_link_enabled:
-                    Utils.async_start(self.update_death_link(self.death_link_enabled))
-
+                Utils.async_start(self.update_death_link(self.slot_data["death_link"]))
+                Utils.async_start(self.update_death_link_group(self.slot_data["death_link_group"]))
 
                 try:
                     gen_ver = self.slot_data["NSMBW_Version"]
@@ -693,12 +689,8 @@ class NSMBWContext(SuperContext):
                 self.completed_levels = data["completed_levels"]
                 #self.completed_levelstats = list(map(lambda x : x, map(lambda x : int_to_bytes(x,1), data["completed_levelstats"])))
 
-                if self.death_link_enabled != data["deathlink_enabled"] or self.death_link_group != data["deathlink_enabled"]:
-                    self.death_link_enabled = data["deathlink_enabled"]
-                    self.death_link_group = data["deathlink_group"]
-                    await self.update_death_link_group(self.death_link_group)
-                self.death_link_enabled = data["deathlink_enabled"]
-                self.death_link_group = data["deathlink_enabled"]
+                await self.update_death_link(data["deathlink_enabled"])
+                await self.update_death_link_group(data["deathlink_group"])
 
 
                 self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
@@ -875,8 +867,8 @@ class NSMBWContext(SuperContext):
 
             # secret exits
             for secret_exit in SECRET_EXIT:
-                world_num = secret_exit[0]
-                level_num = secret_exit[1]
+                world_num = secret_exit.world
+                level_num = secret_exit.level
                 exit_name = name_secret(world_num, level_num)
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
 
@@ -1318,9 +1310,10 @@ class NSMBWContext(SuperContext):
                 if is_dead and (self.is_pending_death_link_reset == False) and self.slot:
                     self.death_link_amnesty_count += 1
                     if self.death_link_amnesty_count >= self.slot_data["death_link_amnesty"]:
+                        await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
                         print(f"is sending deathlink")
                         death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
-                        await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
+                        self.death_link_amnesty_count = 0
                     else:
                         logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data['death_link_amnesty_count']}")
                     self.is_pending_death_link_reset = True
@@ -1486,6 +1479,7 @@ class NSMBWContext(SuperContext):
             self.tags -= {f"DeathLink{self.death_link_group}"}
         if old_tags != self.tags and self.server and not self.server.socket.closed:
             await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
+        self.death_link_enabled = death_link
     async def update_death_link_group(self, group_name: str):
         """Helper function to change the Death Link group, updating the connection tag as needed if already connected."""
         death_link: bool = f"DeathLink{self.death_link_group}" in self.tags

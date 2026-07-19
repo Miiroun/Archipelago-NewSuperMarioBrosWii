@@ -51,11 +51,11 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         for world_num in range(9):
             assert len(level_req[world_num]) == LEVELS_PER_WORLD[world_num], "Make sure lists is of correct size"
             for level_num in range(LEVELS_PER_WORLD[world_num]):
-                assert len(level_req[world_num][level_num]) == 2 + ((world_num+1,level_num+1, 2) in SECRET_EXIT), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + ((world_num+1,level_num+1, 2) in SECRET_EXIT)} "
+                assert len(level_req[world_num][level_num]) == 2 + (SecretExit(world_num+1,level_num+1, 2, None) in SECRET_EXIT), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + ((world_num+1,level_num+1, 2) in SECRET_EXIT)} "
                 assert len(level_req[world_num][level_num][1]) == 3, f" Star coins for {name_base(world_num+1, level_num+1)} has wrong lenth {len(level_req[world_num][level_num][1])}"
                 # should maybe assert that is rule
                 for sc in range(3):pass
-                if (world_num+1,level_num+1, 2) in SECRET_EXIT:pass
+                if SecretExit(world_num+1,level_num+1, 2, None) in SECRET_EXIT:pass
     # transcribing ends-------------------------------------------------------------------------------
 
 
@@ -95,13 +95,13 @@ def set_all_location_rules(world: NSMBWworld) -> None:
 
     if world.options.include_shortcuts.value == True:
         for secret_exit in SECRET_EXIT:
-            world_num = secret_exit[0]
-            level_num = secret_exit[1]
+            world_num = secret_exit.world
+            level_num = secret_exit.level
             secret_exit_loc = world.get_location(name_secret(world_num, level_num))
-            if secret_exit[2] == 2:
+            if secret_exit.exit_type == 2:
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) &
                                level_req[world_num - 1][level_num - 1][2])
-            elif secret_exit[2] == 1:
+            elif secret_exit.exit_type == 1:
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) )
     for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))

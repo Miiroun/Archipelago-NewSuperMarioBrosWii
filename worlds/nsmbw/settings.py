@@ -2,6 +2,7 @@ import os
 import shutil
 from typing import Union, Sequence, Any
 
+import Utils
 from Utils import T
 import settings
 
@@ -44,6 +45,12 @@ class NSMBWSettings(settings.Group):
                 return self.__class__(res)
             return None
 
+    class DolphinFolderPath(settings.OptionalUserFolderPath):
+        """"""
+
+    class DolphinRiivolutionFolderPath(settings.OptionalUserFolderPath):
+        """"""
+
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
 
@@ -60,22 +67,37 @@ class NSMBWSettings(settings.Group):
     class CollectLevel(settings.IntEnum):
         """
         Set this to specify how client should respond to a location being remotely collected
-        0 = ignore, 1= update if not important (castle / final level), 2= update even if important ( for same slot coop)
+        0 = ignore
+        1= update if not important (castle / final level)
+        2= update even if important ( for same slot coop)
         """
         required = True
+        ignore = 0
+        update_not_important = 1
+        update_all = 2
 
-    class Use_xdotool(settings.Bool):
+    class Use_xdotool(settings.IntEnum):
         """
         Linux only
         Uses the external program xdotool instead of the python library keyboard to send keypresses for save-states
         This is useful if you dont want to give root access or have other problems with keyboard.
+        0 = use keyboard library
+        1 = xdotool
+        2 = ydotool
         """
+        required = False
+        keyboard = 0
+        xdotool = 1
+        ydotool = 2
+
 
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
-    game_file_path: settings.Union[GameFilePath, str] = GameFilePath(r"nsmbw.wbfs")
+    game_file_path: GameFilePath |  str = GameFilePath(r"nsmbw.wbfs")
+    dolphin_folder_path : DolphinFolderPath | str = DolphinFolderPath(r"C:\Program Files\Dolphin-x64\DolphinTool.exe")
+    dolphin_riivolution_folder_path : DolphinRiivolutionFolderPath | str = DolphinRiivolutionFolderPath(os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\") if Utils.is_windows else DolphinRiivolutionFolderPath("")
     auto_open: AutoOpenGame | bool = True
-    collect_level : CollectLevel | int = 1
-    ut_pack_path: Union[UTPackPath, str] = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
+    collect_level : CollectLevel | int = CollectLevel(1)
+    ut_pack_path: UTPackPath | str = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
     save_file_path : settings.Union[SaveFileLocation, str] = SaveFileLocation(rf"nsmbw/nsmbw_saves")
-    use_xdotool_instead_of_keyboard_linux_only : Use_xdotool | bool = False
+    use_xdotool_instead_of_keyboard_linux_only : Use_xdotool | int = Use_xdotool(0)

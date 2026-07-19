@@ -57,39 +57,49 @@ for nick in nicks:
 # re purposed (merged)
 #, "climb_ladders", "climb_vine", "swing_vine", "climb_pole", "sneak",  "cary_blocks",
 
-for i in range(len(MOVEMENT_UNLOCKS)):
-    ITEM_NAME_TO_ID.update({MOVEMENT_UNLOCKS[i] : 300 + i + 1})
-    if MOVEMENT_UNLOCKS[i] in important_items:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({MOVEMENT_UNLOCKS[i] : ItemClassification.progression | ItemClassification.useful})
+for i, movement_unlock in enumerate(MOVEMENT_UNLOCKS):
+    ITEM_NAME_TO_ID.update({movement_unlock : 300 + i + 1})
+    if movement_unlock in important_items:
+        DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression | ItemClassification.useful})
+    elif movement_unlock in [ITEM.MOVEMENT.CheckPoint]:
+        DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.useful})
     else:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({MOVEMENT_UNLOCKS[i] : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"Movement" : set(MOVEMENT_UNLOCKS[i] for i in range(len(MOVEMENT_UNLOCKS)))})
+        DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression})
+ITEM_NAME_GROUPS.update({"Movement" : set(MOVEMENT_UNLOCKS)})
 
 
-for i in range(len(POWERUP_UNLOCK)):
-    ITEM_NAME_TO_ID.update({POWERUP_UNLOCK[i] : 600 + i + 1})
-    if POWERUP_UNLOCK[i] in important_items:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({POWERUP_UNLOCK[i] : ItemClassification.progression | ItemClassification.useful})
+for i, powerup_unlock in enumerate(POWERUP_UNLOCK):
+    ITEM_NAME_TO_ID.update({powerup_unlock : 600 + i + 1})
+    if powerup_unlock in important_items:
+        DEFAULT_ITEM_CLASSIFICATIONS.update({powerup_unlock : ItemClassification.progression | ItemClassification.useful})
     else:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({POWERUP_UNLOCK[i] : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"Powerups" : set(POWERUP_UNLOCK[i] for i in range(len(POWERUP_UNLOCK)))})
+        DEFAULT_ITEM_CLASSIFICATIONS.update({powerup_unlock : ItemClassification.progression})
+ITEM_NAME_GROUPS.update({"Powerups" : set(POWERUP_UNLOCK)})
 
-for i in range(len(TRAPS)):
-    ITEM_NAME_TO_ID.update({TRAPS[i] : 400 + i + 1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({TRAPS[i] : ItemClassification.trap})
-ITEM_NAME_GROUPS.update({"Traps" : set(TRAPS[i] for i in range(len(TRAPS)))})
+for i, trap in enumerate(TRAPS):
+    ITEM_NAME_TO_ID.update({trap : 400 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({trap : ItemClassification.trap})
+ITEM_NAME_GROUPS.update({"Traps" : set(TRAPS)})
 
 
-for i in range(len(FILLER)):
-    ITEM_NAME_TO_ID.update({FILLER[i] : 500 + i + 1})
-    DEFAULT_ITEM_CLASSIFICATIONS.update({FILLER[i] : ItemClassification.filler})
-ITEM_NAME_GROUPS.update({"Filler" : set(FILLER[i] for i in range(len(FILLER)))})
+for i, filler in enumerate(FILLER):
+    ITEM_NAME_TO_ID.update({filler : 500 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({filler : ItemClassification.filler})
+ITEM_NAME_GROUPS.update({"Filler" : set(FILLER)})
 
 DEFAULT_ITEM_CLASSIFICATIONS.update({
     ITEM.FILLER.SuperSpeed: ItemClassification.useful,
     #ITEM.FILLER.ToadHouse: ItemClassification.useful
 })
 
+secret_exit_items : List[SecretExit] = []
+for i, secret_exit in enumerate(SECRET_EXIT):
+    if secret_exit.is_item:
+        secret_exit_items.append(secret_exit)
+        ITEM_NAME_TO_ID.update({name_secret(secret_exit.world, secret_exit.level): 600 + i + 1})
+        DEFAULT_ITEM_CLASSIFICATIONS.update({name_secret(secret_exit.world, secret_exit.level): ItemClassification.progression})
+
+ITEM_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit.world, secret_exit.level) for secret_exit in secret_exit_items)})
 
 class NSMBWItem(Item):
     game = game_name
@@ -111,6 +121,8 @@ def get_random_filler_item_name(world: NSMBWworld) -> str:
 
         # local_item is a set, so you cannot set amount, pokepelago implements this correctly but have to mimic logic in lots of weird ways I rather avoid
         #https://github.com/dowlle/AppieArchipelago/blob/aa3bb80a0c6ade301769ce0e5034b53bd8303c28/worlds/pokepelago/__init__.py#L742
+        #https://github.com/spineraks-org/ArchipelagoJigsaw/blob/01afea6b840db720a829947119610d0e138fabcd/worlds/jigsaw/__init__.py#L498
+        #https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/9d80d213a674d0b18865a0510cd68c06632f14ce/worlds/tunic/__init__.py#L561
         if world.random.randint(1, 100) <= world.options.percentage_filler_forced_local.value:
             if item_name in world.multiworld.local_early_items[world.player].keys():
                 world.multiworld.local_early_items[world.player][item_name] += 1
@@ -198,6 +210,10 @@ def create_all_items(world: NSMBWworld) -> None:
         world_time_req = [90, 200, 200, 200, 200, 200, 200, 200, 150]
         amount_req = get_time_math(world, world_time_req[starting_world_num])
         for _ in range(amount_req): world.push_precollected(world.create_item(ITEM.Time))
+
+    if world.options.include_shortcuts.value == True:
+        for secret_exit in secret_exit_items:
+            itempool.append(world.create_item(name_secret(secret_exit.world,secret_exit.level)))
 
     # handle important items
     itempool_names = []

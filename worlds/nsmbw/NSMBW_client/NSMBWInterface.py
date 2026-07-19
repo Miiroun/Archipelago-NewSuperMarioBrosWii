@@ -7,6 +7,9 @@ from enum import Enum
 import sys
 import shutil
 import subprocess
+
+from kivy.uix import switch
+
 import Utils
 
 sys.set_int_max_str_digits(0)
@@ -18,7 +21,7 @@ from ..Common import *
 from Utils import is_frozen
 
 logger = logging.getLogger("Client")
-if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only):
+if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only != 0):
     try:
         from . import keyboard
     except ImportError as e:
@@ -294,7 +297,13 @@ class NSMBWInterface():
             self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
             return False
         try:
-            subprocess.run(["xdotool", "key", "--clearmodifiers", combo],check=True,capture_output=True,)
+            match  Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
+                case 1:
+                    subprocess.run(["xdotool", "key", "--clearmodifiers", combo],check=True,capture_output=True,)
+                case 2:
+                    subprocess.run(["ydotool", "key", "--clearmodifiers", combo],check=True,capture_output=True,)
+                case _:
+                    raise Exception(f"Unacunted case { Utils.get_settings()['nsmbw_settings'].use_xdotool_instead_of_keyboard_linux_only}")
             return True
         except Exception as e:
             logger.info(traceback.format_exc())
@@ -310,7 +319,7 @@ class NSMBWInterface():
             logger.info(f"Saved savestate to slot {slot}")
 
         try:
-            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
+            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only != 0:
                 self._linux_send_hotkey(f"shift+F{slot}")
             else:
                 time.sleep(wait_long)

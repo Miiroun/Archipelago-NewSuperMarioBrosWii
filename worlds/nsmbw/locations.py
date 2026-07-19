@@ -49,14 +49,11 @@ LOCATION_NAME_GROUPS.update({"Starcoins" : world_set,
 
 
 
-# last num is if secret or normal exit 1== normal, 2==secret
-SECRET_EXIT = [(1, 3, 2), (2, 4, 2), (2, 6, 2), (3, 5, 2), (3, 6, 2), (4, 6, 2),
-               (4, 7, 2), (5, 6, 2), (6, 5, 2), (6, 6, 2), (7, 6, 1), (7, 7, 2), (8, 7, 1)]
 for secret_exit in SECRET_EXIT:
-    world_num = secret_exit[0]
-    level_num = secret_exit[1]
+    world_num = secret_exit.world
+    level_num = secret_exit.level
     LOCATION_NAME_TO_ID.update({name_secret(world_num,level_num): 7000 + 100 * world_num + level_num})
-LOCATION_NAME_GROUPS.update({"Secret exits" : set(name_secret(world_num,level_num) for world_num, level_num, _ in SECRET_EXIT) })
+LOCATION_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit.world, secret_exit.level) for secret_exit in SECRET_EXIT)})
 
 #hint movies
 num_hintmovies = 65

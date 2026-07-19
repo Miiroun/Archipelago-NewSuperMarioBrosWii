@@ -14,6 +14,31 @@
 - update docs
 - button_down and button_up logic
 - request channel
+- Secret exit items
+  - client
+    - read from data
+    - reunlock when got
+  - logic
+    - new worldmap connection
+  - update docs
+  - fix optionvalidation
+- Command to repromt game file?
+- Can create riivolution patch and auto extract using dolphin tools
+- create an function to  and bytes
+- Run checks to not auto save in peach castle or world9
+- Ask AP-world dev for x% of filler should be local option
+- Rando game tile sheet, enemy sheet, music etc. Easiest done through riivolution
+- Deathlink Amnesty incorrect, not ressetting
+- Suggestion: make local_items take an amount
+- Try dumping my copy of nsmbw
+- Hm 6 & 9??
+- 2-2sc1 & sc2
+- 1-C sc3
+- Why is deathlink group displayed as wrong??
+- Hintmovie sanity?
+- Add command to repromt for a new game file: Check if file exists etc : otherwise repromt
+- Ask for help in dc for names
+
 
 ## Playtest
 - multiplayer
@@ -24,6 +49,8 @@
 - test new read manifest works on frozen and linux
 - Have someone with connection issues try running in administrator mode
 - test hm options
+- playtest so deathlink amnesty and groups works
+- try settig settings to 2
 
 ## Bugs to fix
 - overwrite level comp ?
@@ -119,10 +146,9 @@
   - or just really on people turning off keybinds require focus
   - In theory I could write some PowerPC assembly that invalidates the cache internally but then I'd have to somehow make it detect external memory modifications and adapt to it. My problem with this method is to find a function to hook onto safely.
 - Reenable part of climb that dissabled due to freezes
-- Design icon for client : apstyle or mario head
-- Fix a better way of doing hint movie logic
 - Red coin sanity
 - Fix local_filler to not be early
+
 
 ## ER
 - Create logic https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/entrance%20randomization.md**

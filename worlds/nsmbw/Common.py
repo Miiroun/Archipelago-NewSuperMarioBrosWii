@@ -1,5 +1,7 @@
 from enum import StrEnum
+from typing import NamedTuple, List, Literal
 
+from attr import dataclass
 
 game_name = "NSMBW"
 
@@ -7,6 +9,20 @@ LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 
 HINTMOVIE_COUNT = 65
 LEVEL_COUNT = 77
+
+# exit_type is if secret or normal exit 1== normal, 2==secret
+class SecretExit(NamedTuple):
+    world : int
+    level : int
+    exit_type : Literal[1,2]
+    is_item : bool
+
+SECRET_EXIT : List[SecretExit] = [
+    SecretExit(1, 3, 2, False), SecretExit(2, 4, 2, True), SecretExit(2, 6, 2, False), SecretExit(3, 5, 2, False),
+    SecretExit(3, 6, 2, True), SecretExit(4, 6, 2, True), SecretExit(4, 7, 2, False), SecretExit(5, 6, 2, False),
+    SecretExit(6, 5, 2, True), SecretExit(6, 6, 2, False), SecretExit(7, 6, 1, False), SecretExit(7, 7, 2, True),
+    SecretExit(8, 7, 1, False)]
+
 
 class ITEM:
     class POWERUP(StrEnum):

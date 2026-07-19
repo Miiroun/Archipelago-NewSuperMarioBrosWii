@@ -16,6 +16,7 @@ from typing import ClassVar
 from .Common import *
 from .Utils import cast_object_to_type
 from .items import NSMBWItem
+from ..sc2.mission_order import slot_data
 
 
 class NSMBWworld(World):
@@ -112,10 +113,11 @@ class NSMBWworld(World):
 
 
     # "do NOT copy this option handling code, it is really not god and causes issues"
-    default_options_set = {"progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints', 'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items'}
+    #default_options_set = {"progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints', 'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items'}
     def fill_slot_data(self) -> Mapping[str, Any]:
-        option_list : list = list(self.options.__dict__.keys()- self.default_options_set)
-        slot_data = self.options.as_dict(*option_list)
+        #option_list : list = list(self.options.__dict__.keys()- self.default_options_set)
+        #slot_data = self.options.as_dict(*option_list)
+        slot_data = {}
         #slot_data["version"]  = self.world_version
         slot_data["star_coin_req_per_world_9_level"] = self.star_coin_req_per_world_9_level
         slot_data["NSMBW_Version"] = self.world_version

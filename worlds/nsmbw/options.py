@@ -47,11 +47,11 @@ class RandomizeMovement(Choice):
 class DontRandoMovement(ItemSet):
     """
     Put movement items here if you want to play with movement except certain once.
-    Turning on the default moves here can and will cause issue, they are experimental.
+    Turning on the default moves here can and will cause issue and have NO LOGIC, they are experimental.
     You will always start with other items in addition to these to make the first level in your starting world beatable
     """
 
-    display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "
+    display_name = "Dont Rando these Movements: WARNING default = BETA (no logic), remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
     default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value}
 
