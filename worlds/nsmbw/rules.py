@@ -51,7 +51,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         for world_num in range(9):
             assert len(level_req[world_num]) == LEVELS_PER_WORLD[world_num], "Make sure lists is of correct size"
             for level_num in range(LEVELS_PER_WORLD[world_num]):
-                assert len(level_req[world_num][level_num]) == 2 + (SecretExit(world_num+1,level_num+1, 2, None) in SECRET_EXIT), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + ((world_num+1,level_num+1, 2) in SECRET_EXIT)} "
+                assert len(level_req[world_num][level_num]) == 2 + ((SecretExit(world_num+1,level_num+1, 2, True) in SECRET_EXIT) or SecretExit(world_num+1,level_num+1, 2, False) in SECRET_EXIT), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + ((world_num+1,level_num+1, 2) in SECRET_EXIT)} "
                 assert len(level_req[world_num][level_num][1]) == 3, f" Star coins for {name_base(world_num+1, level_num+1)} has wrong lenth {len(level_req[world_num][level_num][1])}"
                 # should maybe assert that is rule
                 for sc in range(3):pass

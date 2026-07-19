@@ -1,8 +1,6 @@
 from enum import StrEnum
 from typing import NamedTuple, List, Literal
 
-from attr import dataclass
-
 game_name = "NSMBW"
 
 LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]

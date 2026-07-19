@@ -58,7 +58,7 @@ for nick in nicks:
 #, "climb_ladders", "climb_vine", "swing_vine", "climb_pole", "sneak",  "cary_blocks",
 
 for i, movement_unlock in enumerate(MOVEMENT_UNLOCKS):
-    ITEM_NAME_TO_ID.update({movement_unlock : 300 + i + 1})
+    ITEM_NAME_TO_ID.update({movement_unlock : 301 + i})
     if movement_unlock in important_items:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression | ItemClassification.useful})
     elif movement_unlock in [ITEM.MOVEMENT.CheckPoint]:
@@ -68,22 +68,14 @@ for i, movement_unlock in enumerate(MOVEMENT_UNLOCKS):
 ITEM_NAME_GROUPS.update({"Movement" : set(MOVEMENT_UNLOCKS)})
 
 
-for i, powerup_unlock in enumerate(POWERUP_UNLOCK):
-    ITEM_NAME_TO_ID.update({powerup_unlock : 600 + i + 1})
-    if powerup_unlock in important_items:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({powerup_unlock : ItemClassification.progression | ItemClassification.useful})
-    else:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({powerup_unlock : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"Powerups" : set(POWERUP_UNLOCK)})
-
 for i, trap in enumerate(TRAPS):
-    ITEM_NAME_TO_ID.update({trap : 400 + i + 1})
+    ITEM_NAME_TO_ID.update({trap : 401 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({trap : ItemClassification.trap})
 ITEM_NAME_GROUPS.update({"Traps" : set(TRAPS)})
 
 
 for i, filler in enumerate(FILLER):
-    ITEM_NAME_TO_ID.update({filler : 500 + i + 1})
+    ITEM_NAME_TO_ID.update({filler : 501 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({filler : ItemClassification.filler})
 ITEM_NAME_GROUPS.update({"Filler" : set(FILLER)})
 
@@ -92,11 +84,20 @@ DEFAULT_ITEM_CLASSIFICATIONS.update({
     #ITEM.FILLER.ToadHouse: ItemClassification.useful
 })
 
+for i, this_powerup_unlock in enumerate(POWERUP_UNLOCK):
+    assert type(i) == int
+    ITEM_NAME_TO_ID.update({this_powerup_unlock : 601 + i})
+    if this_powerup_unlock in important_items:
+        DEFAULT_ITEM_CLASSIFICATIONS.update({this_powerup_unlock : ItemClassification.progression | ItemClassification.useful})
+    else:
+        DEFAULT_ITEM_CLASSIFICATIONS.update({this_powerup_unlock : ItemClassification.progression})
+ITEM_NAME_GROUPS.update({"Powerups" : set(POWERUP_UNLOCK)})
+
 secret_exit_items : List[SecretExit] = []
 for i, secret_exit in enumerate(SECRET_EXIT):
     if secret_exit.is_item:
         secret_exit_items.append(secret_exit)
-        ITEM_NAME_TO_ID.update({name_secret(secret_exit.world, secret_exit.level): 600 + i + 1})
+        ITEM_NAME_TO_ID.update({name_secret(secret_exit.world, secret_exit.level): 700 + i + 1})
         DEFAULT_ITEM_CLASSIFICATIONS.update({name_secret(secret_exit.world, secret_exit.level): ItemClassification.progression})
 
 ITEM_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit.world, secret_exit.level) for secret_exit in secret_exit_items)})

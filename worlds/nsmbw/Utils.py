@@ -1,4 +1,5 @@
-from typing import Callable, Any, Counter
+from typing import Callable, Any
+import operator
 
 
 def bytes_to_int(byte : bytes, signed=False) -> int:
@@ -7,7 +8,22 @@ def bytes_to_int(byte : bytes, signed=False) -> int:
 def int_to_bytes(num : int, width, signed=False) -> bytes:
     return int.to_bytes(num, width, byteorder='big', signed=signed)
 
+def operand_bytes(operatorn : Callable[..., bool], byte1 : bytes, byte2 : bytes) -> bytes:
+    max_len = max(len(byte1), len(byte2))
+    int1 = bytes_to_int(byte1)
+    int2 = bytes_to_int(byte2)
+    int_op = operatorn(int1, int2)
+    byte_op = int_to_bytes(int_op, max_len)
+    return byte_op
 
+def and_bytes(byte1 : bytes, byte2 : bytes) -> bytes:
+    return operand_bytes(operator.and_, byte1, byte2)
+
+def or_bytes(byte1 : bytes, byte2 : bytes) -> bytes:
+    return operand_bytes(operator.or_, byte1, byte2)
+
+def xor_bytes(byte1 : bytes, byte2 : bytes) -> bytes:
+    return operand_bytes(operator.xor, byte1, byte2)
 
 def map_nd(list_obj : list, func : Callable) -> list:
     new_list = list_obj.copy()

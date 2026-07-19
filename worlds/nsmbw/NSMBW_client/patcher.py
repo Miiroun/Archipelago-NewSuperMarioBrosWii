@@ -1,57 +1,31 @@
 import os
+import random
+import subprocess
 import sys
-
+from pathlib import Path
 import Utils
-from .NSMBWInterface import ROM_FILE_NAME
-
 import shutil
+import tempfile
 
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
-
-import pycdlib
-
-RIIVOLUTION_PATH = Utils.get_settings()["NSMBW.options"].riivolution_path
-RANDO_PATH = RIIVOLUTION_PATH + r"\\NSMBW_AP_RANDO\\"
+from Utils import output_path
+from worlds.nsmbw.Common import *
 
 
-def patch_iso(input_path, output_path):
-    dissaseble_iso(input_path, output_path)
-    patch_iso_standalone(input_path, output_path)
-    #patch_iso_riivolution(input_path, output_path)
+#RIIVOLUTION_PATH = Utils.get_settings()["NSMBW.options"].riivolution_path
+#RANDO_PATH = RIIVOLUTION_PATH + r"\\NSMBW_AP_RANDO\\"
 
-def dissaseble_iso(input_path, output_path):
-    iso = pycdlib.PyCdlib()
-    iso.open(input_path)
 
-    for child in iso.list_children(iso_path='/'):
-        print(child.file_identifier())
 
-    iso.close()
 
-def patch_iso_standalone(input_path, output_path):
 
-    iso = pycdlib.PyCdlib()
-    iso.new()
-    foostr = b'foo\n'
-    iso.add_fp(BytesIO(foostr), len(foostr), '/FOO.;1')
-    out = BytesIO()
-    iso.write_fp(out)
-    iso.close()
 
-    iso.open_fp(out)
-    extracted = BytesIO()
-    iso.get_file_from_iso_fp(extracted, iso_path='/FOO.;1')
-    iso.close()
-
-    print(extracted.getvalue().decode('utf-8'))
-
-def patch_iso_riivolution(input_path, output_path):
+def copy_riivolution_skeleton(output_path):
     print("TODO implement patcher")
 
     #shutil.copyfile(input_path, output_path)
+    RIIVOLUTION_PATH = output_path
+    RANDO_PATH = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path() / "worlds" / "nsmbw"
+
 
     if os.path.exists(RIIVOLUTION_PATH):
         if os.path.exists(RANDO_PATH):
@@ -69,11 +43,72 @@ def patch_iso_riivolution(input_path, output_path):
         shutil.copytree(current_path+map_name, RANDO_PATH+map_name)
         print("TODO create patched files")
 
+def extract_game(input_path : str):
+    subprocess.run([str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "DolphinTool.exe"), "extract",
+                "--input", str(input_path),
+                "--output", str(Path(tempfile.gettempdir()) / "nsmbw")])
+
+
+def create_riivolution_patch(output_path : str):
+    """"""
+    def level_name_converter(world_num : int,level_num : int) -> str:
+        assert_valid_level(world_num, level_num)
+        if level_num <= 6:
+            return f"0{world_num}.0{level_num}arc"
+        elif level_num == 7:
+            return f"0{world_num}.0{level_num}arc"
+        elif level_num == 8:
+            return f"0{world_num}.0{level_num}arc"
+        elif level_num == 9:
+            return f"0{world_num}.0{level_num}arc"
+        elif level_num == 10:
+            return f"0{world_num}.0{level_num}arc"
+        else:
+            raise ValueError
+
+
+    levels = []
+    for world_num in range(LEVELS_PER_WORLD):
+        for level_num in range(LEVELS_PER_WORLD):
+            levels.append((world_num, level_num))
+    level_shuffle = levels.copy()
+    random.shuffle(level_shuffle)
+
+    for i in range(len(level_shuffle)):
+        shutil.copy(Path(tempfile.gettempdir()) / "nsmbw" / "DATA" /"files" / "Stage" / level_name_converter(*levels[i]), Path(output_path) / "DATA" /"files" / "Stage" / level_name_converter(*level_shuffle[i]))
+
+def delete_temp():
+    shutil.rmtree(Path(tempfile.gettempdir()) / "nsmbw")
+
+def patch():
+    input_path = Utils.get_settings()["nsmbw_settings"].game_file_path
+    output_path : str
+    if Utils.get_settings()["nsmbw_settings"].auto_open:
+        output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path
+    else:
+        output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
+    seed = "00000"
+    output_path = str(Path(output_path) / f"riivolution_{seed}")
+
+    print("tests if old rando exist")
+    if os.path.exists(output_path):
+        return
+
+    print(f"Extracting game to {str(Path(tempfile.gettempdir()) / 'nsmbw')}")
+    extract_game(input_path)
+
+    print(f"Copying standard riivolution to {output_path}")
+    copy_riivolution_skeleton(output_path)
+
+    print(f"Randomize filles")
+    create_riivolution_patch(output_path)
+
+
+    print("Deleting temp game extraction")
+    #delete_temp()
+
 
 if __name__ == "__main__":
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    ROM_ISO_NAME = "New SUPER MARIO BROS. Wii [SMNE01].iso"
-    input_path = current_path + r"\\rom_file\\" + ROM_ISO_NAME
+    patch()
 
-    patch_iso(input_path, RIIVOLUTION_PATH+ROM_FILE_NAME)
 

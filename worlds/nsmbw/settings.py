@@ -94,7 +94,7 @@ class NSMBWSettings(settings.Group):
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: GameFilePath |  str = GameFilePath(r"nsmbw.wbfs")
-    dolphin_folder_path : DolphinFolderPath | str = DolphinFolderPath(r"C:\Program Files\Dolphin-x64\DolphinTool.exe")
+    dolphin_folder_path : DolphinFolderPath | str = DolphinFolderPath(r"C:\Program Files\Dolphin-x64")
     dolphin_riivolution_folder_path : DolphinRiivolutionFolderPath | str = DolphinRiivolutionFolderPath(os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\") if Utils.is_windows else DolphinRiivolutionFolderPath("")
     auto_open: AutoOpenGame | bool = True
     collect_level : CollectLevel | int = CollectLevel(1)

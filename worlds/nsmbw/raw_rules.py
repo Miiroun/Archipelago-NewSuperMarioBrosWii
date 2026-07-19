@@ -246,7 +246,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
         [  # world 6
             [normal_move, [True_(), True_(), logic_hard | ice | peng_o | propeller_o]],  # -1
             [normal_move & pipe& button_down & button_up, [carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_()]],  # -2
-            [normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),[True_(), True_(), (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run & carry)))]], # 6-3
+            [normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),[True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry)]], # 6-3
             [normal_move , [(logic_hard | yoshi | propeller), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump)]],  # -4
             [normal_move, [True_(), True_(), climb & (carry | propeller_o)], climb],  # -5
             [normal_move & (question_switch | logic_hard), [True_(), True_(), True_()],True_()],  # -6

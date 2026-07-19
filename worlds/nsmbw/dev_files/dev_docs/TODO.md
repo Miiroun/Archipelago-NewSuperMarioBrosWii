@@ -149,6 +149,7 @@
 - Red coin sanity
 - Fix local_filler to not be early
 
+- Nice PR: https://github.com/Silvris/Archipelago/blob/docs_viewer/worlds/docs_viewer/client.py#L23
 
 ## ER
 - Create logic https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/entrance%20randomization.md**
