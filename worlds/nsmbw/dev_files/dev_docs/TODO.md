@@ -38,7 +38,7 @@
 - Hintmovie sanity?
 - Add command to repromt for a new game file: Check if file exists etc : otherwise repromt
 - Ask for help in dc for names
-
+- add patcher to launcher
 
 ## Playtest
 - multiplayer

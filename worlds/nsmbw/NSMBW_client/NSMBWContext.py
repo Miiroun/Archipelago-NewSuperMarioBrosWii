@@ -1,6 +1,5 @@
-from . import dolphin_interface_client
+from . import dolphin_interface_client, patcher
 from .NSMBWInterface import *
-from ..locations import SECRET_EXIT
 from ..options import RandomizeMovement, HintMovieShopPriceLogic
 from ..Common import *
 from .. import NSMBWworld
@@ -11,15 +10,11 @@ import os
 import pathlib
 import time
 import traceback
-from dataclasses import dataclass
 from enum import IntEnum
 from random import Random
 from typing import Literal, get_args, NamedTuple
 
 import Utils
-
-#from .patcher import patch_iso
-
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
 from settings import get_settings
 
@@ -1531,8 +1526,6 @@ class NSMBWContext(SuperContext):
 async def patch_and_run_game():
     auto_start : bool = get_settings()["nsmbw_settings"].auto_open
     if auto_start:
-        output_path = ""#base_name + ".wbfs" #mayebe change to iso file if easier to work with?
-
         input_iso_path : str = get_settings()["nsmbw_settings"].game_file_path
         try:
             assert input_iso_path is not None, "Add a path to your game file in host.yaml"
@@ -1540,32 +1533,11 @@ async def patch_and_run_game():
         except AssertionError as e:
             logger.error(e)
 
+        shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / f"seed{0000}.ink"
+        if not os.path.exists(shortcut_path):
+            patcher.patch()
 
-        if not os.path.exists(output_path):
-            output_path : str = input_iso_path
-            pass
-            #if False: #game does not need a riivolution patch
-                #try:
-                #    logger.info(f"Input ISO Path: {input_iso_path}")
-                #    logger.info(f"Output ISO Path: {output_path}")
-
-                #    logger.info("Patching ISO...")
-
-                #    patch_iso(input_iso_path, output_path)
-
-                #    logger.info("Patching Complete")
-
-                #except BaseException as e:
-                #    logger.error(f"Failed to patch ISO: {e}")
-                #    # Delete the output file if it exists since it will be corrupted
-                #    if os.path.exists(output_path):
-                #        os.remove(output_path)
-
-                #    raise RuntimeError(f"Failed to patch ISO: {e}")
-                #logger.info("--------------")
-            #else:
-            #    output_path = input_iso_path
-        Utils.async_start(run_game(output_path))
+        Utils.async_start(run_game(str(shortcut_path)))
 
 
 async def run_game(gamefile: str):
