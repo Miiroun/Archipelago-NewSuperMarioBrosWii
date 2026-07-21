@@ -402,7 +402,7 @@ class NSMBWContext(SuperContext):
                 if self.slot_data["use_riivolution"]:
                     Utils.async_start(self.patch_and_run_game())
                 else:
-                    self.run_game()
+                    Utils.async_start(self.run_game())
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
@@ -869,7 +869,7 @@ class NSMBWContext(SuperContext):
             for secret_exit in SECRET_EXIT:
                 world_num = secret_exit.world
                 level_num = secret_exit.level
-                exit_name = name_secret(world_num, level_num)
+                exit_name = name_secret(secret_exit)
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
 
                 byte_to_check : int
@@ -1120,11 +1120,11 @@ class NSMBWContext(SuperContext):
                 for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                     level_stats = self.game_interface.get_level_stats(world_num,level_num)[0]
                     level_stats &= 0x30 # keeps level completion
-                    if (i * 3 + 3  <= starcoin_count) or (self.slot_data["hint_movie_shop_price_logic"] == HintMovieShopPriceLogic.option_free):
+                    if (i * 3 + 3  <= starcoin_count * self.slot_data["starcoin_shop_multiplier.value"]) or (self.slot_data["hint_movie_shop_price_logic"] == HintMovieShopPriceLogic.option_free):
                         level_stats |= 0x07
-                    elif 3 * i + 2 == starcoin_count:
+                    elif 3 * i + 2 == starcoin_count * self.slot_data["starcoin_shop_multiplier.value"]:
                         level_stats |= 0x03
-                    elif 3 * i + 1 == starcoin_count:
+                    elif 3 * i + 1 == starcoin_count * self.slot_data["starcoin_shop_multiplier.value"]:
                         level_stats |= 0x01
                     else:
                         level_stats |= 0x00
@@ -1137,7 +1137,7 @@ class NSMBWContext(SuperContext):
                                 level_stats |= 0x30
                     if name_level(world_num,level_num) in self.completed_levels:
                        level_stats |= 0x30
-                    if name_secret(world_num, level_num) in self.completed_levels:
+                    if name_secret(SecretExit(world_num,level_num,None,None, None)) in self.completed_levels:
                         level_stats |= 0x30
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats, 1))
                     i += 1
@@ -1532,13 +1532,19 @@ class NSMBWContext(SuperContext):
         except AssertionError as e:
             logger.error(e)
 
-            patcher.patch(self.seed_name, self.slot_data)
+        patcher.patch(self.seed_name, self.slot_data)
 
-            if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-                subprocess.run([Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "Dolphin.exe",
-                                f'-e {str(Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json") }'])
-            elif auto_start:
-                logger.error("Failed to auto start dolphin, make sure your file path is correct")
+        dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "Dolphin.exe"
+        assert dolphin_path.exists(), "dolphin.exe needs to be correct"
+        short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
+        #short_cut_path = Path(r"C:\Users\XXXX\OneDrive\Skrivbord\Spel\Dolphin Games\seed32365108836488775189.json")
+        print(short_cut_path)
+        assert short_cut_path.exists(), "need to have created shortcut successfully"
+
+        if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
+            subprocess.run([str(dolphin_path), "-e", str(short_cut_path)])
+        elif auto_start:
+            logger.error("Failed to auto start dolphin, make sure your file path is correct")
 
 
     async def run_game(self):

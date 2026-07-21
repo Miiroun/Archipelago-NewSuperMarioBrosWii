@@ -1,5 +1,6 @@
 from .bases import NSMBWWorld
-from ..options import RandomizeMovement, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups
+from ..options import RandomizeMovement, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups, \
+    HintMovieShopPriceLogic
 from ..Common import *
 
 class TestRawRules(NSMBWWorld):
@@ -10,7 +11,9 @@ class TestRawRules(NSMBWWorld):
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_normal,
         "bowser_star_unlock" : 100,
-        "bowser_world_unlock" : 1,
+        "bowser_world_unlock" : 0,
+        "starcoin_shop_multiplier" : 1,
+        "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_all,
     }
 
     def test_inventory(self):
@@ -45,12 +48,15 @@ class TestRawRules(NSMBWWorld):
         """Test reaching bowsers"""
         self.collect_by_name(name_world_unlock(8))
         self.collect_by_name(name_world_unlock(8))
-        self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom)
+        self.collect_by_name(ITEM.POWERUP.Super_Mushroom.value)
+        self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom.value)
+        self.assertTrue(self.world.get_location(name_level(8, 10)).can_reach(self.multiworld.state))
         self.assertFalse(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state))
 
         self.collect_by_name(name_world_unlock(1))
         for _ in range(100):
             self.collect_by_name(ITEM.StarCoin)
+        self.assertTrue(self.world.get_region(name_base(8, 9)).can_reach(self.multiworld.state))
         self.assertTrue(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state))
 
 

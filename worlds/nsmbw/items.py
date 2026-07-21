@@ -93,14 +93,11 @@ for i, this_powerup_unlock in enumerate(POWERUP_UNLOCK):
         DEFAULT_ITEM_CLASSIFICATIONS.update({this_powerup_unlock : ItemClassification.progression})
 ITEM_NAME_GROUPS.update({"Powerups" : set(POWERUP_UNLOCK)})
 
-secret_exit_items : List[SecretExit] = []
 for i, secret_exit in enumerate(SECRET_EXIT):
-    if secret_exit.is_item:
-        secret_exit_items.append(secret_exit)
-        ITEM_NAME_TO_ID.update({name_secret(secret_exit.world, secret_exit.level): 700 + i + 1})
-        DEFAULT_ITEM_CLASSIFICATIONS.update({name_secret(secret_exit.world, secret_exit.level): ItemClassification.progression})
+    ITEM_NAME_TO_ID.update({name_secret(secret_exit): 700 + i + 1})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({name_secret(secret_exit): ItemClassification.progression})
 
-ITEM_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit.world, secret_exit.level) for secret_exit in secret_exit_items)})
+ITEM_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit) for secret_exit in SECRET_EXIT)})
 
 class NSMBWItem(Item):
     game = game_name
@@ -158,7 +155,7 @@ def create_all_items(world: NSMBWworld) -> None:
     excluded_items : set = set()
     excluded_items.update({name_world_unlock(starting_world_num)})
 
-    if world.options.randomize_powerups.value != world.options.randomize_powerups.option_on_except_mushroom:
+    if world.options.randomize_powerups.value == world.options.randomize_powerups.option_on_except_mushroom:
         excluded_items.update({ITEM.POWERUP.Super_Mushroom})
 
 
@@ -212,9 +209,10 @@ def create_all_items(world: NSMBWworld) -> None:
         amount_req = get_time_math(world, world_time_req[starting_world_num])
         for _ in range(amount_req): world.push_precollected(world.create_item(ITEM.Time))
 
-    if world.options.include_shortcuts.value == True:
-        for secret_exit in secret_exit_items:
-            itempool.append(world.create_item(name_secret(secret_exit.world,secret_exit.level)))
+    if world.options.shortcuts_sanity.value == True:
+        for secret_exit in SECRET_EXIT:
+            if secret_exit.is_item:
+                itempool.append(world.create_item(name_secret(secret_exit)))
 
     # handle important items
     itempool_names = []

@@ -8,8 +8,6 @@ import sys
 import shutil
 import subprocess
 
-from kivy.uix import switch
-
 import Utils
 
 sys.set_int_max_str_digits(0)
@@ -63,7 +61,7 @@ GAMELEVELS_PER_WORLD = LEVELS_PER_WORLD
 
 
 
-class NSMBWInterface():
+class NSMBWInterface(object):
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with game"""
 
     dolphin_client: DolphinClient
@@ -75,7 +73,7 @@ class NSMBWInterface():
     game_rev : int
     relay_trackers: Optional[Dict[Any, Any]]
 
-    memory_addresses : MemoryAddresses
+    memory_addresses : MemoryAddresses | None = None
     deathtimer : float = time.time()
     should_clear : int
 
@@ -85,6 +83,7 @@ class NSMBWInterface():
         self.dolphin_client = DolphinClient(logger)
         self.should_clear = 0
         self.log_color = log_color
+
 
 
 

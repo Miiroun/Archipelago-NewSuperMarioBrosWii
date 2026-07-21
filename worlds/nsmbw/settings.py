@@ -47,10 +47,10 @@ class NSMBWSettings(settings.Group):
             return None
 
     class DolphinFolderPath(settings.OptionalUserFolderPath):
-        """"""
+        """A path to the dolphin directory, windows default is C:\\Program Files\\Dolphin-x64"""
 
     class DolphinRiivolutionFolderPath(settings.OptionalUserFolderPath):
-        """"""
+        """A path to dolphins riivolution folder, on Windows found in %appdata%/Dolphin Emultator/Load/riivolution"""
 
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
@@ -91,7 +91,13 @@ class NSMBWSettings(settings.Group):
         xdotool = 1
         ydotool = 2
 
+    class AllowGenDiffSettings(settings.Bool):
+        """Putting this allows generation with somewhat faulty options, like > 100 invtory_powerup locations"""
+        required = True
 
+    class DolphinProcessName(str):
+        """Change this if you want multiple dolphin games open at the same time, warning difficult"""
+        required = True
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: GameFilePath |  str = GameFilePath(r"nsmbw.wbfs")
@@ -102,3 +108,5 @@ class NSMBWSettings(settings.Group):
     ut_pack_path: UTPackPath | str = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
     save_file_path : settings.Union[SaveFileLocation, str] = SaveFileLocation(rf"nsmbw/nsmbw_saves")
     use_xdotool_instead_of_keyboard_linux_only : Use_xdotool | int = Use_xdotool(0)
+    allow_gen_difficult_settings : AllowGenDiffSettings | bool = False
+    dolphin_process_name : DolphinProcessName = DolphinProcessName("")

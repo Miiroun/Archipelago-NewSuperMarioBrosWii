@@ -18,10 +18,9 @@
   - client
     - read from data
     - reunlock when got
-  - logic
-    - new worldmap connection
   - update docs
-  - fix optionvalidation
+  - fix option validation
+  - add thing if they aren't enabled
 - Command to repromt game file?
 - Can create riivolution patch and auto extract using dolphin tools
 - create an function to  and bytes
@@ -31,7 +30,6 @@
 - Deathlink Amnesty incorrect, not ressetting
 - Suggestion: make local_items take an amount
 - Try dumping my copy of nsmbw
-- Hm 6 & 9??
 - 2-2sc1 & sc2
 - 1-C sc3
 - Why is deathlink group displayed as wrong??
@@ -40,15 +38,22 @@
 - Ask for help in dc for names
 - technically can do without riivolution path, but is nice if anyone want to launch it themselvs
 - Starcoin multiplier for hint movies
-  - logic
-  - client
   - backcomp
 - Work on preventing sending of locations on title screen
 - 8-2 secret exit requires more logic
-- Add 3-4, 3-5, 7-castle and 8-2 to list of locations with secret exits. Readd them as items
-- Rename 8-7 secret exit to 8-7 normal exit
 - Hm are broken 6, 9, 55 ...
 - Ask for help in dc for names
+- Secret exit items in client !!!
+- Setting to allow gen with > 100 inv pow 
+- Hm option: cumulative but order is sorted after hm unlock order
+- Run language test world thing
+- Work more on map pack: download images from wiki
+- do I need to split up doolphin tool and dolphin for linux users?
+- Add hook pause 10 sec after pressing connect
+- Current issue seems to be 
+  1) how xml should be formated and  # look up example for level replacement patch
+  2) how json should be formated, do i need \/ instade of // ? # works with dolphin formated shortcut
+
 
 Level Rando / patcher
 - set up riivolution xml
@@ -56,13 +61,7 @@ Level Rando / patcher
 - get data from server of shuffling order
 - should names be based on level or position?
 - work on auto copy, which settings are needed
-- make patcher optional
-- add patcher to launcher
-- Add pipes to all levels for level rando
-- Setting to allow gen with > 100 inv pow 
-- Hm option: cumulative but order is sorted after hm unlock order
-- Run language test world thing
-- Work more on map pack: download images from wiki
+
 
 ## Playtest
 - multiplayer
@@ -88,7 +87,6 @@ Level Rando / patcher
   - oh yea one more. on occasion there was some weird enemy AI going on. a fire bro threw its fireball to the right when it was facing the left, probably just when it was about to turn to face the other way, and a few boos were able to pursue me regardless of the direction mario was facing while climbing on a pole, enabling them to move vertically pretty fast. maybe these things were just caused by lag?
   - enemy AI being weird
 - ?switch doesnt disable, is permanently on
-- Rando movement "on" still starts you with mushroom : from precollect
 
 
 ## Short term

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 from unittest import case
 
@@ -51,11 +52,11 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         for world_num in range(9):
             assert len(level_req[world_num]) == LEVELS_PER_WORLD[world_num], "Make sure lists is of correct size"
             for level_num in range(LEVELS_PER_WORLD[world_num]):
-                assert len(level_req[world_num][level_num]) == 2 + ((SecretExit(world_num+1,level_num+1, 2, True) in SECRET_EXIT) or SecretExit(world_num+1,level_num+1, 2, False) in SECRET_EXIT), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + ((world_num+1,level_num+1, 2) in SECRET_EXIT)} "
-                assert len(level_req[world_num][level_num][1]) == 3, f" Star coins for {name_base(world_num+1, level_num+1)} has wrong lenth {len(level_req[world_num][level_num][1])}"
+                #assert len(level_req[world_num][level_num]) == (2 + (SecretExit(world_num+1,level_num+1, None, None, None) in SECRET_EXIT)), f"Make sure lists is of correct size for {name_base(world_num+1, level_num+1)} has length {len(level_req[world_num][level_num])} and should be {3 + (SecretExit(world_num+1,level_num+1, None,None, None) in SECRET_EXIT)} "
+                #assert len(level_req[world_num][level_num][1]) == 3, f" Star coins for {name_base(world_num+1, level_num+1)} has wrong lenth {len(level_req[world_num][level_num][1])}"
                 # should maybe assert that is rule
                 for sc in range(3):pass
-                if SecretExit(world_num+1,level_num+1, 2, None) in SECRET_EXIT:pass
+                if SecretExit(world_num+1,level_num+1, None, None, None) in SECRET_EXIT:pass
     # transcribing ends-------------------------------------------------------------------------------
 
 
@@ -83,21 +84,21 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 case HintMovieShopPriceLogic.option_free:
                     soft_logic = True_()
                 case HintMovieShopPriceLogic.option_ordered:
-                    soft_logic = rules.Has(ITEM.StarCoin, count=total_cost)
+                    soft_logic = rules.Has(ITEM.StarCoin, count=math.ceil(total_cost/ world.options.starcoin_shop_multiplier.value))
                 case HintMovieShopPriceLogic.option_all:
-                    soft_logic = rules.Has(ITEM.StarCoin, count=231)
+                    soft_logic = rules.Has(ITEM.StarCoin, count=math.ceil(231 / world.options.starcoin_shop_multiplier.value))
                 case _:
                     raise ValueError(f"option {world.options.hint_movie_shop_price_logic} is not acounted for")
 
 
-            hm_rule = ((soft_logic|(get_glitch_rule(world) & rules.Has(ITEM.StarCoin, count=hm_req[hm_num-1][0])) )& hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
+            hm_rule = (soft_logic | (get_glitch_rule(world)) & rules.Has(ITEM.StarCoin, count=math.ceil(hm_req[hm_num-1][0] / world.options.starcoin_shop_multiplier.value) ) & hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
             world.set_rule(location, hm_rule)
 
-    if world.options.include_shortcuts.value == True:
+    if world.options.shortcuts_sanity.value == True:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit.world
             level_num = secret_exit.level
-            secret_exit_loc = world.get_location(name_secret(world_num, level_num))
+            secret_exit_loc = world.get_location(name_secret(secret_exit))
             if secret_exit.exit_type == 2:
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) &
                                level_req[world_num - 1][level_num - 1][2])

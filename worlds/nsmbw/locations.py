@@ -52,8 +52,8 @@ LOCATION_NAME_GROUPS.update({"Starcoins" : world_set,
 for secret_exit in SECRET_EXIT:
     world_num = secret_exit.world
     level_num = secret_exit.level
-    LOCATION_NAME_TO_ID.update({name_secret(world_num,level_num): 7000 + 100 * world_num + level_num})
-LOCATION_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit.world, secret_exit.level) for secret_exit in SECRET_EXIT)})
+    LOCATION_NAME_TO_ID.update({name_secret(secret_exit): 7000 + 100 * world_num + level_num})
+LOCATION_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit) for secret_exit in SECRET_EXIT)})
 
 #hint movies
 num_hintmovies = 65
@@ -131,11 +131,11 @@ def create_regular_locations(world: NSMBWworld) -> None:
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
             world.get_region(name_base(world_num,8 + (world_num in [4,6,7,8]))).add_locations(level_location, NSMBWLocation)
 
-    if world.options.include_shortcuts.value == True:
+    if world.options.shortcuts_sanity.value == True:
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit[0]
             level_num = secret_exit[1]
-            level_location = get_location_names_with_ids([name_secret(world_num, level_num)])
+            level_location = get_location_names_with_ids([name_secret(secret_exit)])
             world.get_region(name_base(world_num,level_num)).add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies

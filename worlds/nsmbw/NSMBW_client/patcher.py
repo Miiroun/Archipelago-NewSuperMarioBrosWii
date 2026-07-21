@@ -50,7 +50,9 @@ def copy_riivolution_skeleton(output_path : Path):
         print("TODO create patched files")
 
 def extract_game(input_path : str):
-    subprocess.run([str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "DolphinTool.exe"), "extract",
+    dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "DolphinTool.exe"
+    assert dolp_tool.exists(), f"the path {dolp_tool} to DolphinTool is invaild"
+    subprocess.run([str(dolp_tool), "extract",
                 "--input", str(input_path),
                 "--output", str(Path(tempfile.gettempdir()) / "nsmbw")])
 
@@ -140,7 +142,7 @@ def create_desktop_shortcut(input_path : Path, seed : str):
                             "section-name": "NSMBWAP"
                         }
                     ],
-                    "root" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path) / "riivolution"),
+                    "root" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path)),
                     "xml" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path) / "riivolution" / f"nsmbw_ap_seed{seed}.xml"),
                 }
             ]
@@ -149,9 +151,16 @@ def create_desktop_shortcut(input_path : Path, seed : str):
         "version" : "1"
     }
 
-    destination = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{seed}.json"
-    with open(destination, "w+") as file_name:
+    destination = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts"
+    try:
+        destination.mkdir(parents=True)
+        print(f"Directory '{destination}' created successfully.")
+    except FileExistsError:
+        print(f"Directory '{destination}' already exists.")
+    with open(destination/ f"seed{seed}.json", "w+") as file_name:
         json.dump(data, file_name)
+    assert (destination/ f"seed{seed}.json").exists(), "need to have created shortcut successfully"
+    print(destination/ f"seed{seed}.json")
 
 
 def patch(seed : str, slot_data : dict):
@@ -168,6 +177,7 @@ def patch(seed : str, slot_data : dict):
 
     logger.info("tests if old rando exist")
     if os.path.exists(output_path):
+        logger.info(f"old rando exist, uses it instead")
         return
 
     logger.info(f"Extracting game to {str(Path(tempfile.gettempdir()) / 'nsmbw')}")

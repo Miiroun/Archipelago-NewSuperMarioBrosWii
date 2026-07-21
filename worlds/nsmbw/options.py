@@ -1,5 +1,6 @@
 from typing import Counter
 
+import Utils
 from Options import *
 from .Common import *
 
@@ -52,7 +53,8 @@ class DontRandoMovement(ItemSet):
 
     display_name = "Dont Rando these Movements: WARNING default = BETA (no logic), remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
-    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value}
+    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
+               ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value}
 
 
 class RandomizePowerups(Choice):
@@ -321,7 +323,7 @@ class LevelShuffleRiivolution(Toggle):
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
-    include_shortcuts : IncludeShortcuts
+    shortcuts_sanity : IncludeShortcuts
     include_hintmovies : IncludeHintMovies
     randomize_starcoins: RandomizeStarCoins
     include_inventory_powerups : IncludeNumberInventoryItems
@@ -434,7 +436,7 @@ option_groups = [
 option_presets = {
     "standard/recomeneded": {
         "include_level_completion": IncludeLevelCompletion.default,
-        "include_shortcuts": IncludeShortcuts.default,
+        "shortcuts_sanity": IncludeShortcuts.default,
         "include_hintmovies": IncludeHintMovies.default,
         "randomize_starcoins": RandomizeStarCoins.default,
 
@@ -453,7 +455,7 @@ option_presets = {
     },
     "Minimal": {
         "include_level_completion": IncludeLevelCompletion.option_false,
-        "include_shortcuts": IncludeShortcuts.option_false,
+        "shortcuts_sanity": IncludeShortcuts.option_false,
         "include_hintmovies": IncludeHintMovies.option_false,
         "randomize_starcoins": RandomizeStarCoins.option_false,
         "starting_world": 1,
@@ -471,7 +473,7 @@ option_presets = {
     },
     "Maximal": {
         "include_level_completion": IncludeLevelCompletion.option_true,
-        "include_shortcuts": IncludeShortcuts.option_true,
+        "shortcuts_sanity": IncludeShortcuts.option_true,
         "include_hintmovies": IncludeHintMovies.option_true,
         "randomize_starcoins": RandomizeStarCoins.option_true,
         "starting_world": "random",
@@ -509,8 +511,8 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
     if (world.options.randomize_starcoins.value == False):
         #print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 15
-    if (world.options.include_shortcuts.value == False):
-        #print(f"(NSMBW generation error) Turning off include_shortcuts can cause fill errors with a low amount of num_starting_locations.")
+    if (world.options.shortcuts_sanity.value == False):
+        #print(f"(NSMBW generation error) Turning off shortcuts_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if 0 <= req_start_loc:
         print(f"(NSMBW generation error) Low amount of locations detected in nsmbw, this can cause fill errors if generate alone")
@@ -522,13 +524,17 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
               f"consider lowering this to get a more enjoyable experience.")
 
     # this tries to prevent num loc > num items
-    if ((loc := world.options.include_shortcuts.value * 12 + world.options.include_level_completion.value * 71 +
+    if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.include_level_completion.value * 71 +
         world.options.include_hintmovies.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
          <= 10+
         ((itm := world.options.randomize_movement.value >= 1) * len(MOVEMENT_UNLOCKS) + world.options.randomize_time.value
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
                           f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
+
+    if world.options.include_inventory_powerups.value > 100 and Utils.get_settings()["nsmbw_settings"].allow_gen_difficult_settings:
+        raise OptionError(f"(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,"
+                          f"if you still wish to use this, enable allow_gen_difficult_settings in your host.yaml")
 
     MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
@@ -562,4 +568,4 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
 
 
     if world.options.level_shuffel_riivolution.value + 0 > 0 and world.options.use_riivolution.value == False:
-        raise ValueError(f"Cannot use an option that require riivolution patch without it being enabled")
+        raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")

@@ -94,6 +94,12 @@ def connect_regions(world: NSMBWworld) -> None:
                 else:
                     world.get_region(name_base(world_num, i)).connect(world.get_region(name_base(world_num, con_lev_num)),
                                                                   f"{name_base(world_num, i)}->{name_base(world_num, con_lev_num)}",_rule )
+    for secret_exit in SECRET_EXIT:
+        if secret_exit.is_item:
+            _rule = level_rules[secret_exit.world - 1][secret_exit.level_to - 1][0]
+            if world.options.shortcuts_sanity:
+                _rule &= rules.Has(name_secret(secret_exit))
+            world.get_region(name_base(secret_exit.world, secret_exit.level)).connect(world.get_region(name_base(secret_exit.world, secret_exit.level_to)),f"{name_secret(secret_exit)}",_rule)
 
 
 

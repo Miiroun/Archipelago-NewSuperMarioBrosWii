@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import NamedTuple, List, Literal
+from typing import NamedTuple, List, Literal, Any
 
 game_name = "NSMBW"
 
@@ -12,15 +12,18 @@ LEVEL_COUNT = 77
 class SecretExit(NamedTuple):
     world : int
     level : int
-    exit_type : Literal[1,2]
-    is_item : bool
+    level_to : int | None
+    exit_type : Literal[1,2, None]
+    is_item : bool | None
+
+    def __eq__(self, other : Any ):
+        return (self.world == other.world) and (self.level == other.level)
 
 SECRET_EXIT : List[SecretExit] = [
-    SecretExit(1, 3, 2, False), SecretExit(2, 4, 2, True), SecretExit(2, 6, 2, False), SecretExit(3, 5, 2, False),
-    SecretExit(3, 6, 2, True), SecretExit(4, 6, 2, True), SecretExit(4, 7, 2, False), SecretExit(5, 6, 2, False),
-    SecretExit(6, 5, 2, True), SecretExit(6, 6, 2, False), SecretExit(7, 6, 1, False), SecretExit(7, 7, 2, True),
-    SecretExit(8, 7, 1, False)]
-
+    SecretExit(1, 3, 0, 2, False), SecretExit(2, 4, 8, 2, True), SecretExit(2, 6, 0, 2, False), SecretExit(3, 4, 8, 2, True),
+    SecretExit(3, 5, 0, 2, False), SecretExit(3, 6, 0, 2, False), SecretExit(4, 6, 8, 2, True), SecretExit(4, 7, 0, 2, False),
+    SecretExit(5, 6, 0, 2, False), SecretExit(6, 5, 8, 2, True), SecretExit(6, 6, 0, 2, False), SecretExit(7, 6, 0, 1, False),
+    SecretExit(7, 7, 5, 2, True), SecretExit(7, 8, 6, 2, True), SecretExit(8, 2, 7, 2, True), SecretExit(8, 7, 10, 1, False)]
 
 class ITEM:
     class POWERUP(StrEnum):
@@ -124,8 +127,13 @@ def name_level(world_num : int, level_num : int) -> str:
 def name_starcoin(world_num : int, level_num : int, scnum : int) -> str:
     return f"{name_base(world_num,level_num)} sc{scnum}"
 
-def name_secret(world_num : int, level_num : int) -> str:
-    return f"{name_base(world_num,level_num)} Secret exit"
+def name_secret(secret_exit : SecretExit) -> str:
+    if secret_exit.exit_type == 1:
+        return f"{name_base(secret_exit.world,secret_exit.level)} Secret exit"
+    elif secret_exit.exit_type == 2:
+        return f"{name_base(secret_exit.world,secret_exit.level)} Normal exit"
+    else:
+        raise ValueError(f"Unknown exit_type: {secret_exit.exit_type}")
 
 def name_world_clear(world_num : int) ->  str:
     assert 1 <= world_num <= 8, f"world_num {world_num} is not valid"
@@ -135,7 +143,6 @@ def name_tower_clear(world_num : int) -> str:
     return f"World{world_num} 1/2 clear" #f"Tower{world_num}_clear" #
 
 def name_hintmovie(i:int) -> str:
-    from worlds.nsmbw.NSMBW_client.NSMBWInterface import HINTMOVIE_COUNT
     assert 1 <= i <= HINTMOVIE_COUNT
     return f"Hintmovie{i:02}"
 
