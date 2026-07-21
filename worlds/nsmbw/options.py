@@ -1,6 +1,5 @@
 from typing import Counter
 
-from BaseClasses import MultiWorld
 from Options import *
 from .Common import *
 
@@ -107,6 +106,16 @@ class HintMovieShopPriceLogic(Choice):
     option_progressive = 3
 
     default = option_free
+
+class StarCoinShopMultiplier(Range):
+    """
+    A multiplier for what a star coin is worth when buying from the hint movie store.
+    """
+    display_name = "Starcoin shop multiplier"
+    range_start = 1
+    range_end = 10
+    default = 3
+
 
 class IncludeLevelCompletion(Toggle):
     """
@@ -298,8 +307,17 @@ class ModifierMultiplierPercentage(Range):
     range_end = 1000
     default = 100
 
-# We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
-# This is in the format "option_name_in_snake_case: OptionClassName".
+
+class UseRiivolutionOptions(Toggle):
+    """This needs to be enabled if you want to use any other riivolution based options"""
+    display_name = "Use Riivolution"
+    default = False
+
+class LevelShuffleRiivolution(Toggle):
+    """Shuffles the level order, requires riivolution to be enabled."""
+    display_name = "Level Shuffle Riivolution"
+    default = False
+
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
@@ -320,6 +338,7 @@ class NSMBWOptions(PerGameCommonOptions):
     starting_world: StartingWorld
     world9_unlock_condition : World9UnlockCondition
     hint_movie_shop_price_logic : HintMovieShopPriceLogic
+    starcoin_shop_multiplier : StarCoinShopMultiplier
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems
@@ -333,10 +352,14 @@ class NSMBWOptions(PerGameCommonOptions):
 
     death_link : DeathLink
     death_link_group : DeathLinkGroup
+    death_link_amnesty : DeathLinkAmnesty
     starcoin_collect_immediately : StarCoinCollectImmediately
 
     save_state_slot : SaveStateSlot
     modifier_multiplier_percentage : ModifierMultiplierPercentage
+
+    use_riivolution : UseRiivolutionOptions
+    level_shuffel_riivolution : LevelShuffleRiivolution
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
@@ -374,6 +397,7 @@ option_groups = [
             LogicOutsidePowerups,
             World9UnlockCondition,
             StartingWorld,
+            HintMovieShopPriceLogic,
         ]
     ),
     OptionGroup(
@@ -387,13 +411,22 @@ option_groups = [
         ]
     ),
     OptionGroup(
+        "Riivolution",
+        [
+            UseRiivolutionOptions,
+            LevelShuffleRiivolution,
+        ],
+    ),
+    OptionGroup(
         "Other",
         [
             DeathLink,
             DeathLinkGroup,
+            DeathLinkAmnesty,
             StarCoinCollectImmediately,
             SaveStateSlot,
-            ModifierMultiplierPercentage
+            ModifierMultiplierPercentage,
+            StarCoinShopMultiplier,
         ],
     ),
 ]
@@ -459,7 +492,7 @@ option_presets = {
 }
 
 
-def adjust_options(world):
+def adjust_options(world): # cannot type check because circular imports : NSMBWworld
     if world.options.include_level_completion.value + world.options.randomize_starcoins.value <= 0 and len(world.multiworld.player_ids) == 1:
         raise OptionError(f"(NSMBW generation error) Turn on at least one of include_level_completion or randomize_starcoins when generation alone")
 
@@ -526,3 +559,7 @@ def adjust_options(world):
     if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_progressive:
         print(f"(NSMBW generation error) Option progressive for hint_movie_shop_price_logic is not implemented, setting to default instead.") # raise OptionError
         world.options.hint_movie_shop_price_logic.value = HintMovieShopPriceLogic.default
+
+
+    if world.options.level_shuffel_riivolution.value + 0 > 0 and world.options.use_riivolution.value == False:
+        raise ValueError(f"Cannot use an option that require riivolution patch without it being enabled")

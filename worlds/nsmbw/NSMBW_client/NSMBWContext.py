@@ -21,6 +21,7 @@ from settings import get_settings
 tracker_loaded = False
 
 try:
+    raise ModuleNotFoundError("")
     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, \
     TrackerCommandProcessor as SuperClientCommandProcessor, CommonContext, asyncio, server_loop, updateTracker
 
@@ -32,8 +33,6 @@ except ModuleNotFoundError:
 logger = logging.getLogger("Client")
 
 
-
-
 class ModifiedState(IntEnum):
     UNMODIFIED = 0
     MODWOLD1_8 = 1
@@ -42,6 +41,7 @@ class ModifiedState(IntEnum):
 
 modifier_type_litteral = Literal[ITEM.TRAPS.ThrowTrap, ITEM.TRAPS.ReverseControlTrap, ITEM.TRAPS.GoombaTrap, ITEM.TRAPS.MovementLockTrap,
     ITEM.FILLER.SuperSpeed, ITEM.TRAPS.SlowTrap]
+
 class Modifier(NamedTuple):
     type : modifier_type_litteral
     duration : float
@@ -370,10 +370,13 @@ class NSMBWContext(SuperContext):
 
                 self.slot_data = args["slot_data"]
                 # checks for new slot_data values to be compatible
-                if "death_link_amnesty" not in self.slot_data.keys():
-                    self.slot_data["death_link_amnesty"] = 1
-                if "hint_movie_shop_price_logic" not in self.slot_data.keys():
-                    self.slot_data["hint_movie_shop_price_logic"] = HintMovieShopPriceLogic.option_ordered
+
+                backwards_compat : List[tuple] = [("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered),
+                                                  ("use_riivolution", 0), ("level_shuffel_riivolution", 0)]
+                for name, value in backwards_compat:
+                    if name not in self.slot_data.keys():
+                        self.slot_data[name] = value
+
 
                 Utils.async_start(self.update_death_link(self.slot_data["death_link"]))
                 Utils.async_start(self.update_death_link_group(self.slot_data["death_link_group"]))
@@ -396,6 +399,10 @@ class NSMBWContext(SuperContext):
                 if tracker_loaded:
                     args.setdefault("slot_data", dict())
 
+                if self.slot_data["use_riivolution"]:
+                    Utils.async_start(self.patch_and_run_game())
+                else:
+                    self.run_game()
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
@@ -503,9 +510,7 @@ class NSMBWContext(SuperContext):
                 print(f"Failed to read ap manifest file for version data, error {e}")
 
 
-            Utils.async_start(patch_and_run_game())
-
-        logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
+        #logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
 
         while not self.exit_event.is_set():
             try:
@@ -1305,9 +1310,9 @@ class NSMBWContext(SuperContext):
                 if is_dead and (self.is_pending_death_link_reset == False) and self.slot:
                     self.death_link_amnesty_count += 1
                     if self.death_link_amnesty_count >= self.slot_data["death_link_amnesty"]:
+                        death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
                         await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
                         print(f"is sending deathlink")
-                        death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
                         self.death_link_amnesty_count = 0
                     else:
                         logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data['death_link_amnesty_count']}")
@@ -1475,6 +1480,7 @@ class NSMBWContext(SuperContext):
         if old_tags != self.tags and self.server and not self.server.socket.closed:
             await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
         self.death_link_enabled = death_link
+
     async def update_death_link_group(self, group_name: str):
         """Helper function to change the Death Link group, updating the connection tag as needed if already connected."""
         death_link: bool = f"DeathLink{self.death_link_group}" in self.tags
@@ -1516,6 +1522,39 @@ class NSMBWContext(SuperContext):
                                  "text":text,
                                  "color": color}
         self.ui.print_json([text_msg])
+
+    async def patch_and_run_game(self):
+        auto_start: bool = get_settings()["nsmbw_settings"].auto_open
+        input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
+        try:
+            assert input_iso_path is not None, "Add a path to your game file in host.yaml"
+            assert Path(input_iso_path).exists(), "Your game file path is invalid"
+        except AssertionError as e:
+            logger.error(e)
+
+            patcher.patch(self.seed_name, self.slot_data)
+
+            if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
+                subprocess.run([Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "Dolphin.exe",
+                                f'-e {str(Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json") }'])
+            elif auto_start:
+                logger.error("Failed to auto start dolphin, make sure your file path is correct")
+
+
+    async def run_game(self):
+        auto_start: bool = get_settings()["nsmbw_settings"].auto_open
+        gamefile : str = get_settings()["nsmbw_settings"].game_file_path
+
+
+        if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
+            Utils.open_file(gamefile)
+        elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
+            subprocess.Popen([str(auto_start), gamefile], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, )
+        elif auto_start:
+            logger.error("Failed to auto start dolphin, make sure your file path is correct")
+
+
 #end of class
 
 
@@ -1523,37 +1562,8 @@ class NSMBWContext(SuperContext):
 
 
 
-async def patch_and_run_game():
-    auto_start : bool = get_settings()["nsmbw_settings"].auto_open
-    if auto_start:
-        input_iso_path : str = get_settings()["nsmbw_settings"].game_file_path
-        try:
-            assert input_iso_path is not None, "Add a path to your game file in host.yaml"
-            assert Path(input_iso_path).exists(), "Your game file path is invalid"
-        except AssertionError as e:
-            logger.error(e)
-
-        shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / f"seed{0000}.ink"
-        if not os.path.exists(shortcut_path):
-            patcher.patch()
-
-        Utils.async_start(run_game(str(shortcut_path)))
 
 
-async def run_game(gamefile: str):
-    auto_start : bool = get_settings()["nsmbw_settings"].auto_open
-
-    if  dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-            Utils.open_file(gamefile)
-    elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
-        subprocess.Popen(
-            [str(auto_start), gamefile],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    elif auto_start:
-        logger.error("Failed to auto start dolphin, make sure your file path is correct")
 
 
 def get_in_logic(ctx, items=None, locations=None):

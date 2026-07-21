@@ -38,7 +38,31 @@
 - Hintmovie sanity?
 - Add command to repromt for a new game file: Check if file exists etc : otherwise repromt
 - Ask for help in dc for names
+- technically can do without riivolution path, but is nice if anyone want to launch it themselvs
+- Starcoin multiplier for hint movies
+  - logic
+  - client
+  - backcomp
+- Work on preventing sending of locations on title screen
+- 8-2 secret exit requires more logic
+- Add 3-4, 3-5, 7-castle and 8-2 to list of locations with secret exits. Readd them as items
+- Rename 8-7 secret exit to 8-7 normal exit
+- Hm are broken 6, 9, 55 ...
+- Ask for help in dc for names
+
+Level Rando / patcher
+- set up riivolution xml
+- set up dolphin shortcut
+- get data from server of shuffling order
+- should names be based on level or position?
+- work on auto copy, which settings are needed
+- make patcher optional
 - add patcher to launcher
+- Add pipes to all levels for level rando
+- Setting to allow gen with > 100 inv pow 
+- Hm option: cumulative but order is sorted after hm unlock order
+- Run language test world thing
+- Work more on map pack: download images from wiki
 
 ## Playtest
 - multiplayer
@@ -51,6 +75,8 @@
 - test hm options
 - playtest so deathlink amnesty and groups works
 - try settig settings to 2
+- Playtest with code loading, Whats different and if something works
+
 
 ## Bugs to fix
 - overwrite level comp ?
@@ -62,6 +88,7 @@
   - oh yea one more. on occasion there was some weird enemy AI going on. a fire bro threw its fireball to the right when it was facing the left, probably just when it was about to turn to face the other way, and a few boos were able to pursue me regardless of the direction mario was facing while climbing on a pole, enabling them to move vertically pretty fast. maybe these things were just caused by lag?
   - enemy AI being weird
 - ?switch doesnt disable, is permanently on
+- Rando movement "on" still starts you with mushroom : from precollect
 
 
 ## Short term
@@ -87,7 +114,7 @@
 - Create notes in /explain more
 - Make secret exit items to reunlock them
 - assert early items are actually early, write test?
-
+- Figure out how to change HM unlock condition?
 
 ## Broken versions
 # EU 1

@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 from typing import Union, Sequence, Any
 
 import Utils
@@ -94,8 +95,8 @@ class NSMBWSettings(settings.Group):
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: GameFilePath |  str = GameFilePath(r"nsmbw.wbfs")
-    dolphin_folder_path : DolphinFolderPath | str = DolphinFolderPath(r"C:\Program Files\Dolphin-x64")
-    dolphin_riivolution_folder_path : DolphinRiivolutionFolderPath | str = DolphinRiivolutionFolderPath(os.path.join(os.environ['APPDATA'])+ r"\\Dolphin Emulator\\Load\\Riivolution\\") if Utils.is_windows else DolphinRiivolutionFolderPath("")
+    dolphin_folder_path : DolphinFolderPath | str = os.path.join(os.environ['programfiles'], "Dolphin-x64")  if Utils.is_windows else DolphinFolderPath("")
+    dolphin_riivolution_folder_path : DolphinRiivolutionFolderPath | str = DolphinRiivolutionFolderPath(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution")) if Utils.is_windows else DolphinRiivolutionFolderPath("")
     auto_open: AutoOpenGame | bool = True
     collect_level : CollectLevel | int = CollectLevel(1)
     ut_pack_path: UTPackPath | str = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")

@@ -23,44 +23,28 @@ class NSMBWworld(World):
     The ap-world for new super mario bros. wii
     """
 
-    # The docstring should contain a description of the game, to be displayed on the WebHost.
 
-    # You must override the "game" field to say the name of the game.
     game = game_name
-
-    # The WebWorld is a definition class that governs how this world will be displayed on the website.
     web = web_world.NSMBWWebWorld()
 
-    # This is how we associate the options defined in our options.py with our world.
-    # (Note: options.py has been imported as "NSMBW_options" at the top of this file to avoid a name conflict)
+
     options_dataclass = nsmbw_option.NSMBWOptions
-    options: nsmbw_option.NSMBWOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
+    options: nsmbw_option.NSMBWOptions
 
     settings: ClassVar[nsbmw_settings.NSMBWSettings]
     settings_key = nsbmw_settings.NSMBWSettings.settings_key
 
-    # Our world class must have a static location_name_to_id and item_name_to_id defined.
-    # We define these in regions.py and items.py respectively, so we just set them here.
     location_name_to_id = locations.LOCATION_NAME_TO_ID
     item_name_to_id = items.ITEM_NAME_TO_ID
 
     location_name_groups = locations.LOCATION_NAME_GROUPS
     item_name_groups  = items.ITEM_NAME_GROUPS
 
-
-    # There is always one region that the generator starts from & assumes you can always go back to.
-    # This defaults to "Menu", but you can change it by overriding origin_region_name.
     origin_region_name = "Menu"
-
-    # Our world class must have certain functions ("steps") that get called during generation.
-    # The main ones are: create_regions, set_rules, create_items.
-    # For better structure and readability, we put each of these in their own file.
-
-
     topology_present = True
-
     ut_can_gen_without_yaml = True
     glitches_item_name = "glitched_logic"
+
 
     star_coin_req_per_world_9_level : List[int]
 
