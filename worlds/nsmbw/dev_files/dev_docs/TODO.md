@@ -21,6 +21,7 @@
   - update docs
   - fix option validation
   - add thing if they aren't enabled
+  - run visulaize to verify regions are correct
 - Command to repromt game file?
 - Can create riivolution patch and auto extract using dolphin tools
 - create an function to  and bytes
@@ -49,18 +50,23 @@
 - Run language test world thing
 - Work more on map pack: download images from wiki
 - do I need to split up doolphin tool and dolphin for linux users?
-- Add hook pause 10 sec after pressing connect
-- Current issue seems to be 
-  1) how xml should be formated and  # look up example for level replacement patch
-  2) how json should be formated, do i need \/ instade of // ? # works with dolphin formated shortcut
-
+- Current issue seems to be
+- look into hint movies
+  - look up hint movie prossessing in ghidra
+- Other shuffles?
+  - enterence
+  - enemy
+  - background
+  - text
+  - object
+  - characters?
+- Add riivolution info to docs
+- Add logic to level rando
+- test if loading code actually fails the client
 
 Level Rando / patcher
-- set up riivolution xml
-- set up dolphin shortcut
-- get data from server of shuffling order
+- set up dolphin shortcut : do I need seperate for linux, can I use where-is ?
 - should names be based on level or position?
-- work on auto copy, which settings are needed
 
 
 ## Playtest
@@ -87,7 +93,8 @@ Level Rando / patcher
   - oh yea one more. on occasion there was some weird enemy AI going on. a fire bro threw its fireball to the right when it was facing the left, probably just when it was about to turn to face the other way, and a few boos were able to pursue me regardless of the direction mario was facing while climbing on a pole, enabling them to move vertically pretty fast. maybe these things were just caused by lag?
   - enemy AI being weird
 - ?switch doesnt disable, is permanently on
-
+- HM5 : all hm requring castle comp
+  - might be problem with patch for skipping world unlocks
 
 ## Short term
 - Multiplayer support
@@ -206,7 +213,7 @@ Level Rando / patcher
 - 1-C comp message shows when it shouldn't
 - still sends false deathlinks
 - inventory_pow desyncing
-
+- Entering 8-A boss without ground pound freezes game
 
 ## Features
 - Save toad / kill world enemy = hint/check

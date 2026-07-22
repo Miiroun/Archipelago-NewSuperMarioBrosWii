@@ -82,12 +82,6 @@ class NSMBWLocation(Location):
     game = game_name
 
 
-# Let's make one more helper method before we begin actually creating locations.
-# Later on in the code, we'll want specific subsections of LOCATION_NAME_TO_ID.
-# To reduce the chance of copy-paste errors writing something like {"Chest": LOCATION_NAME_TO_ID["Chest"]},
-# let's make a helper method that takes a list of location names and returns them as a dict with their IDs.
-# Note: There is a minor typing quirk here. Some functions want location addresses to be an "int | None",
-# so while our function here only ever returns dict[str, int], we annotate it as dict[str, int | None].
 def get_location_names_with_ids(location_names: list[str]) -> dict[str, int | None]:
     return {location_name: LOCATION_NAME_TO_ID[location_name] for location_name in location_names}
 
@@ -164,3 +158,8 @@ def create_events(world: NSMBWworld) -> None:
 
     world.get_region(name_base(8, 9)).add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
+def shuffle_level_order(world: NSMBWworld) -> None:
+    world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
+
+    if world.options.level_shuffel_riivolution == True:
+        world.random.shuffle(world.shuffled_level_order)

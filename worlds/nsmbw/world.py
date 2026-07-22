@@ -45,6 +45,8 @@ class NSMBWworld(World):
     ut_can_gen_without_yaml = True
     glitches_item_name = "glitched_logic"
 
+    shuffled_level_order : List[int]
+
 
     star_coin_req_per_world_9_level : List[int]
 
@@ -72,6 +74,8 @@ class NSMBWworld(World):
                 self.overwrite_options(self.multiworld.re_gen_passthrough[self.game])
         nsmbw_option.adjust_options(self)
 
+        locations.shuffle_level_order(self)
+
 
     def set_rules(self) -> None:
         rules.set_all_rules(self)
@@ -79,18 +83,11 @@ class NSMBWworld(World):
     def create_items(self) -> None:
         items.create_all_items(self)
 
-    # Our world class must also have a create_item function that can create any one of our items by name at any time.
-    # We also put this in a different file, the same one that create_items is in.
     def create_item(self, name: str) -> items.NSMBWItem:
         if name == self.glitches_item_name:
             return NSMBWItem(name, ItemClassification.progression, None, self.player)
         return items.create_item_with_correct_classification(self, name)
 
-    # For features such as item links and panic-method start inventory, AP may ask your world to create extra filler.
-    # The way it does this is by calling get_filler_item_name.
-    # For this purpose, your world *must* have at least one infinitely repeatable item (usually filler).
-    # You must override this function and return this infinitely repeatable item's name.
-    # In our case, we defined a function called get_random_filler_item_name for this purpose in our items.py.
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
@@ -103,6 +100,7 @@ class NSMBWworld(World):
         #slot_data["version"]  = self.world_version
         slot_data["star_coin_req_per_world_9_level"] = self.star_coin_req_per_world_9_level
         slot_data["NSMBW_Version"] = self.world_version
+        slot_data["shuffled_level_order"] = self.shuffled_level_order
         return slot_data
 
     # UT-tracket imlementation

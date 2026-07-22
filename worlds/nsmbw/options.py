@@ -312,12 +312,17 @@ class ModifierMultiplierPercentage(Range):
 
 class UseRiivolutionOptions(Toggle):
     """This needs to be enabled if you want to use any other riivolution based options"""
-    display_name = "Use Riivolution"
+    display_name = "Use Riivolution (early alpha, dont expect to be able to finish run with this)"
     default = False
 
 class LevelShuffleRiivolution(Toggle):
     """Shuffles the level order, requires riivolution to be enabled."""
     display_name = "Level Shuffle Riivolution"
+    default = False
+
+class MusicShuffleRiivolution(Toggle):
+    """Shuffles the background, requires riivolution to be enabled."""
+    display_name = "Music Shuffle Riivolution"
     default = False
 
 @dataclass
@@ -362,6 +367,8 @@ class NSMBWOptions(PerGameCommonOptions):
 
     use_riivolution : UseRiivolutionOptions
     level_shuffel_riivolution : LevelShuffleRiivolution
+    music_shuffel_riivolution : MusicShuffleRiivolution
+
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
@@ -417,6 +424,7 @@ option_groups = [
         [
             UseRiivolutionOptions,
             LevelShuffleRiivolution,
+            MusicShuffleRiivolution
         ],
     ),
     OptionGroup(
@@ -567,5 +575,6 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
         world.options.hint_movie_shop_price_logic.value = HintMovieShopPriceLogic.default
 
 
-    if world.options.level_shuffel_riivolution.value + 0 > 0 and world.options.use_riivolution.value == False:
+    if (world.options.level_shuffel_riivolution.value + world.options.music_shuffel_riivolution.value
+            > 0 and world.options.use_riivolution.value == False):
         raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")

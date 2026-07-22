@@ -1,5 +1,6 @@
-from . import dolphin_interface_client, patcher
+from . import dolphin_interface_client
 from .NSMBWInterface import *
+from .patcher import Patcher
 from ..options import RandomizeMovement, HintMovieShopPriceLogic
 from ..Common import *
 from .. import NSMBWworld
@@ -680,7 +681,6 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_load(self):
-
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
                 with open(Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
@@ -873,9 +873,9 @@ class NSMBWContext(SuperContext):
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
 
                 byte_to_check : int
-                if secret_exit[2] == 1:
+                if secret_exit.exit_type == 1:
                     byte_to_check = 0x10
-                elif secret_exit[2] == 2:
+                elif secret_exit.exit_type == 2:
                     byte_to_check = 0x20
                 else:
                     raise ValueError(f"Something is wrong with SECRET_EXIT, {secret_exit} not in {SECRET_EXIT}")
@@ -1532,17 +1532,18 @@ class NSMBWContext(SuperContext):
         except AssertionError as e:
             logger.error(e)
 
-        patcher.patch(self.seed_name, self.slot_data)
+        _patcher = Patcher(self.seed_name, self.slot_data)
+        _patcher.patch()
 
         dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "Dolphin.exe"
         assert dolphin_path.exists(), "dolphin.exe needs to be correct"
         short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
-        #short_cut_path = Path(r"C:\Users\XXXX\OneDrive\Skrivbord\Spel\Dolphin Games\seed32365108836488775189.json")
         print(short_cut_path)
         assert short_cut_path.exists(), "need to have created shortcut successfully"
 
         if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-            subprocess.run([str(dolphin_path), "-e", str(short_cut_path)])
+            subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+            time.sleep(10)
         elif auto_start:
             logger.error("Failed to auto start dolphin, make sure your file path is correct")
 
