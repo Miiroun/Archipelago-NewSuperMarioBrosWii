@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from typing import Any, Dict, List, Set
 
+import Utils
 from BaseClasses import CollectionState, ItemClassification, MultiWorld
 from NetUtils import JSONMessagePart
 from worlds.AutoWorld import World
@@ -58,10 +59,10 @@ class NSMBWworld(World):
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
 
-        #-----------------------------todo remove these after bugfix
-        #state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
-        #state.update_reachable_regions(self.player)
-        #visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
+        if not Utils.is_frozen():
+            state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
+            state.update_reachable_regions(self.player)
+            visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
 
     def generate_early(self) -> None:
         if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -73,9 +74,6 @@ class NSMBWworld(World):
                 #    raise ValueError(err_string)
                 self.overwrite_options(self.multiworld.re_gen_passthrough[self.game])
         nsmbw_option.adjust_options(self)
-
-        locations.shuffle_level_order(self)
-
 
     def set_rules(self) -> None:
         rules.set_all_rules(self)

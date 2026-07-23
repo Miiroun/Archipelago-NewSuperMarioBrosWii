@@ -63,11 +63,15 @@
 - Add riivolution info to docs
 - Add logic to level rando
 - test if loading code actually fails the client
-
-Level Rando / patcher
-- set up dolphin shortcut : do I need seperate for linux, can I use where-is ?
-- should names be based on level or position?
-
+- Don't run gen when not connected
+- run /dev x2 and then see which hm aren't showing up
+- need to hardcode bowser logic to rules instead of in raw, because dont want it to move
+- Dolphin wsl
+- Separate dolphin tools setting for Linux
+- Turn on dolphin close confirmation
+- Beat some levels on vanilla save file 1 to verify no wrong sends are happening
+- Doolphintool -h
+- Reword timer modifier option
 
 ## Playtest
 - multiplayer

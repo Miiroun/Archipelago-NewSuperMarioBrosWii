@@ -17,6 +17,8 @@ class SecretExit(NamedTuple):
     is_item : bool | None
 
     def __eq__(self, other : Any ):
+        if not isinstance(other, SecretExit):
+            return NotImplemented
         return (self.world == other.world) and (self.level == other.level)
 
 SECRET_EXIT : List[SecretExit] = [

@@ -4,6 +4,11 @@ import Utils
 from Options import *
 from .Common import *
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .world import NSMBWworld
+
+
 class TrapChance(Range):
     """
     Percentage chance that any given filler item will be replaced with traps.
@@ -16,12 +21,12 @@ class TrapChance(Range):
     default = 15
 
 
-class RandomizeStarCoins(Toggle):
+class StarcoinSanity(Toggle):
     """
     If enabled will include 231 star coins as checks and star coins will be received as items.
     If disabled will still create the star coins as ap items but place them in their vanilla locations.
     """
-    display_name = "Randomize Star Coins"
+    display_name = "Starcoin Sanity"
     default = True
 
 class StarCoinCollectImmediately(Toggle):
@@ -330,7 +335,7 @@ class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
     shortcuts_sanity : IncludeShortcuts
     include_hintmovies : IncludeHintMovies
-    randomize_starcoins: RandomizeStarCoins
+    starcoin_sanity: StarcoinSanity
     include_inventory_powerups : IncludeNumberInventoryItems
     make_world_comp_priority : MakeWorldCompPriority
 
@@ -378,7 +383,7 @@ option_groups = [
             IncludeShortcuts,
             IncludeLevelCompletion,
             IncludeHintMovies,
-            RandomizeStarCoins,
+            StarcoinSanity,
             IncludeNumberInventoryItems,
             MakeWorldCompPriority,
         ],
@@ -446,7 +451,7 @@ option_presets = {
         "include_level_completion": IncludeLevelCompletion.default,
         "shortcuts_sanity": IncludeShortcuts.default,
         "include_hintmovies": IncludeHintMovies.default,
-        "randomize_starcoins": RandomizeStarCoins.default,
+        "starcoin_sanity": StarcoinSanity.default,
 
         "randomize_movement": RandomizeMovement.default,
         "dont_rando_move": DontRandoMovement.default,
@@ -465,7 +470,7 @@ option_presets = {
         "include_level_completion": IncludeLevelCompletion.option_false,
         "shortcuts_sanity": IncludeShortcuts.option_false,
         "include_hintmovies": IncludeHintMovies.option_false,
-        "randomize_starcoins": RandomizeStarCoins.option_false,
+        "starcoin_sanity": StarcoinSanity.option_false,
         "starting_world": 1,
         "include_inventory_powerups": 0,
 
@@ -483,7 +488,7 @@ option_presets = {
         "include_level_completion": IncludeLevelCompletion.option_true,
         "shortcuts_sanity": IncludeShortcuts.option_true,
         "include_hintmovies": IncludeHintMovies.option_true,
-        "randomize_starcoins": RandomizeStarCoins.option_true,
+        "starcoin_sanity": StarcoinSanity.option_true,
         "starting_world": "random",
         "include_inventory_powerups" : 999,
 
@@ -503,8 +508,8 @@ option_presets = {
 
 
 def adjust_options(world): # cannot type check because circular imports : NSMBWworld
-    if world.options.include_level_completion.value + world.options.randomize_starcoins.value <= 0 and len(world.multiworld.player_ids) == 1:
-        raise OptionError(f"(NSMBW generation error) Turn on at least one of include_level_completion or randomize_starcoins when generation alone")
+    if world.options.include_level_completion.value + world.options.starcoin_sanity.value <= 0 and len(world.multiworld.player_ids) == 1:
+        raise OptionError(f"(NSMBW generation error) Turn on at least one of include_level_completion or starcoin_sanity when generation alone")
 
     # This section tests if to many location options are turned off and tries to compensate for it.
     req_start_loc = -10
@@ -516,7 +521,7 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
             #print(f"(NSMBW generation error) Turning off include_level_completion can cause fill errors with a low amount of num_starting_locations.")
             req_start_loc += 30
             req_start_loc_max += 15
-    if (world.options.randomize_starcoins.value == False):
+    if (world.options.starcoin_sanity.value == False):
         #print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 15
     if (world.options.shortcuts_sanity.value == False):

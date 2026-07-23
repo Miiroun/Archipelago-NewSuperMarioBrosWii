@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from .world import NSMBWworld
 
 DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
+DEPRIO_HM += [6, 9, 54, 55] # broken ?
 def specific_hintmovie_requierments(world: NSMBWworld) -> List:
     # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
     rule_completed_everything = Has(ITEM.StarCoin, count=231)  & Has("Victory")# dont want to implement complex, just deprioritize
@@ -187,10 +188,6 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
     tower_rules = door & button_left
 
-    # want to change to CanReachRegion, but unshure how to put in a count for it
-    bowser_world_clear_list  = list([name_base(world_num,level_num) for world_num, level_num in [(1,8), (2,8), (3,8), (4,9), (5,8), (6,9), (7,9)] ])
-    bowser_clear_rule = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
-
     level_rules = [ # normal compleation rules
         [  # world 1
             [normal_move & get_time_rule(world, 90), [propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))]],  # -1
@@ -277,7 +274,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [pipe & button_down & button_up & normal_move & climb & jump & button_up & pipe, [True_(), climb & (propeller | wall_jump), True_()]],  # -6
             [pipe & button_down & button_up & normal_move & get_time_rule(world,200), [True_(), True_(), True_()]],  # -7
             [pipe & button_down & button_up & normal_move&tower_rules & get_time_rule(world,200), [True_(), True_(), True_()]],  # -8 8-T
-            [normal_move & bowser_clear_rule & door & button_down & pipe & ((propeller & crouch) | logic_hard), [True_(), True_(), True_()]],  # -9 8-C
+            [normal_move & door & button_down & pipe & ((propeller & crouch) | logic_hard), [True_(), True_(), True_()]],  # -9 8-C
             [pipe & button_down & normal_move & ground_pound & spin_jump , [True_(), True_(), propeller | (ground_pound & ((mini_o & (wall_jump | run)) | (logic_hard & run & carry)))]],  # -10 8-A
 
         ],

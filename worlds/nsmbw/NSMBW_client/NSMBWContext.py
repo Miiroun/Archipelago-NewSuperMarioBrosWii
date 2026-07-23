@@ -372,8 +372,8 @@ class NSMBWContext(SuperContext):
                 self.slot_data = args["slot_data"]
                 # checks for new slot_data values to be compatible
 
-                backwards_compat : List[tuple] = [("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered),
-                                                  ("use_riivolution", 0), ("level_shuffel_riivolution", 0)]
+                backwards_compat : List[tuple] = []
+                # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffel_riivolution", 0)
                 for name, value in backwards_compat:
                     if name not in self.slot_data.keys():
                         self.slot_data[name] = value
@@ -1535,7 +1535,7 @@ class NSMBWContext(SuperContext):
         _patcher = Patcher(self.seed_name, self.slot_data)
         _patcher.patch()
 
-        dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "Dolphin.exe"
+        dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
         assert dolphin_path.exists(), "dolphin.exe needs to be correct"
         short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
         print(short_cut_path)

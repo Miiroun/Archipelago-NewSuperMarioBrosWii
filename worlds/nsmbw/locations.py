@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Counter
 
 from BaseClasses import  Location, LocationProgressType
 
@@ -98,10 +98,11 @@ def make_locations_priority(world: NSMBWworld) -> None:
                 if world.options.make_world_comp_priority.value == True:
                     world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
                     world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
-    if world.options.include_hintmovies.value == True:
-        for i in DEPRIO_HM:
-            hm = world.get_location(name_hintmovie(i))
-            hm.progress_type = LocationProgressType.EXCLUDED
+    # this is replaced by not making the locations
+    #if world.options.include_hintmovies.value == True:
+    #    for i in DEPRIO_HM:
+    #        hm = world.get_location(name_hintmovie(i))
+    #        hm.progress_type = LocationProgressType.EXCLUDED
 
 
 def create_regular_locations(world: NSMBWworld) -> None:
@@ -111,7 +112,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             for sc in range(1, 3+1):
                 level_location = get_location_names_with_ids([name_starcoin(world_num, level_num, sc)])
-                if world.options.randomize_starcoins:
+                if world.options.starcoin_sanity:
                     world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)
                 else:
                     world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)
@@ -135,6 +136,9 @@ def create_regular_locations(world: NSMBWworld) -> None:
     #add locations for hintmovies
     if world.options.include_hintmovies.value == True:
         for i in range(1, num_hintmovies+1):
+            if i in DEPRIO_HM:
+                continue # skips creating problematic hm for now
+
             hintmovie_location = get_location_names_with_ids([name_hintmovie(i)])
             world.get_region("Peach castle").add_locations(hintmovie_location, NSMBWLocation)
 
@@ -158,8 +162,52 @@ def create_events(world: NSMBWworld) -> None:
 
     world.get_region(name_base(8, 9)).add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
+# these are used in world.shuffled_level_order
+def level_name_to_pos(world_num : int, level_num : int) -> int:
+        pos = sum(LEVELS_PER_WORLD[:(world_num-1)]) + level_num - 1
+        assert 0 <= pos < sum(LEVELS_PER_WORLD), f"pos {pos} is not valid for world {world_num} level {level_num}"
+        return pos
+def pos_to_level_name(pos : int) -> tuple[int, int]:
+        world_sum = 0
+        for world_num in range(1, 9+1):
+            if pos >= world_sum + LEVELS_PER_WORLD[world_num - 1]:
+                world_sum += LEVELS_PER_WORLD[world_num - 1]
+                continue
+
+            level_num = pos - world_sum + 1
+            assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"levelnum {level_num} for world {world_num} and pos {pos} is not valid"
+            return (world_num, level_num)
+        raise ValueError(f"Invalid pos: {pos}")
+
+
+
 def shuffle_level_order(world: NSMBWworld) -> None:
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
     if world.options.level_shuffel_riivolution == True:
-        world.random.shuffle(world.shuffled_level_order)
+        not_shuffled = world.shuffled_level_order.copy()
+
+        secret_exits = list([(secret_exit.world,secret_exit.level) for secret_exit in SECRET_EXIT])
+        secret_exits_shuffle = secret_exits.copy()
+        world.random.shuffle(secret_exits_shuffle)
+
+        dont_shuffle = [(2,8), (6,8), (8,3)]
+
+        world.shuffled_level_order = [0] * sum(LEVELS_PER_WORLD)
+
+
+        for obj in dont_shuffle:
+            world.shuffled_level_order[level_name_to_pos(obj[0], obj[1])] = level_name_to_pos(obj[0], obj[1])
+            not_shuffled.remove(level_name_to_pos(obj[0], obj[1]))
+
+        for obj1, obj2 in zip(secret_exits,secret_exits_shuffle):
+            world.shuffled_level_order[level_name_to_pos(obj1[0], obj1[1])] = level_name_to_pos(obj2[0], obj2[1])
+            not_shuffled.remove(level_name_to_pos(obj1[0], obj1[1]))
+
+        not_shuffled_shuffle = not_shuffled.copy()
+        world.random.shuffle(not_shuffled_shuffle)
+        for pos1, pos2 in zip(not_shuffled,not_shuffled_shuffle):
+            world.shuffled_level_order[pos1] = pos2
+
+        assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
+        assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder {world.shuffled_level_order}, counter {Counter(world.shuffled_level_order)} must have unique elements"

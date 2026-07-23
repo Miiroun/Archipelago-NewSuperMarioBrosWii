@@ -139,12 +139,12 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 
 pip_essen = {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
 extra_start_items : Dict[int,set]= {
-    1: set() | pip_essen,
+    1: set(),
     2: {ITEM.MOVEMENT.Jump} | pip_essen,
-    3: pip_essen, #{ITEM.MOVEMENT.Pipe}
-    4 : {ITEM.MOVEMENT.Swim} | pip_essen,
+    3: set(), #{ITEM.MOVEMENT.Pipe}
+    4 : {ITEM.MOVEMENT.Swim},
     5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Swim} | pip_essen,
-    6: set() | pip_essen,
+    6: set(),
     7: {ITEM.MOVEMENT.Swim} | pip_essen,
     8 : {ITEM.MOVEMENT.Run, ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.Jump} | pip_essen
 }
@@ -168,7 +168,8 @@ def create_all_items(world: NSMBWworld) -> None:
             else:
                 excluded_items.update({ITEM.MOVEMENT.Jump.value})
 
-        excluded_items.update(extra_start_items[starting_world_num])
+        if world.options.level_shuffel_riivolution.value == False:
+            excluded_items.update(extra_start_items[starting_world_num])
 
 
     # This is the function in which we will create all the items that this world submits to the multiworld item pool.
@@ -182,7 +183,7 @@ def create_all_items(world: NSMBWworld) -> None:
 
     itempool: list[Item] = []
 
-    if world.options.randomize_starcoins.value == True:
+    if world.options.starcoin_sanity.value == True:
         for _ in range(77*3):
             itempool.append(world.create_item(ITEM.StarCoin))
     for i in range(1, 9+1):

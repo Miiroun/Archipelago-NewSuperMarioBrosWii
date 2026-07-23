@@ -46,18 +46,12 @@ def create_all_regions(world: NSMBWworld) -> None:
 
 
 def connect_regions(world: NSMBWworld) -> None:
-    # We have regions now, but still need to connect them to each other.
-    # But wait, we no longer have access to the region variables we created in create_all_regions()!
-    # Luckily, once you've submitted your regions to multiworld.regions,
-    # you can get them at any time using world.get_region(...).
-
     menu_region = world.get_region("Menu")
 
     world.get_region(f"World1").connect(world.get_region("Peach castle"))
     menu_region.connect(world.get_region("Inventory"))
 
     connections = get_level_connections()
-    level_rules = specific_level_requierments(world)
     if len(world.star_coin_req_per_world_9_level) == 0:
         world.star_coin_req_per_world_9_level = list(0 for _ in range(8))
         match world.options.world9_unlock_condition.value:
@@ -80,28 +74,15 @@ def connect_regions(world: NSMBWworld) -> None:
         for i, org_lev_num in enumerate(connections[world_num-1]):
             for con_lev_num in org_lev_num:
                 assert type(con_lev_num) == int, "should be an integer"
-                _rule = level_rules[world_num - 1][con_lev_num-1][0]
-                if mod_level_name(world_num,i) == "T":
-                    _rule &= rules.Has( name_world_unlock(world_num), count=2)
-
-                if world_num == 9:
-                    assert len(world.star_coin_req_per_world_9_level) == 8
-                    _rule &= rules.Has(ITEM.StarCoin, count=world.star_coin_req_per_world_9_level[con_lev_num - 1])
 
                 if i== 0:
                     world.get_region(f"World{world_num}").connect(world.get_region(name_base(world_num, con_lev_num)),
-                                                            f"World{world_num}->{name_base(world_num, con_lev_num)}",_rule)
+                                                            f"World{world_num}->{name_base(world_num, con_lev_num)}")
                 else:
                     world.get_region(name_base(world_num, i)).connect(world.get_region(name_base(world_num, con_lev_num)),
-                                                                  f"{name_base(world_num, i)}->{name_base(world_num, con_lev_num)}",_rule )
+                                                                  f"{name_base(world_num, i)}->{name_base(world_num, con_lev_num)}")
     for secret_exit in SECRET_EXIT:
         if secret_exit.is_item:
-            _rule = level_rules[secret_exit.world - 1][secret_exit.level_to - 1][0]
-            if world.options.shortcuts_sanity:
-                _rule &= rules.Has(name_secret(secret_exit))
-            world.get_region(name_base(secret_exit.world, secret_exit.level)).connect(world.get_region(name_base(secret_exit.world, secret_exit.level_to)),f"{name_secret(secret_exit)}",_rule)
-
-
-
+            world.get_region(name_base(secret_exit.world, secret_exit.level)).connect(world.get_region(name_base(secret_exit.world, secret_exit.level_to)),f"{name_secret(secret_exit)}")
 
 

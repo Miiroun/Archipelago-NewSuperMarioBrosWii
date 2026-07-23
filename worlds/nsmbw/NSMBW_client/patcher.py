@@ -71,7 +71,7 @@ class Patcher:
             print("TODO create patched files")
 
     def extract_game(self):
-        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) / "DolphinTool.exe"
+        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool_path)
         assert dolp_tool.exists(), f"the path {dolp_tool} to DolphinTool is invaild"
         subprocess.run([str(dolp_tool), "extract",
                     "--input", str(self.input_path),
@@ -83,12 +83,27 @@ class Patcher:
     def create_riivolution_patch(self):
         if self.slot_data["level_shuffel_riivolution"]:
             self.patch_levels()
-        if False:
+        if True:
+            folder_name = "Object"
+            temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+            file_names: List[str] = os.listdir(temp_path)
+            background_names : List[str] = filter(lambda x : x.startswith("bg") , file_names)
+            self.patch_files(background_names, folder_name)
+        if False: # tileset ? no
             self.patch_entire_folder(os.path.join("Stage", "Texture"))
-        if False:
-            self.patch_entire_folder("Object")
         if self.slot_data["music_shuffel_riivolution"]:
             self.patch_entire_folder(os.path.join("Sound", "stream"))
+
+    def patch_files(self, file_names : List[str], folder_name : str):
+        temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+        new_filenames = file_names.copy()
+        self.random.shuffle(new_filenames)
+
+        (self.output_path / folder_name).mkdir(parents=True, exist_ok=True)
+
+        for name1, name2 in zip(file_names, new_filenames):
+            shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
+
 
     def patch_levels(self):
         """"""
@@ -121,20 +136,14 @@ class Patcher:
 
 
 
-        os.makedirs(self.output_path / "Stage")
+        os.makedirs(self.output_path / "Stage", exist_ok=True)
         for i in range(len(level_shuffle)):
             shutil.copy(Path(tempfile.gettempdir()) / "nsmbw" / "DATA" /"files" / "Stage" / level_name_converter(*levels[i]), self.output_path / "Stage" / level_name_converter(*level_shuffle[i]))
 
     def patch_entire_folder(self, folder_name : str):
         temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
         file_names : List[str] = os.listdir(temp_path)
-        new_filenames = file_names.copy()
-        self.random.shuffle(new_filenames)
-
-        (self.output_path / folder_name).mkdir(parents=True, exist_ok=True)
-
-        for name1, name2 in zip(file_names, new_filenames):
-            shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
+        self.patch_files(file_names,folder_name)
 
 
     def create_riivolution_xml(self):
