@@ -53,14 +53,14 @@ class ITEM:
         Pipe = "Pipe"
         Jump = "Jump"
         Run = "Run"
-        ButtonLeft = "Button left"
-        ButtonRight = "Button right"
-        ButtonUp = "Button up"
-        ButtonDown = "Button down"
-        CheckPoint = "Check point"
+        ButtonLeft      = "Button left"
+        ButtonRight     = "Button right"
+        ButtonUp        = "Button up"
+        ButtonDown      = "Button down"
+        CheckPoint      = "Check point"
 
     class TRAPS(StrEnum):
-        LoosePowerupTrap = "Loose powerup trap"
+        LosePowerupTrap = "Lose powerup trap"
         GoombaTrap = "Goomba trap"
         DeathTrap = "Death trap"
         TimeTrap = "Time trap"
@@ -73,18 +73,18 @@ class ITEM:
         SlowTrap    = "Slow Trap"
 
     class FILLER(StrEnum):
-        FillInventory = "fill inventory"
-        OneUps = "1-ups"
-        CoinOne     = "Coin x01"
-        CoinTen     = "Coin x10"
-        CoinFifty   = "Coin x50"
-        PowerUp = "Random Power-up"
-        SuperSpeed = "Super Speed"
+        FillInventory   = "fill inventory"
+        OneUps          = "1-ups"
+        CoinOne         = "Coin x01"
+        CoinTen         = "Coin x10"
+        CoinFifty       = "Coin x50"
+        PowerUp         = "Random Power-up"
+        SuperSpeed      = "Super Speed"
         #ToadHouse = "Toad House"
 
-    StarCoin = "Starcoin"
-    Time = "Time left"
-    GlitchedLogic = "glitched logic"
+    StarCoin        = "Starcoin"
+    Time            = "Time"
+    GlitchedLogic   = "glitched logic"
 
 
 

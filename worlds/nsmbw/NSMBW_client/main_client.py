@@ -1,4 +1,3 @@
-from settings import get_settings
 import asyncio
 import multiprocessing
 import os
@@ -26,8 +25,7 @@ def launch_NSMBW_client(*args):
 
         logger.info("Connecting to server...")
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="Server Loop")
-        if tracker_loaded:
-            ctx.run_generator()
+
         if gui_enabled:
             ctx.run_gui()
         ctx.run_cli()
@@ -48,7 +46,7 @@ def launch_NSMBW_client(*args):
 
 
     import colorama
-    parser = get_base_parser(description="New Super Mario Bros Wii Archipelago Client.")
+    parser = get_base_parser()
     parser.add_argument('--name', default=None, help="Slot Name to connect as.") # could replace this by reading from yaml
     parser.add_argument("url", nargs="?", help="Archipelago connection url")
 
@@ -65,7 +63,7 @@ def launch_NSMBW_client(*args):
     )
 
 async def shutdown():
-    if get_settings()["nsmbw_settings"].auto_open:
+    if Utils.get_settings()["nsmbw_settings"].auto_open:
         os.system("taskkill /im Dolphin.exe")
         await asyncio.sleep(3)
         os.system("taskkill /im Dolphin.exe")

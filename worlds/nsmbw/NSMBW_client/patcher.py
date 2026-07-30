@@ -1,26 +1,113 @@
+import random
 import xml.etree.ElementTree as ET
 import json
 import os
 import subprocess
 import sys
+from io import BufferedReader, TextIOWrapper
 from pathlib import Path
 
 import logging
 from random import Random
 
 from pyshortcuts import new_filename
+from tornado.escape import utf8
 
 import Utils
 import shutil
 import tempfile
 
 from ..Common import *
-
+from ..Utils import bytes_to_int
 
 #RIIVOLUTION_PATH = Utils.get_settings()["NSMBW.options"].riivolution_path
 #RANDO_PATH = RIIVOLUTION_PATH + r"\\NSMBW_AP_RANDO\\"
 
 logger = logging.getLogger("Client")
+
+class ArcFile:
+    # this class is currently bs, doesnt work, need it to change internal names of the arc files for textures, object rando to work
+    path : Path
+    header_size : int
+
+    def __init__(self, path : Path):
+        self.path = path
+
+    def read(self):
+        with open(self.path, 'rb') as f:
+
+            self.read_header(f)
+
+            for i in range(self.header_size):
+                self.read_node(f, i)
+
+    def read_header(self, f : BufferedReader):
+        self.tag = f.read(0x20)
+        self.rootnode_offset = f.read(0x20)
+        self.header_size = bytes_to_int(f.read(0x20)) #Size of all nodes including the string table.
+        self.data_offset  = f.read(0x20)
+        self.zeros = f.read(0x20 *  4)
+
+    def read_node(self, f : BufferedReader, offset : int):
+        #f.read(offset)
+        self.node_type = f.read(0x01) # 0x00=File, 0x01=Directory
+        self.name_offset = f.read(0x18)
+        self.data_offset = f.read(0x20) # File: Offset of begin of data, Directory: Index of the parent directory.
+        self.size = bytes_to_int(f.read(0x20))
+        self.data = f.read(self.size)
+        return self.data
+
+    def write(self):
+        with open(self.path, 'w') as f:
+            self.write_header(f)
+
+            for i in range(self.header_size):
+                self.write_node(f, i)
+
+    def write_header(self,f : TextIOWrapper):
+        f.write(str(self.tag))
+        f.write(str(self.rootnode_offset))
+        f.write(str(self.header_size))
+        f.write(str(self.data_offset))
+        f.write(str(self.zeros))
+
+
+    def write_node(self,f : TextIOWrapper, offset : int):
+        f.write(str(self.node_type))
+        f.write(str(self.name_offset))
+        f.write(str(self.data_offset))
+        f.write(str(self.size))
+        f.write(str(self.data))
+
+def copy_rename_internal_arc(source : Path, destination : Path, source_name : str, destination_name : str):
+    # TODO needs to modify header size
+    data : List[bytes]= []
+    buff_size = 8192
+    with open(source, 'rb') as f:
+        while True:
+            chunk = f.read(buff_size)
+            if chunk:
+                data.append(chunk) #buff_size
+            else:
+                break
+
+    #print(f"source : {source_name}, destination : {destination_name}")
+
+    for i, data_ in enumerate(data):
+        # issue if split name in middle of different sections
+        text = data[i].decode("utf-8", 'surrogateescape')
+        #print(f"Chunk {i}")
+        #print("-------------unmodifide")
+        #print(text.encode("utf-8", 'surrogateescape'))
+        text = text.replace(source_name, destination_name)
+        #print(f"----------modified")
+        #print(text.encode("utf-8", 'surrogateescape'))
+        #print("-------------")
+        data[i] = text.encode("utf-8", 'surrogateescape')
+
+    with open(destination, 'wb') as f:
+        for data_ in data:
+            f.write(data_)
 
 
 class Patcher:
@@ -71,38 +158,49 @@ class Patcher:
             print("TODO create patched files")
 
     def extract_game(self):
-        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool_path)
-        assert dolp_tool.exists(), f"the path {dolp_tool} to DolphinTool is invaild"
-        subprocess.run([str(dolp_tool), "extract",
+        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool_path)
+        assert dolp_tool.exists() , f"the path {dolp_tool} to DolphinTool is invaild"
+
+        path_to = Path(tempfile.gettempdir()) / "nsmbw"
+        if not (path_to.exists()  and (path_to / "Data" / "files").exists()):
+            subprocess.run([str(dolp_tool), "extract",
                     "--input", str(self.input_path),
-                    "--output", str(Path(tempfile.gettempdir()) / "nsmbw")])
+                    "--output", str(path_to)])
+        else:
+            logger.info(f"Game extract already exists")
 
-
-
-
+# need to read and modify name of arc files
     def create_riivolution_patch(self):
         if self.slot_data["level_shuffel_riivolution"]:
             self.patch_levels()
         if True:
             folder_name = "Object"
-            temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
-            file_names: List[str] = os.listdir(temp_path)
-            background_names : List[str] = filter(lambda x : x.startswith("bg") , file_names)
-            self.patch_files(background_names, folder_name)
-        if False: # tileset ? no
-            self.patch_entire_folder(os.path.join("Stage", "Texture"))
+            #self.patch_subfolder(folder_name, "bgA", True)
+            #self.patch_subfolder(folder_name, "bgB", True)
+
+        if True:
+            folder_name = os.path.join("Stage", "Texture")
+            #self.patch_subfolder(folder_name, "Pa0", True)
+            #self.patch_subfolder(folder_name, "Pa1", True)
+            #self.patch_subfolder(folder_name, "Pa2", True)
+            #self.patch_subfolder(folder_name, "Pa3", True)
+
         if self.slot_data["music_shuffel_riivolution"]:
             self.patch_entire_folder(os.path.join("Sound", "stream"))
 
-    def patch_files(self, file_names : List[str], folder_name : str):
+    def patch_files(self, file_names : List[str], folder_name : str, arc_rename : bool = False):
         temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+        assert len(file_names) > 0, "need to find files to patch"
         new_filenames = file_names.copy()
         self.random.shuffle(new_filenames)
 
         (self.output_path / folder_name).mkdir(parents=True, exist_ok=True)
 
         for name1, name2 in zip(file_names, new_filenames):
-            shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
+            if arc_rename:
+                copy_rename_internal_arc(temp_path / name1, self.output_path / folder_name / name2, name1.split(".")[0], name2.split(".")[0])
+            else:
+                shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
 
 
     def patch_levels(self):
@@ -140,10 +238,16 @@ class Patcher:
         for i in range(len(level_shuffle)):
             shutil.copy(Path(tempfile.gettempdir()) / "nsmbw" / "DATA" /"files" / "Stage" / level_name_converter(*levels[i]), self.output_path / "Stage" / level_name_converter(*level_shuffle[i]))
 
-    def patch_entire_folder(self, folder_name : str):
+    def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False):
+        temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+        file_names: List[str] = os.listdir(temp_path)
+        texture_n: List[str] = list(filter(lambda x: x.startswith(filter_str), file_names))
+        self.patch_files(texture_n, folder_name, arc_rename)
+
+    def patch_entire_folder(self, folder_name : str, arc_rename = False):
         temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
         file_names : List[str] = os.listdir(temp_path)
-        self.patch_files(file_names,folder_name)
+        self.patch_files(file_names,folder_name, arc_rename)
 
 
     def create_riivolution_xml(self):
@@ -207,11 +311,9 @@ class Patcher:
         }
 
         destination = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts"
-        try:
-            destination.mkdir(parents=True)
-            print(f"Directory '{destination}' created successfully.")
-        except FileExistsError:
-            print(f"Directory '{destination}' already exists.")
+
+        destination.mkdir(parents=True, exist_ok=True)
+
 
         with open(destination/ f"seed{self.seed}.json", "w+") as file_name:
             #json.dump(data, file_name, indent=4)
@@ -225,7 +327,7 @@ class Patcher:
         logger.info(f"output file path: {self.output_path}")
 
         logger.info("tests if old rando exist")
-        if os.path.exists(self.output_path):
+        if self.output_path.exists():
             logger.info(f"old rando exist, uses it instead")
             return
 
@@ -250,8 +352,13 @@ class Patcher:
 
 
 if __name__ == "__main__":
+    logger.info = print
     _seed = "00000"
-    _slot_data = { "level_shuffel_riivolution" : 1}
+    level_order = list(range(sum(LEVELS_PER_WORLD)))
+    random.shuffle(level_order)
+    _slot_data = { "level_shuffel_riivolution" : 1,
+                   "music_shuffel_riivolution" : 1,
+                   "shuffled_level_order" : level_order}
     _patcher = Patcher(_seed, _slot_data)
     _patcher.patch()
 

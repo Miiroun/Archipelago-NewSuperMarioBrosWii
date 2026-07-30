@@ -22,9 +22,9 @@ from settings import get_settings
 tracker_loaded = False
 
 try:
-    raise ModuleNotFoundError("")
+    #raise ModuleNotFoundError("")
     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, \
-    TrackerCommandProcessor as SuperClientCommandProcessor, CommonContext, asyncio, server_loop, updateTracker
+    TrackerCommandProcessor as SuperClientCommandProcessor, CommonContext, asyncio, server_loop, updateTracker, UT_VERSION
 
     tracker_loaded = True
     print("Tracker is loaded")
@@ -78,6 +78,9 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_debug_deathlink(self):
         """Gives some debug info if deathlink isn't working correctly.
         If you have trouble with deathlink run this and post it in the nsmbw chanel in the archipelago discord"""
+        if self.ctx.username is None:
+            logger.info(f"Connect to AP-server before running debug_deathlink")
+            return
         logger.info(f"""Debug info about deathlink \n
                     dl enabled: {self.ctx.death_link_enabled} \n
                     dl group: '{self.ctx.death_link_group}' \n
@@ -193,8 +196,10 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Gives you a list of which movement you have and have not unlocked
         """
         #NSMBWOptions.dont_rando_move
-        set_excl_move = set(self.ctx.slot_data["dont_rando_move"])
-        if self.ctx.slot_data["randomize_movement"] != RandomizeMovement.option_off:
+        if self.ctx.username is None:
+            logger.info("Connect to server before running /movements")
+        elif self.ctx.slot_data["randomize_movement"] != RandomizeMovement.option_off:
+            set_excl_move = set(self.ctx.slot_data["dont_rando_move"])
             logger.info(f"You currently have: {set(self.ctx.unlocked_moves)- set_excl_move}")
             logger.info(f"And you are missing: {set(MOVEMENT_UNLOCKS) - set(self.ctx.unlocked_moves)-set_excl_move}")
             logger.info(f"With the following movements excluded: {set_excl_move & set(MOVEMENT_UNLOCKS)}")
@@ -216,12 +221,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         Utils.get_settings()["auto_open"] = not Utils.get_settings()["auto_open"]
 
-    def _cmd_change_save_slot(self, save_slot):
-        """
-        Select a save slot between 1 and 7 to save to automatically.
-        """
-        assert 1 <= int(save_slot) <= 7, "save_slot must be between 1 and 7"
-        self.ctx.save_slot = save_slot
 
     def _cmd_force_hook(self) -> None:
         """Force restart the Dolphin hook process (unhook + fresh re-hook), runs 30 times"""
@@ -232,7 +231,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """Syncs your in game completion to the archipelago multiservers completed locations"""
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
-        self.ctx.update_memory_to_server_on_load()
+        if self.ctx.game_interface.memory_addresses is not None:
+            self.ctx.update_memory_to_server_on_load()
 
     def _cmd_clear_inventory(self):
         """Clears your inventory of powerups (except 5).
@@ -245,6 +245,76 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
         logger.info(f"Successfully cleared your inventory of powerups")
 
+    def _cmd_change_save_state_slot(self, slot):
+        """"""
+        num = int(slot)
+        assert 1 <= num <= 8
+        self.ctx.save_slot = num
+
+    def _cmd_change_clear_cache_slot(self, slot):
+        """"""
+        num = int(slot)
+        assert 1 <= num <= 8
+        Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot = num
+
+    def _cmd_get_time(self):
+        """Prints how much time you have recived"""
+        if self.ctx.username is None:
+            logger.info("Connect to server before running /get_time")
+        elif self.ctx.slot_data["randomize_time"] != 0:
+            logger.info(f" You have unlocked {self.ctx.time}/{self.ctx.slot_data['randomize_time']}, which is {self.ctx.time/self.ctx.slot_data['randomize_time'] * 500} mario seconds")
+        else:
+            logger.info("Time rando is disabled")
+
+    def _cmd_get_versions(self):
+        """Prints out a few diffrent versions that is useful to know"""
+        logger.info(f"NSMBWAP Client version    : {self.ctx.manifest_version}\n"
+                    f"NSMBWAP generated version : {self.ctx.slot_data['NSMBW_Version'] if self.ctx.username is not None else 'not connected'}\n"
+                    f"UT version                : { UT_VERSION if tracker_loaded else 'Not loaded'}\n"
+                    f"AP version                : {Utils.__version__}\n"
+                    f"Server version            : {self.ctx.server_version}\n"
+                    f"Generator version         : {self.ctx.generator_version}\n"
+                    f"Game version              : {self.ctx.game_interface.current_game if self.ctx.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
+                    f"Game revision             : {self.ctx.game_interface.game_rev if self.ctx.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
+                    )
+
+    def _cmd_get_error(self):
+        """Prints latest stacktrace"""
+        logger.info(f"Prints latest stacktrace")
+        logger.info(traceback.format_exc())
+
+    def _cmd_debug(self):
+        """Runs most debug commands, please post results in the NSMBW discord thread in the archipelago discord server."""
+        logger.info(f"Runs most debug commands, post the results in the NSMBW discord thread in the archipelago discord server.")
+        
+        logger.info("---- Do basic basic refresh ----")        
+        self._cmd_save()
+        if self.ctx.game_interface.memory_addresses is not None:
+            self.ctx.game_interface.connect_to_game()
+        self._cmd_refresh()
+        self._cmd_refresh_mod()
+        self._cmd_match_server_state()
+        #self._cmd_reapply_checks() # send invent pow, dont run
+        
+        logger.info("---- Info regarding setup ----")        
+        self._cmd_help()
+        self._cmd_get_versions()
+        self._cmd_debug_deathlink()
+        self._cmd_status()
+
+        logger.info("---- Info regarding items ----")        
+        self._cmd_received()
+        self._cmd_missing()
+        self._cmd_movements()
+        self._cmd_starcoin_count()
+        self._cmd_completed_worlds()
+        self._cmd_get_time()
+
+        logger.info("---- Info regarding errors ----")        
+        if tracker_loaded:
+            self._cmd_faris_asked()
+
+        self._cmd_get_error()
 
 status_messages = {
     ConnectionState.IN_GAME: "In level",
@@ -372,11 +442,12 @@ class NSMBWContext(SuperContext):
                 self.slot_data = args["slot_data"]
                 # checks for new slot_data values to be compatible
 
-                backwards_compat : List[tuple] = []
-                # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffel_riivolution", 0)
-                for name, value in backwards_compat:
-                    if name not in self.slot_data.keys():
-                        self.slot_data[name] = value
+                if not Utils.is_frozen():
+                    backwards_compat : List[tuple] = []
+                    # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffel_riivolution", 0)
+                    for name, value in backwards_compat:
+                        if name not in self.slot_data.keys():
+                            self.slot_data[name] = value
 
 
                 Utils.async_start(self.update_death_link(self.slot_data["death_link"]))
@@ -476,7 +547,8 @@ class NSMBWContext(SuperContext):
 
     def make_gui(self):
         ui = super().make_gui()
-        ui.base_title = "New Super Mario Bros Wii Client, Archipelago version:"
+        self.get_version()
+        ui.base_title = f"New Super Mario Bros Wii Client {self.manifest_version}, Archipelago version:"
         return ui
 
     def on_deathlink(self, data: Utils.Dict[str, Utils.Any]) -> None:
@@ -487,8 +559,7 @@ class NSMBWContext(SuperContext):
             self.is_pending_death_link_reset = True
         super().on_deathlink(data)
 
-
-    async def dolphin_sync_task_func(self):
+    def get_version(self):
         apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else pathlib.Path() / "worlds" / "nsmbw"
 
         if apnsmbw_file:
@@ -501,15 +572,18 @@ class NSMBWContext(SuperContext):
                     with open(apnsmbw_file / "archipelago.json", "r", encoding="UTF-8") as f:
                         text = f.read()
                 manifest = json.loads(text)
-                version = manifest["world_version"]
-                self.manifest_version = version
-                self.log_color(f"Using nsmbw.apworld version: {version}", "blue")
-                logger.info(f" If you have trouble, look at this glossary for help: ")
-                self.log_color(f"https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md", "blue")
+                self.manifest_version = manifest["world_version"]
 
             except Exception as e:
                 print(f"Failed to read ap manifest file for version data, error {e}")
 
+    async def dolphin_sync_task_func(self):
+        self.get_version()
+        self.log_color(f"Using nsmbw.apworld version: {self.manifest_version}", "blue")
+        logger.info(f" If you have trouble, look at this glossary for help: ")
+        self.log_color(
+            f"https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md",
+            "blue")
 
         #logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
 
@@ -650,6 +724,9 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_save(self):
+        if self.username is None:
+            logger.info("Connect to sever before saving")
+            return
         await asyncio.sleep(0.5)
         self.game_interface.save_state(self.save_slot)
         await asyncio.sleep(0.5)
@@ -681,6 +758,10 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_load(self):
+        if self.username is None:
+            logger.info("Connect to sever before loading")
+            return
+
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
                 with open(Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
@@ -1185,7 +1266,7 @@ class NSMBWContext(SuperContext):
                     if 0 < time_left < 500:
                         self.game_interface.set_time_left(int_to_bytes(time_left // 2, 4))  #half times left
 
-                case ITEM.TRAPS.LoosePowerupTrap:
+                case ITEM.TRAPS.LosePowerupTrap:
                     logger.info("What happened to your power up?")
                     for player_num in range(PLAYER_COUNT):
                         curr_pow = self.game_interface.get_powerupstate(player_num)
@@ -1535,7 +1616,7 @@ class NSMBWContext(SuperContext):
         _patcher = Patcher(self.seed_name, self.slot_data)
         _patcher.patch()
 
-        dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
+        dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
         assert dolphin_path.exists(), "dolphin.exe needs to be correct"
         short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
         print(short_cut_path)
@@ -1543,7 +1624,7 @@ class NSMBWContext(SuperContext):
 
         if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
             subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
-            time.sleep(10)
+            time.sleep(35)
         elif auto_start:
             logger.error("Failed to auto start dolphin, make sure your file path is correct")
 
@@ -1561,6 +1642,7 @@ class NSMBWContext(SuperContext):
         elif auto_start:
             logger.error("Failed to auto start dolphin, make sure your file path is correct")
 
+        time.sleep(35)
 
 #end of class
 

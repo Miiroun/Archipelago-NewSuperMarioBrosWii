@@ -178,6 +178,7 @@ class NSMBWInterface(object):
         is_normal_record = player_status == 0
 
         is_in_stage = self.get_in_stage_flag()[3] == 1
+
         is_not_on_world_map = not self.is_in_worldmap()
         is_not_on_main_menu = not self.is_in_menu()
 
@@ -339,6 +340,7 @@ class NSMBWInterface(object):
 
 
     def load_state(self, slot : int, do_logging=True):
+        return
         assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
         wait_short  = 0.1
@@ -371,9 +373,9 @@ class NSMBWInterface(object):
         #logger.info("Clearing JIT cache by loading savestate")
 
         time.sleep(0.3)
-        self.save_state(8, do_logging=False)
+        self.save_state(Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot, do_logging=False)
         time.sleep(0.5)
-        self.load_state(8, do_logging=False)
+        self.load_state(Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot, do_logging=False)
         time.sleep(0.3)
 
         self.should_clear = 0

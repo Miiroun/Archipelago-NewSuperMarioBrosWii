@@ -1,3 +1,6 @@
+# TODO 
+Mention riivolution, keybindings and dolphin default program
+
 ## Super short term
 - PlayerGravity # gravity filler ?
 - Just look in memory where store player data, follow intruc, find size -> multiplayer
@@ -12,7 +15,7 @@
   - dontrandomoves to default moves?
   - include option to sanity?
 - update docs
-- button_down and button_up logic
+- button_down and button_up and pipe logic
 - request channel
 - Secret exit items
   - client
@@ -30,7 +33,7 @@
 - Rando game tile sheet, enemy sheet, music etc. Easiest done through riivolution
 - Deathlink Amnesty incorrect, not ressetting
 - Suggestion: make local_items take an amount
-- Try dumping my copy of nsmbw
+- Try redumping my copy of nsmbw : test which guide / method best to link to
 - 2-2sc1 & sc2
 - 1-C sc3
 - Why is deathlink group displayed as wrong??
@@ -72,6 +75,43 @@
 - Beat some levels on vanilla save file 1 to verify no wrong sends are happening
 - Doolphintool -h
 - Reword timer modifier option
+- on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
+- Make Clear cache f key be setting
+- Put disclaimer that collect SC immediately doesn't impact logic
+- NSMBW version in window title
+- Hm 5 probably not a problem
+- Try sending !-switch
+- Remove comment above check sc in level
+- Deleate main branch (again)
+- Deathlink: if in level ()
+- Add setting to which save file to continuously save/load from
+- Docs mention no changes dolphin setting or keybind
+- If unlocked set red switch to on
+- Hm in peach castle is not correct amount on free, should remove req of having sc
+- Remove req for cost of having X HM on other settings
+- need rules for when not to unlock inventory pow: either beat 1-3 (toad), have access to world enemys, or door + climb + toadhouse
+- Add key binds to docs
+- Location scout hm: give as hint, as an option
+  - Could maybe change name of hm based on if priority / useful / filler
+- Create bash script for: generate, host, open client with connection args
+- Use dme on intro, try finding way to not release on connect
+- Can I verify dolphin settings? have been changed?
+- Time change default not current
+- rando  world maps, include customs
+- Shuffle with custom levels (no logic)
+- Time custome rule
+- Auto download custom levels
+- Edit title screen
+- implement method to read arc files : needed to change names of subfolders
+- Randomize boz Heath : start 10, go down by one for each of 9 nine items
+- stopmping on enemeies as move
+- Add loc for getting 100 normal coins in a level?
+- Ask about x% local filler
+- Remove visibility of riivolution patch for next release, have it be a secret option
+- Patch to skip wii safty
+- Patch to relocate external save file
+- verify that key combos dont overlap
+- point to dumping guide in docs
 
 ## Playtest
 - multiplayer
@@ -85,7 +125,9 @@
 - playtest so deathlink amnesty and groups works
 - try settig settings to 2
 - Playtest with code loading, Whats different and if something works
-
+- Change default savestate button
+- command changing saveslot and clearcache slot
+- get_time
 
 ## Bugs to fix
 - overwrite level comp ?
@@ -99,6 +141,24 @@
 - ?switch doesnt disable, is permanently on
 - HM5 : all hm requring castle comp
   - might be problem with patch for skipping world unlocks
+- Som hm req cannon comp
+- Other errors i noticed, 4-1 star coin is collectable with just carry by picking up the koopashell on the little bit of land with the red ring, once i got the propeller mushroom for what i had unlocked, 1-1 star coin 2 and 4-1 starcoin 2 can both be collected with just propeller, and 7-3 starcoin 2 can be collected with climb and propeller,  (i forgot to look if it was in logic before grabbing it, but you can also get 1-castle starcoin 3 with propeller and no p-switch) also hint movie 06 is unobtainable until the game registers 1-tower is completed, meaning it can't be collected until the second progression of world 1 is collected (not entirely sure what progress on hint movies are though, I've had some hint movies pop up and not be in logic, and still haven't been able to get hint movie 09 to show up despite being in logic, though i know the hint movies are weird to get so that might be user error)
+  - the 1-1_sc2 cannot be replicated with their yaml
+- you could also prevent locking yourself out of things by making the shop need you to have the currency, but not actually take it away and instead modify the prices to have some order to the actual shop items
+- 6-4 sc1 logic wrong?
+- 6-3 quest switch doesn't work ?
+- 4-G ice flower?
+- Fix inventory pow on other savefiles
+- Starcoin invent not sending, of by 1, just remove the -1, verify it works
+- Add command to chage which save slot to use for option
+- Why doesnt launcher componenet work while running from source
+- try loading code patch with riivolution
+- sends everything when fades to black
+- All backgrounds are dark
+  - need to modify internal of the .arc file
+- Issue with running with an .iso file
+
+
 
 ## Short term
 - Multiplayer support
@@ -124,6 +184,8 @@
 - Make secret exit items to reunlock them
 - assert early items are actually early, write test?
 - Figure out how to change HM unlock condition?
+- Work on UT tracker pack
+  - After 0.3.0, other things are higher priority
 
 ## Broken versions
 # EU 1
@@ -218,6 +280,7 @@
 - still sends false deathlinks
 - inventory_pow desyncing
 - Entering 8-A boss without ground pound freezes game
+- something is making locations missing from tracker
 
 ## Features
 - Save toad / kill world enemy = hint/check

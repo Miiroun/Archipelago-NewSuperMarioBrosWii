@@ -96,7 +96,7 @@ class IncludeHintMovies(Toggle):
     If remove this then compensate with starter locations to keep #locations > #items.
     """
     display_name = "Include Hint Movies"
-    default = True
+    default = False
 
 class HintMovieShopPriceLogic(Choice):
     """
@@ -301,7 +301,7 @@ class SaveStateSlot(Range):
     """
     display_name = "Save Slot"
     range_start = 1
-    range_end = 7
+    range_end = 8
     default = 7
 
 class ModifierMultiplierPercentage(Range):
@@ -319,22 +319,28 @@ class UseRiivolutionOptions(Toggle):
     """This needs to be enabled if you want to use any other riivolution based options"""
     display_name = "Use Riivolution (early alpha, dont expect to be able to finish run with this)"
     default = False
+    visibility = Visibility.none
+
 
 class LevelShuffleRiivolution(Toggle):
     """Shuffles the level order, requires riivolution to be enabled."""
     display_name = "Level Shuffle Riivolution"
     default = False
+    visibility = Visibility.none
+
 
 class MusicShuffleRiivolution(Toggle):
     """Shuffles the background, requires riivolution to be enabled."""
     display_name = "Music Shuffle Riivolution"
     default = False
+    visibility = Visibility.none
+
 
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
     shortcuts_sanity : IncludeShortcuts
-    include_hintmovies : IncludeHintMovies
+    hint_movie_sanity : IncludeHintMovies
     starcoin_sanity: StarcoinSanity
     include_inventory_powerups : IncludeNumberInventoryItems
     make_world_comp_priority : MakeWorldCompPriority
@@ -450,7 +456,7 @@ option_presets = {
     "standard/recomeneded": {
         "include_level_completion": IncludeLevelCompletion.default,
         "shortcuts_sanity": IncludeShortcuts.default,
-        "include_hintmovies": IncludeHintMovies.default,
+        "hint_movie_sanity": IncludeHintMovies.default,
         "starcoin_sanity": StarcoinSanity.default,
 
         "randomize_movement": RandomizeMovement.default,
@@ -469,7 +475,7 @@ option_presets = {
     "Minimal": {
         "include_level_completion": IncludeLevelCompletion.option_false,
         "shortcuts_sanity": IncludeShortcuts.option_false,
-        "include_hintmovies": IncludeHintMovies.option_false,
+        "hint_movie_sanity": IncludeHintMovies.option_false,
         "starcoin_sanity": StarcoinSanity.option_false,
         "starting_world": 1,
         "include_inventory_powerups": 0,
@@ -487,7 +493,7 @@ option_presets = {
     "Maximal": {
         "include_level_completion": IncludeLevelCompletion.option_true,
         "shortcuts_sanity": IncludeShortcuts.option_true,
-        "include_hintmovies": IncludeHintMovies.option_true,
+        "hint_movie_sanity": IncludeHintMovies.option_true,
         "starcoin_sanity": StarcoinSanity.option_true,
         "starting_world": "random",
         "include_inventory_powerups" : 999,
@@ -514,8 +520,8 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
     # This section tests if to many location options are turned off and tries to compensate for it.
     req_start_loc = -10
     req_start_loc_max = 10
-    if (world.options.include_hintmovies.value == False):
-        #print(f"(NSMBW generation error) Turning off include_hintmovies can cause fill errors with a low amount of num_starting_locations.")
+    if (world.options.hint_movie_sanity.value == False):
+        #print(f"(NSMBW generation error) Turning off hint_movie_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if (world.options.include_level_completion.value == False):
             #print(f"(NSMBW generation error) Turning off include_level_completion can cause fill errors with a low amount of num_starting_locations.")
@@ -538,7 +544,7 @@ def adjust_options(world): # cannot type check because circular imports : NSMBWw
 
     # this tries to prevent num loc > num items
     if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.include_level_completion.value * 71 +
-        world.options.include_hintmovies.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
+        world.options.hint_movie_sanity.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
          <= 10+
         ((itm := world.options.randomize_movement.value >= 1) * len(MOVEMENT_UNLOCKS) + world.options.randomize_time.value
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):

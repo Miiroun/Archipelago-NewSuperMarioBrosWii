@@ -47,7 +47,7 @@ def set_level_entrance_rules(world: NSMBWworld) -> None:
                     # want to change to CanReachRegion, but unshure how to put in a count for it
                     bowser_world_clear_list = list([name_base(world_num, level_num) for world_num, level_num in[(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9)]])
                     bowser_clear_rule = Has(ITEM.StarCoin,count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
-
+                    _rule &= bowser_clear_rule
                 if i== 0:
                     world.set_rule(world.get_entrance(f"World{world_num}->{name_base(world_num, con_lev_num)}"),_rule)
                 else:
@@ -76,7 +76,8 @@ def set_all_entrance_rules(world: NSMBWworld) -> None:
             # this makes sure the first 2 levels are beatable
             randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
             randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
-            _rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
+            #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
+            _rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0]).resolve(world)
 
             i += 1
             if i > 10_000:
@@ -126,7 +127,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
 
     hm_req = specific_hintmovie_requierments(world)
     total_cost = 0
-    if world.options.include_hintmovies:
+    if world.options.hint_movie_sanity:
         for hm_num in range(1,HINTMOVIE_COUNT+1):
             if hm_num in DEPRIO_HM:
                 continue

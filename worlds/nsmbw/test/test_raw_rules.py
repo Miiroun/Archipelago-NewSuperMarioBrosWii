@@ -1,7 +1,5 @@
-from .bases import NSMBWWorld
-from ..options import RandomizeMovement, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups, \
-    HintMovieShopPriceLogic
-from ..Common import *
+from Options import Toggle
+from .bases import *
 
 class TestRawRules(NSMBWWorld):
     options = {
@@ -13,7 +11,9 @@ class TestRawRules(NSMBWWorld):
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 0,
         "starcoin_shop_multiplier" : 1,
-        "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_all,
+        "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_ordered,
+        "level_shuffel_riivolution" : LevelShuffleRiivolution.option_false,
+        "hint_movie_sanity" : IncludeHintMovies.option_true
     }
 
     def test_inventory(self):
@@ -38,10 +38,10 @@ class TestRawRules(NSMBWWorld):
         self.assertAccessDependency([sc_1_1_3], [[ITEM.POWERUP.Propeller_Mushroom]], only_check_listed=True)
 
     def test_hint_movie(self):
-        self.assertFalse(self.world.get_location("Hintmovie01").can_reach(self.multiworld.state))
+        self.assertFalse(self.world.get_location(name_hintmovie(1)).can_reach(self.multiworld.state))
         for _ in range(3):
             self.collect_by_name(ITEM.StarCoin)
-        self.assertTrue(self.world.get_location("Hintmovie01").can_reach(self.multiworld.state))
+        self.assertTrue(self.world.get_location(name_hintmovie(1)).can_reach(self.multiworld.state))
 
 
     def test_bowser(self):
@@ -50,8 +50,8 @@ class TestRawRules(NSMBWWorld):
         self.collect_by_name(name_world_unlock(8))
         self.collect_by_name(ITEM.POWERUP.Super_Mushroom.value)
         self.collect_by_name(ITEM.POWERUP.Propeller_Mushroom.value)
-        self.assertTrue(self.world.get_location(name_level(8, 10)).can_reach(self.multiworld.state))
-        self.assertFalse(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state))
+        self.assertTrue(self.world.get_location(name_level(8, 10)).can_reach(self.multiworld.state)) # 8-A
+        self.assertFalse(self.world.get_location(name_level(8, 9)).can_reach(self.multiworld.state)) # 8-C
 
         self.collect_by_name(name_world_unlock(1))
         for _ in range(100):

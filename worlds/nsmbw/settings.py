@@ -47,6 +47,9 @@ class NSMBWSettings(settings.Group):
                 return self.__class__(res)
             return None
 
+    class DolphinFolderPath(settings.UserFolderPath):
+        """Path to dolphin program directory, used only on windows"""
+
     class DolphinExePath(settings.UserFilePath):
         """A path to the dolphin directory, windows default is C:\\Program Files\\Dolphin-x64"""
         is_exe = True
@@ -55,7 +58,7 @@ class NSMBWSettings(settings.Group):
         """Points to Dolphintools.exe"""
         is_exe = True
 
-    class DolphinRiivolutionFolderPath(settings.OptionalUserFolderPath):
+    class DolphinRiivolutionFolderPath(settings.UserFolderPath):
         """A path to dolphins riivolution folder, on Windows found in %appdata%/Dolphin Emultator/Load/riivolution"""
 
     class AutoOpenGame(settings.Bool):
@@ -82,6 +85,18 @@ class NSMBWSettings(settings.Group):
         ignore = 0
         update_not_important = 1
         update_all = 2
+
+    class ClearCacheSaveSLot(settings.IntEnum):
+        """ Will press F{num} and F{num}+shift to save and load its saveslot"""
+        Slot1 = 1
+        Slot2 = 2
+        Slot3 = 3
+        Slot4 = 4
+        Slot5 = 5
+        Slot6 = 6
+        Slot7 = 7
+        Slot8 = 8
+
 
     class Use_xdotool(settings.IntEnum):
         """
@@ -114,23 +129,26 @@ class NSMBWSettings(settings.Group):
     use_xdotool_instead_of_keyboard_linux_only : Use_xdotool | int = Use_xdotool(0)
     allow_gen_difficult_settings : AllowGenDiffSettings | bool = False
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
+    clear_cache_save_slot : ClearCacheSaveSLot | int = 7
 
-    dolphin_exe_path: DolphinExePath | str
-    dolphin_tool_path : DolphinToolsPath | str
+
     dolphin_riivolution_folder_path: DolphinRiivolutionFolderPath | str
     if Utils.is_windows:
-        dolphin_exe_path = os.path.join(os.environ['programfiles'], "Dolphin-x64", "Dolphin.exe")
-        dolphin_tool_path = os.path.join(os.environ['programfiles'], "Dolphin-x64", "DolphinTool.exe")
+        dolphin_folder_path : DolphinFolderPath | str = os.path.join(os.environ['programfiles'], "Dolphin-x64")
         dolphin_riivolution_folder_path = DolphinRiivolutionFolderPath(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution"))
     elif Utils.is_macos:
+        dolphin_exe_path: DolphinExePath | str
+        dolphin_tool_path: DolphinToolsPath | str
         dolphin_exe_path = DolphinRiivolutionFolderPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
         dolphin_tool_path = DolphinRiivolutionFolderPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
         dolphin_riivolution_folder_path = DolphinRiivolutionFolderPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
     elif Utils.is_linux:
-        result = subprocess.run(["where-is", "Dolphin"], capture_output=True, text=True)
+        dolphin_exe_path: DolphinExePath | str
+        dolphin_tool_path: DolphinToolsPath | str
+        result = subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True)
         dolphin_exe_path = DolphinExePath(result.stdout)
         dolphin_riivolution_folder_path = DolphinRiivolutionFolderPath(Path(result.stdout) / "Load" / "Riivolution")
-        result = subprocess.run(["where-is", "DolphinTools"], capture_output=True, text=True)
+        result = subprocess.run(["whereis", "dolphin-emu-tools"], capture_output=True, text=True)
         dolphin_tool_path = DolphinExePath(result.stdout)
 
     else:

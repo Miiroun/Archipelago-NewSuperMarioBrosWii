@@ -97,17 +97,14 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - On Linux you will need to give the client root access for it to properly access save states
 - Climb movement have issues, you can't leve vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
 - If you are connected to the game on the title screen then it will read of data in save slot 1 and might send all locations, be careful. Dont go to the main menu when you are connected to client.
-- Generation failure:
-  - Either problem around start : increase location count in the multiworld
-- loading save state sends lots of inventory items
 - The clock might not display modified time correctly, but is accurate.
-- Star will display visually as active when not, if not unlocked and bring it from inventory
-- Rarely caches when loading a world map world, if encountered please report this issue
+- Star item will somtimes display visually as active when not. This happens if it is not unlocked and you bring it from your inventory into a level.
 - Deathlink problems:
   - If not received, try running /kill, if this does not work, make sure you have changed the dolphin settings in the set-up guide.
   - If not sending, try turing off your deathlink group and then toggle deathlink off and on again.
   - Run /deathlink_debug to get information about its current state.
-
+- Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files
+- If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
 
 
 ## FAQ
@@ -126,7 +123,7 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 -  Tracker?
   - A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
 - Rivvolution patch?
-  - In its current state the client does not modify the game file in any way (just editing the games live memory). Therefor there is no riivolution patch.
+  - Some settings require a riivolution patch, it should be auto generated and loaded when you first connect to the archipelago server
 - Do you support item/location groups?
   - yes, e.g. Powerups, Movement, Hintmovies, Starcoins, Starcoins_World1, Starcoins_World1_Level1, Level_completion_world1, Level_completion
 - Why are not cannons unlocked?
@@ -139,6 +136,8 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - Why is a level in logic?
   - Run /explain levelname and /explain_more levelname.
   - This will give you the rule for the location, you can run /movements to get a list of active movements. 
+- Why does the client auto press hotkeys?
+  - This is a solution to clear the JIT cache by making and loading a save state. If the specific keycombo causes issues you can change them in your game yaml and in host.yaml.
 - Bugs?
   - Expect bugs, it is still in development.
   - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948), make sure to mention your game revision.

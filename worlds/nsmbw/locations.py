@@ -99,7 +99,7 @@ def make_locations_priority(world: NSMBWworld) -> None:
                     world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
                     world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
     # this is replaced by not making the locations
-    #if world.options.include_hintmovies.value == True:
+    #if world.options.hint_movie_sanity.value == True:
     #    for i in DEPRIO_HM:
     #        hm = world.get_location(name_hintmovie(i))
     #        hm.progress_type = LocationProgressType.EXCLUDED
@@ -134,7 +134,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
             world.get_region(name_base(world_num,level_num)).add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
-    if world.options.include_hintmovies.value == True:
+    if world.options.hint_movie_sanity.value == True:
         for i in range(1, num_hintmovies+1):
             if i in DEPRIO_HM:
                 continue # skips creating problematic hm for now
