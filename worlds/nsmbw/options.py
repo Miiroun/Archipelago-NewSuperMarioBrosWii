@@ -5,6 +5,9 @@ from Options import *
 from .Common import *
 
 from typing import TYPE_CHECKING
+
+from .Common import ITEM
+
 if TYPE_CHECKING:
     from .world import NSMBWworld
 
@@ -59,8 +62,9 @@ class DontRandoMovement(ItemSet):
     display_name = "Dont Rando these Movements: WARNING default = BETA (no logic), remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
     default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
-               ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value}
-
+               ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value,
+               ITEM.MOVEMENT.Climb.value, ITEM.MOVEMENT.QuestSwitch.value}
+    visibility = Option.visibility.none
 
 class RandomizePowerups(Choice):
     """
@@ -89,6 +93,12 @@ class RandomizeTime(Range):
     default = 0
     #default = 5
 
+class RandomizeBossHealth(Toggle):
+    """
+    If enabled all kopalings will start out with having 10 health.
+    This number is reduced by 1 for each Boss Health item you receive
+    """
+    default = False
 
 class IncludeHintMovies(Toggle):
     """
@@ -350,6 +360,7 @@ class NSMBWOptions(PerGameCommonOptions):
     dont_rando_move : DontRandoMovement
     randomize_powerups : RandomizePowerups
     randomize_time : RandomizeTime
+    randomize_boss_health : RandomizeBossHealth
 
     logic_difficulty: LogicDifficulty
     logic_outside_powerup : LogicOutsidePowerups
@@ -401,6 +412,7 @@ option_groups = [
             RandomizeMovement,
             DontRandoMovement,
             RandomizeTime,
+            RandomizeBossHealth,
         ],
     ),
     OptionGroup(
@@ -460,7 +472,7 @@ option_presets = {
         "starcoin_sanity": StarcoinSanity.default,
 
         "randomize_movement": RandomizeMovement.default,
-        "dont_rando_move": DontRandoMovement.default,
+        #"dont_rando_move": DontRandoMovement.default,
         "randomize_powerups": RandomizePowerups.default,
         "randomize_time": RandomizeTime.default,
         "starting_world": StartingWorld.default,
@@ -481,7 +493,7 @@ option_presets = {
         "include_inventory_powerups": 0,
 
         "randomize_movement": RandomizeMovement.option_off,
-        "dont_rando_move": set(MOVEMENT_UNLOCKS),
+        #"dont_rando_move": set(MOVEMENT_UNLOCKS),
         "randomize_powerups": RandomizePowerups.option_off,
         "randomize_time": 0,
 
@@ -499,7 +511,7 @@ option_presets = {
         "include_inventory_powerups" : 999,
 
         "randomize_movement": RandomizeMovement.option_on,
-        "dont_rando_move": set(),
+        #"dont_rando_move": set(),
         "randomize_powerups": RandomizePowerups.option_on,
         "randomize_time": 5,
 

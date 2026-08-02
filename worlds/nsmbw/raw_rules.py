@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, List
 
 from rule_builder.rules import *
 from rule_builder.options import OptionFilter
-from .options import RandomizeMovement, RandomizePowerups, LogicOutsidePowerups, LogicDifficulty, DontRandoMovement
+from .options import RandomizeMovement, RandomizePowerups, LogicOutsidePowerups, LogicDifficulty, DontRandoMovement, \
+    HintMovieShopPriceLogic
 from .Common import *
 
 if TYPE_CHECKING:
@@ -16,72 +17,77 @@ DEPRIO_HM += [6, 9, 54, 55] # broken ?
 def specific_hintmovie_requierments(world: NSMBWworld) -> List:
     # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
     rule_completed_everything = Has(ITEM.StarCoin, count=231)  & Has("Victory")# dont want to implement complex, just deprioritize
+    def has_sc(amount : int):
+        if world.options.hint_movie_shop_price_logic.value != HintMovieShopPriceLogic.option_free:
+            return Has(ITEM.StarCoin, count=amount)
+        else:
+            return True_()
     requierments : list = [
         #starcoin cost, level requierment, generic requierment
         [3, (1,1), True_()],   #01
         [5, (1,1), rule_completed_everything],  # 02 #find every normal goal in world1-9
-        [3, (1,2), Has(ITEM.StarCoin, count=5)],  # 03
+        [3, (1,2), has_sc(5)],  # 03
         [3, (1,3), rule_completed_everything],  # 04 #find every normal goal in world1-9
         [5, (1,3), Has(name_base(1,8))],  # 05
-        [5, (1,8), Has(ITEM.StarCoin, count=10)],  # 06
-        [5, (1,5), Has(ITEM.StarCoin, count=30)],  # 07
-        [0, (2,1), Has(ITEM.StarCoin, count=15)],  # 08
-        [3, (2,1), Has(ITEM.StarCoin, count=1)],  # 09
-        [0, (2,2), Has(ITEM.StarCoin, count=95)],  # 10
-        [3, (2,2), Has(ITEM.StarCoin, count=150)],  # 11
+        [5, (1,8), has_sc(10)],  # 06
+        [5, (1,5), has_sc(30)],  # 07
+        [0, (2,1), has_sc(15)],  # 08
+        [3, (2,1), has_sc(1)],  # 09
+        [0, (2,2), has_sc(95)],  # 10
+        [3, (2,2), has_sc(150)],  # 11
         [5, (2,3), rule_completed_everything]  ,# 12
-        [5, (2,4), Has(ITEM.StarCoin, count=20)] , # 13 #find every normal adn secret goal in world1-9
+        [5, (2,4), has_sc(20)] , # 13 #find every normal adn secret goal in world1-9
         [5, (2,5), Has(name_base(2,8))],  # 14
-        [5, (2,5), Has(ITEM.StarCoin, count=215)],  # 15
-        [10, (2,6), Has(ITEM.StarCoin, count=25)],  # 16
-        [0, (3,1), Has(ITEM.StarCoin, count=65)] , # 17
-        [3, (3,1), Has(ITEM.StarCoin, count=35)] , # 18
-        [5, (3,2), Has(ITEM.StarCoin, count=165)] , # 19
-        [5, (3,2), Has(ITEM.StarCoin, count=190)]  ,# 20
-        [0, (3,3), Has(ITEM.StarCoin, count=140)] , # 21
+        [5, (2,5), has_sc(215)],  # 15
+        [10, (2,6), has_sc(25)],  # 16
+        [0, (3,1), has_sc(65)] , # 17
+        [3, (3,1), has_sc(35)] , # 18
+        [5, (3,2), has_sc(165)] , # 19
+        [5, (3,2), has_sc(190)]  ,# 20
+        [0, (3,3), has_sc(140)] , # 21
         [3, (3,3), Has(name_base(3,8))],  # 22
-        [5, (3,3), Has(ITEM.StarCoin, count=195)] , # 23
-        [5, (3,6), Has(ITEM.StarCoin, count=140)],  # 24
-        [5, (3,5), Has(ITEM.StarCoin, count=130)] , # 25
-        [3, (4,1), Has(ITEM.StarCoin, count=45)]  ,# 26
-        [5, (4,2), Has(ITEM.StarCoin, count=175)] , # 27
+        [5, (3,3), has_sc(195)] , # 23
+        [5, (3,6), has_sc(140)],  # 24
+        [5, (3,5), has_sc(130)] , # 25
+        [3, (4,1), has_sc(45)]  ,# 26
+        [5, (4,2), has_sc(175)] , # 27
         [3, (4,2), rule_completed_everything],  # 28 # everything
-        [0, (4,3), Has(ITEM.StarCoin, count=125)],  # 29
+        [0, (4,3), has_sc(125)],  # 29
         [5, (4,3), Has(name_base(4,8))],  # 30
-        [10, (4,7), Has(ITEM.StarCoin, count=70)],  # 31
-        [0, (4,4), Has(ITEM.StarCoin, count=50)],  # 32
-        [5, (4,6), Has(ITEM.StarCoin, count=69)],  # 33
-        [3, (4,8), Has(ITEM.StarCoin, count=145)],  # 34
-        [5, (5,1), Has(ITEM.StarCoin, count=105)],  # 35
-        [3, (5,3), Has(ITEM.StarCoin, count=55)],  # 36
-        [0, (5,6), Has(ITEM.StarCoin, count=75)],  # 37
+        [10, (4,7), has_sc(70)],  # 31
+        [0, (4,4), has_sc(50)],  # 32
+        [5, (4,6), has_sc(69)],  # 33
+        [3, (4,8), has_sc(145)],  # 34
+        [5, (5,1), has_sc(105)],  # 35
+        [3, (5,3), has_sc(55)],  # 36
+        [0, (5,6), has_sc(75)],  # 37
         [5, (5,6), Has(name_base(8,8))],  # 38
         [3, (5,8), Has(name_base(5,8))],  # 39
-        [3, (6,1), Has(ITEM.StarCoin, count=80)],  # 40
-        [0, (6,2), Has(ITEM.StarCoin, count=135)],  # 41
-        [0, (6,3), Has(ITEM.StarCoin, count=85)] , # 42
-        [5, (6,3), Has(ITEM.StarCoin, count=205)],  # 43
-        [5, (6,5), Has(ITEM.StarCoin, count=90)] , # 44
-        [10, (6,6), Has(ITEM.StarCoin, count=100)] , # 45
+        [3, (6,1), has_sc(80)],  # 40
+        [0, (6,2), has_sc(135)],  # 41
+        [0, (6,3), has_sc(85)] , # 42
+        [5, (6,3), has_sc(205)],  # 43
+        [5, (6,5), has_sc(90)] , # 44
+        [10, (6,6), has_sc(100)] , # 45
         [5, (6,8), Has(name_base(9,6))],  # 46
         [5, (7,1), Has(name_base(9,7))],  # 47
-        [0, (7,3), Has(ITEM.StarCoin, count=170)],  # 48
-        [0, (7,8), Has(ITEM.StarCoin, count=160)],  # 49
-        [3, (7,7), Has(ITEM.StarCoin, count=120)],  # 50
-        [3, (7,4), Has(ITEM.StarCoin, count=231)],  # 51
-        [0, (7,9), Has(ITEM.StarCoin, count=115)],  # 52
+        [0, (7,3), has_sc(170)],  # 48
+        [0, (7,8), has_sc(160)],  # 49
+        [3, (7,7), has_sc(120)],  # 50
+        [3, (7,4), has_sc(231)],  # 51
+        [0, (7,9), has_sc(115)],  # 52
         [3, (8,2), Has(name_base(8,8))],  # 53 #beat world 8 castle
-        [5, (8,3), Has(ITEM.StarCoin, count=180)],  # 54
-        [0, (8,8), Has(ITEM.StarCoin, count=110)],  # 55
-        [5, (8,10), Has(ITEM.StarCoin, count=155)],  # 56
+        [5, (8,3), has_sc(180)],  # 54
+        [0, (8,8), has_sc(110)],  # 55
+        [5, (8,10), has_sc(155)],  # 56
         [5, (8,9), rule_completed_everything],  # 57 #all secret goals
-        [5, (9,1), Has(ITEM.StarCoin, count=225)],  # 58
-        [5, (9,2), Has(ITEM.StarCoin, count=220)],  # 59
-        [5, (9,3), Has(ITEM.StarCoin, count=185)],  # 60
-        [5, (9,3), Has(ITEM.StarCoin, count=210)],  # 61
+        [5, (9,1), has_sc(225)],  # 58
+        [5, (9,2), has_sc(220)],  # 59
+        [5, (9,3), has_sc(185)],  # 60
+        [5, (9,3), has_sc(210)],  # 61
         [0, (9,4), rule_completed_everything],  # 62 #all normal goals
-        [5, (9,5), Has(ITEM.StarCoin, count=230)],  # 63
-        [0, (9,6), Has(ITEM.StarCoin, count=200)],  # 64
+        [5, (9,5), has_sc(230)],  # 63
+        [0, (9,6), has_sc(200)],  # 64
         [3, (9,7), rule_completed_everything]  # 65 # complete everything!!!!!!!!!!!!!!!!1
     ]
     return requierments
@@ -95,6 +101,18 @@ def get_time_rule(world : NSMBWworld, time : int) -> Rule[TWorld]:
         _rule = True_()
 
     return _rule
+
+@dataclasses.dataclass()
+class TimeRule(Rule["NSMBWworld"], game = game_name):
+    """custom rule"""
+
+    time : int | FieldResolver
+
+    @override
+    def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
+        # caching_enabled only needs to be passed in when your world inherits from CachedRuleBuilderWorld
+        return get_time_rule(world, resolve_field(self.time, world, int)).resolve(world)
+
 
 # this is option filters, turn options to true if not enabled
 filter_mov_on = OptionFilter(RandomizeMovement, RandomizeMovement.option_on)
@@ -183,21 +201,21 @@ def specific_level_requierments(world: NSMBWworld) -> list:
     super_mario = mushroom | propeller | ice_peng | fire
     max_mini = mini & run & wall_jump
     oswj = run & wall_jump & (fire | ice_peng | mini)
-    normal_move = button_right & (jump | spin_jump) & get_time_rule(world, 100)
-    # button_left & button_up & button_down & jump & spin_jump & p_switch & door & pipe & get_time_rule(world, 50) #changed this to fit my current logic, can probably be cleaned up a bit
+    normal_move = button_right & (jump | spin_jump) & TimeRule(100)
+    # button_left & button_up & button_down & jump & spin_jump & p_switch & door & pipe & TimeRule(50) #changed this to fit my current logic, can probably be cleaned up a bit
 
     tower_rules = door & button_left
 
     level_rules = [ # normal compleation rules
         [  # world 1
-            [normal_move & get_time_rule(world, 90), [propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))]],  # -1
+            [normal_move & TimeRule(90), [propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))]],  # -1
             [normal_move & pipe & button_down , [button_up, p_switch | propeller_o, super_mario & ground_pound]],  # -2
             [pipe & button_down & button_up & normal_move, [yoshi | propeller_o | (logic_hard & ((mini_o & (ground_pound | run)) | (run & (super_mario | ground_pound)) | carry_block)), yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario)), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry_shell))], yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry_shell & (super_mario | run))))],  # -3
             [pipe & button_down & button_up & normal_move & swim, [True_(), ice | peng_o | propeller_o | mini_o | logic_hard, ice | peng_o | logic_hard]],  # -4
             [pipe & button_down & button_up & normal_move & spin_jump, [climb, True_(), True_()]],  # -5
             [pipe & button_down & button_up & normal_move, [True_(), True_(), run | (mini_o | (star_o & logic_hard)) | (propeller & (climb | outside_powerups))]],  # -6
             [pipe & button_down & button_up & normal_move &tower_rules, [True_(), wall_jump | propeller_o, True_()]],  # -7 1-T
-            [pipe & button_down & button_up & normal_move & door & get_time_rule(world, 200), [True_(), True_(), (propeller_o | wall_jump) & p_switch]],  # -8 1-C
+            [pipe & button_down & button_up & normal_move & door & TimeRule(200), [True_(), True_(), (propeller_o | wall_jump) & p_switch]],  # -8 1-C
         ],
         [  # world 2
             [normal_move & jump, [True_(), True_(), carry | propeller_o | mini_o]],  # -1
@@ -238,7 +256,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [pipe & button_down & button_up & normal_move, [True_(), True_(), carry]],  # -5
             [pipe & button_down & button_up & normal_move & door & ((question_switch & carry_block) | logic_hard), [True_(), True_(), True_() ], True_() ],  # -6 5-Ghosthouse
             [pipe & button_down & button_up & normal_move& tower_rules & (carry | wall_jump | propeller_o), [True_(), True_(), super_mario]],  # -7 5-T
-            [pipe & button_down & button_up & normal_move & door & get_time_rule(world, 150), [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
+            [pipe & button_down & button_up & normal_move & door & TimeRule(150), [wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_()]],  # -8 5-C
         ],
         [  # world 6
             [normal_move, [True_(), True_(), logic_hard | ice | peng_o | propeller_o]],  # -1
@@ -266,14 +284,14 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
         ],
         [  # world 8
-            [normal_move & jump & run & pipe & button_up & (button_left | logic_hard) & get_time_rule(world,150), [True_(), carry, True_()]],  # -1
-            [pipe & button_down & button_up & normal_move & button_left & pipe & button_down & get_time_rule(world,100), [True_(), True_(), True_()], True_()],  # -2
-            [pipe & button_down & button_up & normal_move & (run | crouch) & get_time_rule(world,100), [True_(), True_(), True_()]],  # -3
-            [pipe & button_down & button_up & normal_move & swim & question_switch & get_time_rule(world,150), [True_(),True_(),True_()]],  # -4
+            [normal_move & jump & run & pipe & button_up & (button_left | logic_hard) & TimeRule(150), [True_(), carry, True_()]],  # -1
+            [pipe & button_down & button_up & normal_move & button_left & pipe & button_down & TimeRule(100), [True_(), True_(), True_()], True_()],  # -2
+            [pipe & button_down & button_up & normal_move & (run | crouch) & TimeRule(100), [True_(), True_(), True_()]],  # -3
+            [pipe & button_down & button_up & normal_move & swim & question_switch & TimeRule(150), [True_(),True_(),True_()]],  # -4
             [pipe & button_down & button_up & normal_move, [True_(), carry, True_()]],  # -5
             [pipe & button_down & button_up & normal_move & climb & jump & button_up & pipe, [True_(), climb & (propeller | wall_jump), True_()]],  # -6
-            [pipe & button_down & button_up & normal_move & get_time_rule(world,200), [True_(), True_(), True_()]],  # -7
-            [pipe & button_down & button_up & normal_move&tower_rules & get_time_rule(world,200), [True_(), True_(), True_()]],  # -8 8-T
+            [pipe & button_down & button_up & normal_move & TimeRule(200), [True_(), True_(), True_()]],  # -7
+            [pipe & button_down & button_up & normal_move&tower_rules & TimeRule(200), [True_(), True_(), True_()]],  # -8 8-T
             [normal_move & door & button_down & pipe & ((propeller & crouch) | logic_hard), [True_(), True_(), True_()]],  # -9 8-C
             [pipe & button_down & normal_move & ground_pound & spin_jump , [True_(), True_(), propeller | (ground_pound & ((mini_o & (wall_jump | run)) | (logic_hard & run & carry)))]],  # -10 8-A
 

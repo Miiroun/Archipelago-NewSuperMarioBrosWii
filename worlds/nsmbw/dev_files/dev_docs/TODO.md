@@ -1,5 +1,11 @@
 # TODO 
-Mention riivolution, keybindings and dolphin default program
+Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
+Finish shortcut sanity
+Ask in dc for better option names
+Try skip wii strap patch : see if works to not have bug
+Title screen replacement
+Find way to still auto start on start up if not selected riivolution
+Test if loading code actully moves around memory
 
 ## Super short term
 - PlayerGravity # gravity filler ?
@@ -41,14 +47,11 @@ Mention riivolution, keybindings and dolphin default program
 - Add command to repromt for a new game file: Check if file exists etc : otherwise repromt
 - Ask for help in dc for names
 - technically can do without riivolution path, but is nice if anyone want to launch it themselvs
-- Starcoin multiplier for hint movies
-  - backcomp
 - Work on preventing sending of locations on title screen
 - 8-2 secret exit requires more logic
 - Hm are broken 6, 9, 55 ...
 - Ask for help in dc for names
 - Secret exit items in client !!!
-- Setting to allow gen with > 100 inv pow 
 - Hm option: cumulative but order is sorted after hm unlock order
 - Run language test world thing
 - Work more on map pack: download images from wiki
@@ -66,14 +69,9 @@ Mention riivolution, keybindings and dolphin default program
 - Add riivolution info to docs
 - Add logic to level rando
 - test if loading code actually fails the client
-- Don't run gen when not connected
-- run /dev x2 and then see which hm aren't showing up
-- need to hardcode bowser logic to rules instead of in raw, because dont want it to move
+- run /dev x2 and then see which hm aren't showing up : add to dont rando
 - Dolphin wsl
-- Separate dolphin tools setting for Linux
-- Turn on dolphin close confirmation
 - Beat some levels on vanilla save file 1 to verify no wrong sends are happening
-- Doolphintool -h
 - Reword timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
 - Make Clear cache f key be setting
@@ -93,25 +91,101 @@ Mention riivolution, keybindings and dolphin default program
 - Add key binds to docs
 - Location scout hm: give as hint, as an option
   - Could maybe change name of hm based on if priority / useful / filler
-- Create bash script for: generate, host, open client with connection args
 - Use dme on intro, try finding way to not release on connect
 - Can I verify dolphin settings? have been changed?
 - Time change default not current
 - rando  world maps, include customs
 - Shuffle with custom levels (no logic)
-- Time custome rule
-- Auto download custom levels
 - Edit title screen
 - implement method to read arc files : needed to change names of subfolders
-- Randomize boz Heath : start 10, go down by one for each of 9 nine items
 - stopmping on enemeies as move
-- Add loc for getting 100 normal coins in a level?
 - Ask about x% local filler
 - Remove visibility of riivolution patch for next release, have it be a secret option
 - Patch to skip wii safty
-- Patch to relocate external save file
 - verify that key combos dont overlap
 - point to dumping guide in docs
+- Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
+- Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
+- Add better way of explaining rules
+- ``` Skip Wii Remote Strap Screen PAL <memory offset="0x803286C0" value="8015D0A0"/> <memory offset="0x803286CC" value="8015D010"/> <memory offset="0x803286D8" value="8015CFC0"/> ``` by CLF78
+  - Does this solve issue?
+- load last save state directly? : should be able to
+- Pause dolphin, increment slowly: find bites in black : verify issue there not menu generally
+- name: LivesLimitChange     type: patch     addr_pal: 0x80427C00     data: '000003E7' #default is 0x63 = 99    - name: LivesCharacterLimitChange     type: patch     addr_pal: 0x80159A50     data: '3882ab38' #default is 3882ab34 -> 2
+- Can find value hardcoded for level timer? Add memwatch for func that changes it
+  - Can make > vanilla?, would be nice
+- Ask react for help invent pow
+- Color pallet rando? : would be realy fun and possible?
+- Maybe separate movement, rename to abilities and level_elements: move over pow, ?switch, flagpole
+- Look at flagpole patch in ghirdra
+- Pin message about other nsmbw randos
+  - maybe create a dc pin .md
+- Custom title screen? 
+  - relativly easy, high reward change
+- Sprite table start 	8030a340	8031ab4c
+- Rando enemies: option if remove or add them
+- Redirect save should be safe: yep its this line ``` <savegame external="/save/{$__gameid}{$__region}" clone="false" /> ``` this one should be fixed
+  - done ?
+- Try detecting dolphin settings C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config
+- Rework modifiers slightly so that they don't cause issues any more
+- Chance for level to be replaced by backwards version
+- P-switch as locations
+- Can i somehow trigger something with hitting ?-blocks?
+- Make sure works with no patch
+- Make debug mode a setting instead of on frozzen
+- Add test not on save file 1 before sending locations
+- Test manually renaming just 1 file
+- Make don't rando move invisible
+- Remove option page link that doesn't exist
+- What happens when resync state with level comp off
+- Can create level patches if desire with bsdiff4, would be easy if needed
+  - if want to change logic etc
+- riivolution level shuffle is backwards
+  - fixed?
+- starcoin_count double init
+- Emulated memory override ? 
+- Does glitch logic not work??
+  - add test
+- Separate auto start: auto save, auto close
+- detect if unsupported dolphin settings are used
+- Review option creator pr
+- Set up way to test patcher without booting client
+- Try manually renaming a tileset
+- Try opening vanilla tileset with puzzle
+- Edit data of pa0_jyotyu to change its color 
+  - or download versions and create patch files
+  - https://discord.com/channels/673369321522593794/1295786310694342691/1295786310694342691
+-  btw srarcoin 1 in 1-3 is entireely possible with only mushroom by triple jumping, though it is a harder one so I see why it isn't in logic
+- Shuffle sprite table? How much will explode?
+- ```yaml - name: DisableGameOverItemClear   type: nop_insn   area_pal: 0x80789038 ```
+  - done ?
+- Publish can't move left patch in nsmbw dc
+- Location scout hm
+- Double jump
+  - https://discord.com/channels/673369321522593794/1396386889052983307/1396386889052983307
+- verify dolphin settings
+  - C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config : 
+    - Dolphin.ini
+      - HotkeysRequireFocus = False
+    - Hotkeys.ini
+      Load State/Load State Slot 1 = F1
+      Load State/Load State Slot 2 = F2
+      Load State/Load State Slot 3 = F3
+      Load State/Load State Slot 4 = F4
+      Load State/Load State Slot 5 = F5
+      Load State/Load State Slot 6 = F6
+      Load State/Load State Slot 7 = F7
+      Load State/Load State Slot 8 = F8
+      Save State/Save State Slot 1 = @(Shift+F1)
+      Save State/Save State Slot 2 = @(Shift+F2)
+      Save State/Save State Slot 3 = @(Shift+F3)
+      Save State/Save State Slot 4 = @(Shift+F4)
+      Save State/Save State Slot 5 = @(Shift+F5)
+      Save State/Save State Slot 6 = @(Shift+F6)
+      Save State/Save State Slot 7 = @(Shift+F7)
+      Save State/Save State Slot 8 = @(Shift+`F8`)
+- reuse code for check point for other level elements
+- remove optimiz form modifires : so doesnt causes issue at cost of performance
 
 ## Playtest
 - multiplayer
@@ -128,6 +202,15 @@ Mention riivolution, keybindings and dolphin default program
 - Change default savestate button
 - command changing saveslot and clearcache slot
 - get_time
+- load prev save state when loading riivolution directly instead of loading it after entering
+  - test so works
+- Boss health
+- DisableGameOverItemClear
+- Time custome rule
+- allow_gen_difficult_settings
+- Setting for being in debug mode instead of if frozen
+- star coin multiplyer for hm
+
 
 ## Bugs to fix
 - overwrite level comp ?
@@ -156,8 +239,7 @@ Mention riivolution, keybindings and dolphin default program
 - sends everything when fades to black
 - All backgrounds are dark
   - need to modify internal of the .arc file
-- Issue with running with an .iso file
-
+- 9-3 & 9-8 doesn't auto send stat coin on collect
 
 
 ## Short term
@@ -246,8 +328,17 @@ Mention riivolution, keybindings and dolphin default program
 - Reenable part of climb that dissabled due to freezes
 - Red coin sanity
 - Fix local_filler to not be early
-
 - Nice PR: https://github.com/Silvris/Archipelago/blob/docs_viewer/worlds/docs_viewer/client.py#L23
+- Auto download custom levels to shuffle with
+  - can use some backwards levels
+- Add loc for getting 100 normal coins in a level?
+- Unlock enemies as items?
+  - Can I block them like checkpoint?
+  - options
+    - start all item remove them
+    - start none, trap item add enemy types
+  - do this for other level parts like seesaw?
+
 
 ## ER
 - Create logic https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/entrance%20randomization.md**
@@ -282,6 +373,7 @@ Mention riivolution, keybindings and dolphin default program
 - Entering 8-A boss without ground pound freezes game
 - something is making locations missing from tracker
 
+  
 ## Features
 - Save toad / kill world enemy = hint/check
 - CHEATS / Useful extra features

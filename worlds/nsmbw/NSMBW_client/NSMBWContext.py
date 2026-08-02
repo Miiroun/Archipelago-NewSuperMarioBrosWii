@@ -266,6 +266,16 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         else:
             logger.info("Time rando is disabled")
 
+    def _cmd_boss_health(self):
+        """Prints how much boss health you have recived"""
+        if self.ctx.username is None:
+            logger.info("Connect to server before running /get_time")
+        elif self.ctx.slot_data["boss_health"] != 0:
+            logger.info(
+                f" You have unlocked {self.ctx.boss_health}/{9} items which means a boss takes {10 - self.ctx.boss_health} hits to kill")
+        else:
+            logger.info("Boss health rando is disabled")
+
     def _cmd_get_versions(self):
         """Prints out a few diffrent versions that is useful to know"""
         logger.info(f"NSMBWAP Client version    : {self.ctx.manifest_version}\n"
@@ -364,8 +374,8 @@ class NSMBWContext(SuperContext):
     unlocked_moves : List[str]
     traps : List[str]
     filler : List[str]
-    starcoin_count : int
     time : int
+    boss_health : int
 
     modifiers : List[Modifier]
     current_mod : str = ""
@@ -643,10 +653,9 @@ class NSMBWContext(SuperContext):
 
     async def _handle_game_not_ready(self):
         """If the game is not connected or not in a playable state, this will attempt to retry connecting to the game."""
-        self.game_interface.reset_relay_tracker_cache()
         if self.connection_state == ConnectionState.DISCONNECTED:
             if self.game_interface.connect_to_game():
-                if Utils.get_settings()["nsmbw_settings"].auto_open:
+                if Utils.get_settings()["nsmbw_settings"].auto_load:
                     await self.handle_load()
                     await self.game_interface.patch_runtime_on_load()
                     await asyncio.sleep(1)
@@ -665,11 +674,11 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_in_level(self):
-        self.game_interface.update_relay_tracker_cache()
-        await self.handle_check_goal_complete()
-
         await self.handle_receive_items()
+
+        await self.handle_check_goal_complete()
         await self.handle_checked_location()
+
         await self.handle_check_deathlink()
         await self.handle_modifiers()
 
@@ -690,6 +699,7 @@ class NSMBWContext(SuperContext):
             self.game_interface.clear_cache()
 
     async def handle_in_worldmap(self):
+        await self.handle_receive_items()
 
         await self.handle_check_goal_complete()
         await self.handle_checked_location()
@@ -697,11 +707,8 @@ class NSMBWContext(SuperContext):
         await self.game_interface.alive_player()
         await self.handle_check_deathlink()
 
-
-        await self.handle_receive_items()
-
         self.game_interface.update_check_sum()
-        if time.time() >= self.save_time + 60 * 5 and Utils.get_settings()["nsmbw_settings"].auto_open:
+        if time.time() >= self.save_time + 60 * 5 and Utils.get_settings()["nsmbw_settings"].auto_save:
             self.save_time = time.time()
             await self.handle_save()
 
@@ -1065,6 +1072,7 @@ class NSMBWContext(SuperContext):
         self.unlocked_moves = []
         self.starcoin_count = 0
         self.time = 0
+        self.boss_health = 0
         #print(f"handled_num {self.handled_num}")
 
         i = 0
@@ -1097,6 +1105,8 @@ class NSMBWContext(SuperContext):
                     print(f"A starcoin was received")
                 elif item_name == ITEM.Time:
                     print(f"A time extension was received")
+                elif item_name == ITEM.BossHealth:
+                    self.boss_health += 1
                 elif 201 <= item_id <= 299:
                     world_num = item_id - 200
                     if world_num != 9 and self.unlocked_worlds[world_num-1] == 1:
@@ -1129,6 +1139,9 @@ class NSMBWContext(SuperContext):
         await self.handle_traps()
         await self.handle_filler()
         await self.handle_unlocked_time(self.time)
+        await self.handle_boss_health()
+
+
 
 
 
@@ -1451,6 +1464,10 @@ class NSMBWContext(SuperContext):
             if (new_time < current_time) and (0x000010 < current_time  < 0x400000) and self.game_interface.is_in_level():
                 self.game_interface.set_time_left(int_to_bytes(new_time, 4))
 
+    async def handle_boss_health(self):
+        if self.slot_data["randomize_boss_health"] != 0:
+            self.game_interface.set_boss_health(10 - self.boss_health)
+
     async def handle_modifiers(self):
         now = time.time()
         if now > self.current_mod_end_time and self.current_mod != "":
@@ -1623,7 +1640,11 @@ class NSMBWContext(SuperContext):
         assert short_cut_path.exists(), "need to have created shortcut successfully"
 
         if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-            subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+            if (Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists():
+                rii_path = Path(get_settings()['nsmbw_settings'].dolphin_riivolution_folder_path).parent.parent.parent
+                subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path), "-s", str(rii_path / "StateSaves" / f"{self.game_interface.current_game}.s0{self.save_slot}") ])
+            else:
+                subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
             time.sleep(35)
         elif auto_start:
             logger.error("Failed to auto start dolphin, make sure your file path is correct")

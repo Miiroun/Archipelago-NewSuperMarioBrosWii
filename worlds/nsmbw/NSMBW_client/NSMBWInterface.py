@@ -16,7 +16,6 @@ from typing import Optional, Iterable
 
 from ..Common import *
 
-from Utils import is_frozen
 
 logger = logging.getLogger("Client")
 if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only != 0):
@@ -68,10 +67,9 @@ class NSMBWInterface(object):
     connection_status: str
     logger: Logger
     _previous_message_size: int = 0
-    game_rev_error: int
     current_game: Optional[str] = ""
-    game_rev : int
     relay_trackers: Optional[Dict[Any, Any]]
+    game_id : bytes
 
     memory_addresses : MemoryAddresses | None = None
     deathtimer : float = time.time()
@@ -195,55 +193,6 @@ class NSMBWInterface(object):
         #print(f"record state {self.get_record_state()}")
         return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
-    def reset_relay_tracker_cache(self):
-        self.relay_trackers = None
-
-    def update_relay_tracker_cache(self):
-        #metroid had lots of code here that i dont understand
-        pass
-
-
-    def send_hud_message(self, message: str) -> bool:
-        return False
-        #message = f"&just=center;{message}"
-        #if not self.current_game:
-        #    return False#
-
-        #if self.current_game == "jpn":
-        #    message = f"&push;&font=C29C51F1;{message}&pop;"
-        #current_value = self.dolphin_client.read_address(
-        #    GAMES[self.current_game]["HUD_TRIGGER_ADDRESS"], 1
-        #)
-        #if current_value == b"\x01":
-        #    return False
-        #self._save_message_to_memory(message)
-        #self.dolphin_client.write_address(
-        #    GAMES[self.current_game]["HUD_TRIGGER_ADDRESS"], b"\x01"
-        #)
-        #return True
-
-    def _save_message_to_memory(self, message: str):
-        pass
-        #encoded_message = message.encode("utf-16_be")[:HUD_MAX_MESSAGE_SIZE]
-
-        #if len(encoded_message) == self._previous_message_size:
-        #    encoded_message += b"\x00 "  # Add a space to the end of the message to force the game to update the message if it is the same size
-
-        #self._previous_message_size = len(encoded_message)
-
-        #encoded_message += (
-        #    b"\x00\x00"  # Game expects a null terminator at the end of the message
-        #)
-
-        #if len(encoded_message) & 3:
-            # Ensure the size is a multiple of 4
-        #    num_to_align = (len(encoded_message) | 3) - len(encoded_message) + 1
-        #    encoded_message += b"\x00" * num_to_align
-
-        #assert self.current_game
-        #self.dolphin_client.write_address(
-        #    GAMES[self.current_game]["HUD_MESSAGE_ADDRESS"], encoded_message
-        #)
     def save_file_offset(self):
         # this function should probably not be used
         savefile_num = self.get_savefile_num()
@@ -783,8 +732,9 @@ class NSMBWInterface(object):
         #address = self.get_dMj2dGame_c_address()+ 0x742 +world_num -1
         #print(f"toad add2 {address : x}")
         #self.dolphin_client.write_address(address, data) #toadLocation
-
-
+    def set_boss_health(self, hits : int):
+        for address in [self.memory_addresses.bosshealth1, self.memory_addresses.bosshealth2, self.memory_addresses.bosshealthBowJR]:
+           self.write_instruction(address, intru_li_other + int_to_bytes(hits * 6, 2))
 
     def update_check_sum(self):
         # didnt manage to make this one work

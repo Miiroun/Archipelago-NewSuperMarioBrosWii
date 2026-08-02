@@ -2,6 +2,7 @@
 instru_return   : bytes = b'\x4E\x80\x00\x20' #4e800020
 instru_noop     : bytes = b'\x48\x00\x00\x28' #??? not sure if correct #48000028
 instru_li  : bytes = b'\x38\x60'  #li 38 60 00 00 # 4 bits value that is set
+intru_li_other   : bytes = b'\x38\x00'
 #instru_lbz      : bytes = b"\x"
 instru_stwu      : bytes = b"\x94\x21"
 instru_check_eq : bytes = b"\x2c\x03"

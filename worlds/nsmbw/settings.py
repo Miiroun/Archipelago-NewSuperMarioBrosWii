@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Union, Sequence, Any
 
 import Utils
-from Utils import T
+from .Common import *
 import settings
 
 
@@ -64,6 +64,15 @@ class NSMBWSettings(settings.Group):
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
 
+    class AutoLoadState(settings.Bool):
+        """Enable if you want to load a save state on start"""
+
+    class AutoSaveGame(settings.Bool):
+        """Enable if you want to save the game automatically every 5 minutes"""
+
+    class AutoCloseGame(settings.Bool):
+        """Enable if you want to close the game automatically"""
+
     class SaveFileLocation(settings.OptionalLocalFolderPath):
         """A path that the nsmbw client uses to store data about saves"""
 
@@ -86,6 +95,10 @@ class NSMBWSettings(settings.Group):
         update_not_important = 1
         update_all = 2
 
+    class DebugMode(settings.Bool):
+        """Enable debug commands and more detailed logging."""
+
+
     class ClearCacheSaveSLot(settings.IntEnum):
         """ Will press F{num} and F{num}+shift to save and load its saveslot"""
         Slot1 = 1
@@ -98,7 +111,7 @@ class NSMBWSettings(settings.Group):
         Slot8 = 8
 
 
-    class Use_xdotool(settings.IntEnum):
+    class Xdotool(settings.IntEnum):
         """
         Linux only
         Uses the external program xdotool instead of the python library keyboard to send keypresses for save-states
@@ -122,11 +135,18 @@ class NSMBWSettings(settings.Group):
 
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: GameFilePath |  str = GameFilePath(r"nsmbw.wbfs")
+
     auto_open: AutoOpenGame | bool = True
+    auto_load : AutoLoadState | bool = True
+    auto_save: AutoSaveGame | bool = True
+    auto_close: AutoCloseGame | bool = True
+
+    debug_mode : DebugMode | bool = not Utils.is_frozen()
+
     collect_level : CollectLevel | int = CollectLevel(1)
     ut_pack_path: UTPackPath | str = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
     save_file_path : settings.Union[SaveFileLocation, str] = SaveFileLocation(rf"nsmbw/nsmbw_saves")
-    use_xdotool_instead_of_keyboard_linux_only : Use_xdotool | int = Use_xdotool(0)
+    use_xdotool_instead_of_keyboard_linux_only : Xdotool | int = Xdotool(0)
     allow_gen_difficult_settings : AllowGenDiffSettings | bool = False
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
     clear_cache_save_slot : ClearCacheSaveSLot | int = 7

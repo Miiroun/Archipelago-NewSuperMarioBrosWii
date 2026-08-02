@@ -1,5 +1,7 @@
 from enum import StrEnum
 from typing import NamedTuple, List, Literal, Any
+from .Utils import *
+from Utils import *
 
 game_name = "NSMBW"
 
@@ -85,6 +87,7 @@ class ITEM:
     StarCoin        = "Starcoin"
     Time            = "Time"
     GlitchedLogic   = "glitched logic"
+    BossHealth      = "Boss Health"
 
 
 

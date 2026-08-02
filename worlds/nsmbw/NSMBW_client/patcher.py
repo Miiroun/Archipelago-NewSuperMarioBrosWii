@@ -19,6 +19,8 @@ import tempfile
 
 from ..Common import *
 from ..Utils import bytes_to_int
+import bsdiff4
+
 
 #RIIVOLUTION_PATH = Utils.get_settings()["NSMBW.options"].riivolution_path
 #RANDO_PATH = RIIVOLUTION_PATH + r"\\NSMBW_AP_RANDO\\"
@@ -124,10 +126,10 @@ class Patcher:
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
         output_path : Path
-        if Utils.get_settings()["nsmbw_settings"].auto_open:
-            output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path
-        else:
-            output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
+        #if Utils.get_settings()["nsmbw_settings"].auto_open:
+        output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path
+        #else:
+        #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
         self.output_path = Path(output_path) / f"nsmbw_ap_seed{seed}"
 
         self.random = Random(self.seed)
@@ -270,6 +272,8 @@ class Patcher:
         ET.SubElement(choice, "patch", {"id" : "nsmbw_ap"})
 
         _patch = ET.SubElement(wiidisc, "patch", {"id" : "nsmbw_ap"})
+        ET.SubElement(_patch, "savegame", {"external" : r"/save/{$__gameid}{$__region}","close" : "false"})
+
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/", "disc":fr"/Stage/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/Texture/", "disc":fr"/Stage/Texture/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Object/", "disc":fr"/Object/", "create":"true"})

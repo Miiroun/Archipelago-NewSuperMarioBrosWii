@@ -172,15 +172,6 @@ def create_all_items(world: NSMBWworld) -> None:
             excluded_items.update(extra_start_items[starting_world_num])
 
 
-    # This is the function in which we will create all the items that this world submits to the multiworld item pool.
-    # There must be exactly as many items as there are locations.
-    # In our case, there are either six or seven locations.
-    # We must make sure that when there are six locations, there are six items,
-    # and when there are seven locations, there are seven items.
-
-    # Creating items should generally be done via the world's create_item method.
-    # First, we create a list containing all the items that always exist.
-
     itempool: list[Item] = []
 
     if world.options.starcoin_sanity.value == True:
@@ -209,6 +200,10 @@ def create_all_items(world: NSMBWworld) -> None:
         world_time_req = [90, 200, 200, 200, 200, 200, 200, 200, 150]
         amount_req = get_time_math(world, world_time_req[starting_world_num])
         for _ in range(amount_req): world.push_precollected(world.create_item(ITEM.Time))
+
+    if world.options.randomize_boss_health.value == True:
+        for _ in range(9):
+            itempool.append(world.create_item(ITEM.BossHealth))
 
     if world.options.shortcuts_sanity.value == True:
         for secret_exit in SECRET_EXIT:

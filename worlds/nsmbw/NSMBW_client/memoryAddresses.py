@@ -212,6 +212,10 @@ class MemoryAddresses(object):
                                          self.create_patch("P1", 0x80376ca8, b'\x40\x00\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
                                          self.create_patch("P1", 0x80376cac, b'\x3d\x4c\xcc\xcd', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
 
+        self.bosshealth1 = self.map_between("P1", 0x800987c0) # num = 6 * amount hits
+        self.bosshealth2 = self.map_between("P1", 0x80b1fb40)
+        self.bosshealthBowJR = self.map_between("P1", 0x8009b820)
+
 
         ## patch patches ---------------------------------------------------
 
@@ -252,12 +256,13 @@ class MemoryAddresses(object):
         # Exit Course Anytime [mkwcat] https://github.com/mkwcat/gecko-codes/blob/master/source/nsmbw/Exit-Course-Anytime.cpp
         exit_course_anytime = self.create_patch("P1", 0x800B4EA8,instru_li + b'\x03' + b'\x01' , name="exit_course_anytime")
 
+        disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear")
 
 
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
-            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime
+            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear
         ]
 
         # address 0x80162fb8 might be good to create a branch from
