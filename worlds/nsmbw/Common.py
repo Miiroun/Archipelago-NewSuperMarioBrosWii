@@ -24,10 +24,10 @@ class SecretExit(NamedTuple):
         return (self.world == other.world) and (self.level == other.level)
 
 SECRET_EXIT : List[SecretExit] = [
-    SecretExit(1, 3, 0, 2, False), SecretExit(2, 4, 8, 2, True), SecretExit(2, 6, 0, 2, False), SecretExit(3, 4, 8, 2, True),
+    SecretExit(1, 3, 0, 2, False), SecretExit(2, 4, 8, 2, True), SecretExit(2, 6, 0, 2, False), SecretExit(3, 4, 5, 2, True),
     SecretExit(3, 5, 0, 2, False), SecretExit(3, 6, 0, 2, False), SecretExit(4, 6, 8, 2, True), SecretExit(4, 7, 0, 2, False),
-    SecretExit(5, 6, 0, 2, False), SecretExit(6, 5, 8, 2, True), SecretExit(6, 6, 0, 2, False), SecretExit(7, 6, 0, 1, False),
-    SecretExit(7, 7, 5, 2, True), SecretExit(7, 8, 6, 2, True), SecretExit(8, 2, 7, 2, True), SecretExit(8, 7, 10, 1, False)]
+    SecretExit(5, 6, 0, 2, False), SecretExit(6, 5, 8, 2, True), SecretExit(6, 6, 0, 2, False), SecretExit(7, 5, 9, 1, True),
+    SecretExit(7, 7, 5, 2, True), SecretExit(7, 8, 6, 2, True), SecretExit(8, 2, 7, 2, True), SecretExit(8, 7, 10, 1, True)]
 
 class ITEM:
     class POWERUP(StrEnum):
@@ -133,9 +133,9 @@ def name_starcoin(world_num : int, level_num : int, scnum : int) -> str:
     return f"{name_base(world_num,level_num)} sc{scnum}"
 
 def name_secret(secret_exit : SecretExit) -> str:
-    if secret_exit.exit_type == 1:
+    if secret_exit.exit_type == 2:
         return f"{name_base(secret_exit.world,secret_exit.level)} Secret exit"
-    elif secret_exit.exit_type == 2:
+    elif secret_exit.exit_type == 1:
         return f"{name_base(secret_exit.world,secret_exit.level)} Normal exit"
     else:
         raise ValueError(f"Unknown exit_type: {secret_exit.exit_type}")

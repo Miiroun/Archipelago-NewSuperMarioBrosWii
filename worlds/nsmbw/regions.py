@@ -41,7 +41,9 @@ def create_all_regions(world: NSMBWworld) -> None:
     for world_num in range(1,9+1):
         regions.append(Region(f"World{world_num}", world.player, world.multiworld))
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+            regions.append(Region(name_base(world_num,level_num)+ " start", world.player, world.multiworld))
             regions.append(Region(name_base(world_num,level_num), world.player, world.multiworld))
+
     world.multiworld.regions += regions
 
 
@@ -68,6 +70,10 @@ def connect_regions(world: NSMBWworld) -> None:
             case _:
                 raise ValueError(f"Case {world.options.world9_unlock_condition.value} is not valid")
 
+    for world_num in range(1,9+1):
+        for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+            world.get_region(name_base(world_num, level_num) + " start").connect(world.get_region(name_base(world_num, level_num)),
+                                                          f"{name_base(world_num,level_num)} internal level connection")
 
     for world_num in range(1,9+1):
         menu_region.connect(world.get_region(f"World{world_num}"), f"menu->World{world_num}", rules.Has( name_world_unlock(world_num), count=1))
@@ -76,13 +82,13 @@ def connect_regions(world: NSMBWworld) -> None:
                 assert type(con_lev_num) == int, "should be an integer"
 
                 if i== 0:
-                    world.get_region(f"World{world_num}").connect(world.get_region(name_base(world_num, con_lev_num)),
+                    world.get_region(f"World{world_num}").connect(world.get_region(name_base(world_num, con_lev_num) + " start"),
                                                             f"World{world_num}->{name_base(world_num, con_lev_num)}")
                 else:
-                    world.get_region(name_base(world_num, i)).connect(world.get_region(name_base(world_num, con_lev_num)),
+                    world.get_region(name_base(world_num, i)).connect(world.get_region(name_base(world_num, con_lev_num)+ " start"),
                                                                   f"{name_base(world_num, i)}->{name_base(world_num, con_lev_num)}")
     for secret_exit in SECRET_EXIT:
         if secret_exit.is_item:
-            world.get_region(name_base(secret_exit.world, secret_exit.level)).connect(world.get_region(name_base(secret_exit.world, secret_exit.level_to)),f"{name_secret(secret_exit)}")
+            world.get_region(name_base(secret_exit.world, secret_exit.level) + " start").connect(world.get_region(name_base(secret_exit.world, secret_exit.level_to) + " start"),name_secret(secret_exit))
 
 

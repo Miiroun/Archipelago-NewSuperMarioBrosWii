@@ -155,7 +155,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
 
     question_switch = Has(ITEM.MOVEMENT.QuestSwitch) | filter_move_dontrando(ITEM.MOVEMENT.QuestSwitch)
     p_switch = Has(ITEM.MOVEMENT.PSwitch) | filter_move_dontrando(ITEM.MOVEMENT.PSwitch)
-    red_block = Has(ITEM.MOVEMENT.RedSwitch)  | filter_move_dontrando(ITEM.MOVEMENT.RedSwitch)
+    red_block = (Has(ITEM.MOVEMENT.RedSwitch)  | filter_move_dontrando(ITEM.MOVEMENT.RedSwitch)) & Has(name_base(3,5))
 
     yoshi = Has(ITEM.MOVEMENT.Yoshi)  | filter_move_dontrando(ITEM.MOVEMENT.Yoshi)
     star = Has(ITEM.MOVEMENT.Star) | filter_move_dontrando(ITEM.MOVEMENT.Star)
@@ -231,7 +231,7 @@ def specific_level_requierments(world: NSMBWworld) -> list:
             [normal_move & pipe, [(peng & crouch) | logic_hard, True_(), (peng & crouch) | (carry & logic_hard)]],  # -1
             [normal_move, [True_(), True_(), True_()]],  # -2
             [normal_move & button_down & button_up, [(swim | mini_o | ((propeller_o | (peng & crouch)) & logic_hard) ) , True_(), (carry | propeller_o | (wall_jump & logic_hard)) ]],  # -3
-            [pipe & button_down & button_up & normal_move & red_block, [True_(), True_(), True_()], True_()],  # -4
+            [pipe & button_down & button_up & normal_move & red_block, [True_(), True_(), True_()],normal_move & pipe],  # -4
             [pipe & button_down & button_up & normal_move, [True_(), red_block, red_block], red_block],  # -5
             [pipe & button_down & button_up & normal_move & door & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), [True_(), True_(), True_()],True_()],  #-6    # 3-Ghosthouse
             [pipe & button_down & button_up & normal_move&tower_rules, [True_(), carry, wall_jump | propeller_o]],  # -7 3-T
@@ -340,7 +340,7 @@ def get_level_connections() -> List[List[List[int]]]:
             [2],  # -1
             [3,6,7],  # -2
             [],  # -3
-            [5],  # -4
+            [8],  # -4
             [],  # -5
             [],  # -6
             [4],  # -Tower

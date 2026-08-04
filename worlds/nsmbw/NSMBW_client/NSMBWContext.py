@@ -102,7 +102,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self.ctx.handled_num = -1
         self.ctx.prev_sent_locations = set()
 
-    if not is_frozen():
+    if Utils.get_settings()["nsmbw_settings"].debug_mode:
         def _cmd_dev(self, key: str = ""):
             """
             A cheat command useful for developing.
@@ -130,7 +130,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.current_mod != "":
             logger.info(f"Modifier {self.ctx.current_mod} with time left {self.ctx.current_mod_end_time-time.time()}.")
         else:
-            if Utils.is_frozen():
+            if not Utils.get_settings()["nsmbw_settings"].debug_mode:
                 logger.info(f"No type active")
             else:
                 logger.info(f"No type active, mod '{self.ctx.current_mod} time left {self.ctx.current_mod_end_time-time.time()}")
@@ -138,7 +138,12 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_refresh_mod(self):
         """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
         self.ctx.current_mod_end_time = 0
-        self.ctx.modifiers = list(Modifier(name, 0.01) for name in get_args(modifier_type_litteral)) + self.ctx.modifiers
+        self.ctx.modifiers = list(Modifier(name, 0.001) for name in get_args(modifier_type_litteral)) + self.ctx.modifiers
+
+        for _ in self.ctx.modifiers:
+            self.ctx.handle_modifiers()
+            sleep(0.01)
+
         logger.info(f"Successfully refreshed all modifiers")
 
     def _cmd_save(self):
@@ -213,14 +218,43 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Changes the collection level setting in host.yaml, is constant for all multiworld.
         """
         assert value in ["0", "1", "2"], "Allowed values are 0, 1 or 2"
-        Utils.get_settings()["collect_level"] = value
+        Utils.get_settings()["nsmbw_settings"]["collect_level"] = value
 
     def _cmd_toggle_auto_open(self):
         """
         Toggles the auto open setting in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["auto_open"] = not Utils.get_settings()["auto_open"]
+        Utils.get_settings()["nsmbw_settings"]["auto_open"] ^= True
+        logger.info(f"Auto clear open: {Utils.get_settings()["nsmbw_settings"]["auto_open"]}")
 
+    def _cmd_toggle_auto_load(self):
+        """
+        Toggles the auto load setting in host.yaml, is constant for all multiworld.
+        """
+        Utils.get_settings()["nsmbw_settings"]["auto_load"] ^= True
+        logger.info(f"Auto clear load: {Utils.get_settings()["nsmbw_settings"]["auto_load"]}")
+
+
+    def _cmd_toggle_auto_save(self):
+        """
+        Toggles the auto save setting in host.yaml, is constant for all multiworld.
+        """
+        Utils.get_settings()["nsmbw_settings"]["auto_save"] ^= True
+        logger.info(f"Auto clear save: {Utils.get_settings()["nsmbw_settings"]["auto_save"]}")
+
+
+    def _cmd_toggle_auto_close(self):
+        """
+        Toggles the auto close setting in host.yaml, is constant for all multiworld.
+        """
+        Utils.get_settings()["nsmbw_settings"]["auto_close"] ^= True
+        logger.info(f"Auto clear close: {Utils.get_settings()["nsmbw_settings"]["auto_close"]}")
+
+
+    def _cmd_auto_clear_cache(self):
+        """Toggles wherethere to automatically clear cache. If you turn it of you will have to manually do it (by loading a savestate) for deathlink, movementrando and more to work. This is not saved betwen sestions"""
+        self.ctx.game_interface.auto_clear_cache  ^= True
+        logger.info(f"Auto clear cache: {self.ctx.game_interface.auto_clear_cache}")
 
     def _cmd_force_hook(self) -> None:
         """Force restart the Dolphin hook process (unhook + fresh re-hook), runs 30 times"""
@@ -275,10 +309,23 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 f" You have unlocked {self.ctx.boss_health}/{9} items which means a boss takes {10 - self.ctx.boss_health} hits to kill")
         else:
             logger.info("Boss health rando is disabled")
+    
+    def _cmd_print_slot_data(self):
+        """Prints all slot data, useful for debuging"""
+        logger.info(f"SLOT DATA")
+        logger.info(self.ctx.slot_data)
+
+    def _cmd_print_settings(self):
+        """Prints your settings, useful for debuging"""
+        logger.info(f"SETTINGS")
+        logger.info(Utils.get_settings()["nsmbw_settings"])
+
 
     def _cmd_get_versions(self):
         """Prints out a few diffrent versions that is useful to know"""
-        logger.info(f"NSMBWAP Client version    : {self.ctx.manifest_version}\n"
+        logger.info(
+                    f"OS                        : {sys.platform}\n"
+                    f"NSMBWAP Client version    : {self.ctx.manifest_version}\n"
                     f"NSMBWAP generated version : {self.ctx.slot_data['NSMBW_Version'] if self.ctx.username is not None else 'not connected'}\n"
                     f"UT version                : { UT_VERSION if tracker_loaded else 'Not loaded'}\n"
                     f"AP version                : {Utils.__version__}\n"
@@ -311,6 +358,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_get_versions()
         self._cmd_debug_deathlink()
         self._cmd_status()
+        self._cmd_print_slot_data()
+        self._cmd_print_settings()
 
         logger.info("---- Info regarding items ----")        
         self._cmd_received()
@@ -486,6 +535,9 @@ class NSMBWContext(SuperContext):
                 else:
                     Utils.async_start(self.run_game())
 
+                # hints for all hint movies
+                Utils.async_start(self.send_msgs([{"cmd":"CreateHints", "locations" : list( 3000 + i for i in range(1,HINTMOVIE_COUNT +1))}]))
+
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
 
@@ -660,9 +712,9 @@ class NSMBWContext(SuperContext):
                     await self.game_interface.patch_runtime_on_load()
                     await asyncio.sleep(1)
                     self.update_memory_to_server_on_load()
-                else:
-                    self.log_color(f"Dolphin connection faild", "red")
-                    await asyncio.sleep(1)
+            else:
+                self.log_color(f"Dolphin connection faild", "red")
+                await asyncio.sleep(1)
 
 
         elif self.connection_state == ConnectionState.IN_MENU:
@@ -799,9 +851,9 @@ class NSMBWContext(SuperContext):
                 await asyncio.sleep(0.1)
 
             except FileNotFoundError:
-                logger.error("Did not find save file to load from")
+                logger.info("Did not find save file to load from")
         else:
-            logger.error("Failed to initiate load of data, make sure you are connected when trying to load.")
+            logger.info("Failed to initiate load of data, make sure you are connected when trying to load.")
 
     #print("--------------------------- Main Code started ---------------------------------------------")
 
@@ -875,7 +927,7 @@ class NSMBWContext(SuperContext):
                     location_name = name_starcoin(world_num, level_num, sc_num)
                     if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                         checked_locations.append(NSMBWworld.location_name_to_id[location_name])
-                        if not is_frozen():
+                        if Utils.get_settings()["nsmbw_settings"].debug_mode:
                             logger.info(f"Sent check from item{location_name}")
         self.locations_handled += checked_locations
         return checked_locations
@@ -900,7 +952,7 @@ class NSMBWContext(SuperContext):
                     if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                         print(f"Starcoin {sc_num} collected from {mod_level_name(world_num, level_num)}")
                         checked_locations.append(NSMBWworld.location_name_to_id[location_name])
-                        if not is_frozen():
+                        if Utils.get_settings()["nsmbw_settings"].debug_mode:
                             print(f"Sent check from item{location_name}")
                 if level_status & 1 == 1:
                     send_sc_check(sc_num=1)
@@ -922,7 +974,7 @@ class NSMBWContext(SuperContext):
                 if status == b'\x01':
                     if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                         checked_locations.append(NSMBWworld.location_name_to_id[location_name])
-                        if not is_frozen():
+                        if Utils.get_settings()["nsmbw_settings"].debug_mode:
                             print(f"Collected hintmovie at {checked_locations}")
 
             self.locations_handled += checked_locations
@@ -947,7 +999,7 @@ class NSMBWContext(SuperContext):
                     level_name = name_level(world_num, level_num)
                     if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
                         checked_locations.append(NSMBWworld.location_name_to_id[level_name])
-                        if not is_frozen():
+                        if Utils.get_settings()["nsmbw_settings"].debug_mode:
                             print(f"You collected a check for completing {level_name}")
 
 

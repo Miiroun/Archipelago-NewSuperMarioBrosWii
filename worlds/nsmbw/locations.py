@@ -56,10 +56,9 @@ for secret_exit in SECRET_EXIT:
 LOCATION_NAME_GROUPS.update({"Secret exits" : set(name_secret(secret_exit) for secret_exit in SECRET_EXIT)})
 
 #hint movies
-num_hintmovies = 65
-for i in range(1,num_hintmovies +1):
+for i in range(1,HINTMOVIE_COUNT +1):
     LOCATION_NAME_TO_ID.update({name_hintmovie(i): 3000 + i})
-LOCATION_NAME_GROUPS.update({"Hintmovies" : set(name_hintmovie(i) for  i in range(1,num_hintmovies +1)) })
+LOCATION_NAME_GROUPS.update({"Hintmovies" : set(name_hintmovie(i) for  i in range(1,HINTMOVIE_COUNT +1)) })
 
 
 world_set = set()
@@ -135,7 +134,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
 
     #add locations for hintmovies
     if world.options.hint_movie_sanity.value == True:
-        for i in range(1, num_hintmovies+1):
+        for i in range(1, HINTMOVIE_COUNT+1):
             if i in DEPRIO_HM:
                 continue # skips creating problematic hm for now
 
@@ -188,10 +187,13 @@ def shuffle_level_order(world: NSMBWworld) -> None:
         not_shuffled = world.shuffled_level_order.copy()
 
         secret_exits = list([(secret_exit.world,secret_exit.level) for secret_exit in SECRET_EXIT])
-        secret_exits_shuffle = secret_exits.copy()
-        world.random.shuffle(secret_exits_shuffle)
+        castle_group = [(1,8),(3,8),(4,8),(5,8), (7,9)]
+        def add_to_list(list_to_add: list) -> list:
+            shuffle_copy = list_to_add.copy()
+            world.random.shuffle(shuffle_copy)
+            return list(zip(list_to_add, shuffle_copy))
 
-        dont_shuffle = [(2,8), (6,8), (8,3)]
+        dont_shuffle = [(2,8), (6,8), (8,3), (8,9)]
 
         world.shuffled_level_order = [0] * sum(LEVELS_PER_WORLD)
 
@@ -200,8 +202,10 @@ def shuffle_level_order(world: NSMBWworld) -> None:
             world.shuffled_level_order[level_name_to_pos(obj[0], obj[1])] = level_name_to_pos(obj[0], obj[1])
             not_shuffled.remove(level_name_to_pos(obj[0], obj[1]))
 
-        for obj1, obj2 in zip(secret_exits,secret_exits_shuffle):
+        shuffle_list = add_to_list(secret_exits) + add_to_list(castle_group)
+        for obj1, obj2 in shuffle_list:
             world.shuffled_level_order[level_name_to_pos(obj1[0], obj1[1])] = level_name_to_pos(obj2[0], obj2[1])
+            assert level_name_to_pos(obj1[0], obj1[1]) in not_shuffled, f"{level_name_to_pos(obj1[0], obj1[1])}, {obj1} is not in {not_shuffled}"
             not_shuffled.remove(level_name_to_pos(obj1[0], obj1[1]))
 
         not_shuffled_shuffle = not_shuffled.copy()

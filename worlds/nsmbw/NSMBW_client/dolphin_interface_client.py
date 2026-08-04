@@ -1,5 +1,6 @@
 import os
 from logging import Logger
+from time import sleep
 from typing import Any
 import dolphin_memory_engine  # type: ignore
 import subprocess
@@ -39,10 +40,12 @@ class DolphinClient:
     def connect(self):
         if not self.dolphin.is_hooked():
             self.dolphin.hook()
+            sleep(0.01)
+        error_mess = "Could not connect to Dolphin, verify that you have a game running in the emulator and that you dont have multiple instances open. Also assert you have MMU enabled and extended memory (MEM1 and MEM2) disabled."
+        if not self.is_connected():
+            raise DolphinException(error_mess)
         if not self.dolphin.is_hooked():
-            raise DolphinException(
-                "Could not connect to Dolphin, verify that you have a game running in the emulator and that you dont have multiple instances open."
-            )
+            raise DolphinException(error_mess)
 
     def disconnect(self):
         if self.dolphin.is_hooked():
@@ -55,7 +58,7 @@ class DolphinClient:
             # For some reason the dolphin_memory_engine.is_hooked() function doesn't recognize when the game is closed, checking if memory is available will assert the connection is alive
             self.dolphin.read_bytes(GC_GAME_ID_ADDRESS, 1)
         except RuntimeError as e:
-            self.disconnect()
+            #self.disconnect()
             print(e)
             raise DolphinException(e)
 

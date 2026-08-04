@@ -59,7 +59,7 @@ class NSMBWworld(World):
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
 
-        if not Utils.is_frozen():
+        if Utils.get_settings()["nsmbw_settings"].debug_mode:
             state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
             state.update_reachable_regions(self.player)
             visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)

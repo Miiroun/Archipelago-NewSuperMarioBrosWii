@@ -30,12 +30,16 @@ def set_level_entrance_rules(world: NSMBWworld) -> None:
     level_rules = specific_level_requierments(world)
 
     for world_num in range(1,9+1):
+        for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+            world.set_rule(world.get_entrance(f"{name_base(world_num,level_num)} internal level connection"),level_rules[world_num - 1][level_num - 1][0])
+
+    for world_num in range(1,9+1):
         for i, org_lev_num in enumerate(connections[world_num-1]):
             for con_lev_num in org_lev_num:
                 assert type(con_lev_num) == int, "should be an integer"
                 randod_world_num, randod_level_num = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world_num,con_lev_num)])
 
-                _rule = level_rules[randod_world_num-1][randod_level_num-1][0]
+                _rule = True_()
                 if mod_level_name(world_num,i) == "T":
                     _rule &= rules.Has(name_world_unlock(world_num), count=2)
 
@@ -54,10 +58,16 @@ def set_level_entrance_rules(world: NSMBWworld) -> None:
                     world.set_rule(world.get_entrance(f"{name_base(world_num, i)}->{name_base(world_num, con_lev_num)}"),_rule )
     for secret_exit in SECRET_EXIT:
         if secret_exit.is_item:
-            _rule = level_rules[secret_exit.world - 1][secret_exit.level_to - 1][0]
-            if world.options.shortcuts_sanity:
-                _rule &= rules.Has(name_secret(secret_exit))
-            world.set_rule(world.get_entrance(f"{name_secret(secret_exit)}"),_rule)
+            _rule = level_rules[secret_exit.world - 1][secret_exit.level - 1][0]
+            if secret_exit.world == 3 and secret_exit.level == 4:
+                _rule = True_() # need to override this since otherwise we get error
+            _rule &= rules.Has(name_secret(secret_exit))
+            if secret_exit.exit_type == 2:
+                assert len( level_rules[secret_exit.world - 1][secret_exit.level - 1]) == 3, f"Make sure lists is of correct size for {name_base(secret_exit.world, secret_exit.level)}"
+                _rule &= level_rules[secret_exit.world - 1][secret_exit.level - 1][2]
+
+            #_rule = True_() # temp
+            world.set_rule(world.get_entrance(name_secret(secret_exit)),_rule)
 
 
 
@@ -154,6 +164,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
             level_num = secret_exit.level
             secret_exit_loc = world.get_location(name_secret(secret_exit))
             if secret_exit.exit_type == 2:
+                assert len( level_req[world_num - 1][level_num - 1]) == 3, f"Make sure lists is of correct size for {name_base(world_num, level_num)}"
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) &
                                level_req[world_num - 1][level_num - 1][2])
             elif secret_exit.exit_type == 1:

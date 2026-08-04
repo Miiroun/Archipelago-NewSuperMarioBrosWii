@@ -75,12 +75,16 @@ class NSMBWInterface(object):
     deathtimer : float = time.time()
     should_clear : int
 
+    auto_clear_cache : bool = True
 
     def __init__(self, logger: Logger, log_color) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
         self.should_clear = 0
         self.log_color = log_color
+
+        self.auto_clear_cache = True
+
 
 
 
@@ -242,9 +246,15 @@ class NSMBWInterface(object):
 
     def _linux_send_hotkey(self, combo: str) -> bool:
         """Deliver a Dolphin hotkey on Linux via the compositor + xdotool."""
-        if shutil.which("xdotool") is None:
-            self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
-            return False
+        if Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only == 1:
+            if shutil.which("xdotool") is None:
+                self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
+                return False
+        if Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only == 2:
+            if shutil.which("ydotool") is None:
+                self.log_color(f"ydotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
+                return False
+
         try:
             match  Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
                 case 1:
@@ -256,7 +266,7 @@ class NSMBWInterface(object):
             return True
         except Exception as e:
             logger.info(traceback.format_exc())
-            self.log_color(f"Error {e} when sending hotkey '{combo}' via xdotool", "red")
+            self.log_color(f"Error {e} when sending hotkey '{combo}' via xdotool or ydotool", "red")
             return False
 
     def save_state(self, slot : int, do_logging=True):
@@ -320,6 +330,9 @@ class NSMBWInterface(object):
             return
         #if self.is_in_level() or self.is_in_worldmap():
         #logger.info("Clearing JIT cache by loading savestate")
+
+        if not self.auto_clear_cache:
+            logger.info(f"Auto clear cache turned off, you will need to do this manually by saving and loading a savestate.")
 
         time.sleep(0.3)
         self.save_state(Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot, do_logging=False)

@@ -209,6 +209,12 @@ def create_all_items(world: NSMBWworld) -> None:
         for secret_exit in SECRET_EXIT:
             if secret_exit.is_item:
                 itempool.append(world.create_item(name_secret(secret_exit)))
+    else:
+        excluded_items |=  {name_secret(SecretExit(3, 4, 5, 2, True)),
+                            name_secret(SecretExit(7, 8, 6, 2, True)),
+                            name_secret(SecretExit(8, 2, 7, 2, True)),
+                            }
+
 
     # handle important items
     itempool_names = []

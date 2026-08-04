@@ -22,9 +22,6 @@ from ..Utils import bytes_to_int
 import bsdiff4
 
 
-#RIIVOLUTION_PATH = Utils.get_settings()["NSMBW.options"].riivolution_path
-#RANDO_PATH = RIIVOLUTION_PATH + r"\\NSMBW_AP_RANDO\\"
-
 logger = logging.getLogger("Client")
 
 class ArcFile:

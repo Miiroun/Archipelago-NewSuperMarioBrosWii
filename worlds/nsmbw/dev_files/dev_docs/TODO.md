@@ -6,6 +6,7 @@ Try skip wii strap patch : see if works to not have bug
 Title screen replacement
 Find way to still auto start on start up if not selected riivolution
 Test if loading code actully moves around memory
+dev setting instead of on froozen
 
 ## Super short term
 - PlayerGravity # gravity filler ?
@@ -186,6 +187,34 @@ Test if loading code actully moves around memory
       Save State/Save State Slot 8 = @(Shift+`F8`)
 - reuse code for check point for other level elements
 - remove optimiz form modifires : so doesnt causes issue at cost of performance
+- have option to rando towers and airshipps in their own pool
+- If you are using Dolphin Emulator, you need to enable MMU in Config > Advanced (this can only be done while a game is not running).  Next up, the retail game does not display the exception handler by default (most modding bases do). To show it, press , , , , , , , , ,  on Player 1's Wii Remote. Alternatively, Dolphin's log will print out the exception info, so long as both OSReport log types are enabled.
+- Don't rando 8-C, only shuffle castles, airships and towers to eachother. Look at which levels have hardcoded things
+- rework dont rando move, have it only include working movements, put the others somwhere else
+- Hook into main loop, load institution
+- exception handler // Disable the button sequence kmWrite32(0x802D7528, 0x48000060);
+- Hook up kamek patch that can clear jit: load instru from memory: # r17+r18=address of instruction you want to remove from cache dcbf r17,r18  sync icbi r17,r18 isync
+  - Probably dont want geco code solution since that difficult to do automatically
+- Mention common issues if not loading save states
+- Mention dolphin default program in common errors
+- Find other way to invaliditet dolphin cache
+- Test mem1 and 2 issue
+- Kamek patch to detect if ap is connected
+- Should be able to at least relatively easily create kamek patch that can kill mario from externally modified memory
+- Add test with / out exits
+- Cmd to print all settings
+- When change setting print new value
+- Rework modifiers so issue doesn't happen
+- Add assert if save slots overlap
+- Ask react if should rando run
+- Option to have world 9 levels not be blocked
+- Faq jit savestate
+- Remove red from no save slot found
+- Try moving mem1, see if causes issues
+- need a can reach 3-5 on 3-4 normal exit
+- fix so not rando 3-4 to 3-5
+- Change docs for linux : no need for root if xdotools or ydotools
+
 
 ## Playtest
 - multiplayer
@@ -210,6 +239,9 @@ Test if loading code actully moves around memory
 - allow_gen_difficult_settings
 - Setting for being in debug mode instead of if frozen
 - star coin multiplyer for hm
+- Does time rando work??
+- Can I get off Yoshi without spin?
+
 
 
 ## Bugs to fix
@@ -240,7 +272,10 @@ Test if loading code actully moves around memory
 - All backgrounds are dark
   - need to modify internal of the .arc file
 - 9-3 & 9-8 doesn't auto send stat coin on collect
-
+- This isn't a priority so you can focus on it later, but here's an error that was produced after running the command ```Traceback (most recent call last):   File "MultiServer.py", line 1350, in __call__   File "C:\ProgramData\Archipelago\custom_worlds\tracker.apworld\tracker\TrackerClient.py", line 250, in _cmd_explain     explain(self.ctx, lookup_name)     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^   File "C:\ProgramData\Archipelago\custom_worlds\tracker.apworld\tracker\TrackerClient.py", line 1512, in explain     dest_id = current_world.location_name_to_id[dest_name]               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^ KeyError: '9-1'```
+  - Do I not add event locations to world 9??
+- Still disconnect error
+- force_hook : assert connected
 
 ## Short term
 - Multiplayer support
