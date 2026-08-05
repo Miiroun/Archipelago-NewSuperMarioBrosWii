@@ -1,12 +1,15 @@
 # TODO 
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
-Finish shortcut sanity
 Ask in dc for better option names
 Try skip wii strap patch : see if works to not have bug
 Title screen replacement
 Find way to still auto start on start up if not selected riivolution
 Test if loading code actully moves around memory
 dev setting instead of on froozen
+Playtest multiplayer
+Do we need to load to clear or does it on save too?
+Playtest secret exits
+
 
 ## Super short term
 - PlayerGravity # gravity filler ?
@@ -25,32 +28,17 @@ dev setting instead of on froozen
 - button_down and button_up and pipe logic
 - request channel
 - Secret exit items
-  - client
-    - read from data
-    - reunlock when got
   - update docs
-  - fix option validation
-  - add thing if they aren't enabled
-  - run visulaize to verify regions are correct
-- Command to repromt game file?
 - Can create riivolution patch and auto extract using dolphin tools
 - create an function to  and bytes
-- Run checks to not auto save in peach castle or world9
-- Ask AP-world dev for x% of filler should be local option
 - Rando game tile sheet, enemy sheet, music etc. Easiest done through riivolution
-- Deathlink Amnesty incorrect, not ressetting
-- Suggestion: make local_items take an amount
 - Try redumping my copy of nsmbw : test which guide / method best to link to
-- 2-2sc1 & sc2
-- 1-C sc3
 - Why is deathlink group displayed as wrong??
-- Hintmovie sanity?
 - Add command to repromt for a new game file: Check if file exists etc : otherwise repromt
 - Ask for help in dc for names
 - technically can do without riivolution path, but is nice if anyone want to launch it themselvs
 - Work on preventing sending of locations on title screen
 - 8-2 secret exit requires more logic
-- Hm are broken 6, 9, 55 ...
 - Ask for help in dc for names
 - Secret exit items in client !!!
 - Hm option: cumulative but order is sorted after hm unlock order
@@ -75,14 +63,11 @@ dev setting instead of on froozen
 - Beat some levels on vanilla save file 1 to verify no wrong sends are happening
 - Reword timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
-- Make Clear cache f key be setting
 - Put disclaimer that collect SC immediately doesn't impact logic
-- NSMBW version in window title
-- Hm 5 probably not a problem
+- NSMBW version in window title ?
 - Try sending !-switch
 - Remove comment above check sc in level
 - Deleate main branch (again)
-- Deathlink: if in level ()
 - Add setting to which save file to continuously save/load from
 - Docs mention no changes dolphin setting or keybind
 - If unlocked set red switch to on
@@ -96,12 +81,9 @@ dev setting instead of on froozen
 - Can I verify dolphin settings? have been changed?
 - Time change default not current
 - rando  world maps, include customs
-- Shuffle with custom levels (no logic)
 - Edit title screen
 - implement method to read arc files : needed to change names of subfolders
 - stopmping on enemeies as move
-- Ask about x% local filler
-- Remove visibility of riivolution patch for next release, have it be a secret option
 - Patch to skip wii safty
 - verify that key combos dont overlap
 - point to dumping guide in docs
@@ -125,15 +107,11 @@ dev setting instead of on froozen
   - relativly easy, high reward change
 - Sprite table start 	8030a340	8031ab4c
 - Rando enemies: option if remove or add them
-- Redirect save should be safe: yep its this line ``` <savegame external="/save/{$__gameid}{$__region}" clone="false" /> ``` this one should be fixed
-  - done ?
 - Try detecting dolphin settings C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config
 - Rework modifiers slightly so that they don't cause issues any more
 - Chance for level to be replaced by backwards version
-- P-switch as locations
 - Can i somehow trigger something with hitting ?-blocks?
 - Make sure works with no patch
-- Make debug mode a setting instead of on frozzen
 - Add test not on save file 1 before sending locations
 - Test manually renaming just 1 file
 - Make don't rando move invisible
@@ -189,7 +167,6 @@ dev setting instead of on froozen
 - remove optimiz form modifires : so doesnt causes issue at cost of performance
 - have option to rando towers and airshipps in their own pool
 - If you are using Dolphin Emulator, you need to enable MMU in Config > Advanced (this can only be done while a game is not running).  Next up, the retail game does not display the exception handler by default (most modding bases do). To show it, press , , , , , , , , ,  on Player 1's Wii Remote. Alternatively, Dolphin's log will print out the exception info, so long as both OSReport log types are enabled.
-- Don't rando 8-C, only shuffle castles, airships and towers to eachother. Look at which levels have hardcoded things
 - rework dont rando move, have it only include working movements, put the others somwhere else
 - Hook into main loop, load institution
 - exception handler // Disable the button sequence kmWrite32(0x802D7528, 0x48000060);
@@ -202,18 +179,16 @@ dev setting instead of on froozen
 - Kamek patch to detect if ap is connected
 - Should be able to at least relatively easily create kamek patch that can kill mario from externally modified memory
 - Add test with / out exits
-- Cmd to print all settings
-- When change setting print new value
 - Rework modifiers so issue doesn't happen
 - Add assert if save slots overlap
 - Ask react if should rando run
 - Option to have world 9 levels not be blocked
 - Faq jit savestate
-- Remove red from no save slot found
 - Try moving mem1, see if causes issues
-- need a can reach 3-5 on 3-4 normal exit
 - fix so not rando 3-4 to 3-5
 - Change docs for linux : no need for root if xdotools or ydotools
+- FIX YDOTOOLS
+- option to shuffle only towers within themselves
 
 
 ## Playtest
@@ -241,7 +216,10 @@ dev setting instead of on froozen
 - star coin multiplyer for hm
 - Does time rando work??
 - Can I get off Yoshi without spin?
-
+- reprompt_gamefile
+- Ydotool
+- patch not need watching hint movies
+- Shortcuts
 
 
 ## Bugs to fix
@@ -276,6 +254,11 @@ dev setting instead of on froozen
   - Do I not add event locations to world 9??
 - Still disconnect error
 - force_hook : assert connected
+- exit course sometimes send death
+- Hm 5 probably not a problem
+- 2-2sc1 & sc2
+- 1-C sc3
+
 
 ## Short term
 - Multiplayer support
@@ -373,6 +356,11 @@ dev setting instead of on froozen
     - start all item remove them
     - start none, trap item add enemy types
   - do this for other level parts like seesaw?
+- Suggestion: make local_items take an amount
+- Ask AP-world dev for x% of filler should be local option
+  - Ask about x% local filler
+- locations for simple things ? 100 coins, top of flagpole, 100 lives, 100 inventory pow, etc ?
+- P-switch as locations
 
 
 ## ER
@@ -453,6 +441,8 @@ dev setting instead of on froozen
 - Add support for other mods: pipe rando, mkwcat 8player, newer (needs logic), etc
   - Needs to create new memory map (on the fly? or need to create it for all editions), would be helpful for using the memory patch with the randomizer
 - Actual deathlink messages
+- Shuffle with custom levels (no logic)
+
 
 ## Features I (Miiroun) will not implement
 - Native wii support

@@ -132,29 +132,12 @@ class Patcher:
         self.random = Random(self.seed)
 
     def copy_riivolution_skeleton(self):
-        return
-        print("TODO implement patcher")
-
-        #shutil.copyfile(input_path, output_path)
-        RIIVOLUTION_PATH = output_path.parent
-        RANDO_PATH = output_path
+        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else pathlib.Path() / "worlds" / "nsmbw"
+        _from = apnsmbw_file.parent / "NSMBW_client" / "rom_file" / "patch"
 
 
-        if os.path.exists(RIIVOLUTION_PATH):
-            if os.path.exists(RANDO_PATH):
-                shutil.rmtree(RANDO_PATH)
-                #delete old rando, would be good if in future use seed to differentiate and keept old files
-            os.makedirs(RANDO_PATH)
-            if not os.path.exists(RIIVOLUTION_PATH /r"riivolution"):
-                os.makedirs(RIIVOLUTION_PATH / r"riivolution")
-            current_path = os.path.dirname(os.path.abspath(__file__))
-            file_name = r'rom_file/riivolution_nswmbw_ap_rando.xml'
+        shutil.copytree(_from, self.output_path, dirs_exist_ok=True)
 
-            shutil.copyfile(os.path.join(current_path,file_name), RIIVOLUTION_PATH / r"riivolution" /file_name)
-
-            map_name = r"\\rom_file\\patch"
-            shutil.copytree(current_path+map_name, RANDO_PATH / map_name)
-            print("TODO create patched files")
 
     def extract_game(self):
         dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool_path)
@@ -269,7 +252,21 @@ class Patcher:
         ET.SubElement(choice, "patch", {"id" : "nsmbw_ap"})
 
         _patch = ET.SubElement(wiidisc, "patch", {"id" : "nsmbw_ap"})
+
+
+        ET.SubElement(_patch, "folder", {"external" : fr"Code", "disc":fr"/Code/", "create":"true"})
+
+
+        ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/CN/Layout/openingTitle/openingTitle.arc"})
+        ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/EU/Layout/openingTitle/openingTitle.arc"})
+        ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/JP/Layout/openingTitle/openingTitle.arc"})
+        ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/KR/Layout/openingTitle/openingTitle.arc"})
+        ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/TW/Layout/openingTitle/openingTitle.arc"})
+        ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/US/Layout/openingTitle/openingTitle.arc"})
+
+
         ET.SubElement(_patch, "savegame", {"external" : r"/save/{$__gameid}{$__region}","close" : "false"})
+
 
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/", "disc":fr"/Stage/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/Texture/", "disc":fr"/Stage/Texture/", "create":"true"})

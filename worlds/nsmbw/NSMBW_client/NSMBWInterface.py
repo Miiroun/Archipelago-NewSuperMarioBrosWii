@@ -56,9 +56,6 @@ GAME_VERSIONS = {
 
 }
 
-GAMELEVELS_PER_WORLD = LEVELS_PER_WORLD
-
-
 
 class NSMBWInterface(object):
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with game"""
@@ -84,7 +81,6 @@ class NSMBWInterface(object):
         self.log_color = log_color
 
         self.auto_clear_cache = True
-
 
 
 
@@ -244,29 +240,37 @@ class NSMBWInterface(object):
 
         return address
 
-    def _linux_send_hotkey(self, combo: str) -> bool:
-        """Deliver a Dolphin hotkey on Linux via the compositor + xdotool."""
+    def _linux_send_hotkey(self, fkey : int, shift : bool) -> bool:
+        """Deliver a Dolphin hotkey on Linux"""
         if Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only == 1:
             if shutil.which("xdotool") is None:
-                self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
+                self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey 'F{8}', shift:{shift}.","red")
                 return False
         if Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only == 2:
             if shutil.which("ydotool") is None:
-                self.log_color(f"ydotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey '{combo}'.","red")
+                self.log_color(f"ydotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey 'F{8}', shift:{shift}.","red")
                 return False
 
         try:
             match  Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
                 case 1:
+                    if shift:
+                        combo = f"F{fkey} + shift"
+                    else:
+                        combo = f"F{fkey}"
                     subprocess.run(["xdotool", "key", "--clearmodifiers", combo],check=True,capture_output=True,)
                 case 2:
-                    subprocess.run(["ydotool", "key", "--clearmodifiers", combo],check=True,capture_output=True,)
+                    if shift:
+                        combo = [f"{58+fkey}:1",f"{58+fkey}:0"]
+                    else:
+                        combo = ["42:1", f"{58+fkey}:1",f"{58+fkey}:0", "42:0"]
+                    subprocess.run(["ydotool", "key", *combo],check=True,capture_output=True,)
                 case _:
                     raise Exception(f"Unacunted case { Utils.get_settings()['nsmbw_settings'].use_xdotool_instead_of_keyboard_linux_only}")
             return True
         except Exception as e:
             logger.info(traceback.format_exc())
-            self.log_color(f"Error {e} when sending hotkey '{combo}' via xdotool or ydotool", "red")
+            self.log_color(f"Error {e} when sending hotkey 'F{8}', shift:{shift} via xdotool or ydotool", "red")
             return False
 
     def save_state(self, slot : int, do_logging=True):
@@ -279,7 +283,7 @@ class NSMBWInterface(object):
 
         try:
             if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only != 0:
-                self._linux_send_hotkey(f"shift+F{slot}")
+                self._linux_send_hotkey(slot, True)
             else:
                 time.sleep(wait_long)
                 keyboard.release("shift")
@@ -299,7 +303,6 @@ class NSMBWInterface(object):
 
 
     def load_state(self, slot : int, do_logging=True):
-        return
         assert 1 <= slot <= 8, "needs valid slot number"
         wait_long   = 0.4
         wait_short  = 0.1
@@ -308,7 +311,7 @@ class NSMBWInterface(object):
             logger.info(f"loaded savestate from slot {slot}")
         try:
             if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
-                self._linux_send_hotkey(f"F{slot}")
+                self._linux_send_hotkey(slot, False)
             else:
                 time.sleep(wait_short)
                 keyboard.release("shift")
@@ -592,7 +595,7 @@ class NSMBWInterface(object):
         offset = self.memory_offset_level_stats(world_num,level_num)  #magic numer to make line up with old
         return self.dolphin_client.read_address(dMj2dGame_c_address+0x6c+offset, 1) #4
     def get_inventory_items(self, type_num : int) -> bytes:
-        address = self.get_dMj2dGame_c_address()+0x9 + type_num -1 # this is wrong, looked at powerupsAvailable
+        address = self.get_dMj2dGame_c_address()+0x9 + type_num  # this is wrong, looked at powerupsAvailable
         return self.dolphin_client.read_address(address,1)
     def get_world_level(self) -> bytes:
         address = self.memory_addresses.world_level# + self.save_file_offset()

@@ -18,6 +18,7 @@ from typing import Literal, get_args, NamedTuple
 import Utils
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
 from settings import get_settings
+from ..settings import NSMBWSettings
 
 tracker_loaded = False
 
@@ -74,6 +75,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """Update the deathlink group """
         Utils.async_start(self.ctx.update_death_link_group(key))
         logger.info(f"Updated deathlink group to '{key}' ")
+
+    def _cmd_deathlink_amnesty(self, amount):
+        """Set the value of deathlink_amnesty"""
+        value = int(amount)
+        self.ctx.death_link_amnesty_cap = value
+        logger.info(f"Deathlink amnesty set to {self.ctx.death_link_amnesty_count}/{self.ctx.death_link_amnesty_cap}")
+
 
     def _cmd_debug_deathlink(self):
         """Gives some debug info if deathlink isn't working correctly.
@@ -225,14 +233,14 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Toggles the auto open setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_open"] ^= True
-        logger.info(f"Auto clear open: {Utils.get_settings()["nsmbw_settings"]["auto_open"]}")
+        logger.info(f"Auto clear open: {Utils.get_settings()['nsmbw_settings']['auto_open']}")
 
     def _cmd_toggle_auto_load(self):
         """
         Toggles the auto load setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_load"] ^= True
-        logger.info(f"Auto clear load: {Utils.get_settings()["nsmbw_settings"]["auto_load"]}")
+        logger.info(f"Auto clear load: {Utils.get_settings()['nsmbw_settings']['auto_load']}")
 
 
     def _cmd_toggle_auto_save(self):
@@ -240,7 +248,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Toggles the auto save setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_save"] ^= True
-        logger.info(f"Auto clear save: {Utils.get_settings()["nsmbw_settings"]["auto_save"]}")
+        logger.info(f"Auto clear save: {Utils.get_settings()['nsmbw_settings']['auto_save']}")
 
 
     def _cmd_toggle_auto_close(self):
@@ -248,13 +256,18 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Toggles the auto close setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_close"] ^= True
-        logger.info(f"Auto clear close: {Utils.get_settings()["nsmbw_settings"]["auto_close"]}")
-
+        logger.info(f"Auto clear close: {Utils.get_settings()['nsmbw_settings']['auto_close']}")
 
     def _cmd_auto_clear_cache(self):
         """Toggles wherethere to automatically clear cache. If you turn it of you will have to manually do it (by loading a savestate) for deathlink, movementrando and more to work. This is not saved betwen sestions"""
         self.ctx.game_interface.auto_clear_cache  ^= True
         logger.info(f"Auto clear cache: {self.ctx.game_interface.auto_clear_cache}")
+
+    def _cmd_reprompt_gamefile(self):
+        """Repromt for selecting game file"""
+        NSMBWSettings.GameFilePath.browse(Utils.get_settings()["nsmbw_settings"].game_file_path)
+
+
 
     def _cmd_force_hook(self) -> None:
         """Force restart the Dolphin hook process (unhook + fresh re-hook), runs 30 times"""
@@ -437,6 +450,9 @@ class NSMBWContext(SuperContext):
     manifest_version : str
 
     death_link_amnesty_count : int
+    death_link_amnesty_cap : int
+
+    unlocked_secret_exits : List[str]
 
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
@@ -473,7 +489,10 @@ class NSMBWContext(SuperContext):
         self.save_time = time.time()
         self.unlocked_worlds = [0 for _ in range(1, 9 + 1)]
 
+        self.unlocked_secret_exits = []
+
         self.death_link_amnesty_count = 0
+        self.death_link_amnesty_cap = 1
 
 
 
@@ -511,6 +530,7 @@ class NSMBWContext(SuperContext):
 
                 Utils.async_start(self.update_death_link(self.slot_data["death_link"]))
                 Utils.async_start(self.update_death_link_group(self.slot_data["death_link_group"]))
+                self.death_link_amnesty_cap = self.slot_data["death_link_amnesty"]
 
                 try:
                     gen_ver = self.slot_data["NSMBW_Version"]
@@ -762,7 +782,8 @@ class NSMBWContext(SuperContext):
         self.game_interface.update_check_sum()
         if time.time() >= self.save_time + 60 * 5 and Utils.get_settings()["nsmbw_settings"].auto_save:
             self.save_time = time.time()
-            await self.handle_save()
+            if self.moded_levelstats == ModifiedState.UNMODIFIED:
+                await self.handle_save()
 
         await self.ut_auto_tab()
         await self.game_interface.patch_runtime_on_load() # unsure where to put this, just needs to run once, but good if does multiple times if not applied correctly
@@ -808,6 +829,7 @@ class NSMBWContext(SuperContext):
                 "moded_levelstats" : self.moded_levelstats,
                 "handled_num" : self.handled_num,
                 "save_slot" : self.save_slot,
+                "death_link_amnesty_cap" : self.death_link_amnesty_cap,
             }
             with open(path / f"{self.seed_name}.json", "w+") as file_name:
                 json.dump(data, file_name)
@@ -831,7 +853,7 @@ class NSMBWContext(SuperContext):
 
                 await self.update_death_link(data["deathlink_enabled"])
                 await self.update_death_link_group(data["deathlink_group"])
-
+                self.death_link_amnesty_cap = data["death_link_amnesty_cap"]
 
                 self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
 
@@ -1010,7 +1032,7 @@ class NSMBWContext(SuperContext):
                 world_num = secret_exit.world
                 level_num = secret_exit.level
                 exit_name = name_secret(secret_exit)
-                level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
+                level_stats = bytes_to_int(self.game_interface.get_level_stats(world_num, level_num))
 
                 byte_to_check : int
                 if secret_exit.exit_type == 1:
@@ -1024,8 +1046,14 @@ class NSMBWContext(SuperContext):
                 if level_stats & byte_to_check == byte_to_check:
                     if not NSMBWworld.location_name_to_id[exit_name] in self.locations_handled:
                         checked_locations.append(NSMBWworld.location_name_to_id[exit_name])
+                        self.completed_levels.append(exit_name)
                         print(f"You collected a check for {exit_name}, but the cannon/exit will be locked to make the randomizer more interesting.")
-                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
+                    if not exit_name in self.unlocked_secret_exits:
+                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
+                elif (exit_name in self.unlocked_secret_exits) and (exit_name in self.completed_levels):
+                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + byte_to_check, 1))
+                    self.completed_levels.remove(exit_name)
+                    logger.info(f"Exit {exit_name} have been unlocked")
 
             for world_num in range(1,8+1):
 
@@ -1125,6 +1153,7 @@ class NSMBWContext(SuperContext):
         self.starcoin_count = 0
         self.time = 0
         self.boss_health = 0
+        self.unlocked_secret_exits = []
         #print(f"handled_num {self.handled_num}")
 
         i = 0
@@ -1173,6 +1202,8 @@ class NSMBWContext(SuperContext):
                     self.filler.append(item_name)
                 elif 601 <= item_id <= 699:
                     print(f"Power-up {item_name} was received ")
+                elif 701 <= item_id <= 799:
+                    self.unlocked_secret_exits.append(item_name)
                 else:
                     print(f"Handling for {item_name} haven't been implemented")
 
@@ -1455,7 +1486,7 @@ class NSMBWContext(SuperContext):
             if self.death_link_enabled:
                 if is_dead and (self.is_pending_death_link_reset == False) and self.slot:
                     self.death_link_amnesty_count += 1
-                    if self.death_link_amnesty_count >= self.slot_data["death_link_amnesty"]:
+                    if self.death_link_amnesty_count >= self.death_link_amnesty_cap:
                         death_messages = [" ran into a goomba.", " mixed up water and lava.", " can't fly.", " discovered gravity.", " can't math."]
                         await self.send_group_death(self.player_names[self.slot] + self.random.choice(death_messages))
                         print(f"is sending deathlink")

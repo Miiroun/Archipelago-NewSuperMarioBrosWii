@@ -101,7 +101,7 @@ FILLER = list([c.value for c in ITEM.FILLER])
 
 SUPPORTED_VERSIONS = ["E2"]
 
-PLAYER_COUNT = 1
+PLAYER_COUNT = 4
 
 def mod_level_name(worldnum : int, levelnum : int) -> str:
     shift = 1 if worldnum in [7,8] else 0

@@ -190,10 +190,12 @@ class World9UnlockCondition(Choice):
     Select in which way world 9 levels will be unlocked
     Linear      : 9-1 req 20 SC, 9-2 req e0 SC, etc.
     Gaussian    : The unlocking will be a gaussian distribution with mean = 80 SC and standard deviation = 40
+    Unlocked    : Not locked
     """
     display_name = "World 9 Unlock Condition"
     option_linear = 2
     option_gaussian = 3
+    option_unlocked = 4
 
     default = option_gaussian
 
