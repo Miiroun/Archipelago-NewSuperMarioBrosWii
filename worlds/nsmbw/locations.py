@@ -180,7 +180,7 @@ def pos_to_level_name(pos : int) -> tuple[int, int]:
 
 
 
-def shuffle_level_order(world: NSMBWworld) -> None:
+def shuffle_level_order(world: NSMBWworld) -> bool:
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
     if world.options.level_shuffel_riivolution == True:
@@ -215,3 +215,7 @@ def shuffle_level_order(world: NSMBWworld) -> None:
 
         assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
         assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder {world.shuffled_level_order}, counter {Counter(world.shuffled_level_order)} must have unique elements"
+
+        return (not world.shuffled_level_order[level_name_to_pos(3,4)] == level_name_to_pos(3,5)) and (not world.shuffled_level_order[level_name_to_pos(3,5)] == level_name_to_pos(3,4))
+    else:
+        return True

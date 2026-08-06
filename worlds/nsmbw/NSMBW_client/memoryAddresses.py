@@ -258,11 +258,18 @@ class MemoryAddresses(object):
 
         disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear")
 
+        # Skip Wii Remote Strap Screen PAL by CLF78
+        patch_skipp_wii_remote_strap_screen = [
+            self.create_patch("P1", 0x803286CC, int_to_bytes(0x8015D010, 4), name = "patch_skipp_wii_remote_strap_screen" ),
+            self.create_patch("P1", 0x803286C0, int_to_bytes(0x8015D0A0, 4), name = "patch_skipp_wii_remote_strap_screen"),
+            self.create_patch("P1", 0x803286D8, int_to_bytes(0x8015CFC0, 4), name = "patch_skipp_wii_remote_strap_screen"),
+        ]
 
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
-            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear
+            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
+            patch_skipp_wii_remote_strap_screen
         ]
 
         # address 0x80162fb8 might be good to create a branch from

@@ -1,11 +1,5 @@
 # New Super Mario Bros Wii
 
-## Where is the options page?
-
-The [player options page for this game](../player-options) contains all the options you need to configure and export a
-config file.
-
-
 ## What is goal
 - To beat bowsers castle at world 8
 - Bowsers castle is looked behind having a number of star coin items and beaten the last level in a number of worlds. (Configurable in player yaml)
@@ -73,11 +67,8 @@ Options are specific to generation and are changed each multiworld, this is not 
 
 ## Settings
 Settings can be found in host.yaml in the "nsmbw_settings" category and are playthrough agnostic.
-- game_file_path (either .wbfs or .iso)
-- auto_open(if the client should open and close dolphin automatically)
-- collect_level (where location collected from afar should be marked in game, 0 = off, 1 = on except final levels, 2 = on)
-- ut_pack_path (ignore for now, this is for if a UT-compatible pop-tracker is made)
-- save_file_path (the file location (relative to /archipelago/) which the client uses to save files)
+They mostly include auto open, load, etc, lots of file and folder paths and others.
+Among them are alternative to the keyboard library for Linux, and which slot to use for clearing cache.
 
 
 ## Known quirks / bugs / help with debug
@@ -151,3 +142,11 @@ Settings can be found in host.yaml in the "nsmbw_settings" category and are play
 - Try running some client commands related to your issue.
   - If you have trouble with moves unlocking, death-link etc it probably issue with JIT_chache. The client automaticly makes savestate by pressing shirt+F8 and them F8. Make sure you have these button combos mapped to save-states in dolphoin.
 - If you can not solve your problem, run the debug launcher (found inside your archipelago directory) and send a screenshot of the client in the nsmbw thread in the archipelago discord server.
+
+
+## Other NSMBW modding projects
+There exists two other nsmbw randomizers that I recomed looking into
+- mkwcats pipe rando https://github.com/mkwcat/nsmbw-pipe-randomizer
+- Hei's level rando https://hbrohei.github.io/NSMRWii/. Similar to ours but they have more features and config
+- Newer Super Mario Bros Wii : the standard overhal mod https://newerteam.com/wii/. Greate recomendation if you want to try playing custom levels
+- mkwcats 8 player mod https://github.com/mkwcat/nsmbw-project. For someone with friends plural and want CHAOS.

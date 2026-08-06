@@ -1,4 +1,5 @@
 # TODO 
+## Super super short term
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
 Ask in dc for better option names
 Try skip wii strap patch : see if works to not have bug
@@ -9,6 +10,24 @@ dev setting instead of on froozen
 Playtest multiplayer
 Do we need to load to clear or does it on save too?
 Playtest secret exits
+Gravity : should be at 802f5918 
+  add both high gravity (trap) and low gravity (filler)
+Check point similar
+  replace 80a92888 for red coin ring
+  func 809c6120 for switches ? 
+  func 80aa7470 sneak block
+  func 80a9cc70 poky
+  func 80a5d2d0 daEnLiftRotHalf_c
+  80a88920 chep chep
+  80031210 goomba
+  80822800 koopa ball
+search : onCreate and create, only lables
+Re-evaluate which files are packed for release
+Maybe beter to actually patch image to save on space instead of load entire .arc file
+How solve issue where to load game on start or connect if use riivolution or not
+- need to update docs
+Test AP map visual editor
+- does new auto riivo work ? move old start to on open
 
 
 ## Super short term
@@ -26,17 +45,12 @@ Playtest secret exits
   - include option to sanity?
 - update docs
 - button_down and button_up and pipe logic
-- request channel
 - Secret exit items
   - update docs
-- Can create riivolution patch and auto extract using dolphin tools
 - create an function to  and bytes
-- Rando game tile sheet, enemy sheet, music etc. Easiest done through riivolution
+- Rando game tile sheet, enemy sheet (or sprite table ?), music etc. Easiest done through riivolution
 - Try redumping my copy of nsmbw : test which guide / method best to link to
-- Why is deathlink group displayed as wrong??
-- Add command to repromt for a new game file: Check if file exists etc : otherwise repromt
 - Ask for help in dc for names
-- technically can do without riivolution path, but is nice if anyone want to launch it themselvs
 - Work on preventing sending of locations on title screen
 - 8-2 secret exit requires more logic
 - Ask for help in dc for names
@@ -64,10 +78,6 @@ Playtest secret exits
 - Reword timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
 - Put disclaimer that collect SC immediately doesn't impact logic
-- NSMBW version in window title ?
-- Try sending !-switch
-- Remove comment above check sc in level
-- Deleate main branch (again)
 - Add setting to which save file to continuously save/load from
 - Docs mention no changes dolphin setting or keybind
 - If unlocked set red switch to on
@@ -80,8 +90,6 @@ Playtest secret exits
 - Use dme on intro, try finding way to not release on connect
 - Can I verify dolphin settings? have been changed?
 - Time change default not current
-- rando  world maps, include customs
-- Edit title screen
 - implement method to read arc files : needed to change names of subfolders
 - stopmping on enemeies as move
 - Patch to skip wii safty
@@ -90,7 +98,6 @@ Playtest secret exits
 - Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
 - Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
 - Add better way of explaining rules
-- ``` Skip Wii Remote Strap Screen PAL <memory offset="0x803286C0" value="8015D0A0"/> <memory offset="0x803286CC" value="8015D010"/> <memory offset="0x803286D8" value="8015CFC0"/> ``` by CLF78
   - Does this solve issue?
 - load last save state directly? : should be able to
 - Pause dolphin, increment slowly: find bites in black : verify issue there not menu generally
@@ -101,10 +108,6 @@ Playtest secret exits
 - Color pallet rando? : would be realy fun and possible?
 - Maybe separate movement, rename to abilities and level_elements: move over pow, ?switch, flagpole
 - Look at flagpole patch in ghirdra
-- Pin message about other nsmbw randos
-  - maybe create a dc pin .md
-- Custom title screen? 
-  - relativly easy, high reward change
 - Sprite table start 	8030a340	8031ab4c
 - Rando enemies: option if remove or add them
 - Try detecting dolphin settings C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config
@@ -121,7 +124,6 @@ Playtest secret exits
   - if want to change logic etc
 - riivolution level shuffle is backwards
   - fixed?
-- starcoin_count double init
 - Emulated memory override ? 
 - Does glitch logic not work??
   - add test
@@ -139,7 +141,6 @@ Playtest secret exits
 - ```yaml - name: DisableGameOverItemClear   type: nop_insn   area_pal: 0x80789038 ```
   - done ?
 - Publish can't move left patch in nsmbw dc
-- Location scout hm
 - Double jump
   - https://discord.com/channels/673369321522593794/1396386889052983307/1396386889052983307
 - verify dolphin settings
@@ -167,7 +168,6 @@ Playtest secret exits
 - remove optimiz form modifires : so doesnt causes issue at cost of performance
 - have option to rando towers and airshipps in their own pool
 - If you are using Dolphin Emulator, you need to enable MMU in Config > Advanced (this can only be done while a game is not running).  Next up, the retail game does not display the exception handler by default (most modding bases do). To show it, press , , , , , , , , ,  on Player 1's Wii Remote. Alternatively, Dolphin's log will print out the exception info, so long as both OSReport log types are enabled.
-- rework dont rando move, have it only include working movements, put the others somwhere else
 - Hook into main loop, load institution
 - exception handler // Disable the button sequence kmWrite32(0x802D7528, 0x48000060);
 - Hook up kamek patch that can clear jit: load instru from memory: # r17+r18=address of instruction you want to remove from cache dcbf r17,r18  sync icbi r17,r18 isync
@@ -176,7 +176,6 @@ Playtest secret exits
 - Mention dolphin default program in common errors
 - Find other way to invaliditet dolphin cache
 - Test mem1 and 2 issue
-- Kamek patch to detect if ap is connected
 - Should be able to at least relatively easily create kamek patch that can kill mario from externally modified memory
 - Add test with / out exits
 - Rework modifiers so issue doesn't happen
@@ -185,10 +184,27 @@ Playtest secret exits
 - Option to have world 9 levels not be blocked
 - Faq jit savestate
 - Try moving mem1, see if causes issues
-- fix so not rando 3-4 to 3-5
 - Change docs for linux : no need for root if xdotools or ydotools
-- FIX YDOTOOLS
 - option to shuffle only towers within themselves
+- Try: Ensure that "Enable CPU Overclock" and "Emulated Memory Size Override" are both off in your Dolphin settings
+- Add logic for inventory pow
+- Use single adress to mark if have applied patch
+- Use the code software
+- Create nice title screen
+- Install blender plugin for brres
+- Link to setup guide in release
+- Trap to put game in thrown state
+- Should I launch the main game loop  asynchronous??
+- Have character be randomized and unlockable
+- Make star coin into ap logo
+  - Starcoin.arc
+  - Is a model: need to redo in blender
+- Wii strap skip for both riivolution and dme
+- Ask how kamek 2 loaders work
+- Download keyboard like LM
+- Auto open riivolution as separate setting 🤔, need to verify game not running
+- Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
+- 
 
 
 ## Playtest
@@ -220,7 +236,9 @@ Playtest secret exits
 - Ydotool
 - patch not need watching hint movies
 - Shortcuts
-
+- Location scout hm
+- Try sending !-switch
+- Title screen replacement
 
 ## Bugs to fix
 - overwrite level comp ?
@@ -258,7 +276,27 @@ Playtest secret exits
 - Hm 5 probably not a problem
 - 2-2sc1 & sc2
 - 1-C sc3
+- World 9 not properly reset when dying
+  - Looks like after a death in 9-3 exclusively the default state of World 9 is stored I've died in other World 9 levels without the World being set like this
+  - Entering the level was possible while the circle was solid black, and the clear/sc checks were sent out properly when the level was completed 
+  - However, the world state was not reset (level clear saw the same situation as the screenshot), and I switched worlds and came back to be able to do other levels
+- Is tracker 0.3.3 broken? for 0.2.1 5-1 ??
 
+## DISCORD POLL TOPICS:
+- usefull / prog Items : tilt plattform, double jump
+- filler / trap Items : gravity
+- achivement locations : 1ups, 99 coins
+- genreal rando : enemy
+- overhall : enterence
+- re factor : death -> kamek patch, no save states
+- Custumize : settings / options / cmd
+- Stability : weird bug fixes, write tests, lots more playtest
+- onboarding : improve guide, make video
+- Cosmetic : background, tileset, color
+- Quality of life patches : skip cutseence, not have to watch hm
+- In game text chat
+- Multiplayer support
+- UT map pack
 
 ## Short term
 - Multiplayer support
@@ -286,6 +324,9 @@ Playtest secret exits
 - Figure out how to change HM unlock condition?
 - Work on UT tracker pack
   - After 0.3.0, other things are higher priority
+- request channel in ap-dc
+
+
 
 ## Broken versions
 # EU 1
@@ -327,8 +368,6 @@ Playtest secret exits
 - Protocol
   - Damage-link
   - Trap link
-  - Energy link?
-  - Gifting?
   - Filler link
     - Have a feature that on completion sends out filler/trap items to the MW when complete repeatable checks
 - Improve level handling by actually changing the proper addresses
@@ -361,6 +400,8 @@ Playtest secret exits
   - Ask about x% local filler
 - locations for simple things ? 100 coins, top of flagpole, 100 lives, 100 inventory pow, etc ?
 - P-switch as locations
+- 8005e4c0 holds trigger A function, might be able to hijack to send death nice?
+- Kamek patch to detect if ap is connected
 
 
 ## ER
@@ -422,6 +463,21 @@ Playtest secret exits
   - Speed trap
   - fall damage trap
 - Make penguin progressive
+- LOCATIONS
+  - 100 coins  : store # amount coin enter, add a watch for when it loops around
+  - 1 ups : just look at if player life increase: not from coin
+  - red ring : easy if can find adress
+  - ?block / specific coin : difficult
+- ITEMS
+  - Enemy remove : should work same as checkpoint
+  - Enemy add (trap item): readds enemy, works as above
+  - Tilting plattform
+
+REWORK
+- P&Q switch work as checkpoint
+- need to reformat rule?
+  - dict with named dataclass ?
+    - { "1-1" : Level(clear, sc1, sc2, sc3, secret = True, 1ups= true, 100coins = true, red ring = true)
 
 ## Game patches
 - Coin worlds single player
@@ -442,7 +498,8 @@ Playtest secret exits
   - Needs to create new memory map (on the fly? or need to create it for all editions), would be helpful for using the memory patch with the randomizer
 - Actual deathlink messages
 - Shuffle with custom levels (no logic)
-
+- Unlock other charactes (no gameplay) with player 1 change character fix
+- Difficullty patch levels : make levels harder, similar to other mods, if settings enabled for this
 
 ## Features I (Miiroun) will not implement
 - Native wii support

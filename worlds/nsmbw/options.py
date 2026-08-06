@@ -59,10 +59,10 @@ class DontRandoMovement(ItemSet):
     You will always start with other items in addition to these to make the first level in your starting world beatable
     """
 
-    display_name = "Dont Rando these Movements: WARNING default = BETA (no logic), remove at own risk "
+    display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "
     valid_keys = set(MOVEMENT_UNLOCKS)
-    default = {ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
-               ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.Jump.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value,
+    default = {ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
+               ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value,
                ITEM.MOVEMENT.Climb.value, ITEM.MOVEMENT.QuestSwitch.value}
     visibility = Option.visibility.none
 
@@ -527,7 +527,7 @@ option_presets = {
 }
 
 
-def adjust_options(world): # cannot type check because circular imports : NSMBWworld
+def adjust_options(world : "NSMBWworld"): # cannot type check because circular imports : NSMBWworld
     if world.options.include_level_completion.value + world.options.starcoin_sanity.value <= 0 and len(world.multiworld.player_ids) == 1:
         raise OptionError(f"(NSMBW generation error) Turn on at least one of include_level_completion or starcoin_sanity when generation alone")
 

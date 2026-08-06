@@ -10,8 +10,6 @@ from pathlib import Path
 import logging
 from random import Random
 
-from pyshortcuts import new_filename
-from tornado.escape import utf8
 
 import Utils
 import shutil
@@ -132,11 +130,36 @@ class Patcher:
         self.random = Random(self.seed)
 
     def copy_riivolution_skeleton(self):
-        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else pathlib.Path() / "worlds" / "nsmbw"
-        _from = apnsmbw_file.parent / "NSMBW_client" / "rom_file" / "patch"
+        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
+        _from = apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "rom_file" / "Riivolution_template"
+        assert apnsmbw_file.exists(), f"folder {apnsmbw_file} does not exist"
+        assert _from.exists(), f"folder {_from} does not exits"
 
 
         shutil.copytree(_from, self.output_path, dirs_exist_ok=True)
+
+    def patch_bsdiff(self):
+        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
+        _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "rom_file" / "Riivolution_patch_data"
+        assert _from.exists()
+
+        PatchDetatils = [("openingTitle.arc", "Layout"), ("star_coin.arc", "Object")]
+
+        for name, folder in PatchDetatils:
+            path_data_loc = _from / folder / f"patch_{name}.bin"
+            assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
+
+
+            original_file_loc = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / name
+            assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
+
+
+            destination_path = self.output_path / folder / name
+            assert destination_path.exists(), f"folder {destination_path} does not exist"
+
+
+            bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
+
 
 
     def extract_game(self):
@@ -334,6 +357,7 @@ class Patcher:
 
         logger.info(f"Copying standard riivolution to {self.output_path}")
         self.copy_riivolution_skeleton()
+        self.patch_bsdiff()
 
         logger.info(f"Creating riivolution xml")
         self.create_riivolution_xml()
@@ -359,5 +383,13 @@ if __name__ == "__main__":
                    "shuffled_level_order" : level_order}
     _patcher = Patcher(_seed, _slot_data)
     _patcher.patch()
+
+    dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
+    short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{_patcher.seed}.json"
+
+    assert short_cut_path.exists(), ""
+    if True:
+        subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+
 
 

@@ -2,6 +2,7 @@ from enum import StrEnum
 from typing import NamedTuple, List, Literal, Any
 from .Utils import *
 from Utils import *
+import Utils
 
 game_name = "NSMBW"
 

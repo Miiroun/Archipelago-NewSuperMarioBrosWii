@@ -64,6 +64,9 @@ class NSMBWSettings(settings.Group):
     class AutoOpenGame(settings.Bool):
         """Enable if you want to open the game automatically"""
 
+    class AutoStartRiivolution(settings.Bool):
+        """Enable if you want to start the game automatically after a riivolution patch have been applied"""
+
     class AutoLoadState(settings.Bool):
         """Enable if you want to load a save state on start"""
 
@@ -136,10 +139,11 @@ class NSMBWSettings(settings.Group):
     #filetypes = (("Rom path", (".iso", ".wbfs")),)
     game_file_path: GameFilePath |  str = GameFilePath(r"nsmbw.wbfs")
 
-    auto_open: AutoOpenGame | bool = True
+    auto_open: AutoOpenGame | bool = False
+    auto_start_riivolution : AutoStartRiivolution | bool = True
     auto_load : AutoLoadState | bool = True
     auto_save: AutoSaveGame | bool = True
-    auto_close: AutoCloseGame | bool = True
+    auto_close: AutoCloseGame | bool = False
 
     debug_mode : DebugMode | bool = not Utils.is_frozen()
 

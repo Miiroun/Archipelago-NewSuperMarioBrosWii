@@ -161,7 +161,9 @@ def create_all_items(world: NSMBWworld) -> None:
 
     if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
         excluded_items.update(world.options.dont_rando_move.value)
-        excluded_items.update({ITEM.MOVEMENT.ButtonRight})
+        # default movements
+        excluded_items.update({ITEM.MOVEMENT.ButtonRight, ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Jump.value})
+
         if not ((ITEM.MOVEMENT.SpinJump in excluded_items) or ( ITEM.MOVEMENT.Jump in excluded_items)):
             if world.random.randint(0,1) == 0:
                 excluded_items.update({ITEM.MOVEMENT.SpinJump.value})

@@ -235,6 +235,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Utils.get_settings()["nsmbw_settings"]["auto_open"] ^= True
         logger.info(f"Auto clear open: {Utils.get_settings()['nsmbw_settings']['auto_open']}")
 
+    def _cmd_toggle_auto_start_riivolution(self):
+        """
+        Toggles the auto open setting in host.yaml, is constant for all multiworld.
+        """
+        Utils.get_settings()["nsmbw_settings"]["auto_start_riivolution"] ^= True
+        logger.info(f"Auto clear open: {Utils.get_settings()['nsmbw_settings']['auto_start_riivolution']}")
+
     def _cmd_toggle_auto_load(self):
         """
         Toggles the auto load setting in host.yaml, is constant for all multiworld.
@@ -669,6 +676,10 @@ class NSMBWContext(SuperContext):
 
         #logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
 
+        Utils.async_start(self.run_game())
+        Utils.async_start(self.game_loop())
+
+    async def game_loop(self):
         while not self.exit_event.is_set():
             try:
                 if self.server:
@@ -734,7 +745,7 @@ class NSMBWContext(SuperContext):
                     self.update_memory_to_server_on_load()
             else:
                 self.log_color(f"Dolphin connection faild", "red")
-                await asyncio.sleep(1)
+                await asyncio.sleep(15)
 
 
         elif self.connection_state == ConnectionState.IN_MENU:
@@ -908,20 +919,15 @@ class NSMBWContext(SuperContext):
 
         await self.send_location_with_id(checked_locations)
 
-    # this code is for checking if the star coin was in level, but it was buggy so changed to on world collect
-    # THIS IS NOT CURRENLY RUN
+
     async def check_starcoins_in_level(self):
         checked_locations = []
         if self.slot_data["starcoin_collect_immediately"] == True:
             sc_statuses = self.game_interface.get_sc()
             for sc_num in range(1, 3+1):
                 sc_status = sc_statuses[4 * sc_num-1]
-                # print(sc_status)
-                # print(sc_statuses)
                 world_num = bytes_to_int(self.game_interface.get_world_level()) + 1
                 level_num = bytes_to_int(self.game_interface.get_level_level()) + 1
-                #print(f"Levelnum: {level_num}, with world_num: {world_num}")
-                #print(sc_status)
 
                 if sc_status == 0 and (1 <= level_num <= 7 or  level_num in [21,22,24,25,38]):  # becomes 0 if collected
                     # https://horizon.miraheze.org/wiki/Level_Names_and_Features
@@ -954,11 +960,9 @@ class NSMBWContext(SuperContext):
         self.locations_handled += checked_locations
         return checked_locations
 
+
     async def check_starcoins(self):
         checked_locations = []
-
-        #print(f"modded_levelstats {self.moded_levelstats}")
-
         world_nums = []
         if self.moded_levelstats == ModifiedState.UNMODIFIED:
             world_nums = range(1,9+1)
@@ -1705,7 +1709,7 @@ class NSMBWContext(SuperContext):
         self.ui.print_json([text_msg])
 
     async def patch_and_run_game(self):
-        auto_start: bool = get_settings()["nsmbw_settings"].auto_open
+        auto_start: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
         input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
         try:
             assert input_iso_path is not None, "Add a path to your game file in host.yaml"

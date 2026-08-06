@@ -21,7 +21,7 @@ def set_all_rules(world: NSMBWworld) -> None:
     set_all_entrance_rules(world)
     set_all_location_rules(world)
     set_completion_condition(world)
-    assert world.get_region(name_base(world.options.starting_world.value, 1)).can_reach(world.multiworld.state), "unable to reach first level in your starting world"
+    assert world.get_region(name_base(world.options.starting_world.value, 1)).can_reach(world.multiworld.state), f"unable to reach first level in your starting world {world.options.starting_world.value}"
 
 
 def set_level_entrance_rules(world: NSMBWworld) -> None:
@@ -80,14 +80,18 @@ def set_all_entrance_rules(world: NSMBWworld) -> None:
         level_rules = specific_level_requierments(world)
 
         _rule = False_().resolve(world)
-        while not _rule(world.multiworld.state):
-            shuffle_level_order(world)
+
+        unbeatable = True
+        while unbeatable:
+            status = shuffle_level_order(world)
 
             # this makes sure the first 2 levels are beatable
             randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
             randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
             #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
             _rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0]).resolve(world)
+
+            unbeatable = not _rule(world.multiworld.state) and status
 
             i += 1
             if i > 10_000:

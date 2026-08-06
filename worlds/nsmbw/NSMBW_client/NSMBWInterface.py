@@ -142,7 +142,7 @@ class NSMBWInterface(object):
                 logger.info(f"Replicat this error in the debug launcher and post the error in the nsmbw discord")
                 logger.info(f"game_id {game_id}, current game {self.current_game},  rev {self.game_rev}")
         except DolphinException as e:
-            logger.info(traceback.format_exc())
+            print(traceback.format_exc())
             self.log_color(f"Exception: {e} happened when connecting to dolphin", "red")
         return False
 
