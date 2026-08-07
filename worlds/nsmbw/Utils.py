@@ -1,6 +1,11 @@
 from typing import Callable, Any
 import operator
 
+RegionNames = {
+    "SMNE01" : "US",
+    "SMNP01" : "EU",
+}
+
 
 def bytes_to_int(byte : bytes, signed=False) -> int:
     return int.from_bytes(byte, byteorder='big', signed=signed)

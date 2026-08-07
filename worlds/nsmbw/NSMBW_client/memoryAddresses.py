@@ -216,6 +216,8 @@ class MemoryAddresses(object):
         self.bosshealth2 = self.map_between("P1", 0x80b1fb40)
         self.bosshealthBowJR = self.map_between("P1", 0x8009b820)
 
+        self.gravity_start = self.map_between("P1", 0x802f5938)
+
 
         ## patch patches ---------------------------------------------------
 

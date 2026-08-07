@@ -3,11 +3,12 @@ Main developer
 
 \
 Others that helped
-- React / jacob_x_x (Done most of logic)
-- Matgamer2575 (started project and found some memory addresses)
-- IndyGibb (PRed some light code changes using Claude)
-- techmuse (helped with locating addresses)
-- LuigiXRules (Fixed typos in documentation, provided helpful insight and playtested Us rev1)
+- React : Created most of logic
+- Sponk : Created 3d model of star coin merged with archipelago logo
+- Matgamer2575 : started project and found some memory addresses
+- IndyGibb : PRed some light code changes using Claude
+- techmuse : helped with locating addresses
+- LuigiXRules : Fixed typos in documentation, provided helpful insight and playtested Us rev1
 
 \
 Communities that helped
@@ -15,7 +16,7 @@ Communities that helped
 - Archipelago dc server (worlddev help and documentation)
 - Horizon & NSMBW Hacking Depo discord servers (for knowledge about the game)
 
-
+\
 NSMBW_logo:
 - Image by miiroun
 - Remixed of archipelago logo by Krista Corkos and Christopher Wilson, lisensed under [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/)

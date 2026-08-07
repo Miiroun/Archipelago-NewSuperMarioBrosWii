@@ -19,6 +19,8 @@ from ..Common import *
 from ..Utils import bytes_to_int
 import bsdiff4
 
+import wiithon
+
 
 logger = logging.getLogger("Client")
 
@@ -113,6 +115,7 @@ class Patcher:
     input_path : Path
     output_path : Path
     random : Random
+    region : str
 
     def __init__(self, seed : str, slot_data : dict):
         self.seed = seed
@@ -143,22 +146,22 @@ class Patcher:
         _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "rom_file" / "Riivolution_patch_data"
         assert _from.exists()
 
-        PatchDetatils = [("openingTitle.arc", "Layout"), ("star_coin.arc", "Object")]
+        PatchDetatils = []#("openingTitle", "Layout") # ("star_coin.arc", "Object")
 
         for name, folder in PatchDetatils:
             path_data_loc = _from / folder / f"patch_{name}.bin"
+            assert path_data_loc.parent.exists(), f"folder {path_data_loc} does not exist"
             assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
 
 
-            original_file_loc = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / name
+            original_file_loc = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / RegionNames[self.region] / folder/ name / f"{name}.arc"
             assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
 
 
-            destination_path = self.output_path / folder / name
-            assert destination_path.exists(), f"folder {destination_path} does not exist"
-
+            destination_path = self.output_path / folder / f"{name}.arc"
 
             bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
+            assert destination_path.exists(), f"folder {destination_path} does not exist"
 
 
 
@@ -180,7 +183,7 @@ class Patcher:
             self.patch_levels()
         if True:
             folder_name = "Object"
-            #self.patch_subfolder(folder_name, "bgA", True)
+            self.patch_subfolder(folder_name, "bgA", True)
             #self.patch_subfolder(folder_name, "bgB", True)
 
         if True:
@@ -276,10 +279,12 @@ class Patcher:
 
         _patch = ET.SubElement(wiidisc, "patch", {"id" : "nsmbw_ap"})
 
+        # code and loader
+        ET.SubElement(_patch, "folder", {"external" : fr"Code/", "disc":fr"/Code", "create":"true"})
+        ET.SubElement(_patch, "memory", {"offset" : "0x800046E4", "valuefile":"Code/loader.bin"})
+        ET.SubElement(_patch, "memory", {"offset" : "0x800042F4", "value" :"48001158"})
 
-        ET.SubElement(_patch, "folder", {"external" : fr"Code", "disc":fr"/Code/", "create":"true"})
-
-
+        # opening title
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/CN/Layout/openingTitle/openingTitle.arc"})
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/EU/Layout/openingTitle/openingTitle.arc"})
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/JP/Layout/openingTitle/openingTitle.arc"})
@@ -287,10 +292,10 @@ class Patcher:
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/TW/Layout/openingTitle/openingTitle.arc"})
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/US/Layout/openingTitle/openingTitle.arc"})
 
-
+        # external save
         ET.SubElement(_patch, "savegame", {"external" : r"/save/{$__gameid}{$__region}","close" : "false"})
 
-
+        # graphics
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/", "disc":fr"/Stage/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/Texture/", "disc":fr"/Stage/Texture/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Object/", "disc":fr"/Object/", "create":"true"})
@@ -342,6 +347,9 @@ class Patcher:
         assert (destination/ f"seed{self.seed}.json").exists(), "need to have created shortcut successfully"
         print(destination/ f"seed{self.seed}.json")
 
+    def get_region(self):
+        with open(Path(tempfile.gettempdir()) / 'nsmbw' / 'DATA' / 'disc' / 'header.bin') as f:
+            self.region = f.read(6)
 
     def patch(self):
         logger.info(f"Begin patching seed{self.seed}")
@@ -354,6 +362,9 @@ class Patcher:
 
         logger.info(f"Extracting game to {str(Path(tempfile.gettempdir()) / 'nsmbw')}")
         self.extract_game()
+
+        logger.info(f"Collects game info")
+        self.get_region()
 
         logger.info(f"Copying standard riivolution to {self.output_path}")
         self.copy_riivolution_skeleton()
@@ -382,6 +393,10 @@ if __name__ == "__main__":
                    "music_shuffel_riivolution" : 1,
                    "shuffled_level_order" : level_order}
     _patcher = Patcher(_seed, _slot_data)
+
+    if _patcher.output_path.exists():
+        shutil.rmtree(_patcher.output_path)
+
     _patcher.patch()
 
     dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)

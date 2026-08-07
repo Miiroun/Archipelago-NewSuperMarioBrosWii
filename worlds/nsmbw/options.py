@@ -64,7 +64,7 @@ class DontRandoMovement(ItemSet):
     default = {ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
                ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value,
                ITEM.MOVEMENT.Climb.value, ITEM.MOVEMENT.QuestSwitch.value}
-    visibility = Option.visibility.none
+    #visibility = Option.visibility.none
 
 class RandomizePowerups(Choice):
     """
@@ -203,11 +203,12 @@ class IncludeNumberInventoryItems(Range):
     """
     A location that gets collected when you collect a powerup to your inventory, e.g. from a toad house or beating overworld enemy.
     These locations are very grindy, do not increase above 100, or set to random on your first playthrough.
+    Recommend value = 40
     """
-    display_name = "Include Inventory Items (don't increase)"
+    display_name = "Include Inventory Items"
     range_start = 0
     range_end = 999
-    default = 40
+    default = 0
 
 class MakeWorldCompPriority(Toggle):
     """
@@ -331,21 +332,21 @@ class UseRiivolutionOptions(Toggle):
     """This needs to be enabled if you want to use any other riivolution based options"""
     display_name = "Use Riivolution (early alpha, dont expect to be able to finish run with this)"
     default = False
-    visibility = Visibility.none
+    #visibility = Visibility.none
 
 
 class LevelShuffleRiivolution(Toggle):
     """Shuffles the level order, requires riivolution to be enabled."""
     display_name = "Level Shuffle Riivolution"
     default = False
-    visibility = Visibility.none
+    #visibility = Visibility.none
 
 
 class MusicShuffleRiivolution(Toggle):
     """Shuffles the background, requires riivolution to be enabled."""
     display_name = "Music Shuffle Riivolution"
     default = False
-    visibility = Visibility.none
+    #visibility = Visibility.none
 
 
 @dataclass
@@ -392,6 +393,9 @@ class NSMBWOptions(PerGameCommonOptions):
     use_riivolution : UseRiivolutionOptions
     level_shuffel_riivolution : LevelShuffleRiivolution
     music_shuffel_riivolution : MusicShuffleRiivolution
+
+    # default, needed to add
+    start_inventory_from_pool : StartInventoryPool
 
 
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.

@@ -1,7 +1,3 @@
-from collections.abc import Mapping
-from typing import Any, Dict, List, Set
-
-import Utils
 from BaseClasses import CollectionState, ItemClassification, MultiWorld
 from NetUtils import JSONMessagePart
 from worlds.AutoWorld import World
@@ -10,9 +6,7 @@ from . import items, locations, regions, rules, web_world, raw_rules
 from . import options as nsmbw_option
 from . import settings as nsbmw_settings
 
-from Utils import visualize_regions
 
-from typing import ClassVar
 
 from .Common import *
 from .Utils import cast_object_to_type
@@ -59,7 +53,7 @@ class NSMBWworld(World):
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
 
-        if Utils.get_settings()["nsmbw_settings"].debug_mode:
+        if Utils.get_settings()["nsmbw_settings"].debug_mode and not getattr(self.multiworld, "generation_is_fake", False):
             state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
             state.update_reachable_regions(self.player)
             visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
@@ -110,11 +104,6 @@ class NSMBWworld(World):
 
 
 
-    @staticmethod
-    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
-        return slot_data
-
-
     def get_logical_path(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         return []
 
@@ -130,7 +119,7 @@ class NSMBWworld(World):
 
     def explain_more(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         text : str| None = None
-        rule_list = raw_rules.specific_level_requierments(self)
+        rule_list = raw_rules.specific_level_requierments()
         try:
             world_num, level_num = level_bijection(target_name)
             text = repr(rule_list[world_num-1][level_num-1][0].to_dict())

@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+import math
 from enum import StrEnum
-from typing import NamedTuple, List, Literal, Any
+from typing import *
 from .Utils import *
 from Utils import *
 import Utils
+
 
 game_name = "NSMBW"
 
@@ -10,6 +14,11 @@ LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
 
 HINTMOVIE_COUNT = 65
 LEVEL_COUNT = 77
+
+
+DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
+DEPRIO_HM += [6, 9, 54, 55] # broken ?
+
 
 # exit_type is if secret or normal exit 1== normal, 2==secret
 class SecretExit(NamedTuple):
@@ -63,17 +72,18 @@ class ITEM:
         CheckPoint      = "Check point"
 
     class TRAPS(StrEnum):
-        LosePowerupTrap = "Lose powerup trap"
-        GoombaTrap = "Goomba trap"
-        DeathTrap = "Death trap"
-        TimeTrap = "Time trap"
-        RobberyTrap = "Robbery trap"
-        ShrinkTrap = "Shrink trap"
-        LiteratureTrap = "Literature trap"
-        ThrowTrap = "Throw trap"
-        ReverseControlTrap = "Reverse Control trap"
-        MovementLockTrap   = "Movement lock trap"
-        SlowTrap    = "Slow Trap"
+        LosePowerupTrap     = "Lose powerup trap"
+        GoombaTrap          = "Goomba trap"
+        DeathTrap           = "Death trap"
+        TimeTrap            = "Time trap"
+        RobberyTrap         = "Robbery trap"
+        ShrinkTrap          = "Shrink trap"
+        LiteratureTrap      = "Literature trap"
+        ThrowTrap           = "Throw trap"
+        ReverseControlTrap  = "Reverse Control trap"
+        MovementLockTrap    = "Movement lock trap"
+        SlowTrap            = "Slow Trap"
+        GravityTrap         = "Gravity Trap"
 
     class FILLER(StrEnum):
         FillInventory   = "fill inventory"
@@ -84,6 +94,7 @@ class ITEM:
         PowerUp         = "Random Power-up"
         SuperSpeed      = "Super Speed"
         #ToadHouse = "Toad House"
+        LowGravity      = "Low Gravity"
 
     StarCoin        = "Starcoin"
     Time            = "Time"
@@ -118,12 +129,12 @@ def mod_level_name(worldnum : int, levelnum : int) -> str:
             return "A"
     return str(levelnum)
 
-def name_base(world_num : int, level_num : int) -> str:
-    assert_valid_level(world_num, level_num)
+def name_base(world_num : int, level_num : int, assert_=True) -> str:
+    if assert_:
+        assert_valid_level(world_num, level_num)
     return f"{world_num}-{mod_level_name(world_num,level_num)}"
 
 def assert_valid_level(world_num : int, level_num : int) -> None:
-    from worlds.nsmbw.locations import LEVELS_PER_WORLD
     assert 1 <= world_num <= 9
     assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"Level {level_num} is not valid for world {world_num}"
 
@@ -184,3 +195,8 @@ def sc_bijection(name : str ) -> tuple[int, int, int]:
 
 def get_name_base_of_last_level_in_world(world_num : int) -> str:
     return f"{world_num}-{mod_level_name(world_num,LEVELS_PER_WORLD[world_num-1])}"
+
+
+def get_time_math(world : "NSMBWworld", time : int):
+    return math.ceil( (time/500) * world.options.randomize_time.value)
+

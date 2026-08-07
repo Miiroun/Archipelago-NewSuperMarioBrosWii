@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Counter
-
 from BaseClasses import  Location, LocationProgressType
 
 from . import items
 from .Common import *
-from .raw_rules import DEPRIO_HM
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -117,6 +114,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
                     world.get_region(name_base(world_num, level_num)).add_locations(level_location, NSMBWLocation)
                     location = world.get_location(name_starcoin(world_num, level_num, sc))
                     location.place_locked_item(world.create_item(ITEM.StarCoin))
+                    location.progress_type = LocationProgressType.EXCLUDED
                     #regions[2 * world_num - 2].add_event(f"World{world_num}_level{level_num}_SC{sc}", ITEM.StarCoin, location_type=NSMBWLocation, item_type=items.NSMBWItem)
         # add location for beating castles and towers
         if world_num != 9:

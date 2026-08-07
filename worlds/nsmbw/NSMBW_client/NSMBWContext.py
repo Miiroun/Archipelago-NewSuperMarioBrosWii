@@ -4,7 +4,6 @@ from .patcher import Patcher
 from ..options import RandomizeMovement, HintMovieShopPriceLogic
 from ..Common import *
 from .. import NSMBWworld
-from ..Utils import *
 
 import json
 import os
@@ -13,7 +12,6 @@ import time
 import traceback
 from enum import IntEnum
 from random import Random
-from typing import Literal, get_args, NamedTuple
 
 import Utils
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
@@ -649,22 +647,18 @@ class NSMBWContext(SuperContext):
         super().on_deathlink(data)
 
     def get_version(self):
-        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else pathlib.Path() / "worlds" / "nsmbw"
 
-        if apnsmbw_file:
-            text : str
-            try:
-                if Utils.is_frozen():
-                    with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
-                        text = zipfile.Path(zf, at="nsmbw/archipelago.json").read_text(encoding='UTF-8')
-                else:
-                    with open(apnsmbw_file / "archipelago.json", "r", encoding="UTF-8") as f:
-                        text = f.read()
-                manifest = json.loads(text)
-                self.manifest_version = manifest["world_version"]
+        text : str
+        if Utils.is_frozen():
+            with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
+                text = zipfile.Path(zf, at="nsmbw/archipelago.json").read_text(encoding='UTF-8')
+        else:
+            apnsmbw_file: Path = Path(__file__).parent.parent
+            with (apnsmbw_file / "archipelago.json").open( "r", encoding="UTF-8") as f:
+                text = f.read()
+        manifest = json.loads(text)
+        self.manifest_version = manifest["world_version"]
 
-            except Exception as e:
-                print(f"Failed to read ap manifest file for version data, error {e}")
 
     async def dolphin_sync_task_func(self):
         self.get_version()
@@ -676,10 +670,8 @@ class NSMBWContext(SuperContext):
 
         #logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
 
-        Utils.async_start(self.run_game())
-        Utils.async_start(self.game_loop())
+        await self.run_game()
 
-    async def game_loop(self):
         while not self.exit_event.is_set():
             try:
                 if self.server:
@@ -1574,6 +1566,10 @@ class NSMBWContext(SuperContext):
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_super_speed, reverse=True,double_check=False)
                 case ITEM.TRAPS.SlowTrap:
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=True,double_check=False)
+                case ITEM.FILLER.LowGravity:
+                    self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
+                case ITEM.TRAPS.GravityTrap:
+                    self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
                 case _:
                     raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
             self.current_mod = ""
@@ -1609,6 +1605,10 @@ class NSMBWContext(SuperContext):
                 case ITEM.TRAPS.SlowTrap:
                     logger.info(f"Is it just me or is it really cold right now?")
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=False,double_check=False)
+                case ITEM.FILLER.LowGravity:
+                    self.game_interface.set_gravity(int_to_bytes(0xbd4ccccd, 4))
+                case ITEM.TRAPS.GravityTrap:
+                    self.game_interface.set_gravity(int_to_bytes(0xbf333333, 4))
                 case _:
                         raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
 
@@ -1742,13 +1742,12 @@ class NSMBWContext(SuperContext):
         gamefile : str = get_settings()["nsmbw_settings"].game_file_path
 
 
-        if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-            Utils.open_file(gamefile)
-        elif os.path.isfile(auto_start) and dolphin_interface_client.assert_no_running_dolphin():
-            subprocess.Popen([str(auto_start), gamefile], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL, )
-        elif auto_start:
-            logger.error("Failed to auto start dolphin, make sure your file path is correct")
+        if dolphin_interface_client.assert_no_running_dolphin():
+            if auto_start:
+                Utils.open_file(gamefile)
+                logger.error("Failed to auto start dolphin, make sure your file path is correct")
+        else:
+            logger.info(f"Please close other dolphin instances")
 
         time.sleep(35)
 

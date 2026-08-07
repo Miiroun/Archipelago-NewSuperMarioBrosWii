@@ -1,33 +1,32 @@
-from __future__ import annotations
-
 import math
-from typing import TYPE_CHECKING
-from unittest import case
 
 from rule_builder import rules
+from rule_builder.rules import *
 from rule_builder.options import OptionFilter
-from .locations import SECRET_EXIT, name_level, name_starcoin, LEVELS_PER_WORLD, mod_level_name, level_name_to_pos, pos_to_level_name, shuffle_level_order
-from .raw_rules import *
 from .options import *
 from .Common import *
+from .locations import shuffle_level_order, pos_to_level_name, level_name_to_pos
+from .raw_rules import *
+from . import raw_rules
 
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .world import NSMBWworld
 
 
 
-def set_all_rules(world: NSMBWworld) -> None:
+def set_all_rules(world: "NSMBWworld") -> None:
     set_all_entrance_rules(world)
     set_all_location_rules(world)
     set_completion_condition(world)
     assert world.get_region(name_base(world.options.starting_world.value, 1)).can_reach(world.multiworld.state), f"unable to reach first level in your starting world {world.options.starting_world.value}"
 
 
-def set_level_entrance_rules(world: NSMBWworld) -> None:
+def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
     connections = get_level_connections()
-    level_rules = specific_level_requierments(world)
+    level_rules = specific_level_requierments()
 
     for world_num in range(1,9+1):
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
@@ -71,13 +70,13 @@ def set_level_entrance_rules(world: NSMBWworld) -> None:
 
 
 
-def set_all_entrance_rules(world: NSMBWworld) -> None:
+def set_all_entrance_rules(world: "NSMBWworld") -> None:
     #rules are set when connecting regions
     shuffle_level_order(world)
 
     if world.options.level_shuffel_riivolution.value == True:
         i = 0
-        level_rules = specific_level_requierments(world)
+        level_rules = specific_level_requierments()
 
         _rule = False_().resolve(world)
 
@@ -100,7 +99,7 @@ def set_all_entrance_rules(world: NSMBWworld) -> None:
     set_level_entrance_rules(world)
 
 
-def set_all_location_rules(world: NSMBWworld) -> None:
+def set_all_location_rules(world: "NSMBWworld") -> None:
     #regions = []
     #for i in range(1, 9):
     #    regions.append(world.get_region(f"World_{i}_1"))
@@ -108,7 +107,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     #        regions.append(world.get_region(f"World_{i}_2"))
 
     # this is transcribing raw ruels, assering they are of correct length -------------------------------------
-    level_req = specific_level_requierments(world)
+    level_req = specific_level_requierments()
     if world.options.logic_difficulty.value == LogicDifficulty.option_normal:
         assert len(level_req) == len(LEVELS_PER_WORLD), "Make sure lists is of correct size"
         for world_num in range(9):
@@ -139,7 +138,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                 sc_logic = level_req[world_num - 1][level_num - 1][1][sc - 1]
                 world.set_rule(star_coin, sc_logic )
 
-    hm_req = specific_hintmovie_requierments(world)
+    hm_req = specific_hintmovie_requierments()
     total_cost = 0
     if world.options.hint_movie_sanity:
         for hm_num in range(1,HINTMOVIE_COUNT+1):
@@ -159,7 +158,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
                     raise ValueError(f"option {world.options.hint_movie_shop_price_logic} is not acounted for")
 
 
-            hm_rule = (soft_logic | (get_glitch_rule(world)) & rules.Has(ITEM.StarCoin, count=math.ceil(hm_req[hm_num-1][0] / world.options.starcoin_shop_multiplier.value) ) & hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
+            hm_rule = (soft_logic | (GlitchedRule()) & rules.Has(ITEM.StarCoin, count=math.ceil(hm_req[hm_num-1][0] / world.options.starcoin_shop_multiplier.value) ) & hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
             world.set_rule(location, hm_rule)
 
     if world.options.shortcuts_sanity.value == True:
@@ -179,10 +178,34 @@ def set_all_location_rules(world: NSMBWworld) -> None:
         worlds_list = list(name_world_unlock(world_num) for world_num in range(1,9+1))
         worlds_list += worlds_list
         worlds_list.pop()
-        req_world_com = min(17-2, (i // 8) + 1)
+        req_world_com = min(17-2, (i // 5) + 1)
         # hades soft logic thats ored with glitched logic, but also make sure you have climb
-        invent_rule = rules.HasFromList(*worlds_list, count=req_world_com) | Has(ITEM.GlitchedLogic) #& (rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovement, RandomizeMovement.option_off)])
+        #soft_logic = rules.HasFromList(*worlds_list, count=req_world_com) | Has(ITEM.GlitchedLogic) #& (rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovement, RandomizeMovement.option_off)])
+
+        # world is assuemed so this is just level
+        world_toad      = [2, 1, 6, 4, 1, 7, 1, 0]
+        world_star      = [3, 5, 0, 5, 5, 6, 6, 0]
+        world_enemy     = [4, 5, 2, 1, 6, 3, 7, 3]
+
+        soft_logic_list : Rule = []
+        for world_num in range(1,8+1):
+            _rule = Has(name_base(world_num, world_toad[world_num-1], assert_=False)) & raw_rules.climb & raw_rules.door
+            for _ in range(5):
+                soft_logic_list.append(_rule)
+
+            _rule = Has(name_base(world_num, world_star[world_num-1], assert_=False))
+            soft_logic_list.append(_rule)
+
+            _rule =Has(name_base(world_num, world_enemy[world_num-1], assert_=False))
+            for _ in range(3):
+                soft_logic_list.append(_rule)
+
+        # honestly might be better to do a count of all these sources
+        hard_logic : Rule = rules.Or(*soft_logic_list)
+        soft_logic : Rule = AtLeast(min(i, 30), *soft_logic_list) | raw_rules.GlitchedRule()
+        invent_rule : Rule = hard_logic & soft_logic
         world.set_rule(invent_pow, invent_rule)
+
         # soft logic, gain access when have new worlds
 
     # sets logic for completion condition location
@@ -191,7 +214,7 @@ def set_all_location_rules(world: NSMBWworld) -> None:
     world.set_rule(bowser_defeat_loc, reach_bowser_rule)
 
 
-def set_completion_condition(world: NSMBWworld) -> None:
+def set_completion_condition(world: "NSMBWworld") -> None:
     # Finally, we need to set a completion condition for our world, defining what the player needs to win the game.
     # You can just set a completion condition directly like any other condition, referencing items the player receives:
     #world.multiworld.completion_condition[world.player] = Has_all(("Sword", count= "Shield"), world.player)

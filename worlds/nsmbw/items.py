@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Dict, Tuple, List
 from BaseClasses import Item, ItemClassification
 from .Common import *
 from .options import RandomizeMovement, RandomizePowerups
-from .raw_rules import get_time_math
 
 if TYPE_CHECKING:
     from .world import NSMBWworld

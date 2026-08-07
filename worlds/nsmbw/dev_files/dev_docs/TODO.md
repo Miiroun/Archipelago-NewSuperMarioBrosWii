@@ -4,14 +4,10 @@ Mention riivolution, keybindings and dolphin default program in setup guide : sh
 Ask in dc for better option names
 Try skip wii strap patch : see if works to not have bug
 Title screen replacement
-Find way to still auto start on start up if not selected riivolution
 Test if loading code actully moves around memory
-dev setting instead of on froozen
 Playtest multiplayer
 Do we need to load to clear or does it on save too?
 Playtest secret exits
-Gravity : should be at 802f5918 
-  add both high gravity (trap) and low gravity (filler)
 Check point similar
   replace 80a92888 for red coin ring
   func 809c6120 for switches ? 
@@ -29,6 +25,31 @@ How solve issue where to load game on start or connect if use riivolution or not
 Test AP map visual editor
 - does new auto riivo work ? move old start to on open
 
+Rework movements to enable abilites
+- then have sub cateagorys for include movments and include level elements?
+
+use wiithon for arc unpacking??
+- maybe switch to it instead of dolphin tools
+
+
+does send filler work correct right now?
+
+why doesnt /explain 9-1 work?
+
+add star coin object
+
+DC
+- option + setting review
+- Where should the project continue?
+
+
+I've been making a list of hint movie unlocks for y'all, I'm about half way through the list, hint movie 9 unlocks only after you beat all levels in worlds 1-8, which also means for it to work 8-7 has to be shown as complete on the map, i remember when i was doing the archipelago 8-7  never completed as a shortcut to the airship, it won't count unless every level in the first 8 worlds is blue
+
+FIX generation and client bugs
+test
+- sc model
+- gravity
+- load 1 background
 
 ## Super short term
 - PlayerGravity # gravity filler ?
@@ -204,7 +225,11 @@ Test AP map visual editor
 - Download keyboard like LM
 - Auto open riivolution as separate setting 🤔, need to verify game not running
 - Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
-- 
+## Multiple Dolphin support:  In your dolphin folder, copy the dolphin.exe and rename it to something else, like Dolphin2.exe Once thats done open Luigis Mansion Client, regardless of whether Dolphin is open or not, and type /change_dolphin_process_name Dolphin2.exe to force DME to use that for LM Client from now on (Alternatively in host.yml, there is now a new option under luigismansion_options that is called dolphin_process_name that you can just change directly, see screenshot)  You will then get a popup that the client MUST be closed otherwise this will not connect to the right dolphin instance (only the client, do not need to close the launcher)  Upon re-opening the client it will now try and connect to Dolphin2.exe instead
+Hi if you are having hook loop connection issues, you can be because of these things:  1. A not PAL rom (eu rom) 2. Multiple instances of dolphin being open, even library windows count, make sure to have just one. 3. One of the two is running as administrator, they either need to run both as administrator or both not as administrator. 4. Your dolphin version is too old 5.3+ should work, but i recommend any of the 25XX versions or above. (If on linux make sure you use the *flatpak* version others will not work.) 5. For some people setting having their dolphin fallback region to anything but EU/PAL also causes connection issues
+Send yaml for help
+Update world 9  : use help
+Look in regi for sand storm and meteor : see if is just an easy flag to change?
 
 
 ## Playtest

@@ -1,100 +1,99 @@
-from __future__ import annotations
-
-import math
-from typing import TYPE_CHECKING, List
-
 from rule_builder.rules import *
 from rule_builder.options import OptionFilter
-from .options import RandomizeMovement, RandomizePowerups, LogicOutsidePowerups, LogicDifficulty, DontRandoMovement, \
-    HintMovieShopPriceLogic
+from .options import *
 from .Common import *
 
 if TYPE_CHECKING:
-    from .world import NSMBWworld
+    from  .world import NSMBWworld
 
-DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
-DEPRIO_HM += [6, 9, 54, 55] # broken ?
-def specific_hintmovie_requierments(world: NSMBWworld) -> List:
-    # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
-    rule_completed_everything = Has(ITEM.StarCoin, count=231)  & Has("Victory")# dont want to implement complex, just deprioritize
-    def has_sc(amount : int):
+rule_completed_everything = Has(ITEM.StarCoin, count=231)  & Has("Victory")
+# dont want to implement complex, just deprioritize
+
+@dataclasses.dataclass()
+class HasSC(Rule["NSMBWworld"], game = game_name):
+    amount : int | FieldResolver
+
+    @override
+    def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
         if world.options.hint_movie_shop_price_logic.value != HintMovieShopPriceLogic.option_free:
-            return Has(ITEM.StarCoin, count=amount)
+            return Has(ITEM.StarCoin, count=resolve_field(self.amount, world, int)).resolve(world)
         else:
-            return True_()
+            return True_().resolve(world)
+
+def specific_hintmovie_requierments() -> List:
+    # info about these harvested from https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584
+
     requierments : list = [
         #starcoin cost, level requierment, generic requierment
         [3, (1,1), True_()],   #01
         [5, (1,1), rule_completed_everything],  # 02 #find every normal goal in world1-9
-        [3, (1,2), has_sc(5)],  # 03
+        [3, (1,2), HasSC(5)],  # 03
         [3, (1,3), rule_completed_everything],  # 04 #find every normal goal in world1-9
         [5, (1,3), Has(name_base(1,8))],  # 05
-        [5, (1,8), has_sc(10)],  # 06
-        [5, (1,5), has_sc(30)],  # 07
-        [0, (2,1), has_sc(15)],  # 08
-        [3, (2,1), has_sc(1)],  # 09
-        [0, (2,2), has_sc(95)],  # 10
-        [3, (2,2), has_sc(150)],  # 11
+        [5, (1,8), HasSC(10)],  # 06
+        [5, (1,5), HasSC(30)],  # 07
+        [0, (2,1), HasSC(15)],  # 08
+        [3, (2,1), HasSC(1)],  # 09
+        [0, (2,2), HasSC(95)],  # 10
+        [3, (2,2), HasSC(150)],  # 11
         [5, (2,3), rule_completed_everything]  ,# 12
-        [5, (2,4), has_sc(20)] , # 13 #find every normal adn secret goal in world1-9
+        [5, (2,4), HasSC(20)] , # 13 #find every normal adn secret goal in world1-9
         [5, (2,5), Has(name_base(2,8))],  # 14
-        [5, (2,5), has_sc(215)],  # 15
-        [10, (2,6), has_sc(25)],  # 16
-        [0, (3,1), has_sc(65)] , # 17
-        [3, (3,1), has_sc(35)] , # 18
-        [5, (3,2), has_sc(165)] , # 19
-        [5, (3,2), has_sc(190)]  ,# 20
-        [0, (3,3), has_sc(140)] , # 21
+        [5, (2,5), HasSC(215)],  # 15
+        [10, (2,6), HasSC(25)],  # 16
+        [0, (3,1), HasSC(65)] , # 17
+        [3, (3,1), HasSC(35)] , # 18
+        [5, (3,2), HasSC(165)] , # 19
+        [5, (3,2), HasSC(190)]  ,# 20
+        [0, (3,3), HasSC(140)] , # 21
         [3, (3,3), Has(name_base(3,8))],  # 22
-        [5, (3,3), has_sc(195)] , # 23
-        [5, (3,6), has_sc(140)],  # 24
-        [5, (3,5), has_sc(130)] , # 25
-        [3, (4,1), has_sc(45)]  ,# 26
-        [5, (4,2), has_sc(175)] , # 27
+        [5, (3,3), HasSC(195)] , # 23
+        [5, (3,6), HasSC(140)],  # 24
+        [5, (3,5), HasSC(130)] , # 25
+        [3, (4,1), HasSC(45)]  ,# 26
+        [5, (4,2), HasSC(175)] , # 27
         [3, (4,2), rule_completed_everything],  # 28 # everything
-        [0, (4,3), has_sc(125)],  # 29
+        [0, (4,3), HasSC(125)],  # 29
         [5, (4,3), Has(name_base(4,8))],  # 30
-        [10, (4,7), has_sc(70)],  # 31
-        [0, (4,4), has_sc(50)],  # 32
-        [5, (4,6), has_sc(69)],  # 33
-        [3, (4,8), has_sc(145)],  # 34
-        [5, (5,1), has_sc(105)],  # 35
-        [3, (5,3), has_sc(55)],  # 36
-        [0, (5,6), has_sc(75)],  # 37
+        [10, (4,7), HasSC(70)],  # 31
+        [0, (4,4), HasSC(50)],  # 32
+        [5, (4,6), HasSC(69)],  # 33
+        [3, (4,8), HasSC(145)],  # 34
+        [5, (5,1), HasSC(105)],  # 35
+        [3, (5,3), HasSC(55)],  # 36
+        [0, (5,6), HasSC(75)],  # 37
         [5, (5,6), Has(name_base(8,8))],  # 38
         [3, (5,8), Has(name_base(5,8))],  # 39
-        [3, (6,1), has_sc(80)],  # 40
-        [0, (6,2), has_sc(135)],  # 41
-        [0, (6,3), has_sc(85)] , # 42
-        [5, (6,3), has_sc(205)],  # 43
-        [5, (6,5), has_sc(90)] , # 44
-        [10, (6,6), has_sc(100)] , # 45
+        [3, (6,1), HasSC(80)],  # 40
+        [0, (6,2), HasSC(135)],  # 41
+        [0, (6,3), HasSC(85)] , # 42
+        [5, (6,3), HasSC(205)],  # 43
+        [5, (6,5), HasSC(90)] , # 44
+        [10, (6,6), HasSC(100)] , # 45
         [5, (6,8), Has(name_base(9,6))],  # 46
         [5, (7,1), Has(name_base(9,7))],  # 47
-        [0, (7,3), has_sc(170)],  # 48
-        [0, (7,8), has_sc(160)],  # 49
-        [3, (7,7), has_sc(120)],  # 50
-        [3, (7,4), has_sc(231)],  # 51
-        [0, (7,9), has_sc(115)],  # 52
+        [0, (7,3), HasSC(170)],  # 48
+        [0, (7,8), HasSC(160)],  # 49
+        [3, (7,7), HasSC(120)],  # 50
+        [3, (7,4), HasSC(231)],  # 51
+        [0, (7,9), HasSC(115)],  # 52
         [3, (8,2), Has(name_base(8,8))],  # 53 #beat world 8 castle
-        [5, (8,3), has_sc(180)],  # 54
-        [0, (8,8), has_sc(110)],  # 55
-        [5, (8,10), has_sc(155)],  # 56
+        [5, (8,3), HasSC(180)],  # 54
+        [0, (8,8), HasSC(110)],  # 55
+        [5, (8,10), HasSC(155)],  # 56
         [5, (8,9), rule_completed_everything],  # 57 #all secret goals
-        [5, (9,1), has_sc(225)],  # 58
-        [5, (9,2), has_sc(220)],  # 59
-        [5, (9,3), has_sc(185)],  # 60
-        [5, (9,3), has_sc(210)],  # 61
+        [5, (9,1), HasSC(225)],  # 58
+        [5, (9,2), HasSC(220)],  # 59
+        [5, (9,3), HasSC(185)],  # 60
+        [5, (9,3), HasSC(210)],  # 61
         [0, (9,4), rule_completed_everything],  # 62 #all normal goals
-        [5, (9,5), has_sc(230)],  # 63
-        [0, (9,6), has_sc(200)],  # 64
+        [5, (9,5), HasSC(230)],  # 63
+        [0, (9,6), HasSC(200)],  # 64
         [3, (9,7), rule_completed_everything]  # 65 # complete everything!!!!!!!!!!!!!!!!1
     ]
     return requierments
 
-def get_time_math(world : NSMBWworld, time : int):
-    return math.ceil( (time/500) * world.options.randomize_time.value)
-def get_time_rule(world : NSMBWworld, time : int) -> Rule[TWorld]:
+def get_time_rule(world : "NSMBWworld", time : int) -> Rule[TWorld]:
     _amount_items_needed = get_time_math(world,time)
     _rule = Has(ITEM.Time, count=_amount_items_needed)
     if _amount_items_needed <= 1: # should precompute so doesnt show
@@ -112,6 +111,19 @@ class TimeRule(Rule["NSMBWworld"], game = game_name):
     def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
         # caching_enabled only needs to be passed in when your world inherits from CachedRuleBuilderWorld
         return get_time_rule(world, resolve_field(self.time, world, int)).resolve(world)
+
+
+@dataclasses.dataclass()
+class GlitchedRule(Rule["NSMBWworld"], game = game_name):
+
+    @override
+    def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
+        if getattr(world.multiworld, "generation_is_fake", False):
+            return Has(ITEM.GlitchedLogic).resolve(world)
+        else:
+            return False_().resolve(world)
+
+
 
 
 # this is option filters, turn options to true if not enabled
@@ -132,79 +144,77 @@ def filter_move_dontrando(opt_name : str):
     return filter_mov | True_(options=[OptionFilter(DontRandoMovement,opt_name, operator="contains")], filtered_resolution=False)
 
 
-def specific_level_requierments(world: NSMBWworld) -> list:
-    # Logic done by:
-    # REACT : powerups, all levels
+# create rules that are true if their option filters are off or if have its item
+button_right = Has(ITEM.MOVEMENT.ButtonRight) | filter_move_dontrando(ITEM.MOVEMENT.ButtonRight)
+button_left = Has(ITEM.MOVEMENT.ButtonLeft) | filter_move_dontrando(ITEM.MOVEMENT.ButtonLeft)
+button_up = Has(ITEM.MOVEMENT.ButtonUp) | filter_move_dontrando(ITEM.MOVEMENT.ButtonUp)
+button_down = Has(ITEM.MOVEMENT.ButtonDown) | filter_move_dontrando(ITEM.MOVEMENT.ButtonDown)
+jump = Has(ITEM.MOVEMENT.Jump)  | filter_move_dontrando(ITEM.MOVEMENT.Jump)
+run = Has(ITEM.MOVEMENT.Run) | filter_move_dontrando(ITEM.MOVEMENT.Run)
 
+ground_pound = (Has(ITEM.MOVEMENT.GroundPound)  & button_down)  | filter_move_dontrando(ITEM.MOVEMENT.GroundPound)
+wall_jump = (Has(ITEM.MOVEMENT.WallJump)  & jump) | filter_move_dontrando(ITEM.MOVEMENT.WallJump)
+carry = Has(ITEM.MOVEMENT.Carry) | filter_mov  | filter_move_dontrando(ITEM.MOVEMENT.Carry)
+climb = (Has(ITEM.MOVEMENT.Climb) & button_up)  | filter_move_dontrando(ITEM.MOVEMENT.Climb)
+spin_jump = Has(ITEM.MOVEMENT.SpinJump) | filter_move_dontrando(ITEM.MOVEMENT.SpinJump)
+swim = Has(ITEM.MOVEMENT.Swim) | filter_move_dontrando(ITEM.MOVEMENT.Swim)
+crouch = (Has(ITEM.MOVEMENT.Crouch) & button_down) | filter_move_dontrando(ITEM.MOVEMENT.Crouch)
 
-    # create rules that are true if their option filters are off or if have its item
-    button_right = Has(ITEM.MOVEMENT.ButtonRight) | filter_move_dontrando(ITEM.MOVEMENT.ButtonRight)
-    button_left = Has(ITEM.MOVEMENT.ButtonLeft) | filter_move_dontrando(ITEM.MOVEMENT.ButtonLeft)
-    button_up = Has(ITEM.MOVEMENT.ButtonUp) | filter_move_dontrando(ITEM.MOVEMENT.ButtonUp)
-    button_down = Has(ITEM.MOVEMENT.ButtonDown) | filter_move_dontrando(ITEM.MOVEMENT.ButtonDown)
-    jump = Has(ITEM.MOVEMENT.Jump)  | filter_move_dontrando(ITEM.MOVEMENT.Jump)
-    run = Has(ITEM.MOVEMENT.Run) | filter_move_dontrando(ITEM.MOVEMENT.Run)
+question_switch = Has(ITEM.MOVEMENT.QuestSwitch) | filter_move_dontrando(ITEM.MOVEMENT.QuestSwitch)
+p_switch = Has(ITEM.MOVEMENT.PSwitch) | filter_move_dontrando(ITEM.MOVEMENT.PSwitch)
+red_block = (Has(ITEM.MOVEMENT.RedSwitch)  | filter_move_dontrando(ITEM.MOVEMENT.RedSwitch)) & Has(name_base(3,5))
 
-    ground_pound = (Has(ITEM.MOVEMENT.GroundPound)  & button_down)  | filter_move_dontrando(ITEM.MOVEMENT.GroundPound)
-    wall_jump = (Has(ITEM.MOVEMENT.WallJump)  & jump) | filter_move_dontrando(ITEM.MOVEMENT.WallJump)
-    carry = Has(ITEM.MOVEMENT.Carry) | filter_mov  | filter_move_dontrando(ITEM.MOVEMENT.Carry)
-    climb = (Has(ITEM.MOVEMENT.Climb) & button_up)  | filter_move_dontrando(ITEM.MOVEMENT.Climb)
-    spin_jump = Has(ITEM.MOVEMENT.SpinJump) | filter_move_dontrando(ITEM.MOVEMENT.SpinJump)
-    swim = Has(ITEM.MOVEMENT.Swim) | filter_move_dontrando(ITEM.MOVEMENT.Swim)
-    crouch = (Has(ITEM.MOVEMENT.Crouch) & button_down) | filter_move_dontrando(ITEM.MOVEMENT.Crouch)
+yoshi = Has(ITEM.MOVEMENT.Yoshi)  | filter_move_dontrando(ITEM.MOVEMENT.Yoshi)
+star = Has(ITEM.MOVEMENT.Star) | filter_move_dontrando(ITEM.MOVEMENT.Star)
 
-    question_switch = Has(ITEM.MOVEMENT.QuestSwitch) | filter_move_dontrando(ITEM.MOVEMENT.QuestSwitch)
-    p_switch = Has(ITEM.MOVEMENT.PSwitch) | filter_move_dontrando(ITEM.MOVEMENT.PSwitch)
-    red_block = (Has(ITEM.MOVEMENT.RedSwitch)  | filter_move_dontrando(ITEM.MOVEMENT.RedSwitch)) & Has(name_base(3,5))
-
-    yoshi = Has(ITEM.MOVEMENT.Yoshi)  | filter_move_dontrando(ITEM.MOVEMENT.Yoshi)
-    star = Has(ITEM.MOVEMENT.Star) | filter_move_dontrando(ITEM.MOVEMENT.Star)
-
-    door = (Has(ITEM.MOVEMENT.Door) & button_up) | filter_move_dontrando(ITEM.MOVEMENT.Door)
-    pipe = Has(ITEM.MOVEMENT.Pipe) | filter_move_dontrando(ITEM.MOVEMENT.Pipe)
+door = (Has(ITEM.MOVEMENT.Door) & button_up) | filter_move_dontrando(ITEM.MOVEMENT.Door)
+pipe = Has(ITEM.MOVEMENT.Pipe) | filter_move_dontrando(ITEM.MOVEMENT.Pipe)
 
 
 
-    # powerups
-    mushroom = Has(ITEM.POWERUP.Super_Mushroom) | filter_pow | filter_pow_on_no_mus
-    progressive_pow_filler = mushroom | [filter_pow_on, filter_pow_on_no_mus]
+# powerups
+mushroom = Has(ITEM.POWERUP.Super_Mushroom) | filter_pow | filter_pow_on_no_mus
+progressive_pow_filler = mushroom | [filter_pow_on, filter_pow_on_no_mus]
 
-    propeller = (Has(ITEM.POWERUP.Propeller_Mushroom) & progressive_pow_filler & spin_jump) | filter_pow
-    ice = (Has(ITEM.POWERUP.Ice_Flower) & progressive_pow_filler) | filter_pow
-    peng = (Has(ITEM.POWERUP.Penguin_Suit) & progressive_pow_filler) | filter_pow
-    mini = (Has(ITEM.POWERUP.Mini_Mushroom) & progressive_pow_filler) | filter_pow
-    fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
+propeller = (Has(ITEM.POWERUP.Propeller_Mushroom) & progressive_pow_filler & spin_jump) | filter_pow
+ice = (Has(ITEM.POWERUP.Ice_Flower) & progressive_pow_filler) | filter_pow
+peng = (Has(ITEM.POWERUP.Penguin_Suit) & progressive_pow_filler) | filter_pow
+mini = (Has(ITEM.POWERUP.Mini_Mushroom) & progressive_pow_filler) | filter_pow
+fire = (Has(ITEM.POWERUP.Fire_Flower) & progressive_pow_filler) | filter_pow
 
-    # detailed moves
-    carry_shell = carry
-    carry_block = carry & spin_jump
-    carry &= carry & spin_jump # this is temp, only until we changed all carry to either carry_shell or carry_block
+# detailed moves
+carry_shell = carry
+carry_block = carry & spin_jump
+carry &= carry & spin_jump # this is temp, only until we changed all carry to either carry_shell or carry_block
 
 
-    #other rules
-    outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | get_glitch_rule(world) # and with this rule
-    # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
-    logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)] | get_glitch_rule(world)
-    logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
+#other rules
+outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | GlitchedRule() # and with this rule
+# these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
+logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)] | GlitchedRule()
+logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
 
-    # more powerup stuff
-    ice_peng = ice | peng
-    fire_o = fire & outside_powerups
-    ice_o = ice & outside_powerups
-    propeller_o = propeller & outside_powerups
-    peng_o = peng & outside_powerups
-    ice_peng_o = ice_peng & outside_powerups
-    mini_o = mini & outside_powerups
-    star_o = star & outside_powerups
+# more powerup stuff
+ice_peng = ice | peng
+fire_o = fire & outside_powerups
+ice_o = ice & outside_powerups
+propeller_o = propeller & outside_powerups
+peng_o = peng & outside_powerups
+ice_peng_o = ice_peng & outside_powerups
+mini_o = mini & outside_powerups
+star_o = star & outside_powerups
 
-    # Complex rules ( made of previous)
-    super_mario = mushroom | propeller | ice_peng | fire
-    max_mini = mini & run & wall_jump
-    oswj = run & wall_jump & (fire | ice_peng | mini)
-    normal_move = button_right & (jump | spin_jump) & TimeRule(100)
-    # button_left & button_up & button_down & jump & spin_jump & p_switch & door & pipe & TimeRule(50) #changed this to fit my current logic, can probably be cleaned up a bit
+# Complex rules ( made of previous)
+super_mario = mushroom | propeller | ice_peng | fire
+max_mini = mini & run & wall_jump
+oswj = run & wall_jump & (fire | ice_peng | mini)
+normal_move = button_right & (jump | spin_jump) & TimeRule(100)
+# button_left & button_up & button_down & jump & spin_jump & p_switch & door & pipe & TimeRule(50) #changed this to fit my current logic, can probably be cleaned up a bit
 
-    tower_rules = door & button_left
+tower_rules = door & button_left
+
+def specific_level_requierments() -> list:
+    # Logic done by REACT
 
     level_rules = [ # normal compleation rules
         [  # world 1
@@ -422,9 +432,3 @@ def get_level_connections() -> List[List[List[int]]]:
 
 
     return connections
-
-def get_glitch_rule(world):
-    if getattr(world.multiworld, "generation_is_fake", False):
-        return Has(ITEM.GlitchedLogic)
-    else:
-        return False_()
