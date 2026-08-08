@@ -168,22 +168,32 @@ class NSMBWInterface(object):
         except DolphinException:
             return ConnectionState.DISCONNECTED
 
+    def not_in_savefile1(self) -> bool:
+        savefile = self.get_savefile_num()
+        val = savefile == 1
+        if val:
+            logger.info(f"Please exit save file 1")
+        return not val
 
-    def is_in_level(self) -> bool:
-        """Check if the player is in the actual game rather than the main menu"""
 
+    def raw_in_level(self) -> bool:
         player_status = self.get_record_state()[0]
         is_normal_record = player_status == 0
 
         is_in_stage = self.get_in_stage_flag()[3] == 1
 
+        return is_in_stage and is_normal_record
+
+
+    def is_in_level(self) -> bool:
+        """Check if the player is in the actual game rather than the main menu"""
         is_not_on_world_map = not self.is_in_worldmap()
         is_not_on_main_menu = not self.is_in_menu()
 
 
         #return worlmap_status == 0)
         #print(f"is_in_stage and is_not_on_world_map and is_not_on_main_menu and is_normal_record {is_in_stage} {is_not_on_world_map} {is_not_on_main_menu}  {is_normal_record}")
-        return is_in_stage and is_not_on_world_map and is_not_on_main_menu and is_normal_record
+        return self.raw_in_level() and is_not_on_world_map and is_not_on_main_menu and self.not_in_savefile1()
 
     def is_in_worldmap(self) -> bool:
         return 1 == self.get_on_map()[0]
@@ -361,14 +371,11 @@ class NSMBWInterface(object):
             return False
 
     def apply_patch(self, patch : CodePatch | Iterable, reverse : bool=False, double_check : bool = True):
-        clear: bool = False
         # this allows recursive patching
         if isinstance(patch, Iterable):
             for subpatch in patch:
                 assert isinstance(subpatch, CodePatch | Iterable)
                 self.apply_patch(subpatch, reverse = reverse, double_check = double_check)
-            if clear and self.should_clear >= 1:
-                self.clear_cache()
             return
 
         # this applies patch
@@ -377,9 +384,15 @@ class NSMBWInterface(object):
             if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
                 raise ValueError(f"bytes {current_bytes} at addr {patch.addr} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
         if not reverse:
-            self.write_instruction(patch.addr, patch.code)
+            if patch.clear:
+                self.write_instruction(patch.addr, patch.code)
+            else:
+                self.dolphin_client.write_address(patch.addr, patch.code)
         elif hasattr(patch, "origin"):
-            self.write_instruction(patch.addr, patch.origin)
+            if patch.clear:
+                self.write_instruction(patch.addr, patch.origin)
+            else:
+                self.dolphin_client.write_address(patch.addr, patch.origin)
         else:
             raise ValueError(f"patch {patch} {patch.name} is not a valid patch, tried to reverse without origin set")
 
@@ -484,8 +497,10 @@ class NSMBWInterface(object):
                         #print(bytes_to_int(self.get_water_state()))
 
             if not ITEM.MOVEMENT.PSwitch in slot_data_dont_rando:
-                if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
-                    self.set_p_switch_timer(int_to_bytes(0, 4))
+                #if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
+                #    self.set_p_switch_timer(int_to_bytes(0, 4))
+                self.apply_patch(self.memory_addresses.patch_p_switch, reverse=ITEM.MOVEMENT.PSwitch in unlocked_moves)
+
 
             if not ITEM.MOVEMENT.Star in slot_data_dont_rando:
                 if not ITEM.MOVEMENT.Star in unlocked_moves:
@@ -535,8 +550,8 @@ class NSMBWInterface(object):
 
 
             if not ITEM.MOVEMENT.QuestSwitch in slot_data_dont_rando:
-                if not ITEM.MOVEMENT.QuestSwitch in unlocked_moves:
-                    self.set_question_switch_timer(int_to_bytes(0,4))
+                self.apply_patch(self.memory_addresses.patch_q_switch, reverse=ITEM.MOVEMENT.QuestSwitch in unlocked_moves)
+
 
             if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
                 #cary_shell

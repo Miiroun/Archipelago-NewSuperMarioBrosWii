@@ -12,6 +12,7 @@ import time
 import traceback
 from enum import IntEnum
 from random import Random
+from configparser import ConfigParser
 
 import Utils
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
@@ -40,7 +41,7 @@ class ModifiedState(IntEnum):
 
 
 modifier_type_litteral = Literal[ITEM.TRAPS.ThrowTrap, ITEM.TRAPS.ReverseControlTrap, ITEM.TRAPS.GoombaTrap, ITEM.TRAPS.MovementLockTrap,
-    ITEM.FILLER.SuperSpeed, ITEM.TRAPS.SlowTrap]
+    ITEM.FILLER.SuperSpeed, ITEM.TRAPS.SlowTrap, ITEM.TRAPS.GravityTrap, ITEM.FILLER.LowGravity]
 
 class Modifier(NamedTuple):
     type : modifier_type_litteral
@@ -185,7 +186,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         A command that kills mario. Useful if you get soft-locked.
         """
-        time.sleep(1)
         Utils.async_start(self.ctx.game_interface.kill_player())
         self.ctx.is_pending_death_link_reset = True
 
@@ -207,6 +207,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Gives you a list of which movement you have and have not unlocked
         """
         #NSMBWOptions.dont_rando_move
+        logger.info("Movment info")
         if self.ctx.username is None:
             logger.info("Connect to server before running /movements")
         elif self.ctx.slot_data["randomize_movement"] != RandomizeMovement.option_off:
@@ -336,7 +337,12 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_print_settings(self):
         """Prints your settings, useful for debuging"""
         logger.info(f"SETTINGS")
-        logger.info(Utils.get_settings()["nsmbw_settings"])
+        set_obj = Utils.get_settings()["nsmbw_settings"]
+        data = ""
+        #for attr in set_obj:
+        #    data += f"{attr}: {set_obj[attr]}"
+        data = dir(set_obj)
+        logger.info(data)
 
 
     def _cmd_get_versions(self):
@@ -380,8 +386,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_print_settings()
 
         logger.info("---- Info regarding items ----")        
-        self._cmd_received()
-        self._cmd_missing()
+        #self._cmd_received()
+        #self._cmd_missing()
         self._cmd_movements()
         self._cmd_starcoin_count()
         self._cmd_completed_worlds()
@@ -517,10 +523,7 @@ class NSMBWContext(SuperContext):
     def on_package(self, cmd: str, args: dict):
         match cmd:
             case "Connected":
-                # this line might make consol conect with info from yaml file
-                #print(args)
-                #self.username = args["slot_info"][str(args["slot"])][0]
-                #need to set username somewhere
+                Utils.async_start(self.detect_dolphin_settings())
 
                 self.slot_data = args["slot_data"]
                 # checks for new slot_data values to be compatible
@@ -557,11 +560,10 @@ class NSMBWContext(SuperContext):
 
                 if self.slot_data["use_riivolution"]:
                     Utils.async_start(self.patch_and_run_game())
-                else:
-                    Utils.async_start(self.run_game())
 
                 # hints for all hint movies
-                Utils.async_start(self.send_msgs([{"cmd":"CreateHints", "locations" : list( 3000 + i for i in range(1,HINTMOVIE_COUNT +1))}]))
+                if self.slot_data["hint_movie_sanity"]:
+                    Utils.async_start(self.send_msgs([{"cmd":"CreateHints", "locations" : list( 3000 + i for i in range(1,HINTMOVIE_COUNT +1))}]))
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
@@ -628,7 +630,7 @@ class NSMBWContext(SuperContext):
             self.modifiers = []
             self.current_mod_end_time = 0
             Utils.async_start(self.handle_modifiers())
-            time.sleep(0.1)
+            await asyncio.sleep(0.1)
             Utils.async_start(self.handle_save())
         await super().shutdown()
 
@@ -670,8 +672,10 @@ class NSMBWContext(SuperContext):
 
         #logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
 
-        await self.run_game()
+        Utils.async_start(self.run_game())
+        await self.game_loop()
 
+    async def game_loop(self):
         while not self.exit_event.is_set():
             try:
                 if self.server:
@@ -984,19 +988,23 @@ class NSMBWContext(SuperContext):
 
 
     async def check_hintmovies(self):
-        if self.game_interface.get_level_world() == b'\x28':  # checks if in peach castle
-            checked_locations = []
-            for hm_num in range(1, HINTMOVIE_COUNT + 1):
-                status = self.game_interface.get_hm_stats(hm_num - 1)
-                location_name = f"Hintmovie{hm_num:02}"
-                if status == b'\x01':
-                    if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
-                        checked_locations.append(NSMBWworld.location_name_to_id[location_name])
-                        if Utils.get_settings()["nsmbw_settings"].debug_mode:
-                            print(f"Collected hintmovie at {checked_locations}")
+        if self.slot_data['hint_movie_sanity'] == True:
+            if self.game_interface.get_level_world() == b'\x28':  # checks if in peach castle
+                checked_locations = []
+                for hm_num in range(1, HINTMOVIE_COUNT + 1):
+                    if hm_num in DEPRIO_HM:
+                        continue
 
-            self.locations_handled += checked_locations
-            return checked_locations
+                    status = self.game_interface.get_hm_stats(hm_num - 1)
+                    location_name = f"Hintmovie{hm_num:02}"
+                    if status == b'\x01':
+                        if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
+                            checked_locations.append(NSMBWworld.location_name_to_id[location_name])
+                            if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                                print(f"Collected hintmovie at {checked_locations}")
+
+                self.locations_handled += checked_locations
+                return checked_locations
         return []
 
     async def check_level_completion(self, unlocked_worlds):
@@ -1402,7 +1410,10 @@ class NSMBWContext(SuperContext):
                     self.modifiers.append(Modifier(ITEM.TRAPS.MovementLockTrap, 10))
 
                 case ITEM.TRAPS.SlowTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.SlowTrap, 120))
+                    self.modifiers.append(Modifier(ITEM.TRAPS.SlowTrap, 60))
+
+                case ITEM.TRAPS.GravityTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.GravityTrap, 15))
 
                 case _:
                     logger.info(f"Trap {trap} is not implemented")
@@ -1451,6 +1462,9 @@ class NSMBWContext(SuperContext):
                 #    logger.info(f" Time for a shopping spree")
                 #    for world_num in range(1,9+1):
                 #        self.game_interface.set_toad_house(self.random.choice([b'\x05',b'\x06',b'\x07']), world_num)
+
+                case ITEM.FILLER.LowGravity:
+                    self.modifiers.append(Modifier(ITEM.FILLER.LowGravity, 90))
 
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
@@ -1606,9 +1620,9 @@ class NSMBWContext(SuperContext):
                     logger.info(f"Is it just me or is it really cold right now?")
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=False,double_check=False)
                 case ITEM.FILLER.LowGravity:
-                    self.game_interface.set_gravity(int_to_bytes(0xbd4ccccd, 4))
+                    self.game_interface.set_gravity(int_to_bytes(0xbcf5c28f, 4)) # -0.03
                 case ITEM.TRAPS.GravityTrap:
-                    self.game_interface.set_gravity(int_to_bytes(0xbf333333, 4))
+                    self.game_interface.set_gravity(int_to_bytes(0xbf666666, 4)) # -0.9
                 case _:
                         raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
 
@@ -1732,7 +1746,7 @@ class NSMBWContext(SuperContext):
                 subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path), "-s", str(rii_path / "StateSaves" / f"{self.game_interface.current_game}.s0{self.save_slot}") ])
             else:
                 subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
-            time.sleep(35)
+            await asyncio.sleep(10)
         elif auto_start:
             logger.error("Failed to auto start dolphin, make sure your file path is correct")
 
@@ -1749,7 +1763,39 @@ class NSMBWContext(SuperContext):
         else:
             logger.info(f"Please close other dolphin instances")
 
-        time.sleep(35)
+        await asyncio.sleep(35)
+
+    async def detect_dolphin_settings(self):
+        try:
+            settings_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path).parent.parent / "Config"
+            assert settings_path.exists(), f"path {settings_path} does not exist"
+
+            Dolphin = settings_path / "Dolphin.ini"
+            config = ConfigParser()
+            config.read(Dolphin)
+
+            HotkeysRequireFocus = config.getboolean("General", "HotkeysRequireFocus")
+            if HotkeysRequireFocus != False:
+                self.log_color("Please turn of HotkeysRequireFocus in dolphin", "red")
+
+
+            Hotkeys = settings_path / "Hotkeys.ini"
+            config = ConfigParser()
+            config.read(Hotkeys)
+            load1 = config.get("Hotkeys", f"Load State/Load State Slot {1}")
+            load2 = config.get("Hotkeys", f"Load State/Load State Slot {1}")
+            save1 = config.get("Hotkeys", f"Save State/Save State Slot {1}")
+            save2 = config.get("Hotkeys", f"Save State/Save State Slot {1}")
+
+            if load1 != f"F{1}" or load2 != f"F{1}" or save1 != f"@(Shift+F{1})" or save2 != f"@(Shift+F{1})":
+                self.log_color("Please turn your hotkeys for loading/saving states in dolphin to default", "red")
+
+            #with open(settings_path, 'w') as configfile:
+            #    config.write(configfile)
+
+        except Exception as e:
+            logger.info(e)
+
 
 #end of class
 

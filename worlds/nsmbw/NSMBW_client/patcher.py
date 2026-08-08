@@ -183,7 +183,7 @@ class Patcher:
             self.patch_levels()
         if True:
             folder_name = "Object"
-            self.patch_subfolder(folder_name, "bgA", True)
+            #self.patch_subfolder(folder_name, "bgA", True)
             #self.patch_subfolder(folder_name, "bgB", True)
 
         if True:
@@ -293,13 +293,21 @@ class Patcher:
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/US/Layout/openingTitle/openingTitle.arc"})
 
         # external save
-        ET.SubElement(_patch, "savegame", {"external" : r"/save/{$__gameid}{$__region}","close" : "false"})
+        ET.SubElement(_patch, "savegame", {"external" : r"/save/{$__gameid}{$__region}","clone" : "false"})
 
         # graphics
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/", "disc":fr"/Stage/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/Texture/", "disc":fr"/Stage/Texture/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Object/", "disc":fr"/Object/", "create":"true"})
         ET.SubElement(_patch, "folder", {"external" : fr"Sound/stream/", "disc":fr"/Sound/stream/", "create":"true"})
+
+        #Memory patch: Disable exception handler input sequence
+        ET.SubElement(_patch, "memory", {"offset" : "0x800E4E84", "value" :"38600000", "original" : "3863330C"})
+        ET.SubElement(_patch, "memory", {"offset": "0x800E4D70", "value": "38600000", "original": "3863300C"})
+        ET.SubElement(_patch, "memory", {"offset": "0x800E4CF0", "value": "38600000", "original": "38632E2C"})
+        ET.SubElement(_patch, "memory", {"offset": "0x800E4E80", "value": "38600000", "original": "3863364C"})
+        ET.SubElement(_patch, "memory", {"offset": "0x800E54B0", "value": "38600000", "original": "38637AAC"})
+
 
         #print("-------XML-----------------")
         #print(ET.tostring(wiidisc))

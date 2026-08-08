@@ -139,6 +139,8 @@ class NSMBWworld(World):
             return None
 
     def map_page_index(data: Any) -> int:
+        if data == None:
+            return 0
         try:
             return int(data)-1
         except ValueError:

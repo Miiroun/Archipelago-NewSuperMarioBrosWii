@@ -16,8 +16,9 @@ class CodePatch:
     code: bytes
     origin : bytes | None
     name : str | None
+    clear : bool
 
-    def __init__(self, addr: int, code: bytes, origin : bytes | None = None , name : str | None = None) -> None:
+    def __init__(self, addr: int, code: bytes, origin : bytes | None = None , name : str | None = None, clear=True) -> None:
         assert len(code) == 4, f"code needs to have length 4, has length {len(code)}"
         if not origin is None:
             assert len(origin) == 4, f"origin needs to have length 4, has length {len(origin)}"
@@ -25,6 +26,7 @@ class CodePatch:
         self.code = code
         self.origin = origin
         self.name = name
+        self.clear = clear
 
 class SymbolReader(object):
     def __init__(self, _file):
@@ -91,8 +93,8 @@ class MemoryAddresses(object):
         self.map_world = self.map_between("E2",0x8042A04B)
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
-
-        self.powerup_state = [self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7})] # might be offsey with 0x2d08+0x1 
+        play_bas_add = self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7}) -0x152
+        self.powerup_state = list([ play_bas_add + 0x152 + i* 0x20c for i in range(4)]) # might be offsey with 0x2d08+0x1
         assert len(self.powerup_state) == PLAYER_COUNT, f"Powerup_state address list is of wrong size {len(self.powerup_state)}"
 
         # memory map doesnt work for this for some reason
@@ -126,10 +128,10 @@ class MemoryAddresses(object):
         self.address_hang_water = self.map_from_symbol("_ZN7dAcPy_c19checkCliffHangWaterEv")
 
         self.address_vine = self.map_between("E2", 0x8154C818) # 43=hang vine, 45= normal
-        self.address_p_switch = self.map_between("E2", 0x815E4338)
+        #self.address_p_switch = self.map_between("E2", 0x815E4338)
         self.address_star = self.map_between("E2", 0x8154C874)
         self.address_door = self.map_between("E2",0x8002b2a4)
-        self.address_question_switch = self.map_between("E2", 0x8042A078) #pointer, other guess 0x8042A1D8
+        #self.address_question_switch = self.map_between("E2", 0x8042A078) #pointer, other guess 0x8042A1D8
 
         self.address_kani_walk = self.map_between("P1", 0x80135670)
         self.address_kani_hang = self.map_between("P1", 0x80135b00)
@@ -204,19 +206,24 @@ class MemoryAddresses(object):
         self.patch_goomba_speed = [self.create_patch("E2", 0x80ad2870, int_to_bytes(0x40000000, 4),int_to_bytes(0x3f000000, 4), "goomba_speed1" ), # f2.0 # f-2.0
                                    self.create_patch("E2", 0x80ad2874, int_to_bytes(0xc0000000, 4),int_to_bytes(0xbf000000, 4), "goomba_speed1" )]# f2.0 # f-2.0
 
-        self.patch_player_super_speed = [self.create_patch("P1", 0x80376ca0, b'\x40\xa0\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk"),
-                                         self.create_patch("P1", 0x80376ca8, b'\x41\x20\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
-                                         self.create_patch("P1", 0x80376cac, b'\x41\x20\x00\x00', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
+        self.patch_player_super_speed = [self.create_patch("P1", 0x80376ca0, b'\x40\xa0\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk", clear=False),
+                                         self.create_patch("P1", 0x80376ca8, b'\x41\x20\x00\x00', b'\x40\x40\x00\x00',"player_speed_run", clear=False),
+                                         self.create_patch("P1", 0x80376cac, b'\x41\x20\x00\x00', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right", clear=False)]
 
-        self.patch_player_slow_speed = [self.create_patch("P1", 0x80376ca0, b'\x3f\x40\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk"),
-                                         self.create_patch("P1", 0x80376ca8, b'\x40\x00\x00\x00', b'\x40\x40\x00\x00',"player_speed_run"),
-                                         self.create_patch("P1", 0x80376cac, b'\x3d\x4c\xcc\xcd', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right")]
+        self.patch_player_slow_speed = [self.create_patch("P1", 0x80376ca0, b'\x3f\x40\x00\x00', b'\x3f\xc0\x00\x00', "player_speed_walk", clear=False),
+                                         self.create_patch("P1", 0x80376ca8, b'\x40\x00\x00\x00', b'\x40\x40\x00\x00',"player_speed_run", clear=False),
+                                         self.create_patch("P1", 0x80376cac, b'\x3d\x4c\xcc\xcd', b'\x3d\xcc\xcc\xcd', "player_speed_accel_right", clear=False)]
 
         self.bosshealth1 = self.map_between("P1", 0x800987c0) # num = 6 * amount hits
         self.bosshealth2 = self.map_between("P1", 0x80b1fb40)
         self.bosshealthBowJR = self.map_between("P1", 0x8009b820)
 
         self.gravity_start = self.map_between("P1", 0x802f5938)
+
+        self.patch_p_switch = self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch")
+        self.patch_q_switch = self.create_patch("P1", 0x809c6168, instru_noop, instru_bne + val_000c, "patch_q_switch")
+
+        self.patch_goomba = self.create_patch("P1", 80031210, instru_return, instru_stwu + val_fff0, "patch_goomba")
 
 
         ## patch patches ---------------------------------------------------
@@ -267,11 +274,16 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x803286D8, int_to_bytes(0x8015CFC0, 4), name = "patch_skipp_wii_remote_strap_screen"),
         ]
 
+        lives_limit_change = [
+            self.create_patch("P1", 0x80427C00, int_to_bytes(0x00002710, 4), name = "lives_limit_change" ),
+            self.create_patch("P1", 0x80159A50, int_to_bytes(0x3882ab38, 4), name = "lives_limit_change"),
+        ]
+
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
             patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
-            patch_skipp_wii_remote_strap_screen
+            patch_skipp_wii_remote_strap_screen, lives_limit_change,
         ]
 
         # address 0x80162fb8 might be good to create a branch from
@@ -312,9 +324,9 @@ class MemoryAddresses(object):
         return new_address
 
 
-    def create_patch(self,ver_from : str,  addr: int, code: bytes, origin : bytes |None = None, name : str = "") -> CodePatch:
+    def create_patch(self,ver_from : str,  addr: int, code: bytes, origin : bytes |None = None, name : str = "", clear = True) -> CodePatch:
         assert len(code) == 4, f"Code {code} with name {name} should be 4 bytes"
         if origin is not None:
             assert len(origin) == 4, f"Origin {origin} should be 4 bytes"
-        return CodePatch(self.map_between(ver_from, addr), code, origin, name)
+        return CodePatch(self.map_between(ver_from, addr), code, origin, name, clear)
 

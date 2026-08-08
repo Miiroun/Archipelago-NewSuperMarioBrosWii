@@ -63,7 +63,7 @@ class DontRandoMovement(ItemSet):
     valid_keys = set(MOVEMENT_UNLOCKS)
     default = {ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
                ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value,
-               ITEM.MOVEMENT.Climb.value, ITEM.MOVEMENT.QuestSwitch.value}
+               ITEM.MOVEMENT.Climb.value}
     #visibility = Option.visibility.none
 
 class RandomizePowerups(Choice):

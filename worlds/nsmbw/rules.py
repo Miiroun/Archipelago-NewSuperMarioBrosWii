@@ -190,19 +190,19 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
         soft_logic_list : Rule = []
         for world_num in range(1,8+1):
             _rule = Has(name_base(world_num, world_toad[world_num-1], assert_=False)) & raw_rules.climb & raw_rules.door
-            for _ in range(5):
+            for _ in range(4):
                 soft_logic_list.append(_rule)
 
             _rule = Has(name_base(world_num, world_star[world_num-1], assert_=False))
             soft_logic_list.append(_rule)
 
             _rule =Has(name_base(world_num, world_enemy[world_num-1], assert_=False))
-            for _ in range(3):
+            for _ in range(6):
                 soft_logic_list.append(_rule)
 
         # honestly might be better to do a count of all these sources
         hard_logic : Rule = rules.Or(*soft_logic_list)
-        soft_logic : Rule = AtLeast(min(i, 30), *soft_logic_list) | raw_rules.GlitchedRule()
+        soft_logic : Rule = AtLeast(math.floor((i/ world.options.include_inventory_powerups.value) * 70), *soft_logic_list) | raw_rules.GlitchedRule()
         invent_rule : Rule = hard_logic & soft_logic
         world.set_rule(invent_pow, invent_rule)
 

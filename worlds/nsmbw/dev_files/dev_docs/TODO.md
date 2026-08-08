@@ -2,24 +2,17 @@
 ## Super super short term
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
 Ask in dc for better option names
-Try skip wii strap patch : see if works to not have bug
-Title screen replacement
 Test if loading code actully moves around memory
 Playtest multiplayer
 Do we need to load to clear or does it on save too?
-Playtest secret exits
 Check point similar
-  replace 80a92888 for red coin ring
-  func 809c6120 for switches ? 
+  func 80a92888 for red coin ring
   func 80aa7470 sneak block
   func 80a9cc70 poky
   func 80a5d2d0 daEnLiftRotHalf_c
   80a88920 chep chep
-  80031210 goomba
-  80822800 koopa ball
 search : onCreate and create, only lables
-Re-evaluate which files are packed for release
-Maybe beter to actually patch image to save on space instead of load entire .arc file
+
 How solve issue where to load game on start or connect if use riivolution or not
 - need to update docs
 Test AP map visual editor
@@ -36,8 +29,6 @@ does send filler work correct right now?
 
 why doesnt /explain 9-1 work?
 
-add star coin object
-
 DC
 - option + setting review
 - Where should the project continue?
@@ -51,13 +42,18 @@ test
 - gravity
 - load 1 background
 
+fix assert no doublicate dolphins
+
+- Secret exit items
+  - update docs
+
+#809c6120 return : works for p switch
+
+wii-lib currently breaks frozen
+
+add goomba lock as option
+
 ## Super short term
-- PlayerGravity # gravity filler ?
-- Just look in memory where store player data, follow intruc, find size -> multiplayer
-  - dAcPy_c__data : length 0x2d08
-  - daPlBase_c::GravityData
-  - daPlBase_c__data
-  - daPlBase_c__vt : hold func pointers
 - multiplayer
   - Separate powerup unlocks?
 - Rename:
@@ -66,8 +62,6 @@ test
   - include option to sanity?
 - update docs
 - button_down and button_up and pipe logic
-- Secret exit items
-  - update docs
 - create an function to  and bytes
 - Rando game tile sheet, enemy sheet (or sprite table ?), music etc. Easiest done through riivolution
 - Try redumping my copy of nsmbw : test which guide / method best to link to
@@ -76,7 +70,6 @@ test
 - 8-2 secret exit requires more logic
 - Ask for help in dc for names
 - Secret exit items in client !!!
-- Hm option: cumulative but order is sorted after hm unlock order
 - Run language test world thing
 - Work more on map pack: download images from wiki
 - do I need to split up doolphin tool and dolphin for linux users?
@@ -91,7 +84,6 @@ test
   - object
   - characters?
 - Add riivolution info to docs
-- Add logic to level rando
 - test if loading code actually fails the client
 - run /dev x2 and then see which hm aren't showing up : add to dont rando
 - Dolphin wsl
@@ -104,7 +96,6 @@ test
 - If unlocked set red switch to on
 - Hm in peach castle is not correct amount on free, should remove req of having sc
 - Remove req for cost of having X HM on other settings
-- need rules for when not to unlock inventory pow: either beat 1-3 (toad), have access to world enemys, or door + climb + toadhouse
 - Add key binds to docs
 - Location scout hm: give as hint, as an option
   - Could maybe change name of hm based on if priority / useful / filler
@@ -112,8 +103,6 @@ test
 - Can I verify dolphin settings? have been changed?
 - Time change default not current
 - implement method to read arc files : needed to change names of subfolders
-- stopmping on enemeies as move
-- Patch to skip wii safty
 - verify that key combos dont overlap
 - point to dumping guide in docs
 - Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
@@ -122,7 +111,6 @@ test
   - Does this solve issue?
 - load last save state directly? : should be able to
 - Pause dolphin, increment slowly: find bites in black : verify issue there not menu generally
-- name: LivesLimitChange     type: patch     addr_pal: 0x80427C00     data: '000003E7' #default is 0x63 = 99    - name: LivesCharacterLimitChange     type: patch     addr_pal: 0x80159A50     data: '3882ab38' #default is 3882ab34 -> 2
 - Can find value hardcoded for level timer? Add memwatch for func that changes it
   - Can make > vanilla?, would be nice
 - Ask react for help invent pow
@@ -159,32 +147,9 @@ test
   - https://discord.com/channels/673369321522593794/1295786310694342691/1295786310694342691
 -  btw srarcoin 1 in 1-3 is entireely possible with only mushroom by triple jumping, though it is a harder one so I see why it isn't in logic
 - Shuffle sprite table? How much will explode?
-- ```yaml - name: DisableGameOverItemClear   type: nop_insn   area_pal: 0x80789038 ```
-  - done ?
 - Publish can't move left patch in nsmbw dc
 - Double jump
   - https://discord.com/channels/673369321522593794/1396386889052983307/1396386889052983307
-- verify dolphin settings
-  - C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config : 
-    - Dolphin.ini
-      - HotkeysRequireFocus = False
-    - Hotkeys.ini
-      Load State/Load State Slot 1 = F1
-      Load State/Load State Slot 2 = F2
-      Load State/Load State Slot 3 = F3
-      Load State/Load State Slot 4 = F4
-      Load State/Load State Slot 5 = F5
-      Load State/Load State Slot 6 = F6
-      Load State/Load State Slot 7 = F7
-      Load State/Load State Slot 8 = F8
-      Save State/Save State Slot 1 = @(Shift+F1)
-      Save State/Save State Slot 2 = @(Shift+F2)
-      Save State/Save State Slot 3 = @(Shift+F3)
-      Save State/Save State Slot 4 = @(Shift+F4)
-      Save State/Save State Slot 5 = @(Shift+F5)
-      Save State/Save State Slot 6 = @(Shift+F6)
-      Save State/Save State Slot 7 = @(Shift+F7)
-      Save State/Save State Slot 8 = @(Shift+`F8`)
 - reuse code for check point for other level elements
 - remove optimiz form modifires : so doesnt causes issue at cost of performance
 - have option to rando towers and airshipps in their own pool
@@ -208,21 +173,15 @@ test
 - Change docs for linux : no need for root if xdotools or ydotools
 - option to shuffle only towers within themselves
 - Try: Ensure that "Enable CPU Overclock" and "Emulated Memory Size Override" are both off in your Dolphin settings
-- Add logic for inventory pow
 - Use single adress to mark if have applied patch
 - Use the code software
 - Create nice title screen
 - Install blender plugin for brres
 - Link to setup guide in release
 - Trap to put game in thrown state
-- Should I launch the main game loop  asynchronous??
-- Have character be randomized and unlockable
-- Make star coin into ap logo
-  - Starcoin.arc
-  - Is a model: need to redo in blender
-- Wii strap skip for both riivolution and dme
 - Ask how kamek 2 loaders work
-- Download keyboard like LM
+- Download keyboard like LM??
+  - https://github.com/BootsinSoots/Archipelago/blob/a65d00434f58781d0286387eeb2575d80ee59791/worlds/luigismansion/iso_helper/LM_Rom.py#L148
 - Auto open riivolution as separate setting 🤔, need to verify game not running
 - Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
 ## Multiple Dolphin support:  In your dolphin folder, copy the dolphin.exe and rename it to something else, like Dolphin2.exe Once thats done open Luigis Mansion Client, regardless of whether Dolphin is open or not, and type /change_dolphin_process_name Dolphin2.exe to force DME to use that for LM Client from now on (Alternatively in host.yml, there is now a new option under luigismansion_options that is called dolphin_process_name that you can just change directly, see screenshot)  You will then get a popup that the client MUST be closed otherwise this will not connect to the right dolphin instance (only the client, do not need to close the launcher)  Upon re-opening the client it will now try and connect to Dolphin2.exe instead
@@ -242,8 +201,6 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - Have someone with connection issues try running in administrator mode
 - test hm options
 - playtest so deathlink amnesty and groups works
-- try settig settings to 2
-- Playtest with code loading, Whats different and if something works
 - Change default savestate button
 - command changing saveslot and clearcache slot
 - get_time
@@ -264,6 +221,11 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - Location scout hm
 - Try sending !-switch
 - Title screen replacement
+- q-switch
+- Try skip wii strap patch : see if works to not have bug
+- Playtest secret exits
+
+
 
 ## Bugs to fix
 - overwrite level comp ?
@@ -311,7 +273,7 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - usefull / prog Items : tilt plattform, double jump
 - filler / trap Items : gravity
 - achivement locations : 1ups, 99 coins
-- genreal rando : enemy
+- genreal rando : enemy shuffle
 - overhall : enterence
 - re factor : death -> kamek patch, no save states
 - Custumize : settings / options / cmd
@@ -427,6 +389,7 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - P-switch as locations
 - 8005e4c0 holds trigger A function, might be able to hijack to send death nice?
 - Kamek patch to detect if ap is connected
+- Hm option: cumulative but order is sorted after hm unlock order
 
 
 ## ER
@@ -525,6 +488,8 @@ REWORK
 - Shuffle with custom levels (no logic)
 - Unlock other charactes (no gameplay) with player 1 change character fix
 - Difficullty patch levels : make levels harder, similar to other mods, if settings enabled for this
+- Have character be randomized and unlockable
+
 
 ## Features I (Miiroun) will not implement
 - Native wii support
