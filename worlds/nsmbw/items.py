@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 ITEM_NAME_TO_ID = {
     ITEM.StarCoin : 101,
     ITEM.Time : 102,
+    ITEM.BossHealth : 103,
     ITEM.GlitchedLogic : 199
 }
 ITEM_NAME_GROUPS = {}
@@ -24,6 +25,7 @@ ITEM_NAME_GROUPS = {}
 DEFAULT_ITEM_CLASSIFICATIONS = {
     ITEM.StarCoin : ItemClassification.progression_deprioritized_skip_balancing, #77 x 3 st
     ITEM.Time : ItemClassification.progression,
+    ITEM.BossHealth : ItemClassification.filler,
     ITEM.GlitchedLogic : ItemClassification.progression,
 }
 

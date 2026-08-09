@@ -11,6 +11,20 @@ from .Common import ITEM
 if TYPE_CHECKING:
     from .world import NSMBWworld
 
+class AlternativeGoal(Choice):
+    """
+    Which goal to have
+    Bowser : beat 8-C
+    Starcoin : have starcoin = requirement
+    Hintmovie : have all hintmovie locations
+    """
+    display_name = "Alternative Goal"
+    option_bowser = 0
+    option_starcoins = 1
+    option_hintmovies = 2
+
+    default = option_bowser
+
 
 class TrapChance(Range):
     """
@@ -365,6 +379,7 @@ class NSMBWOptions(PerGameCommonOptions):
     randomize_time : RandomizeTime
     randomize_boss_health : RandomizeBossHealth
 
+    alternative_goal : AlternativeGoal
     logic_difficulty: LogicDifficulty
     logic_outside_powerup : LogicOutsidePowerups
     starting_world: StartingWorld
@@ -431,6 +446,7 @@ option_groups = [
     OptionGroup(
         "Logic",
         [
+            AlternativeGoal,
             LogicDifficulty,
             LogicOutsidePowerups,
             World9UnlockCondition,
@@ -607,3 +623,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if (world.options.level_shuffel_riivolution.value + world.options.music_shuffel_riivolution.value
             > 0 and world.options.use_riivolution.value == False):
         raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")
+
+    if world.options.alternative_goal.value == AlternativeGoal.option_hintmovies:
+        if not world.options.hint_movie_sanity:
+            raise OptionError(f"(NSMBW generation error) hint_movie_sanity needs to be enabled for alternative goal hint_movies")

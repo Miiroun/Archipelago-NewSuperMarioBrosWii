@@ -7,6 +7,7 @@ from enum import Enum
 import sys
 import shutil
 import subprocess
+from random import Random
 
 import Utils
 
@@ -74,6 +75,8 @@ class NSMBWInterface(object):
 
     auto_clear_cache : bool = True
 
+    random : Random
+
     def __init__(self, logger: Logger, log_color) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
@@ -81,6 +84,8 @@ class NSMBWInterface(object):
         self.log_color = log_color
 
         self.auto_clear_cache = True
+
+        self.random = Random()
 
 
 
@@ -136,6 +141,9 @@ class NSMBWInterface(object):
                     # raise ValueError("You need to be on the worldmap to connect to the server")
                     #return False
                 self.log_color(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}", "blue")
+
+                self.shuffle_sprites()
+
                 return True
             else:
                 self.log_color(f"Fail with dolphin connection somewhere", "red")
@@ -358,6 +366,15 @@ class NSMBWInterface(object):
         #logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
         #            " JIT cache manualy (JIT -> clear chache).")
 
+    def write_instruction_clear_cache_in_game(self, address: int, data: bytes) -> bool:
+        current_value = self.dolphin_client.read_address(address, len(data))
+        while current_value != data:
+            current_value = self.dolphin_client.read_address(address, len(data))
+
+            clear_address = 0x00
+            self.dolphin_client.write_address(clear_address, address)
+            self.dolphin_client.write_address(clear_address+4, data)
+        return True
 
     def write_instruction(self, address: int, data: bytes) -> bool:
         current_value = self.dolphin_client.read_address(address, len(data))
@@ -592,8 +609,64 @@ class NSMBWInterface(object):
             if not ITEM.MOVEMENT.CheckPoint in slot_data_dont_rando:
                 self.apply_patch(self.memory_addresses.patch_check_point, reverse = ITEM.MOVEMENT.CheckPoint in unlocked_moves, double_check=False)
 
+
+    async def handle_level_gimick(self):
+        pass
+
+    async def handle_enemy_look(self):
+        pass
+
+
+
+    async def shuffle_sprites(self):
+        sprite_table = []
+        sprite_count = 750
+        for i in range(sprite_count):
+            sprite_table.append(self.get_sprite(i))
+
+        self.random.shuffle(sprite_table)
+
+        for i in range(sprite_count):
+            self.set_sprite(i, sprite_table[i])
+
+
     async def patch_runtime_on_load(self):
         self.apply_patch(self.memory_addresses.patches)
+
+    def get_world_level_num_in_level(self) -> Tuple[int, int]:
+        if not self.is_in_level():
+            return 0,0
+
+        world_num = bytes_to_int(self.get_world_level()) + 1
+        level_num = bytes_to_int(self.get_level_level()) + 1
+
+        if (1 <= level_num <= 7 or level_num in [21, 22, 24, 25, 38]):  # becomes 0 if collected
+            # https://horizon.miraheze.org/wiki/Level_Names_and_Features
+            if 0 <= level_num <= 7:
+                pass
+            elif level_num == 21:  # ghost house
+                assert 3 <= world_num <= 7, f"world {world_num} doesnt have ghosthouse"
+                level_num = 6 + (world_num in [7])
+            elif level_num == 22:  # tower
+                level_num = 7 + (world_num in [7, 8])
+            elif level_num in [24, 25]:  # castle
+                level_num = 8 + (world_num in [7, 8])
+            elif level_num == 38:  # airship
+                assert world_num in [4, 6, 8], f"world {world_num} doesnt have an airship"
+                level_num = 9 + (world_num in [8])
+            else:
+                raise ValueError(f"level_num: {level_num} is not acounted for")
+            assert 1 <= level_num <= 10
+            # print(f" mod level num {level_num}")
+            # 39: Reservedfor Start Nodes
+            # 40: Titlescreen
+            # 41: Peach's Castle
+            # 42: EndingCredits
+
+            return world_num, level_num
+        else:
+            return 0,0
+
 
 
     # just created
@@ -697,6 +770,10 @@ class NSMBWInterface(object):
         address = self.memory_addresses.main_menu_adress
         return self.dolphin_client.read_address(address,1)
 
+    def get_sprite(self, num) -> bytes:
+        address = self.memory_addresses.sprite_init_table_start + 2 * num
+        return self.dolphin_client.read_address(address)
+
 
     def set_worldstats(self,world_num : int, status : bytes):
         assert 1 <= world_num <= 9
@@ -770,6 +847,11 @@ class NSMBWInterface(object):
         for i in range(6):
             address = self.memory_addresses.gravity_start + 6 * 4
             self.dolphin_client.write_address(address, data)
+
+    def set_sprite(self, num, data : bytes):
+        address = self.memory_addresses.sprite_init_table_start + 2 * num
+        self.write_instruction(address, data)
+
 
     def update_check_sum(self):
         # didnt manage to make this one work

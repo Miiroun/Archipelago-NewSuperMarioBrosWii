@@ -65,6 +65,12 @@ Options are specific to generation and are changed each multiworld, this is not 
   - Normal rules is highly recommended
 - You can also select if you want brining powerups from outside the level to be considered in logic.
 
+
+## Deathlink
+Deathlink is supported by the client. You can either enable it from your yaml or with the client command /togle_death_link.
+Deathlink groups and deathlink amnesty is also supported, you can set them in the same way.
+
+
 ## Settings
 Settings can be found in host.yaml in the "nsmbw_settings" category and are playthrough agnostic.
 They mostly include auto open, load, etc, lots of file and folder paths and others.

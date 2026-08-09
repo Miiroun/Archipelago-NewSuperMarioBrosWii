@@ -157,7 +157,7 @@ def create_events(world: NSMBWworld) -> None:
 
     #events could be usefully for merging split paths
 
-    world.get_region(name_base(8, 9)).add_event("Bowser Defeated", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    world.get_region(name_base(8, 9)).add_event("Victory", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
 # these are used in world.shuffled_level_order
 def level_name_to_pos(world_num : int, level_num : int) -> int:

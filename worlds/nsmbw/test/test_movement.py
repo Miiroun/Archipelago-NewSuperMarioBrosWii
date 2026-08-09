@@ -15,6 +15,7 @@ class TestMovementOff(NSMBWWorld):
 
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,
+        "level_shuffel_riivolution": False,
     }
 
     def test_levels(self) -> None:
@@ -49,6 +50,7 @@ class TestMovementOn(NSMBWWorld):
         "logic_outside_powerups" : LogicOutsidePowerups.option_allow,
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,
+        "level_shuffel_riivolution": False,
     }
 
     def test_levels(self) -> None:

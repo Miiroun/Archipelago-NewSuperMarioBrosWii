@@ -1,7 +1,7 @@
 from . import dolphin_interface_client
 from .NSMBWInterface import *
 from .patcher import Patcher
-from ..options import RandomizeMovement, HintMovieShopPriceLogic
+from ..options import RandomizeMovement, HintMovieShopPriceLogic, AlternativeGoal
 from ..Common import *
 from .. import NSMBWworld
 
@@ -888,23 +888,34 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_check_goal_complete(self):
-        if self.moded_levelstats == ModifiedState.UNMODIFIED:
-            level_bowcast_condit = self.game_interface.get_level_stats(8,9)
-            #print(level_bowcast_condit)
-            #stats_in_bytes = #level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
-            #bowser_death = #(stats_in_bytes == b'\x10\x00\x00\x00'[0]) # the & remvoes starcoin amount from stats when check for compleation
+        match self.slot_data["alternative_goal"]:
+            case AlternativeGoal.option_bowser:
 
-            bowser_death = (level_bowcast_condit[0] & 0x10) == 0x10
-            #print(f"boser castle {level_bowcast_condit}")
+                if self.moded_levelstats == ModifiedState.UNMODIFIED:
+                    level_bowcast_condit = self.game_interface.get_level_stats(8,9)
+                    #print(level_bowcast_condit)
+                    #stats_in_bytes = #level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
+                    #bowser_death = #(stats_in_bytes == b'\x10\x00\x00\x00'[0]) # the & remvoes starcoin amount from stats when check for compleation
 
-            if bowser_death:
-                print("You goaled, congratulations")
-                await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+                    bowser_death = (level_bowcast_condit[0] & 0x10) == 0x10
+                    #print(f"boser castle {level_bowcast_condit}")
 
+                    if bowser_death:
+                        print("You goaled, congratulations")
+                        await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+            case AlternativeGoal.option_starcoins:
+                if  self.starcoin_count >= self.slot_data["bowser_star_unlock"]:
+                    print("You goaled, congratulations")
+                    await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+            case AlternativeGoal.option_hintmovies:
+                if len(set(name_hintmovie(hm_num) for hm_num in range(HINTMOVIE_COUNT)) - set(DEPRIO_HM) - self.checked_locations) == 0:
+                    print("You goaled, congratulations")
+                    await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
     async def handle_checked_location(self):
         checked_locations = []
         checked_locations += await self.check_starcoins()
+        checked_locations += await self.check_1ups()
         checked_locations += await self.check_hintmovies()
         checked_locations += await self.check_level_completion(self.unlocked_worlds)
 
@@ -922,31 +933,9 @@ class NSMBWContext(SuperContext):
             sc_statuses = self.game_interface.get_sc()
             for sc_num in range(1, 3+1):
                 sc_status = sc_statuses[4 * sc_num-1]
-                world_num = bytes_to_int(self.game_interface.get_world_level()) + 1
-                level_num = bytes_to_int(self.game_interface.get_level_level()) + 1
 
-                if sc_status == 0 and (1 <= level_num <= 7 or  level_num in [21,22,24,25,38]):  # becomes 0 if collected
-                    # https://horizon.miraheze.org/wiki/Level_Names_and_Features
-                    if  0 <= level_num <= 7:
-                        pass
-                    elif level_num == 21: # ghost house
-                        assert  3 <= world_num <= 7, f"world {world_num} doesnt have ghosthouse"
-                        level_num = 6 + (world_num in [7])
-                    elif level_num == 22: # tower
-                        level_num = 7 + (world_num in [7,8])
-                    elif level_num in  [24,25]: # castle
-                        level_num = 8 + (world_num in [7, 8])
-                    elif level_num == 38: # airship
-                        assert world_num in [4,6,8], f"world {world_num} doesnt have an airship"
-                        level_num = 9 + (world_num in [8])
-                    else:
-                        raise ValueError(f"level_num: {level_num} is not acounted for")
-                    assert 1<= level_num <= 10
-                    #print(f" mod level num {level_num}")
-                    # 39: Reservedfor Start Nodes
-                    # 40: Titlescreen
-                    # 41: Peach's Castle
-                    # 42: EndingCredits
+                if sc_status == 0:  # becomes 0 if collected
+                    world_num, level_num = self.game_interface.get_world_level_num_in_level()
 
                     location_name = name_starcoin(world_num, level_num, sc_num)
                     if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
@@ -982,6 +971,18 @@ class NSMBWContext(SuperContext):
                     send_sc_check(sc_num=2)
                 if level_status & 4 == 4:
                     send_sc_check(sc_num=3)
+
+        self.locations_handled += checked_locations
+        return checked_locations
+
+    async def check_1ups(self):
+        checked_locations = []
+        for player_num in range(PLAYER_COUNT):
+            current_lives = self.game_interface.get_lives_count(player_num)
+            if current_lives > self.prev_lifecount[player_num]:
+                self.prev_lifecount[player_num] = current_lives
+                world_num, level_num = self.game_interface.get_world_level_num_in_level()
+                checked_locations.append(name_1ups(world_num, level_num))
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -1133,6 +1134,8 @@ class NSMBWContext(SuperContext):
             current_item = bytes_to_int(self.game_interface.get_inventory_items(i))
             if current_item > self.previous_inventory[i]:
                 total_invent_to_add += current_item - self.previous_inventory[i]
+            if current_item > 96:
+                self.game_interface.set_inventory_items(int_to_bytes(current_item, 1), i)
             self.previous_inventory[i] = current_item
 
         if total_invent_to_add >= 8:
@@ -1222,6 +1225,8 @@ class NSMBWContext(SuperContext):
         await self.handle_is_world_unlocked(self.unlocked_worlds)
         await self.handle_set_sc_count(self.starcoin_count)
         await self.game_interface.handle_unlocked_moves(self.unlocked_moves,self.slot_data, self.current_mod)
+        await self.game_interface.handle_level_gimick()
+        await self.game_interface.handle_enemy_look()
         #if self.game_interface.is_in_level():
         await self.handle_traps()
         await self.handle_filler()

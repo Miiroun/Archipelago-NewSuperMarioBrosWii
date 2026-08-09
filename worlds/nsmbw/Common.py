@@ -171,6 +171,11 @@ def name_world_unlock(world_num : int):
     assert 1 <= world_num <= 9
     return f"World{world_num} progressive"
 
+def name_1ups(world_num : int, level_num : int) -> str:
+    assert_valid_level(world_num,level_num)
+    return f"{name_base(world_num,level_num)} 1up"
+
+
 def base_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,9+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):

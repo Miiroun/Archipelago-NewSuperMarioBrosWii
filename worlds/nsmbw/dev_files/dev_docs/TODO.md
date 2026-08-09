@@ -7,11 +7,11 @@ Playtest multiplayer
 Do we need to load to clear or does it on save too?
 Check point similar
   func 80a92888 for red coin ring
-  func 80aa7470 sneak block
+  func 80aa7470 snake block
   func 80a9cc70 poky
   func 80a5d2d0 daEnLiftRotHalf_c
   80a88920 chep chep
-search : onCreate and create, only lables
+
 
 How solve issue where to load game on start or connect if use riivolution or not
 - need to update docs
@@ -24,15 +24,11 @@ Rework movements to enable abilites
 use wiithon for arc unpacking??
 - maybe switch to it instead of dolphin tools
 
-
-does send filler work correct right now?
-
 why doesnt /explain 9-1 work?
 
 DC
 - option + setting review
 - Where should the project continue?
-
 
 I've been making a list of hint movie unlocks for y'all, I'm about half way through the list, hint movie 9 unlocks only after you beat all levels in worlds 1-8, which also means for it to work 8-7 has to be shown as complete on the map, i remember when i was doing the archipelago 8-7  never completed as a shortcut to the airship, it won't count unless every level in the first 8 worlds is blue
 
@@ -47,11 +43,34 @@ fix assert no doublicate dolphins
 - Secret exit items
   - update docs
 
-#809c6120 return : works for p switch
-
-wii-lib currently breaks frozen
-
 add goomba lock as option
+
+// Faster timer countdown speed
+kmWrite32(0x800e3ab8, 0x3403fe90);  // 92 -> 368
+# origin? works? : replace time trap with this
+
+// Replace all Goombas with Koopas, at the profile level
+kmWrite32(0x8076a814, 0x80afdcb0);
+
+rework options to be better
+-> Send yaml for help
+
+Ask where to hook
+
+Movement -> abilities, level gimmicks
+- keep it in one commit
+
+short list of all relevant commands
+
+add 1ups as locations to world : needs option : keep secret until logic
+
+INTRU CLEAR :
+- find function to hook
+- find empty memory that can use
+
+ATLEAST : soft logic is inefficent
+- cached rule builder
+- collect / remove override
 
 ## Super short term
 - multiplayer
@@ -154,10 +173,6 @@ add goomba lock as option
 - remove optimiz form modifires : so doesnt causes issue at cost of performance
 - have option to rando towers and airshipps in their own pool
 - If you are using Dolphin Emulator, you need to enable MMU in Config > Advanced (this can only be done while a game is not running).  Next up, the retail game does not display the exception handler by default (most modding bases do). To show it, press , , , , , , , , ,  on Player 1's Wii Remote. Alternatively, Dolphin's log will print out the exception info, so long as both OSReport log types are enabled.
-- Hook into main loop, load institution
-- exception handler // Disable the button sequence kmWrite32(0x802D7528, 0x48000060);
-- Hook up kamek patch that can clear jit: load instru from memory: # r17+r18=address of instruction you want to remove from cache dcbf r17,r18  sync icbi r17,r18 isync
-  - Probably dont want geco code solution since that difficult to do automatically
 - Mention common issues if not loading save states
 - Mention dolphin default program in common errors
 - Find other way to invaliditet dolphin cache
@@ -184,11 +199,11 @@ add goomba lock as option
   - https://github.com/BootsinSoots/Archipelago/blob/a65d00434f58781d0286387eeb2575d80ee59791/worlds/luigismansion/iso_helper/LM_Rom.py#L148
 - Auto open riivolution as separate setting 🤔, need to verify game not running
 - Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
-## Multiple Dolphin support:  In your dolphin folder, copy the dolphin.exe and rename it to something else, like Dolphin2.exe Once thats done open Luigis Mansion Client, regardless of whether Dolphin is open or not, and type /change_dolphin_process_name Dolphin2.exe to force DME to use that for LM Client from now on (Alternatively in host.yml, there is now a new option under luigismansion_options that is called dolphin_process_name that you can just change directly, see screenshot)  You will then get a popup that the client MUST be closed otherwise this will not connect to the right dolphin instance (only the client, do not need to close the launcher)  Upon re-opening the client it will now try and connect to Dolphin2.exe instead
-Hi if you are having hook loop connection issues, you can be because of these things:  1. A not PAL rom (eu rom) 2. Multiple instances of dolphin being open, even library windows count, make sure to have just one. 3. One of the two is running as administrator, they either need to run both as administrator or both not as administrator. 4. Your dolphin version is too old 5.3+ should work, but i recommend any of the 25XX versions or above. (If on linux make sure you use the *flatpak* version others will not work.) 5. For some people setting having their dolphin fallback region to anything but EU/PAL also causes connection issues
-Send yaml for help
-Update world 9  : use help
-Look in regi for sand storm and meteor : see if is just an easy flag to change?
+- Multiple Dolphin support:  In your dolphin folder, copy the dolphin.exe and rename it to something else, like Dolphin2.exe Once thats done open Luigis Mansion Client, regardless of whether Dolphin is open or not, and type /change_dolphin_process_name Dolphin2.exe to force DME to use that for LM Client from now on (Alternatively in host.yml, there is now a new option under luigismansion_options that is called dolphin_process_name that you can just change directly, see screenshot)  You will then get a popup that the client MUST be closed otherwise this will not connect to the right dolphin instance (only the client, do not need to close the launcher)  Upon re-opening the client it will now try and connect to Dolphin2.exe instead
+- Hi if you are having hook loop connection issues, you can be because of these things:  1. A not PAL rom (eu rom) 2. Multiple instances of dolphin being open, even library windows count, make sure to have just one. 3. One of the two is running as administrator, they either need to run both as administrator or both not as administrator. 4. Your dolphin version is too old 5.3+ should work, but i recommend any of the 25XX versions or above. (If on linux make sure you use the *flatpak* version others will not work.) 5. For some people setting having their dolphin fallback region to anything but EU/PAL also causes connection issues
+- Update world 9  : use help
+- Look in regi for sand storm and meteor : see if is just an easy flag to change?
+
 
 
 ## Playtest
@@ -224,7 +239,8 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - q-switch
 - Try skip wii strap patch : see if works to not have bug
 - Playtest secret exits
-
+- Cap inven pow at 96
+- Test speed trap
 
 
 ## Bugs to fix
@@ -268,22 +284,8 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
   - Entering the level was possible while the circle was solid black, and the clear/sc checks were sent out properly when the level was completed 
   - However, the world state was not reset (level clear saw the same situation as the screenshot), and I switched worlds and came back to be able to do other levels
 - Is tracker 0.3.3 broken? for 0.2.1 5-1 ??
+- Loose powerup should put to super if small
 
-## DISCORD POLL TOPICS:
-- usefull / prog Items : tilt plattform, double jump
-- filler / trap Items : gravity
-- achivement locations : 1ups, 99 coins
-- genreal rando : enemy shuffle
-- overhall : enterence
-- re factor : death -> kamek patch, no save states
-- Custumize : settings / options / cmd
-- Stability : weird bug fixes, write tests, lots more playtest
-- onboarding : improve guide, make video
-- Cosmetic : background, tileset, color
-- Quality of life patches : skip cutseence, not have to watch hm
-- In game text chat
-- Multiplayer support
-- UT map pack
 
 ## Short term
 - Multiplayer support
@@ -424,6 +426,8 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - inventory_pow desyncing
 - Entering 8-A boss without ground pound freezes game
 - something is making locations missing from tracker
+- NO idea why, but the big urchins in World 4-3 SC3 Room are producing an insane amount of bubbles and lagging the game lmao
+
 
   
 ## Features
@@ -433,6 +437,7 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
   - Auto collect checkpoint
   - Start with powerup
   - Moon jump
+  - Each level connection seperate item
 - Finding toad in level gives hint
 - TRAPS
   - Sandstorm
@@ -447,6 +452,8 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
   - Gain this levels check point
   - Get toad house (beginning of world) : toad house is in MJ..game.. files, should be easy tm
   - Insta kill all enemies
+  - screen clear gp : give player x amount
+  - spawn random objects
 - Features from gecko
   - Speed trap
   - fall damage trap
@@ -456,6 +463,11 @@ Look in regi for sand storm and meteor : see if is just an easy flag to change?
   - 1 ups : just look at if player life increase: not from coin
   - red ring : easy if can find adress
   - ?block / specific coin : difficult
+  - Roulette block
+  - Yoshi eat fruit
+  - Discover each room
+  - Killing each enemy type
+  - Top of flagpole
 - ITEMS
   - Enemy remove : should work same as checkpoint
   - Enemy add (trap item): readds enemy, works as above

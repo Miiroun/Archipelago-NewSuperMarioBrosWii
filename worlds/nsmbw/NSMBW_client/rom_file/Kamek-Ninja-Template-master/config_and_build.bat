@@ -1,2 +1,2 @@
-python configurate.py
+python .\configurate.py
 ninja

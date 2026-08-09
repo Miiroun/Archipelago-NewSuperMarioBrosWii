@@ -225,7 +225,10 @@ class MemoryAddresses(object):
 
         self.patch_goomba = self.create_patch("P1", 80031210, instru_return, instru_stwu + val_fff0, "patch_goomba")
 
+        self.sprite_init_table_start = self.map_between("P1", 0x8076a748)
 
+        # what is origin ?????
+        self.fast_countdown_speed = self.create_patch("P1", 0x800e3ab8, int_to_bytes(0x3403fe90, 4),int_to_bytes(0x42b80000, 4), name = "fast_countdown_speed" )
         ## patch patches ---------------------------------------------------
 
         #Skip title screen movies
@@ -279,11 +282,14 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x80159A50, int_to_bytes(0x3882ab38, 4), name = "lives_limit_change"),
         ]
 
+        exception_handler = self.create_patch("P1", 0x802D7528, int_to_bytes( 0x48000060, 4), name = "exception_handler")
+
+
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
             patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
-            patch_skipp_wii_remote_strap_screen, lives_limit_change,
+            patch_skipp_wii_remote_strap_screen, lives_limit_change, exception_handler,
         ]
 
         # address 0x80162fb8 might be good to create a branch from
