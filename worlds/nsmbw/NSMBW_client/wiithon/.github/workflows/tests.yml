@@ -1,0 +1,68 @@
+# Called by CI
+name: tests
+on: workflow_call
+
+jobs:
+  # For unit testing
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        if: ${{ !env.ACT }} # For local testing workflow
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup venv
+        # Setup the venv for local testing workflow
+        run: |
+          python3 -m venv .venv
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH 
+
+      - name: Install deps
+        run: pip install -e ".[dev]"
+
+      - run: python -m pytest tests/unit/
+
+  # For real ISO testing
+  iso:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        if: ${{ !env.ACT }} # For local testing workflow
+        with:
+          python-version: '3.12'
+
+      - name: Setup venv
+        run: |
+          python3 -m venv .venv
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
+
+      - name: Install deps
+        run: pip install -e . pytest
+
+      - name: Cache ISO
+        id: cache-iso
+        uses: actions/cache@v4
+        with:
+          path: tests/mock_iso/test.iso
+          key: test-iso-${{ hashFiles('tests/mock_iso/src/**') }}
+
+      - name: Install wit
+        if: steps.cache-iso.outputs.cache-hit != 'true' # If the iso is cached, don't do it
+        run: |
+          wget -q --tries=5 --retry-connrefused --waitretry=10 http://wit.wiimm.de/download/wit-v3.05a-r8638-x86_64.tar.gz
+          tar -xvzf wit*.tar.gz
+          cd wit-v3.05a-r8638-x86_64
+          sudo ./install.sh
+
+      - name: Build ISO
+        if: steps.cache-iso.outputs.cache-hit != 'true' # If the iso is cached, don't do it
+        run: wit copy tests/mock_iso/src/ tests/mock_iso/test.iso --overwrite
+
+      - run: python -m pytest tests/iso/ tests/cli/

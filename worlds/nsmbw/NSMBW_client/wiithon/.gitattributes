@@ -1,0 +1,10 @@
+# On Linux, it was a git diff of everything due to EOL
+
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.img binary
+*.bin binary
+*.dol binary
+*.iso binary
+*.arc binary

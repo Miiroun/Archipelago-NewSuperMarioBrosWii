@@ -1,0 +1,9 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  ci-tests:
+    uses: ./.github/workflows/tests.yml
+
+  ci-lint:
+    uses: ./.github/workflows/lint.yml
