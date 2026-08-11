@@ -1,10 +1,7 @@
-from .bases import NSMBWWorld
-from ..options import RandomizeMovement, RandomizePowerups, LogicOutsidePowerups
-from ..Common import *
-
+from .bases import *
 class TestPowerupOff(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovement.option_off,
+        "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_off,
         "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
         "starting_world" : 1,
@@ -16,7 +13,7 @@ class TestPowerupOff(NSMBWWorld):
 
 class TestPowerupOnExceptMushroom(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovement.option_off,
+        "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
         "starting_world": 1,
@@ -30,7 +27,7 @@ class TestPowerupOnExceptMushroom(NSMBWWorld):
 
 class TestPowerupOnProgressive(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovement.option_off,
+        "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on_progressive,
         "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
         "starting_world": 1,
@@ -46,7 +43,7 @@ class TestPowerupOnProgressive(NSMBWWorld):
 
 class TestPowerupOn(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovement.option_off,
+        "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on,
         "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
         "starting_world": 1,

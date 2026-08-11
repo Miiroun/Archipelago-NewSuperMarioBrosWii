@@ -116,12 +116,6 @@ class MemoryAddresses(object):
         self.savefile2_offset = 0x860# = Save File 2 Offset
         self.savefile3_offset = 0x1300# = Save File 3 Offset
 
-        self.address_ground_pound = self.map_between("E2",0x8005E300)
-        self.address_wall_slide = self.map_between("E2",0x801284C0)
-        self.address_wall_jump = self.map_between("E2",0x801285D0)
-        self.address_crouch = self.map_between("E2",0x8012D490)
-        self.address_crouch_yoshi = self.map_between("E2",0x8014DBB0)
-        self.address_cary = self.map_between("P1",0x8012e330)
         self.address_swing_up = self.map_between("E2",0x80136710)
         self.address_swing_down = self.map_between("E2",0x801367E0)
         self.address_hang_ground = self.map_between("E2",0x80135810)
@@ -130,16 +124,15 @@ class MemoryAddresses(object):
         self.address_vine = self.map_between("E2", 0x8154C818) # 43=hang vine, 45= normal
         #self.address_p_switch = self.map_between("E2", 0x815E4338)
         self.address_star = self.map_between("E2", 0x8154C874)
-        self.address_door = self.map_between("E2",0x8002b2a4)
         #self.address_question_switch = self.map_between("E2", 0x8042A078) #pointer, other guess 0x8042A1D8
 
         self.address_kani_walk = self.map_between("P1", 0x80135670)
         self.address_kani_hang = self.map_between("P1", 0x80135b00)
-        self.address_pipe = self.map_between("P1", 0x8004f300)
+        #self.address_pipe = self.map_between()
 
         #80057650 removes both walk and run speed
         # 8042bb20 # speed mult value
-        self.address_big_jump = self.map_between("P1", 0x8005e758)
+        #self.address_big_jump = self.map_between("P1", 0x8005e758)
 
 
         self.death_address = self.map_between("E2",0x800555DC)
@@ -147,11 +140,7 @@ class MemoryAddresses(object):
 
         #0x154ba0c  [32-bit BE] [NTSC,PAL] Character Pointer Slot 1 (Not necessarily Player 1)
 
-        self.yoshi_walk_speed = self.map_between("P1", 0x802ef1f0)
-        #self.yoshi_walk_speed = self.map_between("E2", 0x802eeef0)
-        #self.yoshi_walk_speed  = self.map_from_symbol("yoshi_speeddata_nostar")
 
-        self.yoshi_walk_star_speed =self.map_between("P1", 0x802ef268)
 
         # water movement speed
         #self.water_movement_speed  =self.map_between("P1", 0x80935b18)
@@ -229,7 +218,39 @@ class MemoryAddresses(object):
 
         # what is origin ?????
         self.fast_countdown_speed = self.create_patch("P1", 0x800e3ab8, int_to_bytes(0x3403fe90, 4),int_to_bytes(0x42b80000, 4), name = "fast_countdown_speed" )
-        ## patch patches ---------------------------------------------------
+
+        self.patch_door = self.create_patch("E2",0x8002b2a4, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
+
+        self.patch_pipe = self.create_patch("P1", 0x8004f300, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffc0)
+
+        self.patch_jump = self.create_patch("P1", 0x8005e758, PowerPCInstructions.instru_bne, PowerPCInstructions.instru_beq)
+
+        self.patch_ground_pound = [self.create_patch("E2",0x8005E300, b'\x38\x60\x00\x00', b'\x94\x21\xFF\xF0'),
+                                   self.create_patch("E2",0x8005E304,PowerPCInstructions.instru_return, b'\x7C\x08\x02\xA6' ),]
+
+        self.patch_wall_slide = [
+            self.create_patch("E2", 0x801284C0, b'\x94\x21\xFF\xF0', b'\x38\x60\x00\x00'),
+            self.create_patch("E2", 0x801284C4, b'\x7C\x08\x02\xA6', PowerPCInstructions.instru_return)
+
+        ]
+
+        self.patch_wall_jump = [
+            self.create_patch("E2", 0x801285D0, b'\x38\x60\x00\x00', b'\x94\x21\xFF\xE0'),
+            self.create_patch("E2", 0x801285D4, PowerPCInstructions.instru_return, b'\x7C\x08\x02\xA6'),
+        ]
+
+        self.patch_crouch = [
+            self.create_patch("E2",0x8014DBB0,  b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return, b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6', "yoshi"),
+            self.create_patch("E2",0x8012D490, b'\x38\x60\x00\x00' + b'\x4E\x80\x00\x20', b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6' ,"normal")
+        ]
+
+        self.patch_carry_block = self.create_patch("P1",0x8012e330, PowerPCInstructions.instru_return, b'\x94\x21\xff\xf0')
+
+        self.patch_yoshi = [
+            self.create_patch("P1", 0x802ef1f0, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00', "no star"),
+            self.create_patch("P1", 0x802ef268, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00', "with star")
+        ]
+            ## patch patches ---------------------------------------------------
 
         #Skip title screen movies
         # credit to mkwcat for creating this patch

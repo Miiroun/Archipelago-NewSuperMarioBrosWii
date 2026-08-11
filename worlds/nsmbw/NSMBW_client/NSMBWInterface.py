@@ -10,10 +10,9 @@ import subprocess
 from random import Random
 
 import Utils
+from ..options import RandomizeEnemies
 
 sys.set_int_max_str_digits(0)
-
-from typing import Optional, Iterable
 
 from ..Common import *
 
@@ -76,6 +75,8 @@ class NSMBWInterface(object):
     auto_clear_cache : bool = True
 
     random : Random
+
+    slot_data : dict
 
     def __init__(self, logger: Logger, log_color) -> None:
         self.logger = logger
@@ -420,91 +421,30 @@ class NSMBWInterface(object):
             value = max
         self.dolphin_client.write_address(address, int_to_bytes(value, 1))
 
-    async def handle_unlocked_moves(self, unlocked_moves, slot_data, current_mod):
-        self.should_clear = 0
-        slot_data_movement = slot_data["randomize_movement"]
-        slot_data_dont_rando = slot_data["dont_rando_move"]
-        if slot_data_movement >= 1:
+
+    async def handle_unlocked_moves(self, unlocked_moves, current_mod):
+        slot_data_ablities_included = self.slot_data["abilites_included"]
+        def patch_ability(name : str, patch : CodePatch | Iterable):
+            if name in slot_data_ablities_included:
+                self.apply_patch(patch, name in unlocked_moves)
+
+        if self.slot_data["randomize_randomize_abilites"] == True:
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
-            if not ITEM.MOVEMENT.GroundPound in slot_data_dont_rando:
-                address = self.memory_addresses.address_ground_pound
-                if not ITEM.MOVEMENT.GroundPound in unlocked_moves:
-                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-                else:
-                    # this doesnt get called, why? renamed groundpound?
-                    self.write_instruction(address, b'\x94\x21\xFF\xF0'+b'\x7C\x08\x02\xA6')
+            patch_ability(ITEM.ABILITIES.GroundPound, self.memory_addresses.patch_ground_pound)
+
+            patch_ability(ITEM.ABILITIES.WallJump, [
+                self.memory_addresses.patch_wall_slide,
+                self.memory_addresses.patch_wall_jump
+            ])
+
+            patch_ability(ITEM.ABILITIES.Crouch, self.memory_addresses.patch_crouch)
+
+            patch_ability(ITEM.ABILITIES.Yoshi, self.memory_addresses.patch_yoshi)
 
 
-            if not ITEM.MOVEMENT.WallJump in slot_data_dont_rando:
-                # walljump ?
-                # _ZN7dAcPy_c20checkWallSlideEnableEi 0x801284C0  f
-                # _ZN7dAcPy_c13checkWallJumpEv    0x801285D0      f
-
-                address = self.memory_addresses.address_wall_slide
-                if not ITEM.MOVEMENT.WallJump in unlocked_moves:
-                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-
-                else:
-                    self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
-
-                address = self.memory_addresses.address_wall_jump
-                if not ITEM.MOVEMENT.WallJump in unlocked_moves:
-                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-                else:
-                    self.write_instruction(address, b'\x94\x21\xFF\xE0')
-                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
-
-            # _ZN7dAcPy_c11checkCrouchEv      0x8012D490      f
-            # _ZN9daYoshi_c11checkCrouchEv    0x8014DBB0
-            if not ITEM.MOVEMENT.Crouch in slot_data_dont_rando:
-                address = self.memory_addresses.address_crouch
-                if not ITEM.MOVEMENT.Crouch in unlocked_moves:
-                    self.write_instruction(address, b'\x38\x60\x00\x00')
-                    self.write_instruction(address + 4, b'\x4E\x80\x00\x20')
-                else:
-                    self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
-                address = self.memory_addresses.address_crouch_yoshi
-                if not ITEM.MOVEMENT.Crouch in unlocked_moves:
-                    self.write_instruction(address, b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return)
-
-                else:
-                    self.write_instruction(address, b'\x94\x21\xFF\xF0')
-                    self.write_instruction(address + 4, b'\x7C\x08\x02\xA6')
-
-
-            # _ZN7dAcPy_c16checkEnableThrowEv 0x8012E6E0      f
-            # _ZN7dAcPy_c15checkCarryThrowEv  0x8012E760      f
-            # _ZN7dAcPy_c15checkCarryActorEP7dAcPy_c 0x8013A150
-
-            if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
-                #cary_blocks
-                address = self.memory_addresses.address_cary
-                if not ITEM.MOVEMENT.Carry in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_return)
-
-                else:
-                    self.write_instruction(address, b'\x94\x21\xff\xf0')
-
-            if not ITEM.MOVEMENT.RedSwitch in slot_data_dont_rando:
-                # red switch
-                if not ITEM.MOVEMENT.RedSwitch in unlocked_moves:
-                    self.set_red_switch(b'\x00')  # reset red switch if not unlocked
-
-            if not ITEM.MOVEMENT.Yoshi in slot_data_dont_rando:
-                address_nostar = self.memory_addresses.yoshi_walk_speed
-                address_star = self.memory_addresses.yoshi_walk_star_speed
-                if not ITEM.MOVEMENT.Yoshi in unlocked_moves:
-                    self.write_instruction(address_nostar, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-                    self.write_instruction(address_star, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-                else:
-                    self.write_instruction(address_nostar, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00')
-                    self.write_instruction(address_star, b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00') # this speed stat is proberbly wrong but can be bothered to fix
-
-            if not ITEM.MOVEMENT.Swim in slot_data_dont_rando:
-                if not ITEM.MOVEMENT.Swim in unlocked_moves:
+            if ITEM.ABILITIES.Swim in slot_data_ablities_included:
+                if not ITEM.ABILITIES.Swim in unlocked_moves:
                     if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
                         logger.info("The floor is lava, but water is actually the floor, so don't touch it.")
                         await self.kill_player()
@@ -513,38 +453,38 @@ class NSMBWInterface(object):
                         pass
                         #print(bytes_to_int(self.get_water_state()))
 
-            if not ITEM.MOVEMENT.PSwitch in slot_data_dont_rando:
-                #if not ITEM.MOVEMENT.PSwitch in unlocked_moves:
-                #    self.set_p_switch_timer(int_to_bytes(0, 4))
-                self.apply_patch(self.memory_addresses.patch_p_switch, reverse=ITEM.MOVEMENT.PSwitch in unlocked_moves)
 
-
-            if not ITEM.MOVEMENT.Star in slot_data_dont_rando:
-                if not ITEM.MOVEMENT.Star in unlocked_moves:
+            if ITEM.ABILITIES.Star in slot_data_ablities_included:
+                if not ITEM.ABILITIES.Star in unlocked_moves:
                     self.set_star_timer(int_to_bytes(0, 4))
 
 
-            if not ITEM.MOVEMENT.Climb in slot_data_dont_rando:
+            patch_ability(ITEM.ABILITIES.Climb, [
+                self.memory_addresses.patch_climb_pole,
+                self.memory_addresses.patch_climb_tarzan_vine,
+            ])
+
+            #if ITEM.ABILITIES.Climb in slot_data_ablities_included:
                 # climb pole
-                self.apply_patch(self.memory_addresses.patch_climb_pole, reverse= ITEM.MOVEMENT.Climb in unlocked_moves)
+                #self.apply_patch(self.memory_addresses.patch_climb_pole, reverse= ITEM.ABILITIES.Climb in unlocked_moves)
 
 
                 #climb_ladders
-                #self.apply_patch(self.memory_addresses.patch_climb_ladder, reverse= ITEM.MOVEMENT.Climb in unlocked_moves)
+                #self.apply_patch(self.memory_addresses.patch_climb_ladder, reverse= ITEM.MOVEMENT.Climb in unlocks)
 
                 # this causes game to crash / freez when climb fence
                 #climb_vine
-                #self.apply_patch(self.memory_addresses.patch_climb_vine_still, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
-                #self.apply_patch(self.memory_addresses.patch_climb_vine_fall, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
+                #self.apply_patch(self.memory_addresses.patch_climb_vine_still, reverse=ITEM.MOVEMENT.Climb in unlocks)
+                #self.apply_patch(self.memory_addresses.patch_climb_vine_fall, reverse=ITEM.MOVEMENT.Climb in unlocks)
 
                 #swing_vine
-                self.apply_patch(self.memory_addresses.patch_climb_tarzan_vine, reverse=ITEM.MOVEMENT.Climb in unlocked_moves)
+                #self.apply_patch(self.memory_addresses.patch_climb_tarzan_vine, reverse=ITEM.ABILITIES.Climb in unlocked_moves)
 
                 # sneak
                 # causes game to freez
                 #address_sneak_walk = self.memory_addresses.address_kani_walk
                 #address_sneak_hang = self.memory_addresses.address_kani_hang
-                #if not "climb" in unlocked_moves:
+                #if not "climb" in unlocks:
                 #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
                 #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
                 #else:
@@ -553,68 +493,66 @@ class NSMBWInterface(object):
 
 
                 #swing
-                #if not "climb" in unlocked_moves:
+                #if not "climb" in unlocks:
                 #    if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
                 #        await self.kill_player()
                 #    else:
                 #        pass
-            if not ITEM.MOVEMENT.Door in slot_data_dont_rando:
-                address = self.memory_addresses.address_door
-                if not ITEM.MOVEMENT.Door in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
 
 
-            if not ITEM.MOVEMENT.QuestSwitch in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_q_switch, reverse=ITEM.MOVEMENT.QuestSwitch in unlocked_moves)
+            patch_ability(ITEM.ABILITIES.Carry, [self.memory_addresses.patch_carry_shell, self.memory_addresses.patch_throw])
 
 
-            if not ITEM.MOVEMENT.Carry in slot_data_dont_rando:
-                #cary_shell
-                self.apply_patch(self.memory_addresses.patch_carry_shell, ITEM.MOVEMENT.Carry in unlocked_moves)
+            patch_ability(ITEM.ABILITIES.Jump, self.memory_addresses.patch_jump)
+
+            patch_ability(ITEM.ABILITIES.Run, self.memory_addresses.patch_button_run)
+
+            if ITEM.TRAPS.MovementLockTrap != current_mod:
+                patch_ability(ITEM.ABILITIES.ButtonRight, self.memory_addresses.patch_button_right)
+            if ITEM.TRAPS.MovementLockTrap != current_mod:
+                patch_ability(ITEM.ABILITIES.ButtonLeft, self.memory_addresses.patch_button_left)
+            patch_ability(ITEM.ABILITIES.ButtonUp, self.memory_addresses.patch_button_up)
+            patch_ability(ITEM.ABILITIES.ButtonDown, self.memory_addresses.patch_button_down)
+
+            patch_ability(ITEM.ABILITIES.SpinJump, self.memory_addresses.patch_spin_jump)
+
+    async def handle_level_gimick(self, unlocks : List[str]):
+        slot_data_element_included = self.slot_data["level_elements_included"]
+        def patch_element(name : str, patch : CodePatch | Iterable):
+            if name in slot_data_element_included:
+                self.apply_patch(patch, name in unlocks)
+
+        patch_element(ITEM.LEVELELEMENTS.CheckPoint, self.memory_addresses.patch_check_point)
+
+        patch_element(ITEM.LEVELELEMENTS.Door, self.memory_addresses.patch_)
+        patch_element(ITEM.LEVELELEMENTS.Pipe, self.memory_addresses.patch_)
+
+        patch_element(ITEM.LEVELELEMENTS.PSwitch, self.memory_addresses.patch_p_switch)
+        patch_element(ITEM.LEVELELEMENTS.QuestSwitch, self.memory_addresses.patch_q_switch)
+
+        if ITEM.LEVELELEMENTS.RedSwitch in slot_data_element_included:
+            if ITEM.LEVELELEMENTS.RedSwitch in unlocks:
+                self.set_red_switch(b'\x01')
+            else:
+                self.set_red_switch(b'\x00')
 
 
-            if not ITEM.MOVEMENT.Pipe in slot_data_dont_rando:
-                address = self.memory_addresses.address_pipe
-                if not ITEM.MOVEMENT.Pipe in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_return)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffc0)
 
-            if not ITEM.MOVEMENT.Jump in slot_data_dont_rando:
-                address = self.memory_addresses.address_big_jump
-                if not ITEM.MOVEMENT.Jump in unlocked_moves:
-                    self.write_instruction(address, PowerPCInstructions.instru_bne)
-                else:
-                    self.write_instruction(address, PowerPCInstructions.instru_beq)
+    async def handle_enemy_look(self, unlocks : List[str]):
+        slot_data_enemy_included  = self.slot_data["enemies_included"]
+        def patch_enemy(name : str, patch : CodePatch | Iterable):
+            if name in slot_data_enemy_included:
+                self.apply_patch(patch, (name in unlocks) ^ self.slot_data["randomize_enemies"] == RandomizeEnemies.option_add)
+
+        if self.slot_data["randomize_enemies"] != RandomizeEnemies.option_off:
+            patch_enemy(ITEM.ENEMIES.Goomba, self.memory_addresses.patch_goomba)
 
 
-            if not ITEM.MOVEMENT.Run in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_button_run, ITEM.MOVEMENT.Run in unlocked_moves)
 
-            if (not ITEM.MOVEMENT.ButtonRight in slot_data_dont_rando) and (ITEM.TRAPS.MovementLockTrap != current_mod):
-                self.apply_patch(self.memory_addresses.patch_button_right, ITEM.MOVEMENT.ButtonRight in unlocked_moves)
-            if (not ITEM.MOVEMENT.ButtonLeft in slot_data_dont_rando) and (ITEM.TRAPS.MovementLockTrap != current_mod):
-                self.apply_patch(self.memory_addresses.patch_button_left, ITEM.MOVEMENT.ButtonLeft in unlocked_moves)
-            if not ITEM.MOVEMENT.ButtonUp in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_button_up, ITEM.MOVEMENT.ButtonUp in unlocked_moves)
-            if not ITEM.MOVEMENT.ButtonDown in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_button_down, ITEM.MOVEMENT.ButtonDown in unlocked_moves)
-
-
-            if not ITEM.MOVEMENT.SpinJump in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_spin_jump, reverse = ITEM.MOVEMENT.SpinJump in unlocked_moves)
-
-            if not ITEM.MOVEMENT.CheckPoint in slot_data_dont_rando:
-                self.apply_patch(self.memory_addresses.patch_check_point, reverse = ITEM.MOVEMENT.CheckPoint in unlocked_moves, double_check=False)
-
-
-    async def handle_level_gimick(self):
-        pass
-
-    async def handle_enemy_look(self):
-        pass
+    async def handle_unlocks(self, unlocks : List[str], current_mod):
+        await self.handle_unlocked_moves(unlocks, current_mod)
+        await self.handle_level_gimick(unlocks)
+        await self.handle_enemy_look(unlocks)
 
 
 

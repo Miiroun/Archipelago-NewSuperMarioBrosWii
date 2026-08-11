@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Tuple, List
-
+from typing import TYPE_CHECKING
 from BaseClasses import Item, ItemClassification
 from .Common import *
-from .options import RandomizeMovement, RandomizePowerups
+from .options import RandomizePowerups
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -29,9 +28,9 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     ITEM.GlitchedLogic : ItemClassification.progression,
 }
 
-important_items = {ITEM.MOVEMENT.Jump, ITEM.MOVEMENT.Run, ITEM.MOVEMENT.Pipe,
-                   ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp, ITEM.POWERUP.Super_Mushroom,
-                   ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.ButtonRight}
+important_items = {ITEM.ABILITIES.Jump, ITEM.ABILITIES.Run, ITEM.LEVELELEMENTS.Pipe,
+                   ITEM.ABILITIES.ButtonDown, ITEM.ABILITIES.ButtonUp, ITEM.POWERUP.Super_Mushroom,
+                   ITEM.ABILITIES.ButtonLeft, ITEM.ABILITIES.ButtonRight}
 
 for i in range(1,9+1):
     ITEM_NAME_TO_ID.update({name_world_unlock(i) : 200 + i})
@@ -39,7 +38,7 @@ for i in range(1,9+1):
 ITEM_NAME_GROUPS.update({"Worlds" : set(name_world_unlock(i) for i in range(1,9+1))})
 
 nicks : List[Tuple[str,str]] = [
-    ("spin", ITEM.MOVEMENT.SpinJump.value),
+    ("spin", ITEM.ABILITIES.SpinJump.value),
     ("mushroom", ITEM.POWERUP.Super_Mushroom.value)
 ]
 for world_num in range(1,9+1):
@@ -58,15 +57,20 @@ for nick in nicks:
 # re purposed (merged)
 #, "climb_ladders", "climb_vine", "swing_vine", "climb_pole", "sneak",  "cary_blocks",
 
-for i, movement_unlock in enumerate(MOVEMENT_UNLOCKS):
+for i, movement_unlock in enumerate(UNLOCKS):
     ITEM_NAME_TO_ID.update({movement_unlock : 301 + i})
     if movement_unlock in important_items:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression | ItemClassification.useful})
-    elif movement_unlock in [ITEM.MOVEMENT.CheckPoint]:
+    elif movement_unlock in [ITEM.LEVELELEMENTS.CheckPoint]:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.useful})
     else:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"Movement" : set(MOVEMENT_UNLOCKS)})
+ITEM_NAME_GROUPS.update({"Abilites" : set(ABILITIES)})
+ITEM_NAME_GROUPS.update({"Level elements" : set(LEVEL_ELEMENTS)})
+ITEM_NAME_GROUPS.update({"Enemies" : set(ENEMIES)})
+ITEM_NAME_GROUPS.update({"Unlocks" : set(UNLOCKS)})
+
+
 
 
 for i, trap in enumerate(TRAPS):
@@ -138,16 +142,16 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 
     return NSMBWItem(name, classification, ITEM_NAME_TO_ID[name], world.player)
 
-pip_essen = {ITEM.MOVEMENT.Pipe, ITEM.MOVEMENT.ButtonDown, ITEM.MOVEMENT.ButtonUp}
+pip_essen = {ITEM.LEVELELEMENTS.Pipe, ITEM.ABILITIES.ButtonDown, ITEM.ABILITIES.ButtonUp}
 extra_start_items : Dict[int,set]= {
     1: set(),
-    2: {ITEM.MOVEMENT.Jump} | pip_essen,
+    2: {ITEM.ABILITIES.Jump} | pip_essen,
     3: set(), #{ITEM.MOVEMENT.Pipe}
-    4 : {ITEM.MOVEMENT.Swim},
-    5 : {ITEM.MOVEMENT.Climb, ITEM.MOVEMENT.Swim} | pip_essen,
+    4 : {ITEM.ABILITIES.Swim},
+    5 : {ITEM.ABILITIES.Climb, ITEM.ABILITIES.Swim} | pip_essen,
     6: set(),
-    7: {ITEM.MOVEMENT.Swim} | pip_essen,
-    8 : {ITEM.MOVEMENT.Run, ITEM.MOVEMENT.ButtonLeft, ITEM.MOVEMENT.Jump} | pip_essen
+    7: {ITEM.ABILITIES.Swim} | pip_essen,
+    8 : {ITEM.ABILITIES.Run, ITEM.ABILITIES.ButtonLeft, ITEM.ABILITIES.Jump} | pip_essen
 }
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
@@ -160,19 +164,18 @@ def create_all_items(world: NSMBWworld) -> None:
         excluded_items.update({ITEM.POWERUP.Super_Mushroom})
 
 
-    if world.options.randomize_movement.value != world.options.randomize_movement.option_off:
-        excluded_items.update(world.options.dont_rando_move.value)
+    if world.options.randomize_abilites.value == False:
         # default movements
-        excluded_items.update({ITEM.MOVEMENT.ButtonRight, ITEM.MOVEMENT.ButtonLeft.value, ITEM.MOVEMENT.Jump.value})
+        world.options.abilites_included.value -= {ITEM.ABILITIES.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
 
-        if not ((ITEM.MOVEMENT.SpinJump in excluded_items) or ( ITEM.MOVEMENT.Jump in excluded_items)):
+        if len({ITEM.ABILITIES.SpinJump.value, ITEM.ABILITIES.Jump.value} - world.options.abilites_included.value) == 0:
             if world.random.randint(0,1) == 0:
-                excluded_items.update({ITEM.MOVEMENT.SpinJump.value})
+                world.options.abilites_included.value -= {ITEM.ABILITIES.SpinJump.value}
             else:
-                excluded_items.update({ITEM.MOVEMENT.Jump.value})
+                world.options.abilites_included.value -= {ITEM.ABILITIES.Jump.value}
 
         if world.options.level_shuffel_riivolution.value == False:
-            excluded_items.update(extra_start_items[starting_world_num])
+            world.options.abilites_included.value -= extra_start_items[starting_world_num]
 
 
     itempool: list[Item] = []
@@ -186,10 +189,19 @@ def create_all_items(world: NSMBWworld) -> None:
         if i != 9:
             itempool.append(world.create_item(name_world_unlock(i)))
 
-    if world.options.randomize_movement.value in [RandomizeMovement.option_on]:
-        for move in MOVEMENT_UNLOCKS:
-            if not move in excluded_items:
-                itempool.append(world.create_item(move))
+
+    if world.options.randomize_abilites.value:
+        for unlock in world.options.abilites_included.value:
+            itempool.append(world.create_item(unlock))
+
+    if world.options.randomize_level_elements.value:
+        for unlock in world.options.level_elements_included.value:
+            itempool.append(world.create_item(unlock))
+
+    if world.options.randomize_enemies.value != 0:
+        for unlock in world.options.enemies_included.value:
+            itempool.append(world.create_item(unlock))
+
 
     if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_except_mushroom, RandomizePowerups.option_on_progressive]:
         for p_up in POWERUP_UNLOCK:
@@ -229,10 +241,32 @@ def create_all_items(world: NSMBWworld) -> None:
         if item in itempool_names:
             world.multiworld.early_items[world.player][item] = 1
 
+    unique_filler = set()
+
+    if world.options.randomize_enemies.value:
+        for enemies in ENEMIES:
+            if enemies in world.options.enemies_included.value:
+                unique_filler |= {enemies}
 
     number_of_items = len(itempool)
     number_of_unfilled_locations = len(world.multiworld.get_unfilled_locations(world.player))
     needed_number_of_filler_items = number_of_unfilled_locations - number_of_items
+
+    if needed_number_of_filler_items >= len(unique_filler):
+        for unq_fill in list(unique_filler):
+            itempool.append(world.create_item(unq_fill))
+    else:
+        _choice = world.random.choices(list(unique_filler), k= needed_number_of_filler_items)
+        for unq_fill in list(unique_filler):
+            if unq_fill in _choice:
+                itempool.append(world.create_item(unq_fill))
+            else:
+                excluded_items.add(unq_fill)
+
+    number_of_items = len(itempool)
+    number_of_unfilled_locations = len(world.multiworld.get_unfilled_locations(world.player))
+    needed_number_of_filler_items = number_of_unfilled_locations - number_of_items
+
     assert needed_number_of_filler_items >= 0, f"More items ({number_of_items}) than locations ({number_of_unfilled_locations})"
     itempool += [world.create_filler() for _ in range(needed_number_of_filler_items)]
     assert len(itempool) == number_of_unfilled_locations, f"Failed in filling itempool ({len(itempool)}) with filler items with unfilled locations ({number_of_unfilled_locations})"
@@ -242,6 +276,5 @@ def create_all_items(world: NSMBWworld) -> None:
     for _item in sorted(list(excluded_items)):
         world.push_precollected(world.create_item(_item))
 
-    world.options.dont_rando_move.value = excluded_items.copy() & set(MOVEMENT_UNLOCKS)
 
 

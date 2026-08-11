@@ -7,8 +7,8 @@ class ShortcutOff(NSMBWWorld):
     options = {
         "shortcuts_sanity" : IncludeShortcuts.option_false,
         "starting_world": 3,
-        "randomize_movement": RandomizeMovement.option_off,
-        "randomize_powerups": RandomizePowerups.option_off,
+        "randomize_abilites": False,
+        "randomize_powerups": False,
     }
 
     def test_world_3(self) -> None:
@@ -41,7 +41,7 @@ class ShortcutOn(NSMBWWorld):
     options = {
         "shortcuts_sanity": IncludeShortcuts.option_true,
         "starting_world": 3,
-        "randomize_movement": RandomizeMovement.option_off,
+        "randomize_abilites": False,
         "randomize_powerups": RandomizePowerups.option_off,
     }
 

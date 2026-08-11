@@ -1,13 +1,11 @@
-from .bases import NSMBWWorld
-from ..Common import *
+from .bases import *
 from ..items import extra_start_items
 from ..locations import name_level, name_starcoin
-from ..options import RandomizeMovement, RandomizePowerups, LogicDifficulty, LogicOutsidePowerups
 
 
 class TestDifficultyLogic(NSMBWWorld):
     options = {
-        "randomize_movement": RandomizeMovement.option_off,
+        "randomize_abilites": False,
         "randomize_powerups": RandomizePowerups.option_on_except_mushroom,
     }
 

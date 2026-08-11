@@ -48,28 +48,34 @@ class ITEM:
         Penguin_Suit = "Penguin Suit"
         Ice_Flower = "Ice Flower"
 
-    class MOVEMENT(StrEnum):
+    class ABILITIES(StrEnum):
         GroundPound = "Ground pound"
         WallJump = "Wall jump"
         Crouch = "Crouch"
         Yoshi = "Yoshi"
         Swim = "Swim"
-        PSwitch = "p-switch"
-        RedSwitch = "!-switch"
         Star = "Star"
         Climb = "Climb"
         Carry = "Carry"
-        Door = "Door"
-        QuestSwitch = "?-switch"
         SpinJump = "Spin jump"
-        Pipe = "Pipe"
         Jump = "Jump"
         Run = "Run"
         ButtonLeft      = "Button left"
         ButtonRight     = "Button right"
         ButtonUp        = "Button up"
         ButtonDown      = "Button down"
+
+    class LEVELELEMENTS(StrEnum):
+        Pipe = "Pipe"
+        Door = "Door"
+        PSwitch = "p-switch"
+        QuestSwitch = "?-switch"
+        RedSwitch = "!-switch"
         CheckPoint      = "Check point"
+
+
+    class ENEMIES(StrEnum):
+        Goomba   = "Goomba"
 
     class TRAPS(StrEnum):
         LosePowerupTrap     = "Lose powerup trap"
@@ -105,7 +111,10 @@ class ITEM:
 
 POWERUP_UNLOCK = list([c.value for c in ITEM.POWERUP])
 POWERUP_COUNT = len(POWERUP_UNLOCK)
-MOVEMENT_UNLOCKS = list([c.value for c in ITEM.MOVEMENT])
+ABILITIES = list([c.value for c in ITEM.ABILITIES])
+LEVEL_ELEMENTS = list([c.value for c in ITEM.LEVELELEMENTS])
+ENEMIES = list([c.value for c in ITEM.ENEMIES])
+UNLOCKS = ABILITIES + LEVEL_ELEMENTS + ENEMIES
 
 TRAPS = list([c.value for c in ITEM.TRAPS])
 FILLER = list([c.value for c in ITEM.FILLER])
@@ -114,6 +123,12 @@ FILLER = list([c.value for c in ITEM.FILLER])
 SUPPORTED_VERSIONS = ["E2"]
 
 PLAYER_COUNT = 4
+
+LEVELS = []
+for world_num in range(1,9+1):
+    for level_num in range(1, LEVELS_PER_WORLD[world_num-1]+1):
+        LEVELS.append((world_num, level_num))
+
 
 def mod_level_name(worldnum : int, levelnum : int) -> str:
     shift = 1 if worldnum in [7,8] else 0
@@ -205,3 +220,4 @@ def get_name_base_of_last_level_in_world(world_num : int) -> str:
 def get_time_math(world : "NSMBWworld", time : int):
     return math.ceil( (time/500) * world.options.randomize_time.value)
 
+LEVEL_NAMES = list([name_base(world_num, level_num) for world_num, level_num in LEVELS])

@@ -1,7 +1,7 @@
 from . import dolphin_interface_client
 from .NSMBWInterface import *
 from .patcher import Patcher
-from ..options import RandomizeMovement, HintMovieShopPriceLogic, AlternativeGoal
+from ..options import HintMovieShopPriceLogic, AlternativeGoal
 from ..Common import *
 from .. import NSMBWworld
 
@@ -202,21 +202,40 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self.ctx.game_interface.dolphin_client.connect()
         time.sleep(0.01)
 
-    def _cmd_movements(self):
+    def _cmd_unlocks(self):
         """
         Gives you a list of which movement you have and have not unlocked
         """
         #NSMBWOptions.dont_rando_move
-        logger.info("Movment info")
+        logger.info("Unlocks info")
         if self.ctx.username is None:
-            logger.info("Connect to server before running /movements")
-        elif self.ctx.slot_data["randomize_movement"] != RandomizeMovement.option_off:
-            set_excl_move = set(self.ctx.slot_data["dont_rando_move"])
-            logger.info(f"You currently have: {set(self.ctx.unlocked_moves)- set_excl_move}")
-            logger.info(f"And you are missing: {set(MOVEMENT_UNLOCKS) - set(self.ctx.unlocked_moves)-set_excl_move}")
-            logger.info(f"With the following movements excluded: {set_excl_move & set(MOVEMENT_UNLOCKS)}")
+            logger.info("Connect to server before running /unlocks")
         else:
-            logger.info("You dont have movement rando enabled.")
+            if self.ctx.slot_data["randomize_abilites"] == True:
+                abilites_included = set(self.ctx.slot_data["abilites_included"])
+                logger.info(f"Ablities")
+                logger.info(f"You currently have: {set(self.ctx.unlocks) & abilites_included}")
+                logger.info(f"And you are missing: {abilites_included - set(self.ctx.unlocks)}")
+                logger.info(f"With the following movements excluded: {set(ABILITIES)} - {abilites_included}")
+            else:
+                logger.info("You dont have ability rando enabled.")
+            if self.ctx.slot_data["randomize_level_elements"] == True:
+                elements_included = set(self.ctx.slot_data["level_elements_included"])
+                logger.info("Level Elements")
+                logger.info(f"You currently have: {set(self.ctx.unlocks) & elements_included}")
+                logger.info(f"And you are missing: {elements_included - set(self.ctx.unlocks)}")
+                logger.info(f"With the following movements excluded: {set(ABILITIES)} - {elements_included}")
+            else:
+                logger.info("You dont have level element rando enabled.")
+
+            if self.ctx.slot_data["randomize_enemies"] == True:
+                enemies_included = set(self.ctx.slot_data["enemies_included"])
+                logger.info("Enemies")
+                logger.info(f"You currently have: {set(self.ctx.unlocks) & enemies_included}")
+                logger.info(f"And you are missing: {enemies_included - set(self.ctx.unlocks)}")
+                logger.info(f"With the following movements excluded: {set(ENEMIES)} - {enemies_included}")
+            else:
+                logger.info("You dont have enemy rando enabled.")
 
     def _cmd_change_collection_level(self, value):
         """
@@ -388,7 +407,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         logger.info("---- Info regarding items ----")        
         #self._cmd_received()
         #self._cmd_missing()
-        self._cmd_movements()
+        self._cmd_unlocks()
         self._cmd_starcoin_count()
         self._cmd_completed_worlds()
         self._cmd_get_time()
@@ -444,7 +463,7 @@ class NSMBWContext(SuperContext):
     handled_num: int
     unlocked_worlds  : List[int]
     unlocked_powerups : List[int]
-    unlocked_moves : List[str]
+    unlocks : List[str]
     traps : List[str]
     filler : List[str]
     time : int
@@ -564,6 +583,8 @@ class NSMBWContext(SuperContext):
                 # hints for all hint movies
                 if self.slot_data["hint_movie_sanity"]:
                     Utils.async_start(self.send_msgs([{"cmd":"CreateHints", "locations" : list( 3000 + i for i in range(1,HINTMOVIE_COUNT +1))}]))
+
+                self.game_interface.slot_data = self.slot_data
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
@@ -1156,7 +1177,7 @@ class NSMBWContext(SuperContext):
     async def handle_receive_items(self):
         self.unlocked_worlds = [0 for _ in range(1, 9 + 1)]
         self.unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
-        self.unlocked_moves = []
+        self.unlocks = []
         self.starcoin_count = 0
         self.time = 0
         self.boss_health = 0
@@ -1174,7 +1195,7 @@ class NSMBWContext(SuperContext):
             elif 201 <= item_id <= 299:
                 self.unlocked_worlds[item_id - 201] += 1
             elif 301 <= item_id <= 399:
-                self.unlocked_moves.append(item_name)
+                self.unlocks.append(item_name)
             elif 601 <= item_id <= 699:
                 self.unlocked_powerups[item_id - 601] = 1
             i += 1
@@ -1224,9 +1245,7 @@ class NSMBWContext(SuperContext):
         await self.handle_unlocked_powerups(self.unlocked_powerups)
         await self.handle_is_world_unlocked(self.unlocked_worlds)
         await self.handle_set_sc_count(self.starcoin_count)
-        await self.game_interface.handle_unlocked_moves(self.unlocked_moves,self.slot_data, self.current_mod)
-        await self.game_interface.handle_level_gimick()
-        await self.game_interface.handle_enemy_look()
+        await self.game_interface.handle_unlocks(self.unlocks, self.current_mod)
         #if self.game_interface.is_in_level():
         await self.handle_traps()
         await self.handle_filler()

@@ -1,12 +1,11 @@
-from .bases import NSMBWWorld
-from ..Common import *
+from .bases import *
 from ..locations import pos_to_level_name, level_name_to_pos
-from ..options import RandomizeMovement, RandomizePowerups
+
 
 
 class TestLevelShuffle(NSMBWWorld):
     options = {
-        "randomize_movement": RandomizeMovement.option_on,
+        "randomize_movement": True,
         "randomize_powerups": RandomizePowerups.option_on,
         "starting_world" : 1,
         "use_riivolution" : True,
@@ -16,7 +15,7 @@ class TestLevelShuffle(NSMBWWorld):
 
 class TestLevelShuffleOff(NSMBWWorld):
     options = {
-        "randomize_movement": RandomizeMovement.option_on,
+        "randomize_movement": True,
         "randomize_powerups": RandomizePowerups.option_on,
         "starting_world" : 1,
         "use_riivolution" : True,

@@ -1,12 +1,8 @@
-from typing import Counter
-
-import Utils
 from Options import *
 from .Common import *
 
 from typing import TYPE_CHECKING
 
-from .Common import ITEM
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -55,30 +51,50 @@ class StarCoinCollectImmediately(Toggle):
     default = True
 
 
-class RandomizeMovement(Choice):
+
+class RandomizeAbilities(Toggle):
     """
-    Will disable some of mario's moves until items checks are sent to reunlock them.
+
     """
-    display_name = "Randomize Moves"
+
+class AbilitiesIncluded(ItemSet):
+    """
+
+    """
+    valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
+    default = valid_keys - {ITEM.ABILITIES.ButtonUp.value, ITEM.ABILITIES.ButtonDown.value,
+               ITEM.ABILITIES.Run.value, ITEM.ABILITIES.SpinJump.value, ITEM.LEVELELEMENTS.Pipe.value,
+               ITEM.ABILITIES.Climb.value}
+
+
+class RandomizeLevelElements(Toggle):
+    """
+
+    """
+
+class LevelElementsIncluded(ItemSet):
+    """
+
+    """
+    valid_keys = set(LEVEL_ELEMENTS)
+    default = valid_keys
+
+class RandomizeEnemies(Choice):
+    """
+
+    """
 
     option_off = 0
-    option_on = 2
+    option_add = 1
+    option_remove = 2
 
-    default = option_off
-
-class DontRandoMovement(ItemSet):
-    """
-    Put movement items here if you want to play with movement except certain once.
-    Turning on the default moves here can and will cause issue and have NO LOGIC, they are experimental.
-    You will always start with other items in addition to these to make the first level in your starting world beatable
+class EnemiesIncluded(ItemSet):
     """
 
-    display_name = "Dont Rando these Movements: WARNING default = BETA, remove at own risk "
-    valid_keys = set(MOVEMENT_UNLOCKS)
-    default = {ITEM.MOVEMENT.ButtonUp.value, ITEM.MOVEMENT.ButtonDown.value,
-               ITEM.MOVEMENT.Run.value, ITEM.MOVEMENT.SpinJump.value, ITEM.MOVEMENT.Pipe.value,
-               ITEM.MOVEMENT.Climb.value}
-    #visibility = Option.visibility.none
+    """
+    valid_keys = set(ENEMIES)
+    default = valid_keys
+
 
 class RandomizePowerups(Choice):
     """
@@ -114,7 +130,7 @@ class RandomizeBossHealth(Toggle):
     """
     default = False
 
-class IncludeHintMovies(Toggle):
+class HintMovieSanity(Toggle):
     """
     Makes the hint movies in peach castles into locations, adds 65 locations.
     If remove this then compensate with starter locations to keep #locations > #items.
@@ -162,6 +178,38 @@ class IncludeShortcuts(Toggle):
     """
     display_name = "Include Shortcuts"
     default = True
+
+
+class OneupsSanity(Toggle):
+    """
+
+    """
+
+class NintyNineCoins(Toggle):
+    """
+
+    """
+
+class RedCoinRing(Toggle):
+    """
+
+    """
+
+class RouletBlock(Toggle):
+    """
+
+    """
+
+class TopOffFlagpole(Toggle):
+    """
+
+    """
+
+class KillEnemies(Toggle):
+    """
+
+    """
+
 
 class LogicDifficulty(Choice):
     """
@@ -217,12 +265,12 @@ class IncludeNumberInventoryItems(Range):
     """
     A location that gets collected when you collect a powerup to your inventory, e.g. from a toad house or beating overworld enemy.
     These locations are very grindy, do not increase above 100, or set to random on your first playthrough.
-    Recommend value = 40
+    Recommend value less than 40
     """
     display_name = "Include Inventory Items"
     range_start = 0
     range_end = 999
-    default = 0
+    default = 10
 
 class MakeWorldCompPriority(Toggle):
     """
@@ -342,6 +390,12 @@ class ModifierMultiplierPercentage(Range):
     default = 100
 
 
+class EnemiyShuffle(Toggle):
+    """
+
+    """
+
+
 class UseRiivolutionOptions(Toggle):
     """This needs to be enabled if you want to use any other riivolution based options"""
     display_name = "Use Riivolution (early alpha, dont expect to be able to finish run with this)"
@@ -367,15 +421,24 @@ class MusicShuffleRiivolution(Toggle):
 class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
     shortcuts_sanity : IncludeShortcuts
-    hint_movie_sanity : IncludeHintMovies
+    hint_movie_sanity : HintMovieSanity
     starcoin_sanity: StarcoinSanity
     include_inventory_powerups : IncludeNumberInventoryItems
-    make_world_comp_priority : MakeWorldCompPriority
+    oneups_sanity : OneupsSanity
+    nintynine_coin_sanity : NintyNineCoins
+    red_coin_ring : RedCoinRing
+    roulet_block : RouletBlock
+    kill_enemies : KillEnemies
+    top_off_flag_pole : TopOffFlagpole
 
 
-    randomize_movement : RandomizeMovement
-    dont_rando_move : DontRandoMovement
     randomize_powerups : RandomizePowerups
+    randomize_abilites : RandomizeAbilities
+    abilites_included : AbilitiesIncluded
+    randomize_level_elements : RandomizeLevelElements
+    level_elements_included : LevelElementsIncluded
+    randomize_enemies : RandomizeEnemies
+    enemies_included : EnemiesIncluded
     randomize_time : RandomizeTime
     randomize_boss_health : RandomizeBossHealth
 
@@ -386,6 +449,7 @@ class NSMBWOptions(PerGameCommonOptions):
     world9_unlock_condition : World9UnlockCondition
     hint_movie_shop_price_logic : HintMovieShopPriceLogic
     starcoin_shop_multiplier : StarCoinShopMultiplier
+    make_world_comp_priority : MakeWorldCompPriority
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems
@@ -405,6 +469,7 @@ class NSMBWOptions(PerGameCommonOptions):
     save_state_slot : SaveStateSlot
     modifier_multiplier_percentage : ModifierMultiplierPercentage
 
+    enemie_shuffle : EnemiyShuffle
     use_riivolution : UseRiivolutionOptions
     level_shuffel_riivolution : LevelShuffleRiivolution
     music_shuffel_riivolution : MusicShuffleRiivolution
@@ -420,7 +485,7 @@ option_groups = [
         [
             IncludeShortcuts,
             IncludeLevelCompletion,
-            IncludeHintMovies,
+            HintMovieSanity,
             StarcoinSanity,
             IncludeNumberInventoryItems,
             MakeWorldCompPriority,
@@ -430,8 +495,12 @@ option_groups = [
         "Items",
         [
             RandomizePowerups,
-            RandomizeMovement,
-            DontRandoMovement,
+            RandomizeAbilities,
+            AbilitiesIncluded,
+            RandomizeLevelElements,
+            LevelElementsIncluded,
+            RandomizeEnemies,
+            EnemiesIncluded,
             RandomizeTime,
             RandomizeBossHealth,
         ],
@@ -486,66 +555,7 @@ option_groups = [
     ),
 ]
 
-option_presets = {
-    "standard/recomeneded": {
-        "include_level_completion": IncludeLevelCompletion.default,
-        "shortcuts_sanity": IncludeShortcuts.default,
-        "hint_movie_sanity": IncludeHintMovies.default,
-        "starcoin_sanity": StarcoinSanity.default,
-
-        "randomize_movement": RandomizeMovement.default,
-        #"dont_rando_move": DontRandoMovement.default,
-        "randomize_powerups": RandomizePowerups.default,
-        "randomize_time": RandomizeTime.default,
-        "starting_world": StartingWorld.default,
-        "include_inventory_powerups": IncludeNumberInventoryItems.default,
-        "logic_difficulty" : LogicDifficulty.default,
-        "death_link": DeathLink.default,
-
-
-        "bowser_star_unlock": BowserCastleStarUnlock.default,
-        "bowser_world_unlock": BowserCastleWorldUnlock.default
-    },
-    "Minimal": {
-        "include_level_completion": IncludeLevelCompletion.option_false,
-        "shortcuts_sanity": IncludeShortcuts.option_false,
-        "hint_movie_sanity": IncludeHintMovies.option_false,
-        "starcoin_sanity": StarcoinSanity.option_false,
-        "starting_world": 1,
-        "include_inventory_powerups": 0,
-
-        "randomize_movement": RandomizeMovement.option_off,
-        #"dont_rando_move": set(MOVEMENT_UNLOCKS),
-        "randomize_powerups": RandomizePowerups.option_off,
-        "randomize_time": 0,
-
-        "bowser_star_unlock": 0,
-        "bowser_world_unlock": 0,
-        "logic_difficulty" : LogicDifficulty.option_normal,
-        "death_link": DeathLink.option_false,
-    },
-    "Maximal": {
-        "include_level_completion": IncludeLevelCompletion.option_true,
-        "shortcuts_sanity": IncludeShortcuts.option_true,
-        "hint_movie_sanity": IncludeHintMovies.option_true,
-        "starcoin_sanity": StarcoinSanity.option_true,
-        "starting_world": "random",
-        "include_inventory_powerups" : 999,
-
-        "randomize_movement": RandomizeMovement.option_on,
-        #"dont_rando_move": set(),
-        "randomize_powerups": RandomizePowerups.option_on,
-        "randomize_time": 5,
-
-        "bowser_star_unlock": 231, #231
-        "bowser_world_unlock": 7,
-        "logic_difficulty" : LogicDifficulty.option_difficult,
-        "death_link": DeathLink.option_true,
-    }
-
-
-}
-
+option_presets = {}
 
 def adjust_options(world : "NSMBWworld"): # cannot type check because circular imports : NSMBWworld
     if world.options.include_level_completion.value + world.options.starcoin_sanity.value <= 0 and len(world.multiworld.player_ids) == 1:
@@ -580,7 +590,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.include_level_completion.value * 71 +
         world.options.hint_movie_sanity.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
          <= 10+
-        ((itm := world.options.randomize_movement.value >= 1) * len(MOVEMENT_UNLOCKS) + world.options.randomize_time.value
+        (itm :=  world.options.randomize_time.value
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
                           f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
@@ -593,11 +603,6 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
         world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
         print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}, amount forcefully lowered")
-
-    movement_set = set(MOVEMENT_UNLOCKS)
-    if len(world.options.dont_rando_move.value - movement_set) > 0:
-        print(f"(NSMBW generation error) Texts {world.options.dont_rando_move.value - movement_set} is not a valid movement.")
-        world.options.dont_rando_move.value &= movement_set
 
 
     if world.options.trap_chance.value != 100:

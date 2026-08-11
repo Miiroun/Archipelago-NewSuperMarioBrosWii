@@ -114,7 +114,7 @@ class NSMBWSettings(settings.Group):
         Slot8 = 8
 
 
-    class Xdotool(settings.IntEnum):
+    class KeypressLibrary(settings.IntEnum):
         """
         Linux only
         Uses the external program xdotool instead of the python library keyboard to send keypresses for save-states
@@ -149,8 +149,7 @@ class NSMBWSettings(settings.Group):
 
     collect_level : CollectLevel | int = CollectLevel(1)
     ut_pack_path: UTPackPath | str = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
-    save_file_path : settings.Union[SaveFileLocation, str] = SaveFileLocation(rf"nsmbw/nsmbw_saves")
-    use_xdotool_instead_of_keyboard_linux_only : Xdotool | int = Xdotool(0)
+    save_file_path : SaveFileLocation |  str = SaveFileLocation("nsmbw")
     allow_gen_difficult_settings : AllowGenDiffSettings | bool = False
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
     clear_cache_save_slot : ClearCacheSaveSLot | int = 7
@@ -167,6 +166,8 @@ class NSMBWSettings(settings.Group):
         dolphin_tool_path = DolphinRiivolutionFolderPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
         dolphin_riivolution_folder_path = DolphinRiivolutionFolderPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
     elif Utils.is_linux:
+        keypress_library: KeypressLibrary | int = KeypressLibrary(0)
+
         dolphin_exe_path: DolphinExePath | str
         dolphin_tool_path: DolphinToolsPath | str
         result = subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True)

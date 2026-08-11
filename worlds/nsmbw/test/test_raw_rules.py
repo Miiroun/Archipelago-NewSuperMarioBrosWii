@@ -1,9 +1,8 @@
-from Options import Toggle
 from .bases import *
 
 class TestRawRules(NSMBWWorld):
     options = {
-        "randomize_movement" : RandomizeMovement.option_off,
+        "randomize_abilites" : False,
         "randomize_powerups" : RandomizePowerups.option_on,
         "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
         "starting_world" : 1,
@@ -13,7 +12,7 @@ class TestRawRules(NSMBWWorld):
         "starcoin_shop_multiplier" : 1,
         "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_ordered,
         "level_shuffel_riivolution" : LevelShuffleRiivolution.option_false,
-        "hint_movie_sanity" : IncludeHintMovies.option_true,
+        "hint_movie_sanity" : HintMovieSanity.option_true,
         "include_inventory_powerups": 40,
     }
 
