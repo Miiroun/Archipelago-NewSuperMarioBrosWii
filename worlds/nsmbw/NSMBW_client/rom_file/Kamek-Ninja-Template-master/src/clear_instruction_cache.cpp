@@ -1,22 +1,18 @@
 #include <kamek.h>
-#include <kamek_sdk.h>
 
-// find end of function to hook onto
-kmBranchDefAsm(0x800B0B40, 0)
-void WriteInstructionClearCache(void)
+
+//ends up loaded into 0x80D26040
+
+// hooks onto end of bar draw function
+kmBranchDefAsm(0x800B0B40, 0x800B0B44)
 {
-    // - Hook up kamek patch that can clear jit: load instru from memory: # r17+r18=address of instruction you want to remove from cache dcbf r17,r18  sync icbi r17,r18 isync
+    // load address into r17, clears r18
+    lis r18, 0x80BB
+    ori r18, r18, 0xB000
 
-    // load address to write and value to write
-    register int *p_reg_address asm ("r17");
-    int volatile * const p_reg_address = (int *) 0x8000000; // deside on register
-    int volatile * const p_reg_value = (int *) 0x8000004;
+    lwz r17, 0(r18) // this is the problematic line, originally lbz
 
-    // write value to adress
-    *p_reg_address = *p_reg_value;
-
-    // load address into r17 + r18
-    li r18, 0
+    lis r18, 0x0000
 
 
     // flush instruction cache for value
@@ -25,5 +21,9 @@ void WriteInstructionClearCache(void)
     icbi r17,r18
     isync
 
+    // branch back
+    blr
 }
 
+// moves the blr instruction one adress lower
+kmWrite32(0x800B0B44, 0x4e800020);

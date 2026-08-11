@@ -369,15 +369,22 @@ class NSMBWInterface(object):
 
     def write_instruction_clear_cache_in_game(self, address: int, data: bytes) -> bool:
         current_value = self.dolphin_client.read_address(address, len(data))
-        while current_value != data:
-            current_value = self.dolphin_client.read_address(address, len(data))
+        if current_value != data:
+            #current_value = self.dolphin_client.read_address(address, len(data))
 
-            clear_address = 0x00
-            self.dolphin_client.write_address(clear_address, address)
-            self.dolphin_client.write_address(clear_address+4, data)
-        return True
+            self.dolphin_client.write_address(address, data)
+
+
+            clear_address = 0x80BBB000
+            self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
+            return True
+        return False
 
     def write_instruction(self, address: int, data: bytes) -> bool:
+        if self.slot_data["use_riivolution"]:
+            return self.write_instruction_clear_cache_in_game(address, data)
+
+
         current_value = self.dolphin_client.read_address(address, len(data))
         if current_value != data:
             self.dolphin_client.write_address(address, data)

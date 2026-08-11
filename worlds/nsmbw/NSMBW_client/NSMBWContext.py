@@ -180,7 +180,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Returns the amount of worlds that are considered completed.
         """
         completed_worlds = sum([(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in range(1, 7 + 1)])
-        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data["bowser_world_unlock"]} worlds.")
+        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['bowser_world_unlock']} worlds.")
 
     def _cmd_kill(self):
         """
@@ -194,6 +194,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         Refreshes the JIT cashe (by save and load savestate). Usefull if something like moves are not updating.
         """
+        self.ctx.game_interface.should_clear
         self.ctx.game_interface.clear_cache()
     def _cmd_reconnect_dolphin(self):
         """
@@ -1532,7 +1533,7 @@ class NSMBWContext(SuperContext):
                         print(f"is sending deathlink")
                         self.death_link_amnesty_count = 0
                     else:
-                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data['death_link_amnesty_count']}")
+                        logger.info(f"Deathlink amnesty {self.death_link_amnesty_count}/{self.slot_data['death_link_amnesty']}")
                     self.is_pending_death_link_reset = True
                 elif (not is_dead) and (self.is_pending_death_link_reset == True) and (time.time() > self.game_interface.deathtimer):
                     self.is_pending_death_link_reset = False

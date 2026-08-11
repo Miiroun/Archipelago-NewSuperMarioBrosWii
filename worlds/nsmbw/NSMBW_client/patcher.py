@@ -24,59 +24,6 @@ import wiithon
 
 logger = logging.getLogger("Client")
 
-class ArcFile:
-    # this class is currently bs, doesnt work, need it to change internal names of the arc files for textures, object rando to work
-    path : Path
-    header_size : int
-
-    def __init__(self, path : Path):
-        self.path = path
-
-    def read(self):
-        with open(self.path, 'rb') as f:
-
-            self.read_header(f)
-
-            for i in range(self.header_size):
-                self.read_node(f, i)
-
-    def read_header(self, f : BufferedReader):
-        self.tag = f.read(0x20)
-        self.rootnode_offset = f.read(0x20)
-        self.header_size = bytes_to_int(f.read(0x20)) #Size of all nodes including the string table.
-        self.data_offset  = f.read(0x20)
-        self.zeros = f.read(0x20 *  4)
-
-    def read_node(self, f : BufferedReader, offset : int):
-        #f.read(offset)
-        self.node_type = f.read(0x01) # 0x00=File, 0x01=Directory
-        self.name_offset = f.read(0x18)
-        self.data_offset = f.read(0x20) # File: Offset of begin of data, Directory: Index of the parent directory.
-        self.size = bytes_to_int(f.read(0x20))
-        self.data = f.read(self.size)
-        return self.data
-
-    def write(self):
-        with open(self.path, 'w') as f:
-            self.write_header(f)
-
-            for i in range(self.header_size):
-                self.write_node(f, i)
-
-    def write_header(self,f : TextIOWrapper):
-        f.write(str(self.tag))
-        f.write(str(self.rootnode_offset))
-        f.write(str(self.header_size))
-        f.write(str(self.data_offset))
-        f.write(str(self.zeros))
-
-
-    def write_node(self,f : TextIOWrapper, offset : int):
-        f.write(str(self.node_type))
-        f.write(str(self.name_offset))
-        f.write(str(self.data_offset))
-        f.write(str(self.size))
-        f.write(str(self.data))
 
 def copy_rename_internal_arc(source : Path, destination : Path, source_name : str, destination_name : str):
     # TODO needs to modify header size
