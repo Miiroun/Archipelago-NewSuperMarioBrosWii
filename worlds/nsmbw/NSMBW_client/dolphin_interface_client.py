@@ -5,7 +5,12 @@ from typing import Any
 import dolphin_memory_engine  # type: ignore
 import subprocess
 
+import psutil
+
 import Utils
+import logging
+logger = logging.getLogger("Client")
+
 
 # game constants
 GC_GAME_ID_ADDRESS = 0x80000000
@@ -41,11 +46,16 @@ class DolphinClient:
         if not self.dolphin.is_hooked():
             self.dolphin.hook()
             sleep(0.01)
-        error_mess = "Could not connect to Dolphin, verify that you have a game running in the emulator and that you dont have multiple instances open. Also assert you have MMU enabled and extended memory (MEM1 and MEM2) disabled."
-        if not self.is_connected():
-            raise DolphinException(error_mess)
-        if not self.dolphin.is_hooked():
-            raise DolphinException(error_mess)
+        if (not self.is_connected()) or (not self.dolphin.is_hooked()):
+            error_mess = ("Dolphin Connection error, verify the following in this order:\n"
+                          "1) The game is running in the dolphin emulator.\n"
+                          "2) You dont have multiple instances of dolphin open (except your ONE game library).\n"
+                          "3) Assert extended memory (MEM1 and MEM2) is disabled.\n"
+                          "4) You have not renamed the dolphin exe and are not running on a fork.\n"
+                          "5) Your dolphin emulator is recent (newer than 2026.1)\n"
+                          "6) Post your error in the NSMBW discord, with a screenshot and your log file.\n")
+            logger.info(error_mess)
+            raise DolphinException("Could not connect to Dolphin")
 
     def disconnect(self):
         if self.dolphin.is_hooked():
@@ -114,22 +124,21 @@ class DolphinClient:
 
 
 def assert_no_running_dolphin() -> bool:
-    """Only checks on windows for now, verifies no existing instances of dolphin are running."""
-    if Utils.is_windows:
-        if get_num_dolphin_instances() > 0:
-            return False
+    """verifies no existing instances of dolphin are running."""
+    if get_num_dolphin_instances() > 0:
+        return False
     return True
 
 
 def get_num_dolphin_instances() -> int:
-    """Only checks on windows for now, kind of brittle so if it causes problems then just ignore it"""
     try:
-        if Utils.is_windows:
-            output = subprocess.check_output("tasklist", shell=True).decode()
-            lines = output.strip().split("\n")
-            count = sum("Dolphin.exe" in line for line in lines)
-            return count
-        return 0
-    except:
+        count = 0
+        for process in psutil.process_iter():
+            if process.name().casefold().startswith("dolphin"):
+                count += 1
+        return count
+    except Exception as e:
+        print("Failed to get number of dolphin instances")
+        print(e)
         return 0
     

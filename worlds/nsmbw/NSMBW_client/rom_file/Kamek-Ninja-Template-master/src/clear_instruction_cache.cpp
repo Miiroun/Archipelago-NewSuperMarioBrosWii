@@ -2,7 +2,7 @@
 #include <kamek_sdk.h>
 
 // find end of function to hook onto
-kmBranchDefAsm(0x00, 0)
+kmBranchDefAsm(0x800B0B40, 0)
 void WriteInstructionClearCache(void)
 {
     // - Hook up kamek patch that can clear jit: load instru from memory: # r17+r18=address of instruction you want to remove from cache dcbf r17,r18  sync icbi r17,r18 isync

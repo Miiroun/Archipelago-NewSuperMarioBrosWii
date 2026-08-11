@@ -1,5 +1,6 @@
 from BaseClasses import CollectionState, ItemClassification, MultiWorld
 from NetUtils import JSONMessagePart
+from rule_builder.cached_world import CachedRuleBuilderWorld
 from worlds.AutoWorld import World
 
 from . import items, locations, regions, rules, web_world, raw_rules
@@ -12,8 +13,11 @@ from .Common import *
 from .Utils import cast_object_to_type
 from .items import NSMBWItem
 
+collection_map : Dict [str, int] = {
 
-class NSMBWworld(World):
+}
+
+class NSMBWworld(CachedRuleBuilderWorld):
     """
     The ap-world for new super mario bros. wii
     """
@@ -83,6 +87,28 @@ class NSMBWworld(World):
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
+    def collect(self, state, item: NSMBWItem) -> bool:
+        change = super(NSMBWworld, self).collect(state, item)
+
+        if change:
+            pass
+            #bp_amount = collection_map.get(item.name, 0)
+            #if bp_amount:
+            #    state.prog_items[item.player]["BP"] += bp_amount
+
+        return change
+
+    def remove(self, state, item: NSMBWItem) -> bool:
+        change = super(NSMBWworld, self).remove(state, item)
+
+        if change:
+            pass
+            #bp_amount = collection_map.get(item.name, 0)
+            #if bp_amount:
+            #    state.prog_items[item.player]["BP"] -= bp_amount
+
+        return change
+
 
     # "do NOT copy this option handling code, it is really not god and causes issues"
     default_options_set : Set[str] = {"progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints', 'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items'}
@@ -101,6 +127,7 @@ class NSMBWworld(World):
         for item in (option_set & slot_data.keys()):
             setattr(getattr(self.options, item), "value", cast_object_to_type(slot_data[item], getattr(getattr(self.options, item),"value")))
         self.star_coin_req_per_world_9_level = slot_data["star_coin_req_per_world_9_level"]
+        self.shuffled_level_order = slot_data["shuffled_level_order"]
 
 
 

@@ -13,27 +13,27 @@ class InventoryBase(NSMBWWorld):
 
 
 class TestInventory005(InventoryBase):
-    options = {
+    options = InventoryBase.options | {
         "include_inventory_powerups" : 5
     }
 
 
 class TestInventory050(InventoryBase):
-    options = {
+    options = InventoryBase.options | {
         "include_inventory_powerups" : 50
     }
 
 class TestInventory070(InventoryBase):
-    options = {
+    options = InventoryBase.options | {
         "include_inventory_powerups" : 70
     }
 
 class TestInventory250(InventoryBase):
-    options = {
+    options = InventoryBase.options | {
         "include_inventory_powerups" : 250
     }
 
 class TestInventory999(InventoryBase):
-    options = {
+    options = InventoryBase.options | {
         "include_inventory_powerups" : 999
     }

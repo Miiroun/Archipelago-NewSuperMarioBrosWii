@@ -142,16 +142,16 @@ def create_item_with_correct_classification(world: NSMBWworld, name: str) -> NSM
 
     return NSMBWItem(name, classification, ITEM_NAME_TO_ID[name], world.player)
 
-pip_essen = {ITEM.LEVELELEMENTS.Pipe, ITEM.ABILITIES.ButtonDown, ITEM.ABILITIES.ButtonUp}
+pip_essen = {ITEM.LEVELELEMENTS.Pipe.value, ITEM.ABILITIES.ButtonDown.value, ITEM.ABILITIES.ButtonUp.value}
 extra_start_items : Dict[int,set]= {
     1: set(),
-    2: {ITEM.ABILITIES.Jump} | pip_essen,
-    3: set(), #{ITEM.MOVEMENT.Pipe}
-    4 : {ITEM.ABILITIES.Swim},
-    5 : {ITEM.ABILITIES.Climb, ITEM.ABILITIES.Swim} | pip_essen,
+    2: {ITEM.ABILITIES.Jump.value} | pip_essen,
+    3: {ITEM.LEVELELEMENTS.Pipe.value},
+    4 : {ITEM.ABILITIES.Swim.value}  | pip_essen,
+    5 : {ITEM.ABILITIES.Climb.value, ITEM.ABILITIES.Swim.value} | pip_essen,
     6: set(),
-    7: {ITEM.ABILITIES.Swim} | pip_essen,
-    8 : {ITEM.ABILITIES.Run, ITEM.ABILITIES.ButtonLeft, ITEM.ABILITIES.Jump} | pip_essen
+    7: {ITEM.ABILITIES.Swim.value} | pip_essen,
+    8 : {ITEM.ABILITIES.Run.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value} | pip_essen
 }
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
@@ -163,19 +163,17 @@ def create_all_items(world: NSMBWworld) -> None:
     if world.options.randomize_powerups.value == world.options.randomize_powerups.option_on_except_mushroom:
         excluded_items.update({ITEM.POWERUP.Super_Mushroom})
 
+    world.options.abilites_included.value -= {ITEM.ABILITIES.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
 
-    if world.options.randomize_abilites.value == False:
-        # default movements
-        world.options.abilites_included.value -= {ITEM.ABILITIES.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
+    if len({ITEM.ABILITIES.SpinJump.value, ITEM.ABILITIES.Jump.value} - world.options.abilites_included.value) == 0:
+        if world.random.randint(0,1) == 0:
+            world.options.abilites_included.value -= {ITEM.ABILITIES.SpinJump}
+        else:
+            world.options.abilites_included.value -= {ITEM.ABILITIES.Jump}
 
-        if len({ITEM.ABILITIES.SpinJump.value, ITEM.ABILITIES.Jump.value} - world.options.abilites_included.value) == 0:
-            if world.random.randint(0,1) == 0:
-                world.options.abilites_included.value -= {ITEM.ABILITIES.SpinJump.value}
-            else:
-                world.options.abilites_included.value -= {ITEM.ABILITIES.Jump.value}
-
-        if world.options.level_shuffel_riivolution.value == False:
-            world.options.abilites_included.value -= extra_start_items[starting_world_num]
+    if not world.options.level_shuffel_riivolution.value:
+        world.options.abilites_included.value = world.options.abilites_included.value -extra_start_items[starting_world_num]
+        world.options.level_elements_included.value -= extra_start_items[starting_world_num]
 
 
     itempool: list[Item] = []

@@ -199,28 +199,30 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
 def set_all_entrance_rules(world: "NSMBWworld") -> None:
     #rules are set when connecting regions
-    shuffle_level_order(world)
+    is_ut = getattr(world.multiworld, "generation_is_fake", False)
+    if not is_ut:
+        shuffle_level_order(world)
 
-    if world.options.level_shuffel_riivolution.value == True:
-        i = 0
+        if world.options.level_shuffel_riivolution.value == True:
+            i = 0
 
-        _rule = False_().resolve(world)
+            _rule = False_().resolve(world)
 
-        unbeatable = True
-        while unbeatable:
-            status = shuffle_level_order(world)
+            unbeatable = True
+            while unbeatable:
+                status = shuffle_level_order(world)
 
-            # this makes sure the first 2 levels are beatable
-            randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
-            randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
-            #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
-            _rule = (LevelRules[name_base(randod_world_num1, randod_level_num1)][0]).resolve(world)
+                # this makes sure the first 2 levels are beatable
+                randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
+                randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
+                #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
+                _rule = (LevelRules[name_base(randod_world_num1, randod_level_num1)][0]).resolve(world)
 
-            unbeatable = not _rule(world.multiworld.state) and status
+                unbeatable = not _rule(world.multiworld.state) and status
 
-            i += 1
-            if i > 10_000:
-                raise AssertionError(f"Faild to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
+                i += 1
+                if i > 1_000:
+                    raise Exception(f"Faild to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
 
     set_level_entrance_rules(world)
 

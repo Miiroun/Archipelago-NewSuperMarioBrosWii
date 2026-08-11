@@ -19,9 +19,9 @@ class CodePatch:
     clear : bool
 
     def __init__(self, addr: int, code: bytes, origin : bytes | None = None , name : str | None = None, clear=True) -> None:
-        assert len(code) == 4, f"code needs to have length 4, has length {len(code)}"
-        if not origin is None:
-            assert len(origin) == 4, f"origin needs to have length 4, has length {len(origin)}"
+        #assert len(code) == 4, f"code needs to have length 4, has length {len(code)}"
+        #if not origin is None:
+        #    assert len(origin) == 4, f"origin needs to have length 4, has length {len(origin)}"
         self.addr = addr
         self.code = code
         self.origin = origin
@@ -177,10 +177,11 @@ class MemoryAddresses(object):
         button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
 
 
-        self.patch_throw = self.create_patch("P1", 0x8005e680,PowerPCInstructions.instru_return, b'\x4b\xff\xff\x50', "throw")
-
+        self.patch_throw = self.create_patch("P1", 0x8005e680, PowerPCInstructions.instru_return, b'\x4b\xff\xff\x50', "throw")
         self.patch_carry_shell = [self.create_patch("P1", 0x8005e5f0, b'\x38\x00\x00\x00', button_on_instru,"carry_shell1"),
                                   self.create_patch("P1", 0x8005e5fc, b'\x38\x00\x00\x00', button_on_instru,"carry_shell2")]
+        self.patch_carry_block = self.create_patch("P1",0x8012e330, PowerPCInstructions.instru_return, b'\x94\x21\xff\xf0')
+
 
         self.patch_button_run = self.create_patch("P1",0x8005e610,PowerPCInstructions.instru_lhz + b'\x03\xff\xff', button_on_instru,"button_run")
         self.patch_button_right = self.create_patch("P1", 0x8005e520, button_off_instru,button_on_instru,"button_right")
@@ -212,7 +213,7 @@ class MemoryAddresses(object):
         self.patch_p_switch = self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch")
         self.patch_q_switch = self.create_patch("P1", 0x809c6168, instru_noop, instru_bne + val_000c, "patch_q_switch")
 
-        self.patch_goomba = self.create_patch("P1", 80031210, instru_return, instru_stwu + val_fff0, "patch_goomba")
+        self.patch_goomba = self.create_patch("P1", 0x80031210, instru_return, instru_stwu + val_fff0, "patch_goomba")
 
         self.sprite_init_table_start = self.map_between("P1", 0x8076a748)
 
@@ -243,8 +244,6 @@ class MemoryAddresses(object):
             self.create_patch("E2",0x8014DBB0,  b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return, b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6', "yoshi"),
             self.create_patch("E2",0x8012D490, b'\x38\x60\x00\x00' + b'\x4E\x80\x00\x20', b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6' ,"normal")
         ]
-
-        self.patch_carry_block = self.create_patch("P1",0x8012e330, PowerPCInstructions.instru_return, b'\x94\x21\xff\xf0')
 
         self.patch_yoshi = [
             self.create_patch("P1", 0x802ef1f0, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00', "no star"),
@@ -347,13 +346,13 @@ class MemoryAddresses(object):
         new_address = address
         if new_address >= 0x00000000:
             new_address += 0  # want to acount for size of loader etc
-        assert 0x80000000 <= new_address <= 0x82000000
+        assert 0x80000000 <= new_address <= 0x82000000, f"address {new_address : x} is out of range"
         return new_address
 
 
     def create_patch(self,ver_from : str,  addr: int, code: bytes, origin : bytes |None = None, name : str = "", clear = True) -> CodePatch:
-        assert len(code) == 4, f"Code {code} with name {name} should be 4 bytes"
-        if origin is not None:
-            assert len(origin) == 4, f"Origin {origin} should be 4 bytes"
+        #assert len(code) == 4, f"Code {code} with name {name} should be 4 bytes"
+        #if origin is not None:
+            #assert len(origin) == 4, f"Origin {origin} should be 4 bytes"
         return CodePatch(self.map_between(ver_from, addr), code, origin, name, clear)
 

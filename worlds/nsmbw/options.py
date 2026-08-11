@@ -63,7 +63,7 @@ class AbilitiesIncluded(ItemSet):
     """
     valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
     default = valid_keys - {ITEM.ABILITIES.ButtonUp.value, ITEM.ABILITIES.ButtonDown.value,
-               ITEM.ABILITIES.Run.value, ITEM.ABILITIES.SpinJump.value, ITEM.LEVELELEMENTS.Pipe.value,
+               ITEM.ABILITIES.Run.value, ITEM.ABILITIES.SpinJump.value,
                ITEM.ABILITIES.Climb.value}
 
 
@@ -77,7 +77,7 @@ class LevelElementsIncluded(ItemSet):
 
     """
     valid_keys = set(LEVEL_ELEMENTS)
-    default = valid_keys
+    default = valid_keys - {ITEM.LEVELELEMENTS.Pipe.value}
 
 class RandomizeEnemies(Choice):
     """

@@ -134,9 +134,11 @@ filter_pow = [filter_pow_off] #[filter_pow_on,filter_pow_on_prog,filter_pow_on_n
 
 
 def has_ability(name : str):
+    assert name in ABILITIES
     return Has(name) | OptionFilter(RandomizeAbilities,     False)  | False_(filtered_resolution=True, options=[OptionFilter(AbilitiesIncluded,    name, operator="contains")])
 
 def has_element(name : str):
+    assert name in LEVEL_ELEMENTS
     return Has(name) | OptionFilter(RandomizeLevelElements, False)  | False_(filtered_resolution=True, options=[OptionFilter(LevelElementsIncluded,    name, operator="contains")])
 
 
@@ -215,8 +217,8 @@ class Level(NamedTuple):
     clear : Rule
     starcoins : Tuple[Rule, Rule, Rule]
     secret_exit : Optional[Rule]  = None
-    oneups : Optional[Rule]  = None
-    nintynine_coins : Optional[Rule]  = None
+    #oneups : Optional[Rule]  = None
+    #nintynine_coins : Optional[Rule]  = None
 
 
 LevelRules : Dict[str, Level]= { # normal compleation rules
@@ -291,7 +293,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "7-C"  : Level(pipe & button_down & button_up & normal_move & door & (run | (super_mario & logic_hard)), (super_mario, True_(), wall_jump | propeller_o)),  # 7-C
 # world 8
     "8-1"  : Level(normal_move & jump & run & pipe & button_up & (button_left | logic_hard) & TimeRule(150), (True_(), carry, True_())),  # -1
-    "8-2"  : Level(pipe & button_down & button_up & normal_move & button_left & pipe & button_down & TimeRule(100), (True_(), True_(), True_()), True_()),  # -2
+    "8-2"  : Level(pipe & button_down & button_up & normal_move & button_left & pipe & button_down & TimeRule(100), (True_(), True_(), True_()), button_left),  # -2
     "8-3"  : Level(pipe & button_down & button_up & normal_move & (run | crouch) & TimeRule(100), (True_(), True_(), True_())),  # -3
     "8-4"  : Level(pipe & button_down & button_up & normal_move & swim & question_switch & TimeRule(150), (True_(),True_(),True_())),  # -4
     "8-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), carry, True_())),  # -5

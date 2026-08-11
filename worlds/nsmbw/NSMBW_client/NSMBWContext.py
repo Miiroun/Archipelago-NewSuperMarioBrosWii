@@ -180,7 +180,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Returns the amount of worlds that are considered completed.
         """
         completed_worlds = sum([(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in range(1, 7 + 1)])
-        logger.info(f"You have completed {completed_worlds} worlds.")
+        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data["bowser_world_unlock"]} worlds.")
 
     def _cmd_kill(self):
         """
@@ -216,7 +216,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"Ablities")
                 logger.info(f"You currently have: {set(self.ctx.unlocks) & abilites_included}")
                 logger.info(f"And you are missing: {abilites_included - set(self.ctx.unlocks)}")
-                logger.info(f"With the following movements excluded: {set(ABILITIES)} - {abilites_included}")
+                logger.info(f"With the following movements excluded: {set(ABILITIES) - abilites_included}")
             else:
                 logger.info("You dont have ability rando enabled.")
             if self.ctx.slot_data["randomize_level_elements"] == True:
@@ -224,7 +224,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info("Level Elements")
                 logger.info(f"You currently have: {set(self.ctx.unlocks) & elements_included}")
                 logger.info(f"And you are missing: {elements_included - set(self.ctx.unlocks)}")
-                logger.info(f"With the following movements excluded: {set(ABILITIES)} - {elements_included}")
+                logger.info(f"With the following movements excluded: {set(ABILITIES) - elements_included}")
             else:
                 logger.info("You dont have level element rando enabled.")
 
@@ -233,7 +233,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info("Enemies")
                 logger.info(f"You currently have: {set(self.ctx.unlocks) & enemies_included}")
                 logger.info(f"And you are missing: {enemies_included - set(self.ctx.unlocks)}")
-                logger.info(f"With the following movements excluded: {set(ENEMIES)} - {enemies_included}")
+                logger.info(f"With the following movements excluded: {set(ENEMIES) - enemies_included}")
             else:
                 logger.info("You dont have enemy rando enabled.")
 
@@ -934,6 +934,10 @@ class NSMBWContext(SuperContext):
                     await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
 
     async def handle_checked_location(self):
+        if self.game_interface.get_savefile_num() == 1:
+            self.log_color(f"You are playing on save file 1, to prevent errors, no locations will be sent.", "red")
+            return
+
         checked_locations = []
         checked_locations += await self.check_starcoins()
         checked_locations += await self.check_1ups()
@@ -942,7 +946,6 @@ class NSMBWContext(SuperContext):
 
         if self.game_interface.is_in_level():
             checked_locations += await self.check_inventory_powerups()
-        if self.game_interface.is_in_level():
             checked_locations += await self.check_starcoins_in_level()
 
         await self.send_location_with_id(checked_locations)
@@ -957,6 +960,8 @@ class NSMBWContext(SuperContext):
 
                 if sc_status == 0:  # becomes 0 if collected
                     world_num, level_num = self.game_interface.get_world_level_num_in_level()
+                    if (world_num, level_num) != (0, 0):
+                        continue
 
                     location_name = name_starcoin(world_num, level_num, sc_num)
                     if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
@@ -1003,7 +1008,8 @@ class NSMBWContext(SuperContext):
             if current_lives > self.prev_lifecount[player_num]:
                 self.prev_lifecount[player_num] = current_lives
                 world_num, level_num = self.game_interface.get_world_level_num_in_level()
-                checked_locations.append(name_1ups(world_num, level_num))
+                if (world_num, level_num) != (0, 0):
+                    checked_locations.append(name_1ups(world_num, level_num))
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -1754,25 +1760,26 @@ class NSMBWContext(SuperContext):
             assert Path(input_iso_path).exists(), "Your game file path is invalid"
         except AssertionError as e:
             logger.error(e)
+        short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
 
-        _patcher = Patcher(self.seed_name, self.slot_data)
-        _patcher.patch()
+        if not short_cut_path.exists():
+            _patcher = Patcher(self.seed_name, self.slot_data)
+            _patcher.patch()
 
         dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
         assert dolphin_path.exists(), "dolphin.exe needs to be correct"
-        short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
-        print(short_cut_path)
         assert short_cut_path.exists(), "need to have created shortcut successfully"
 
-        if dolphin_interface_client.assert_no_running_dolphin() and auto_start:
-            if (Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists():
-                rii_path = Path(get_settings()['nsmbw_settings'].dolphin_riivolution_folder_path).parent.parent.parent
-                subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path), "-s", str(rii_path / "StateSaves" / f"{self.game_interface.current_game}.s0{self.save_slot}") ])
-            else:
-                subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
-            await asyncio.sleep(10)
-        elif auto_start:
-            logger.error("Failed to auto start dolphin, make sure your file path is correct")
+        if dolphin_interface_client.assert_no_running_dolphin():
+            if auto_start:
+                if (Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists():
+                    rii_path = Path(get_settings()['nsmbw_settings'].dolphin_riivolution_folder_path).parent.parent.parent
+                    subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path), "-s", str(rii_path / "StateSaves" / f"{self.game_interface.current_game}.s0{self.save_slot}") ])
+                else:
+                    subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+                await asyncio.sleep(10)
+        else:
+            logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
 
 
     async def run_game(self):

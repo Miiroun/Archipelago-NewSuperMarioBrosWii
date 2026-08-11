@@ -68,7 +68,7 @@ class NSMBWInterface(object):
     relay_trackers: Optional[Dict[Any, Any]]
     game_id : bytes
 
-    memory_addresses : MemoryAddresses | None = None
+    memory_addresses : Optional[MemoryAddresses] = None
     deathtimer : float = time.time()
     should_clear : int
 
@@ -400,7 +400,7 @@ class NSMBWInterface(object):
         if not patch.origin is None:
             current_bytes = self.dolphin_client.read_address(patch.addr, len(patch.code))
             if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
-                raise ValueError(f"bytes {current_bytes} at addr {patch.addr} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
+                raise ValueError(f"bytes {current_bytes} at addr {patch.addr : x} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
         if not reverse:
             if patch.clear:
                 self.write_instruction(patch.addr, patch.code)
@@ -424,11 +424,11 @@ class NSMBWInterface(object):
 
     async def handle_unlocked_moves(self, unlocked_moves, current_mod):
         slot_data_ablities_included = self.slot_data["abilites_included"]
-        def patch_ability(name : str, patch : CodePatch | Iterable):
+        def patch_ability(name : str, patch : CodePatch | Iterable, double_check=True):
             if name in slot_data_ablities_included:
-                self.apply_patch(patch, name in unlocked_moves)
+                self.apply_patch(patch, reverse=name in unlocked_moves, double_check=double_check)
 
-        if self.slot_data["randomize_randomize_abilites"] == True:
+        if self.slot_data["randomize_abilites"] == True:
             # ground pound, should look at og memmory to renable ones unlocked
             # _ZN10dAcPyKey_c14checkHipAttackEv
             patch_ability(ITEM.ABILITIES.GroundPound, self.memory_addresses.patch_ground_pound)
@@ -440,7 +440,7 @@ class NSMBWInterface(object):
 
             patch_ability(ITEM.ABILITIES.Crouch, self.memory_addresses.patch_crouch)
 
-            patch_ability(ITEM.ABILITIES.Yoshi, self.memory_addresses.patch_yoshi)
+            patch_ability(ITEM.ABILITIES.Yoshi, self.memory_addresses.patch_yoshi, double_check=False)
 
 
             if ITEM.ABILITIES.Swim in slot_data_ablities_included:
@@ -500,7 +500,9 @@ class NSMBWInterface(object):
                 #        pass
 
 
-            patch_ability(ITEM.ABILITIES.Carry, [self.memory_addresses.patch_carry_shell, self.memory_addresses.patch_throw])
+            patch_ability(ITEM.ABILITIES.Carry, [self.memory_addresses.patch_throw,
+                                                 self.memory_addresses.patch_carry_shell,
+                                                 self.memory_addresses.patch_carry_block,])
 
 
             patch_ability(ITEM.ABILITIES.Jump, self.memory_addresses.patch_jump)
@@ -524,8 +526,8 @@ class NSMBWInterface(object):
 
         patch_element(ITEM.LEVELELEMENTS.CheckPoint, self.memory_addresses.patch_check_point)
 
-        patch_element(ITEM.LEVELELEMENTS.Door, self.memory_addresses.patch_)
-        patch_element(ITEM.LEVELELEMENTS.Pipe, self.memory_addresses.patch_)
+        patch_element(ITEM.LEVELELEMENTS.Door, self.memory_addresses.patch_door)
+        patch_element(ITEM.LEVELELEMENTS.Pipe, self.memory_addresses.patch_pipe)
 
         patch_element(ITEM.LEVELELEMENTS.PSwitch, self.memory_addresses.patch_p_switch)
         patch_element(ITEM.LEVELELEMENTS.QuestSwitch, self.memory_addresses.patch_q_switch)

@@ -4,6 +4,22 @@ NSMBW: #
   progression_balancing: normal
   make_world_comp_priority: 'false'
   use_riivolution : true
+  hint_movie_sanity: true
+  #starting_world: world4
+
 
 #empty:
 #  accessibility: full
+
+
+#triggers:
+#  - option_category: NSMBW
+#    option_name: Alternative Goal
+#    option_result: hintmovies
+#    options:
+#      NSMBW:
+#        hint_movie_sanity: true
+
+
+
+

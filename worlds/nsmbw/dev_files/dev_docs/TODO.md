@@ -1,8 +1,16 @@
 # TODO 
 ## Super super short term
+JIT
+- find mem between intruc to use
+
+!MANUAL BACKGROUND RENAME WORKS!
+
+Collect overwride
+
+Write desciptions for options
+
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
 Ask in dc for better option names
-Test if loading code actully moves around memory
 Playtest multiplayer
 Do we need to load to clear or does it on save too?
 Check point similar
@@ -18,17 +26,11 @@ How solve issue where to load game on start or connect if use riivolution or not
 Test AP map visual editor
 - does new auto riivo work ? move old start to on open
 
-Rework movements to enable abilites
-- then have sub cateagorys for include movments and include level elements?
-
 use wiithon for arc unpacking??
 - maybe switch to it instead of dolphin tools
 
-why doesnt /explain 9-1 work?
-
 DC
 - option + setting review
-- Where should the project continue?
 
 I've been making a list of hint movie unlocks for y'all, I'm about half way through the list, hint movie 9 unlocks only after you beat all levels in worlds 1-8, which also means for it to work 8-7 has to be shown as complete on the map, i remember when i was doing the archipelago 8-7  never completed as a shortcut to the airship, it won't count unless every level in the first 8 worlds is blue
 
@@ -37,8 +39,6 @@ test
 - sc model
 - gravity
 - load 1 background
-
-fix assert no doublicate dolphins
 
 - Secret exit items
   - update docs
@@ -86,15 +86,10 @@ ATLEAST : soft logic is inefficent
 - Try redumping my copy of nsmbw : test which guide / method best to link to
 - Ask for help in dc for names
 - Work on preventing sending of locations on title screen
-- 8-2 secret exit requires more logic
 - Ask for help in dc for names
 - Secret exit items in client !!!
 - Run language test world thing
-- Work more on map pack: download images from wiki
-- do I need to split up doolphin tool and dolphin for linux users?
-- Current issue seems to be
-- look into hint movies
-  - look up hint movie prossessing in ghidra
+- look up hint movie prossessing in ghidra
 - Other shuffles?
   - enterence
   - enemy
@@ -112,9 +107,7 @@ ATLEAST : soft logic is inefficent
 - Put disclaimer that collect SC immediately doesn't impact logic
 - Add setting to which save file to continuously save/load from
 - Docs mention no changes dolphin setting or keybind
-- If unlocked set red switch to on
 - Hm in peach castle is not correct amount on free, should remove req of having sc
-- Remove req for cost of having X HM on other settings
 - Add key binds to docs
 - Location scout hm: give as hint, as an option
   - Could maybe change name of hm based on if priority / useful / filler
@@ -158,7 +151,6 @@ ATLEAST : soft logic is inefficent
 - Separate auto start: auto save, auto close
 - detect if unsupported dolphin settings are used
 - Review option creator pr
-- Set up way to test patcher without booting client
 - Try manually renaming a tileset
 - Try opening vanilla tileset with puzzle
 - Edit data of pa0_jyotyu to change its color 
@@ -182,7 +174,6 @@ ATLEAST : soft logic is inefficent
 - Rework modifiers so issue doesn't happen
 - Add assert if save slots overlap
 - Ask react if should rando run
-- Option to have world 9 levels not be blocked
 - Faq jit savestate
 - Try moving mem1, see if causes issues
 - Change docs for linux : no need for root if xdotools or ydotools
@@ -203,7 +194,27 @@ ATLEAST : soft logic is inefficent
 - Hi if you are having hook loop connection issues, you can be because of these things:  1. A not PAL rom (eu rom) 2. Multiple instances of dolphin being open, even library windows count, make sure to have just one. 3. One of the two is running as administrator, they either need to run both as administrator or both not as administrator. 4. Your dolphin version is too old 5.3+ should work, but i recommend any of the 25XX versions or above. (If on linux make sure you use the *flatpak* version others will not work.) 5. For some people setting having their dolphin fallback region to anything but EU/PAL also causes connection issues
 - Update world 9  : use help
 - Look in regi for sand storm and meteor : see if is just an easy flag to change?
+- Ghirdra https://discord.com/channels/673369321522593794/673706884557176832/1477052416598999240
+- Command description for /save and /load are messed up
+- have randomize time increase speed instead of setting clock??
+- shuffle coin and battle levels with normals
+- / shouldn't be in default name for setting
+- Mention ut and fuzzer in credit
+- Auto close dolphin doesn't work on Linux
+- Add if game over : resync state to docs
+- Save on disconnect
+- Don't send loc on savefile 1
+- Improve dolphin error more
+  - Give debug tips in list
+  - Print as list
+- Shuffle in coin and battle stages into main levels
 
+
+Cpp resources
+  - https://docs.google.com/document/d/1-KQhmawgy0da8ijdzL6d7zrlMRBX3_UOm-oShqFvuYc/edit?tab=t.0#heading=h.ed97jvl7oamz
+  - https://github.com/N-I-N-0/New-Super-Mario-Lost-Worlds/tree/master/Docs
+  - https://www.learncpp.com/
+  - https://docs.google.com/document/d/1y2jUmJn7aoXo1FohaU6gx1vJ8cVc1tg1FEjbgNf4tUY/edit?tab=t.0#heading=h.lwtjl3l9zcq
 
 
 ## Playtest
@@ -241,6 +252,10 @@ ATLEAST : soft logic is inefficent
 - Playtest secret exits
 - Cap inven pow at 96
 - Test speed trap
+- Playtest jit clear replacement
+- Work more on map pack:
+  - download images from wiki
+  - Create own illustations of unlocks for itemtracker
 
 
 ## Bugs to fix
@@ -285,6 +300,8 @@ ATLEAST : soft logic is inefficent
   - However, the world state was not reset (level clear saw the same situation as the screenshot), and I switched worlds and came back to be able to do other levels
 - Is tracker 0.3.3 broken? for 0.2.1 5-1 ??
 - Loose powerup should put to super if small
+- 9-3 bugged, sends location
+
 
 
 ## Short term
@@ -314,6 +331,7 @@ ATLEAST : soft logic is inefficent
 - Work on UT tracker pack
   - After 0.3.0, other things are higher priority
 - request channel in ap-dc
+- change starting world 
 
 
 
@@ -392,6 +410,7 @@ ATLEAST : soft logic is inefficent
 - 8005e4c0 holds trigger A function, might be able to hijack to send death nice?
 - Kamek patch to detect if ap is connected
 - Hm option: cumulative but order is sorted after hm unlock order
+- Is there a way in game to see how many worlds you need to complete if you set the yaml to be random? If not, I would like to suggest some way to notify the player how many they need, maybe in peach's castle or something?
 
 
 ## ER

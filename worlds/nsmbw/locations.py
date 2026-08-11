@@ -89,11 +89,16 @@ def create_all_locations(world: NSMBWworld) -> None:
 
 def make_locations_priority(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
+        if world_num != 9:
+            if world.options.make_world_comp_priority.value == True:
+                world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
+                world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-            if world_num != 9:
-                if world.options.make_world_comp_priority.value == True:
-                    world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
-                    world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
+            if world.options.starcoin_sanity.value == False:
+                for sc in range(1,3+1):
+                    world.get_location(name_starcoin(world_num,level_num,sc)).progress_type = LocationProgressType.PRIORITY
+
+
     # this is replaced by not making the locations
     #if world.options.hint_movie_sanity.value == True:
     #    for i in DEPRIO_HM:
@@ -181,7 +186,7 @@ def pos_to_level_name(pos : int) -> tuple[int, int]:
 def shuffle_level_order(world: NSMBWworld) -> bool:
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
-    if world.options.level_shuffel_riivolution == True:
+    if world.options.level_shuffel_riivolution.value == True:
         not_shuffled = world.shuffled_level_order.copy()
 
         secret_exits = list([(secret_exit.world,secret_exit.level) for secret_exit in SECRET_EXIT])
