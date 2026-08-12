@@ -586,6 +586,7 @@ class NSMBWContext(SuperContext):
                     Utils.async_start(self.send_msgs([{"cmd":"CreateHints", "locations" : list( 3000 + i for i in range(1,HINTMOVIE_COUNT +1))}]))
 
                 self.game_interface.slot_data = self.slot_data
+                self.game_interface.auto_clear_cache = not self.slot_data["use_riivolution"]
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
@@ -1140,7 +1141,7 @@ class NSMBWContext(SuperContext):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
                 self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x07, 1))
-                logger.info(f"Completed 8-Airship but does not meat requirements for unlocking bowser (Require {self.slot_data['bowser_star_unlock']} star coins and you have {self.starcoin_count}, Require {self.slot_data['bowser_world_unlock']} worlds completed and you have {completed_worlds}).")
+                logger.info(f"Completed 8-Airship but does not meet requirements for unlocking bowser (Require {self.slot_data['bowser_star_unlock']} star coins and you have {self.starcoin_count}, Require {self.slot_data['bowser_world_unlock']} worlds completed and you have {completed_worlds}).")
             # if previously completed 8-arship and now unlocked bowser
             if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
                 if level_name in self.completed_levels:

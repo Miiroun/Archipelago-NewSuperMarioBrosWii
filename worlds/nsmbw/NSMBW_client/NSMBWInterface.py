@@ -551,7 +551,7 @@ class NSMBWInterface(object):
         slot_data_enemy_included  = self.slot_data["enemies_included"]
         def patch_enemy(name : str, patch : CodePatch | Iterable):
             if name in slot_data_enemy_included:
-                self.apply_patch(patch, (name in unlocks) ^ self.slot_data["randomize_enemies"] == RandomizeEnemies.option_add)
+                self.apply_patch(patch, (name in unlocks) ^ (self.slot_data["randomize_enemies"] == RandomizeEnemies.option_add))
 
         if self.slot_data["randomize_enemies"] != RandomizeEnemies.option_off:
             patch_enemy(ITEM.ENEMIES.Goomba, self.memory_addresses.patch_goomba)

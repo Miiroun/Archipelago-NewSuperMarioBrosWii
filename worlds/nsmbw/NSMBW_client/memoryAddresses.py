@@ -249,6 +249,12 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x802ef1f0, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00', "no star"),
             self.create_patch("P1", 0x802ef268, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'\x3f\xc0\x00\x00\x40\x10\x00\x00\x40\x40\x00\x00', "with star")
         ]
+
+
+        self.patch_star = [
+            self.create_patch("P1", 0x80A28430, 0x38A00000, 0x38A00294, name="patch_star")
+        ]
+
             ## patch patches ---------------------------------------------------
 
         #Skip title screen movies
@@ -304,12 +310,33 @@ class MemoryAddresses(object):
 
         exception_handler = self.create_patch("P1", 0x802D7528, int_to_bytes( 0x48000060, 4), name = "exception_handler")
 
+        # these are created by MandyIGuess https://github.com/MandyIGuess/MandyIGuess/blob/master/NSMBW-Code-Hooks.md
+        fs_RemoveMultiSelect = [
+            self.create_patch("P1", 0x80783D04, 0x4800001C, name="fs_RemoveMultiSelect"),
+            self.create_patch("P1", 0x807837FC, instru_noop, name="fs_RemoveMultiSelect"),
+            self.create_patch("P1", 0x8078380C, instru_noop, name="fs_RemoveMultiSelect"),
+            self.create_patch("P1", 0x8078394C, instru_noop, name="fs_RemoveMultiSelect"),
+            self.create_patch("P1", 0x8078395C, instru_noop, name="fs_RemoveMultiSelect"),
+            self.create_patch("P1", 0x80784220, instru_noop, name="fs_RemoveMultiSelect"),
+            self.create_patch("P1", 0x80784230, instru_noop, name="fs_RemoveMultiSelect"),
+        ]
+
+        dontToggleSuperGuideBit = self.create_patch("P1", 0x8006066C, instru_noop, name="dontToggleSuperGuideBit")
+
+        #dontLoseLives = self.create_patch("P1", 0x8006066C, instru_noop, name="dontLoseLives")
+
+        worldMapAfterFinalBoss = [
+            self.create_patch("P1", 0x807CF404, 0x38600003, name="worldMapAfterFinalBoss"),
+            self.create_patch("P1", 0x807CF408, 0x38800000, name="worldMapAfterFinalBoss"),
+        ]
+        # end of MandyIGuess's patches
 
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
             patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
             patch_skipp_wii_remote_strap_screen, lives_limit_change, exception_handler,
+            fs_RemoveMultiSelect, dontToggleSuperGuideBit, worldMapAfterFinalBoss
         ]
 
         # address 0x80162fb8 might be good to create a branch from
@@ -350,9 +377,14 @@ class MemoryAddresses(object):
         return new_address
 
 
-    def create_patch(self,ver_from : str,  addr: int, code: bytes, origin : bytes |None = None, name : str = "", clear = True) -> CodePatch:
+    def create_patch(self,ver_from : str,  addr: int, code: bytes | int, origin : bytes | int | None = None, name : str = "", clear = True) -> CodePatch:
         #assert len(code) == 4, f"Code {code} with name {name} should be 4 bytes"
         #if origin is not None:
             #assert len(origin) == 4, f"Origin {origin} should be 4 bytes"
+        if type(code) is int:
+            code = int_to_bytes(code, 4)
+        if type(origin) is int:
+            origin = int_to_bytes(origin, 4)
+
         return CodePatch(self.map_between(ver_from, addr), code, origin, name, clear)
 

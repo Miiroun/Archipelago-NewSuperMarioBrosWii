@@ -1,7 +1,12 @@
 # TODO 
+## Release TODO
+- bug fixes to work out
+- documentation to update
+- option descriptio
+- lots of play testing to do.
+
 ## Super super short term
-JIT
-- find mem between intruc to use
+MIGHT be WIITHON that fails the unit tests
 
 !MANUAL BACKGROUND RENAME WORKS!
 
@@ -55,11 +60,6 @@ kmWrite32(0x8076a814, 0x80afdcb0);
 rework options to be better
 -> Send yaml for help
 
-Ask where to hook
-
-Movement -> abilities, level gimmicks
-- keep it in one commit
-
 short list of all relevant commands
 
 add 1ups as locations to world : needs option : keep secret until logic
@@ -71,6 +71,39 @@ INTRU CLEAR :
 ATLEAST : soft logic is inefficent
 - cached rule builder
 - collect / remove override
+
+Change starting world : ask for help in discord
+
+Edit star coin level icon : new image
+
+JIT
+- Assert my value mem is 0, reset it after use
+- fix so works if code is of greater length
+
+
+How to fix errors : are they with wiithon?
+
+Write to GameFlag_e?
+- enable debug things etc
+
+Figure out how levels are stored in game : specific struct? : how to change ?
+
+https://github.com/MandyIGuess/MandyIGuess/blob/master/NSMBW-Code-Hooks.md
+- Dissable battle
+- No end animation
+- No super guide
+- Use change star duration
+
+
+try Gen a patch file for sc model : if much smaller use it
+
+Add background, pallet/ color, tile sheet shuffle to temp options
+
+Should check auto load id should load save file state : also file path seems wrong
+
+Add faq real hardware : no but try other nsmbw randomizers
+
+Update to newer ghidra?
 
 ## Super short term
 - multiplayer
@@ -208,7 +241,9 @@ ATLEAST : soft logic is inefficent
   - Give debug tips in list
   - Print as list
 - Shuffle in coin and battle stages into main levels
-
+- Improve how swim locks
+  - Improve error messages
+- Option : shuffle coin levels with normal, needs custom logic
 
 Cpp resources
   - https://docs.google.com/document/d/1-KQhmawgy0da8ijdzL6d7zrlMRBX3_UOm-oShqFvuYc/edit?tab=t.0#heading=h.ed97jvl7oamz
@@ -332,6 +367,8 @@ Cpp resources
   - After 0.3.0, other things are higher priority
 - request channel in ap-dc
 - change starting world 
+- AFTER JIT clear have proven to work : make post in AP-mod thread about it
+- To-do:  prompt to watch hint movie
 
 
 
@@ -411,6 +448,8 @@ Cpp resources
 - Kamek patch to detect if ap is connected
 - Hm option: cumulative but order is sorted after hm unlock order
 - Is there a way in game to see how many worlds you need to complete if you set the yaml to be random? If not, I would like to suggest some way to notify the player how many they need, maybe in peach's castle or something?
+- Don't know how possible it would be, but could there potentially be a starcoin counter on the overworld ui under the level/lives to keep track of how many are collected?
+- Change hint movie names to indicate prog, trap, useful
 
 
 ## ER
@@ -447,6 +486,11 @@ Cpp resources
 - something is making locations missing from tracker
 - NO idea why, but the big urchins in World 4-3 SC3 Room are producing an insane amount of bubbles and lagging the game lmao
 
+Summery poll
+- Stabilty
+- QOL
+- Locations/ items
+- Non ap rando
 
   
 ## Features
