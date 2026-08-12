@@ -171,6 +171,7 @@ class IncludeLevelCompletion(Toggle):
     display_name = "Include Level Completion"
     default = True
 
+
 class IncludeShortcuts(Toggle):
     """
     If true makes shortcuts like cannons and 7-6 and 8-7 turn into locations.
@@ -184,31 +185,42 @@ class OneupsSanity(Toggle):
     """
 
     """
+    visibility = Visibility.none
+
 
 class NintyNineCoins(Toggle):
     """
 
     """
+    visibility = Visibility.none
+
 
 class RedCoinRing(Toggle):
     """
 
     """
+    visibility = Visibility.none
+
 
 class RouletBlock(Toggle):
     """
 
     """
+    visibility = Visibility.none
+
 
 class TopOffFlagpole(Toggle):
     """
 
     """
+    visibility = Visibility.none
+
 
 class KillEnemies(Toggle):
     """
 
     """
+    visibility = Visibility.none
 
 
 class LogicDifficulty(Choice):
@@ -394,6 +406,7 @@ class EnemiyShuffle(Toggle):
     """
 
     """
+    visibility = Visibility.none
 
 
 class UseRiivolutionOptions(Toggle):
@@ -415,6 +428,22 @@ class MusicShuffleRiivolution(Toggle):
     display_name = "Music Shuffle Riivolution"
     default = False
     #visibility = Visibility.none
+
+
+class BackgroundShuffleRiivolution(Toggle):
+    """"""
+    visibility = Visibility.none
+
+
+class PalletShuffleRiivolution(Toggle):
+    """"""
+    visibility = Visibility.none
+
+
+class TileSheetShuffleRiivolution(Toggle):
+    """"""
+    visibility = Visibility.none
+
 
 
 @dataclass
@@ -471,8 +500,11 @@ class NSMBWOptions(PerGameCommonOptions):
 
     enemie_shuffle : EnemiyShuffle
     use_riivolution : UseRiivolutionOptions
-    level_shuffel_riivolution : LevelShuffleRiivolution
-    music_shuffel_riivolution : MusicShuffleRiivolution
+    level_shuffle_riivolution : LevelShuffleRiivolution
+    music_shuffle_riivolution : MusicShuffleRiivolution
+    background_shuffle_riivolution : BackgroundShuffleRiivolution
+    pallet_shuffle_riivolution : PalletShuffleRiivolution
+    tile_sheet_shuffle_riivolution : TileSheetShuffleRiivolution
 
     # default, needed to add
     start_inventory_from_pool : StartInventoryPool
@@ -538,7 +570,10 @@ option_groups = [
         [
             UseRiivolutionOptions,
             LevelShuffleRiivolution,
-            MusicShuffleRiivolution
+            MusicShuffleRiivolution,
+            BackgroundShuffleRiivolution,
+            PalletShuffleRiivolution,
+            TileSheetShuffleRiivolution,
         ],
     ),
     OptionGroup(
@@ -594,10 +629,12 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
                           f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
-
-    if world.options.include_inventory_powerups.value > 100 and Utils.get_settings()["nsmbw_settings"].allow_gen_difficult_settings:
-        raise OptionError(f"(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,"
-                          f"if you still wish to use this, enable allow_gen_difficult_settings in your host.yaml")
+    if Utils.get_settings()["nsmbw_settings"].allow_gen_difficult_settings:
+        if world.options.include_inventory_powerups.value > 100:
+            raise OptionError(f"(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,"
+                                  f"if you still wish to use this, enable allow_gen_difficult_settings in your host.yaml")
+        if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_ordered:
+            raise OptionError("(NSMBW generation error) Option ordered for HintMovieShopPriceLogic can rarely create unbeatable seeds and therefor needs to enable allow_gen_difficult_settings in your host.yaml ")
 
     MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:

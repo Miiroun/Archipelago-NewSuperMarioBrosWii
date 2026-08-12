@@ -6,8 +6,6 @@
 - lots of play testing to do.
 
 ## Super super short term
-MIGHT be WIITHON that fails the unit tests
-
 !MANUAL BACKGROUND RENAME WORKS!
 
 Collect overwride
@@ -50,11 +48,11 @@ test
 
 add goomba lock as option
 
-// Faster timer countdown speed
+Faster timer countdown speed
 kmWrite32(0x800e3ab8, 0x3403fe90);  // 92 -> 368
-# origin? works? : replace time trap with this
+origin? works? : replace time trap with this
 
-// Replace all Goombas with Koopas, at the profile level
+Replace all Goombas with Koopas, at the profile level
 kmWrite32(0x8076a814, 0x80afdcb0);
 
 rework options to be better
@@ -81,27 +79,11 @@ JIT
 - fix so works if code is of greater length
 
 
-How to fix errors : are they with wiithon?
-
-Write to GameFlag_e?
-- enable debug things etc
-
-Figure out how levels are stored in game : specific struct? : how to change ?
-
-https://github.com/MandyIGuess/MandyIGuess/blob/master/NSMBW-Code-Hooks.md
-- Dissable battle
-- No end animation
-- No super guide
-- Use change star duration
-
 
 try Gen a patch file for sc model : if much smaller use it
 
-Add background, pallet/ color, tile sheet shuffle to temp options
 
 Should check auto load id should load save file state : also file path seems wrong
-
-Add faq real hardware : no but try other nsmbw randomizers
 
 Update to newer ghidra?
 
@@ -112,7 +94,6 @@ Update to newer ghidra?
   - movement to abilities?
   - dontrandomoves to default moves?
   - include option to sanity?
-- update docs
 - button_down and button_up and pipe logic
 - create an function to  and bytes
 - Rando game tile sheet, enemy sheet (or sprite table ?), music etc. Easiest done through riivolution
@@ -244,12 +225,9 @@ Update to newer ghidra?
 - Improve how swim locks
   - Improve error messages
 - Option : shuffle coin levels with normal, needs custom logic
+- Write to GameFlag_e?
+  - enable debug things etc
 
-Cpp resources
-  - https://docs.google.com/document/d/1-KQhmawgy0da8ijdzL6d7zrlMRBX3_UOm-oShqFvuYc/edit?tab=t.0#heading=h.ed97jvl7oamz
-  - https://github.com/N-I-N-0/New-Super-Mario-Lost-Worlds/tree/master/Docs
-  - https://www.learncpp.com/
-  - https://docs.google.com/document/d/1y2jUmJn7aoXo1FohaU6gx1vJ8cVc1tg1FEjbgNf4tUY/edit?tab=t.0#heading=h.lwtjl3l9zcq
 
 
 ## Playtest
@@ -259,7 +237,6 @@ Cpp resources
 - Deathlink group
 - Playtest on linux so the root error is apparent
 - test new read manifest works on frozen and linux
-- Have someone with connection issues try running in administrator mode
 - test hm options
 - playtest so deathlink amnesty and groups works
 - Change default savestate button
@@ -274,7 +251,6 @@ Cpp resources
 - Setting for being in debug mode instead of if frozen
 - star coin multiplyer for hm
 - Does time rando work??
-- Can I get off Yoshi without spin?
 - reprompt_gamefile
 - Ydotool
 - patch not need watching hint movies
@@ -291,6 +267,7 @@ Cpp resources
 - Work more on map pack:
   - download images from wiki
   - Create own illustations of unlocks for itemtracker
+- filename of new extracter
 
 
 ## Bugs to fix
@@ -369,6 +346,7 @@ Cpp resources
 - change starting world 
 - AFTER JIT clear have proven to work : make post in AP-mod thread about it
 - To-do:  prompt to watch hint movie
+- Need spin to get off vine and yoshi
 
 
 

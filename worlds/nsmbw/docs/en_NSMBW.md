@@ -6,30 +6,16 @@
 
 
 ## Items
-- Progression items
+- Progression / useful items
   - 17 World unlocks (are progressive, requires 2 to unlock whole world except world 9) e.g. World1 progressive, World2 progressive ...
   - 231 Star coins (so many star coins), used for buying hint movies, unlocking world 9 levels and bowser 
-  - The amount of in game time you have to complete a level. You select in the option how many times you divide the 500 mario seconds in.
-  - 6 Power-up unlocks (star counted as a move)
-  - Move unlocks (needs to be unlocked before can be used) (some of these are experimental and currently locked)
-    - button up/down/right/left
-    - run
-    - spin jump
-    - jump
-    - ground pound
-    - wall jump
-    - crouch
-    - yoshi
-    - carry
-    - swim
-    - p-switch
-    - !-switch
-    - ?-switch
-    - star
-    - climb ( pole, ladders, ledge and vines)
-    - door
-    - pipe
-    - Checkpoint
+  - Power-up unlocks (star counted as a ability)
+  - Ability unlocks
+  - Level element unlocks
+  - Enemy unlocks (unique traps)
+  - Time you have to complete a level. You select in the option how many times you divide the 500 mario seconds in.
+  - Hits to defeat a boss
+  - Unlocking a secret exit
 - Filler items
   - Inventory fill (one of every powerup)
   - 1ups 
@@ -37,6 +23,7 @@
   - Coin x10
   - Coin x50
   - Filler Power-up
+  - Low Gravity
 - Traps
   - Loose powerup trap
   - Goomba speed trap
@@ -47,6 +34,7 @@
   - Literature trap
   - Throw trap 
   - Reverse Control trap
+  - Gravity trap
 
 
 ## Locations
@@ -54,6 +42,10 @@
 - Buying hint movies (exists 65) Check this [Gamespot article](https://gamefaqs.gamespot.com/wii/960544-new-super-mario-bros-wii/faqs/58584) if you need help with unlocking them. e.g. Hintmovie01
 - Completing towers, castles and secret exits that unlock cannons ( 8 towers, 8 castles and 8 secret exits) World1 tower, 1-3 Secret exit
 - Getting powerups to inventory (from toad-houses or enemy ambushes) e.g. Inventory_powerup_001
+- Unlocking secret exits
+
+## General rando settings
+- Level shuffle
 
 
 ## Options
@@ -90,10 +82,8 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
   - None US2: Inventory powerups
   - EU1: Movement (dont turn on)
   - US1: Star and swim movement (add these to don't rando moves if you have movement rando on)
-- Don't go to the game menu with archipelago connected, this means don't use quick save in game: instead make save states.
 - On Linux you will need to give the client root access for it to properly access save states
 - Climb movement have issues, you can't leve vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
-- If you are connected to the game on the title screen then it will read of data in save slot 1 and might send all locations, be careful. Dont go to the main menu when you are connected to client.
 - The clock might not display modified time correctly, but is accurate.
 - Star item will somtimes display visually as active when not. This happens if it is not unlocked and you bring it from your inventory into a level.
 - Deathlink problems:
@@ -105,41 +95,42 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 
 
 ## FAQ
-- What is not randomized currently?
-  - Levels (order), enemies, powerups, pipes
-- Deathlink?
-  - Deathlink, deathlink groups and deathlink amnesty are implemented. Toggle them with command in client or with options in your yaml.
-- What is different from vanilla
-  - Can't unlock canons or secret exits
-  - The unlocks from world 9 requires starcoin items
-  - Peach's castle hint movie shop requires starcoin items
-- Multiplayer?
-  - You can play NSMBW multiplay 2 ways:
-    1) Same-slot co-op: Both connect to the same archipelago slot separately. This entails you play seperate levels but a level completed for you get marked for your friend. Run /change_collection_level 2 for a better experience
-    2) Local/Dolphin net-play: Not supported for powerups, deathlink movement rando.
--  Tracker?
-  - A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
-- Rivvolution patch?
-  - Some settings require a riivolution patch, it should be auto generated and loaded when you first connect to the archipelago server
-- Do you support item/location groups?
-  - yes, e.g. Powerups, Movement, Hintmovies, Starcoins, Starcoins_World1, Starcoins_World1_Level1, Level_completion_world1, Level_completion
-- Why are not cannons unlocked?
-  - All cannons are locked and turned into locations, they can not be unlocked. Same with completing 7-6 and 8-7.
-- Game versions
-  - Game is developed on US rev2 of NSMBW. The client doesn't error out on other editions but some features will not work.
-  - If you have another revision please report the problems you have in discord and mention your game revision.
-- I want to help with this game, how do I start?
-  - Help is appreciated, both coding, playtesting and logic. Begin by reading [dev_docs](../dev_files/dev_docs) and then ask in discord.
-- Why is a level in logic?
-  - Run /explain levelname and /explain_more levelname.
-  - This will give you the rule for the location, you can run /movements to get a list of active movements. 
-- Why does the client auto press hotkeys?
+What is different from vanilla
+- Can't unlock canons or secret exits
+- The unlocks from world 9 requires starcoin items
+- Peach's castle hint movie shop requires starcoin items
+Multiplayer?
+- You can play NSMBW multiplay 2 ways:
+  1) Same-slot co-op: Both connect to the same archipelago slot separately. This entails you play seperate levels but a level completed for you get marked for your friend. Run /change_collection_level 2 for a better experience
+  2) Local/Dolphin net-play: Not supported currently.
+Tracker?
+- A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
+Rivvolution patch?
+- Some settings require a riivolution patch, it should be auto generated and loaded when you first connect to the archipelago server
+Do you support item/location groups?
+- yes, e.g. Powerups, Movement, Hintmovies, Starcoins, Starcoins_World1, Starcoins_World1_Level1, Level_completion_world1, Level_completion
+Why are not cannons unlocked?
+- All cannons are locked and turned into locations, they can not be unlocked.
+Which game versions are supported?
+- Game is developed on US rev2 of NSMBW. The client doesn't error out on other editions but some features will not work.
+- If you have another revision please report the problems you have in discord and mention your game revision.
+I want to help with this game, how do I start?
+  - Help is appreciated, both coding, playtesting and logic. Begin by reading [dev_docs](../dev_files/dev_docs) and then contact us.
+Why is a level in logic?
+- Run /explain <levelname> and /explain_more <levelname>.
+- This will give you the rule for the location, you can run /movements to get a list of active movements. 
+Why does the client auto press hotkeys?
   - This is a solution to clear the JIT cache by making and loading a save state. If the specific keycombo causes issues you can change them in your game yaml and in host.yaml.
-- Bugs?
-  - Expect bugs, it is still in development.
-  - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948), make sure to mention your game revision.
+Can I run this randomizer on real hardware?
+- No, since most modifications are run through the external python client. There are no plans to implement this.
+- You are however encouraged to run the other nsmbw randomizers mentioned bellow, which works on hardware.
+Are there bugs?
+- Expect bugs, it is still in development.
+- Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948), make sure to mention your game revision.
+
 
 ## Debug tips
+- Run /debug and post your logs in the archipelago discord thread for NSMBW
 - Restart launcher and computer after installing if the client doesn't show up in launcher or something doesn't work.
 - Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2 (and the file format is either .iso or .wbfs, .rvz will not work) and are playing on save file 2.
 - If you have problem with the tracker, try updating it.
@@ -151,7 +142,7 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 
 
 ## Other NSMBW modding projects
-There exists two other nsmbw randomizers that I recomed looking into
+There exists two other nsmbw randomizers that I recommend looking into
 - mkwcats pipe rando https://github.com/mkwcat/nsmbw-pipe-randomizer
 - Hei's level rando https://hbrohei.github.io/NSMRWii/. Similar to ours but they have more features and config
 - Newer Super Mario Bros Wii : the standard overhal mod https://newerteam.com/wii/. Greate recomendation if you want to try playing custom levels

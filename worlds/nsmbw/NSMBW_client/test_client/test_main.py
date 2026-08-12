@@ -1,5 +1,5 @@
 #from settings import get_settings
-from worlds.nsmbw.NSMBW_client.NSMBWContext import NSMBWContext#, run_game
+from ..NSMBWContext import NSMBWContext#, run_game
 #from ..main_client import shutdown
 from ...Common import *
 #import asyncio

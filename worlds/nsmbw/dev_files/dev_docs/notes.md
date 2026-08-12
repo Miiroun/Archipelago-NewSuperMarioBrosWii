@@ -35,3 +35,12 @@
 # Why not riivolution patch build from kamek?
 - Because I dont have the skill and understanding of how it / c++ works
 - and I want to simplify setup with only one set, and I think I need some form of external memory monitoring
+
+
+# Resources
+Cpp resources
+- https://docs.google.com/document/d/1-KQhmawgy0da8ijdzL6d7zrlMRBX3_UOm-oShqFvuYc/edit?tab=t.0#heading=h.ed97jvl7oamz
+- https://github.com/N-I-N-0/New-Super-Mario-Lost-Worlds/tree/master/Docs
+- https://www.learncpp.com/
+- https://docs.google.com/document/d/1y2jUmJn7aoXo1FohaU6gx1vJ8cVc1tg1FEjbgNf4tUY/edit?tab=t.0#heading=h.lwtjl3l9zcq
+

@@ -1,11 +1,12 @@
 # New Super Mario Bros Wii Archipelago Randomizer Setup Guide
 
 ## Required Software
-- [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest) (Needs at least V0.6.7, the latest version as of 2026-05-19)
+- [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest) 
 - [Dolphin emulator](https://dolphin-emu.org/download/)
 - [NSMBW AP-World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - A legally dumped copy of New Super Mario Bros Wii (US rev 2) (both .iso and .wbfs works)
   - If this is not the edition of your copy, see [en_NSMBW.md](../docs/en_NSMBW.md) for list of features known to be broken on other versions.
+  - To dump your game first install the [wii homebrew channel](http://wiibrew.org/wiki/Homebrew_setup) and then use [cleanrip](https://wiibrew.org/wiki/CleanRip) to dump your game to and SD-card.
 - [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) (Optionally) 
 
 
@@ -13,22 +14,24 @@
 1) Download and install archipelago (needs at least v0.6.7) and Dolphin.
 2) Download the ap-world file from [NSMBW World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest), doubleclick it, and it's installed (or manually move it to custom_worlds), restart the ap-launcher.
 3) Then create a player yaml file from the option creator in the launcher.
-   -  Default yaml is recommended for new players. It has 441 locations (2026-05-17).
+   -  Default yaml is recommended for new players. It has 441 locations (as of 0.2.0).
    - If you want to play with a lower location count disable star coins (231 locations).
    - See [en_NSMBW.md](../docs/en_NSMBW.md) for all options, etc.
 4) Note that the ap client is bundled with launcher.
-5) Open dolphin, change the following settings, this is IMPORTANT for death-link and movement to work correctly
-   - Options → Configuration → Interface → Hotkeys Require Window Focus → off
+5) Open dolphin, change the following settings:
+   - Options → Configuration → Advanced → Memory Override → Off
+   - Options → Configuration → Interface → Hotkeys Require Window Focus → Off
    - Options → Hotkey Settings → Save and Load State. Make sure saving (e.g. shift + F8 or @(Shift+F8)) and loading (e.g. F8) save states from slot 7 and 8 are their default values.
    - If you care about your dolphin savefiles then back them up.
-6) Inside the client press CONNECT (when you are on the world map in game) and then enter your player name (from the yaml).
+6) Inside the client press CONNECT and then enter your player name (from the yaml).
+   - If you do NOT have the use_riivolution option (0.3.0) enabled the do this when you are at the level select menu in world 1.
+   - If you do have it enabled make sure 
 
 
 ## How to play
 1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
-   - On linux you will need to do this with root access.
-2) This should prompt you for your game file. (You can rempromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
-3) Clear save file 2 (you can make a copy of it if you care about it). Then select savefile 2 to play on.
+2) This should prompt you for your game file. (You can repromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
+3) Clear save file 2 (you can make a copy of it if you care about it). Then select the now empty savefile 2 to play on.
 4) After you have entered the world map press CONNECT in the client, and enter your slot name and password.
 5) Open the in game world-select menu and move to the world you have unlocked.
 6) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.

@@ -175,6 +175,15 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         logger.info(f"Star coin count {self.ctx.starcoin_count}")
 
+    def _cmd_world_unlocked(self):
+        """
+        Prints how many times you have recived each progresive world
+        """
+        mess = "Worlds unlocked\n"
+        for world_num in range(1,9+1):
+            mess += f"World{world_num} has been received {self.ctx.unlocked_worlds[world_num-1]} times \n"
+        logger.info(mess)
+
     def _cmd_completed_worlds(self):
         """
         Returns the amount of worlds that are considered completed.
@@ -410,6 +419,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         #self._cmd_missing()
         self._cmd_unlocks()
         self._cmd_starcoin_count()
+        self._cmd_world_unlocked()
         self._cmd_completed_worlds()
         self._cmd_get_time()
 

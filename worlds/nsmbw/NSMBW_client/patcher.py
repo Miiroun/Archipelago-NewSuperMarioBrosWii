@@ -77,6 +77,9 @@ class Patcher:
         #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
         self.output_path = Path(output_path) / f"nsmbw_ap_seed{seed}"
 
+        file_name = Utils.get_settings()["nsmbw_settings"].game_file_path.split(".")[0].split("/")[-1]
+        self.temp_dir = Path(tempfile.gettempdir()) / "nsmbw" /  file_name / "DATA"
+
         self.random = Random(self.seed)
 
     def copy_riivolution_skeleton(self):
@@ -101,7 +104,7 @@ class Patcher:
             assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
 
 
-            original_file_loc = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / RegionNames[self.region] / folder/ name / f"{name}.arc"
+            original_file_loc = self.temp_dir / "files" / RegionNames[self.region] / folder/ name / f"{name}.arc"
             assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
 
 
@@ -116,7 +119,7 @@ class Patcher:
         dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool_path)
         assert dolp_tool.exists() , f"the path {dolp_tool} to DolphinTool is invaild"
 
-        path_to = Path(tempfile.gettempdir()) / "nsmbw"
+        path_to = self.temp_dir.parent
         if not (path_to.exists()  and (path_to / "Data" / "files").exists()):
             subprocess.run([str(dolp_tool), "extract",
                     "--input", str(self.input_path),
@@ -144,7 +147,7 @@ class Patcher:
             self.patch_entire_folder(os.path.join("Sound", "stream"))
 
     def patch_files(self, file_names : List[str], folder_name : str, arc_rename : bool = False):
-        temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+        temp_path = self.temp_dir / "files" / folder_name
         assert len(file_names) > 0, "need to find files to patch"
         new_filenames = file_names.copy()
         self.random.shuffle(new_filenames)
@@ -191,16 +194,16 @@ class Patcher:
 
         os.makedirs(self.output_path / "Stage", exist_ok=True)
         for i in range(len(level_shuffle)):
-            shutil.copy(Path(tempfile.gettempdir()) / "nsmbw" / "DATA" /"files" / "Stage" / level_name_converter(*levels[i]), self.output_path / "Stage" / level_name_converter(*level_shuffle[i]))
+            shutil.copy(self.temp_dir /"files" / "Stage" / level_name_converter(*levels[i]), self.output_path / "Stage" / level_name_converter(*level_shuffle[i]))
 
     def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False):
-        temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+        temp_path = self.temp_dir / "files" / folder_name
         file_names: List[str] = os.listdir(temp_path)
         texture_n: List[str] = list(filter(lambda x: x.startswith(filter_str), file_names))
         self.patch_files(texture_n, folder_name, arc_rename)
 
     def patch_entire_folder(self, folder_name : str, arc_rename = False):
-        temp_path = Path(tempfile.gettempdir()) / "nsmbw" / "DATA" / "files" / folder_name
+        temp_path = self.temp_dir / "files" / folder_name
         file_names : List[str] = os.listdir(temp_path)
         self.patch_files(file_names,folder_name, arc_rename)
 
@@ -266,7 +269,7 @@ class Patcher:
 
 
     def delete_temp(self):
-        shutil.rmtree(Path(tempfile.gettempdir()) / "nsmbw")
+        shutil.rmtree(self.temp_dir.parent)
 
     def create_desktop_shortcut(self):
         data = {
@@ -303,7 +306,7 @@ class Patcher:
         print(destination/ f"seed{self.seed}.json")
 
     def get_region(self):
-        with open(Path(tempfile.gettempdir()) / 'nsmbw' / 'DATA' / 'disc' / 'header.bin') as f:
+        with open(self.temp_dir / 'disc' / 'header.bin') as f:
             self.region = f.read(6)
 
     def patch(self):
@@ -315,7 +318,7 @@ class Patcher:
             logger.info(f"old rando exist, uses it instead")
             return
 
-        logger.info(f"Extracting game to {str(Path(tempfile.gettempdir()) / 'nsmbw')}")
+        logger.info(f"Extracting game to {str(self.temp_dir.parent)}")
         self.extract_game()
 
         logger.info(f"Collects game info")
