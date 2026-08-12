@@ -1,0 +1,28 @@
+@startuml
+'Vertices
+rectangle "Encrypted Partition Header" as enc_header
+
+rectangle "Group 0 (0x200000 bytes)" as G0
+rectangle "Group 1" as G1
+rectangle "Group N..." as GN
+
+rectangle "Block 0 (0x8000 bytes)" as B0
+rectangle "Block 1" as B1
+rectangle "...Block 63" as B63
+
+rectangle "Header (0x400 bytes)" as H_Sub
+rectangle "Data (0x7C00 bytes)" as D_Sub
+
+'Edges
+enc_header --> G0
+enc_header --> G1
+enc_header --> GN
+
+G0 --> B0
+G0 --> B1
+G0 --> B63
+
+B0 --> H_Sub
+B0 --> D_Sub
+
+@enduml

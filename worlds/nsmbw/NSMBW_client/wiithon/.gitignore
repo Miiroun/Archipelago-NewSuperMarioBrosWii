@@ -1,0 +1,15 @@
+*.iso
+.idea
+*.arc
+
+/src_dir/
+/assets
+/extract
+
+.venv*/
+**/__pycache__
+
+/temp
+
+/dist/
+*.egg-info/

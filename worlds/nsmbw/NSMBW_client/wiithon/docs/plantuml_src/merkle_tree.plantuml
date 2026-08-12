@@ -1,0 +1,85 @@
+@startuml
+
+'H3 Table
+rectangle "H3 Table (Part of Partition Metadata)" {
+    rectangle "H3 (Global Hash)\nSHA1 of H2 Table" as H3_Global
+}
+
+'Group 0
+rectangle "Group 0 (8 Subgroups, 64 Blocks)" {
+
+    ' Subgroup 0
+    rectangle "Subgroup 0 (8 Blocks)" as Subgroup0 {
+        rectangle "H2\nSHA1 of H1 Table" as H2_Sub0
+
+        rectangle "Block 0 (32 KB)" as Block0 {
+            rectangle "H1, \nSHA1 of H0 Table" as H1_Blk0
+            rectangle "H0 Table\n31 Hashes" as H0_Blk0
+            rectangle "Data Section" as Data_Blk0
+
+            H1_Blk0 --> H0_Blk0
+            H0_Blk0 ..> Data_Blk0 : "31 sub-blocks"
+        }
+
+        rectangle "Hashes" as H1_to_H2_hashes
+
+        rectangle "Block 1 (32 KB)" as Block1 {
+            rectangle "H1." as H1_Blk1
+            rectangle "H0 Table" as H0_Blk1
+            rectangle "Data Section" as Data_Blk1
+
+            H1_Blk1 --> H0_Blk1
+            H0_Blk1 ..> Data_Blk1
+        }
+
+        H1_to_H2_hashes --> H1_Blk0
+        H1_to_H2_hashes --> H1_Blk1
+
+        H2_Sub0 --> H1_to_H2_hashes
+    }
+
+    ' Subgroup 1
+    rectangle "Subgroup 1 (8 Blocks)" as Subgroup1 {
+        rectangle "H2" as H2_Sub1
+        rectangle "H1..." as H1_Blk8
+
+        H2_Sub1 --> H1_Blk8
+    }
+}
+
+rectangle "Group 1" {
+
+    ' Subgroup 0
+    rectangle "Subgroup 0" as Subgroup1_0 {
+        rectangle "H2" as H2_Sub1_0
+
+        rectangle "Block 0 (32 KB)" as Block1_0 {
+            rectangle "H1" as H1_Blk1_0
+            rectangle "H0" as H0_Blk1_0
+            rectangle "Data Section" as Data_Blk1_0
+
+            H1_Blk1_0 --> H0_Blk1_0
+            H0_Blk1_0 ..> Data_Blk1_0
+        }
+
+        H2_Sub1_0 --> H1_Blk1_0
+    }
+}
+
+rectangle "Hashes" as H2_to_H3_hashes_grp0
+rectangle "Hashes" as H2_to_H3_hashes_grp1
+rectangle "Concatenate" as H2_to_H3_concat
+' Connexions principales
+
+
+H2_to_H3_hashes_grp0 --> H2_Sub0
+H2_to_H3_hashes_grp0 --> H2_Sub1
+
+H2_to_H3_hashes_grp1 --> H2_Sub1_0
+
+H2_to_H3_concat --> H2_to_H3_hashes_grp0
+H2_to_H3_concat --> H2_to_H3_hashes_grp1
+
+H3_Global --> H2_to_H3_concat
+
+@enduml

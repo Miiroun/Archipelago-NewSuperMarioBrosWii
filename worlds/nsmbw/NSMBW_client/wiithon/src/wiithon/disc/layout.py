@@ -1,0 +1,35 @@
+"""On-disc offsets of a Wii disc image. See https://wiibrew.org/wiki/Wii_disc"""
+
+PARTITION_TABLE_OFFSET:   int = 0x40000
+PARTITION_TABLE_ENTRIES:  int = 0x40020
+PARTITION_GROUP_COUNT:    int = 4
+REGION_OFFSET:            int = 0x4E000
+REGION_SIZE:              int = 0x20
+MAGIC_WORD_OFFSET:        int = 0x18
+WII_MAGIC_WORD:           int = 0x5D1C9EA3
+FIRST_PARTITION_OFFSET:   int = 0x50000
+
+SYSTEM_MAGIC_WORD:        int = 0xC3F81A8E
+SYSTEM_MAGIC_WORD_OFFSET: int = 0x4FFFC
+
+DISC_HEADER_SIZE:         int = 0x440
+BI2_OFFSET:               int = 0x440
+BI2_SIZE:                 int = 0x2000
+APPLOADER_OFFSET:         int = 0x2440
+APPLOADER_HEADER_SIZE:    int = 0x20
+
+SECTION_ALIGNMENT: int = 0x20
+FILE_ALIGNMENT:    int = 0x40
+
+PART_TMD_OFFSET:   int = 0x2C0
+PART_H3_OFFSET:    int = 0x8000
+PART_DATA_OFFSET:  int = 0x20000
+H3_TABLE_SIZE:     int = 0x18000
+
+
+TMD_SIGNED_START:      int = 0x140
+TMD_SIGNATURE_OFFSET:  int = 0x004
+TMD_SIGNATURE_SIZE:    int = 0x100
+TMD_FAKESIGN_PADDING:  int = 0x19A
+TMD_DATA_SIZE_OFFSET:  int = 0x1EC
+TMD_H3_HASH_OFFSET:    int = 0x1F4
