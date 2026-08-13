@@ -1,10 +1,18 @@
 #pragma once
 #include <game/bases/d_scene.hpp>
+#include <game/bases/d_info.hpp>
+#include <game/bases/d_fader.hpp>
 #include <game/mLib/m_vec.hpp>
 #include <constants/game_constants.h>
 
 class dScStage_c : public dScene_c {
 public:
+    enum Exit_e {
+        EXIT_0,
+        EXIT_1,
+        EXIT_2,
+        EXIT_3
+    };
 
     /// @brief The possible stage loop types.
     enum LOOP_TYPE_e {
@@ -14,15 +22,30 @@ public:
         LOOP_COUNT,
     };
 
+    static void play();
+
+    typedef void (*changePosFunc)(mVec3_c *);
+    static void setChangePosFunc(int);
+
+    static void setTitleReplayRandomTable();
+
+    static void setNextScene(u16, int, Exit_e, dFader_c::fader_type_e);
+
+    static void createReplayDataHeap(EGG::Heap *heap, ulong size, int options);
+
     char pad[0x1198];
     u8 mCurrWorld;
     u8 mCurrCourse;
     u8 mCurrFile;
-    u8 mCurrArea;
+    u8 mCurrAreaNo;
+    u8 mCurrLayer;
 
-    u8 getCurrArea() const { return mCurrArea; }
+    u8 getCurrWorld() const { return mCurrWorld; }
+    u8 getCurrArea() const { return mCurrAreaNo; }
 
     static dScStage_c *getInstance() { return m_instance; }
+    static NOINLINE Exit_e getExitMode() { return m_exitMode; }
+
     static float getLoopPosX(float x);
     static u32 m_exeFrame;
     static int m_loopType;
@@ -32,12 +55,19 @@ public:
 
     static bool m_isCourseOut; ///< Whether the game is transitioning from a stage scene to a non-stage scene.
     static bool m_KoopaJrEscape;
+    static dInfo_c::GameMode_e m_gameMode;
+    static Exit_e m_exitMode;
 
-    typedef void (*changePosFunc)(mVec3_c *);
-    static void setChangePosFunc(int);
+    static int m_miniGame;
+    static bool m_isStaffCredit;
 
-    static void setTitleReplayRandomTable();
+    static void *m_replayPlay_p[4];
 
     static changePosFunc changePos;
     static dScStage_c *m_instance;
+
+    ACTOR_PARAM_CONFIG(File, 8, 4);
+    ACTOR_PARAM_CONFIG(NextGotoID, 0, 8);
+
+    void mainLevelSetup();
 };

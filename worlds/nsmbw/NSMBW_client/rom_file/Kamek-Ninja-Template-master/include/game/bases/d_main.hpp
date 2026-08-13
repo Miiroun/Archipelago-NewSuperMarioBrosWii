@@ -1,6 +1,7 @@
 #pragma once
 
-#include <revolution/OS.h>
+#include <lib/rvl/os/OSThread.h>
+#include <lib/rvl/os/OSTime.h>
 
 /// @brief A wrapper class for the top-level game loop.
 /// @ingroup bases

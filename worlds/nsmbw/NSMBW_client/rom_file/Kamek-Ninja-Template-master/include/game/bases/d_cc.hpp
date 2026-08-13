@@ -22,6 +22,7 @@ enum CC_STATUS_FLAG_e {
     * on the other collider.
     */
     CC_STATUS_NO_PASS_INFO = BIT_FLAG(2),
+    CC_STATUS_8 = BIT_FLAG(8),
 };
 
 ///< @unofficial
@@ -43,7 +44,8 @@ enum CC_KIND_e {
     CC_KIND_ITEM,
     CC_KIND_TAMA,
     CC_KIND_KILLER,
-    CC_KIND_GOAL_POLE
+    CC_KIND_GOAL_POLE,
+    CC_KIND_COUNT = CC_KIND_GOAL_POLE // Goal pole is special and doesn't count
 };
 
 ///< @unofficial
@@ -70,21 +72,31 @@ enum CC_ATTACK_e {
     CC_ATTACK_YOSHI_BULLET,
     CC_ATTACK_YOSHI_FIRE,
     CC_ATTACK_ICE_2,
-    CC_ATTACK_SAND_PILLAR
+    CC_ATTACK_SAND_PILLAR,
 };
 
 class dCc_c;
+
+/// @brief  @unofficial
+struct sCcDatNew {
+    mVec2_POD_c mOffset; ///< The offset of the collider.
+
+    ///< @brief The size of the collider.
+    ///< Note: This is the distance from the center to the edge, so half the actual size.
+    mVec2_POD_c mSize;
+
+    void set(const sCcDatNew &other) {
+        mOffset = other.mOffset;
+        mSize = other.mSize;
+    }
+};
 
 /**
 * @brief A structure that contains information about a collider.
 * @unofficial
 */
 struct sCcDatNewF {
-    mVec2_POD_c mOffset; ///< The offset of the collider.
-
-    ///< @brief The size of the collider.
-    ///< Note: This is the distance from the center to the edge, so half the actual size.
-    mVec2_POD_c mSize;
+    sCcDatNew mBase;
 
     u8 mKind; ///< The type of this collider. See CC_KIND_e.
     u8 mAttack; ///< The attack type of this collider. See CC_ATTACK_e.
@@ -100,6 +112,16 @@ struct sCcDatNewF {
     u16 mStatus; ///< Status flags for this collider. See CC_STATUS_FLAG_e.
 
     void (*mCallback)(dCc_c *self, dCc_c *target); ///< The callback to execute when a collision occurs.
+
+    void set(const sCcDatNewF &other) {
+        mBase.set(other.mBase);
+        mKind = other.mKind;
+        mAttack = other.mAttack;
+        mVsKind = other.mVsKind;
+        mVsDamage = other.mVsDamage;
+        mStatus = other.mStatus;
+        mCallback = other.mCallback;
+    }
 };
 
 /**
@@ -151,7 +173,7 @@ public:
     void set(dActor_c *actor, sCcDatNewF *collInfo, u8 amiLine);
 
     /// Sets a friend actor for this collider.
-    void setFriendActor(dActor_c *actor) { mFriendActor = actor; }
+    void setFriendActor(dActor_c *actor) { mpFriendActor = actor; }
 
     dActor_c *getOwner() const { return mpOwner; } ///< Gets the owner actor of this collider.
 
@@ -250,8 +272,11 @@ private:
     static bool _hitCheckDaikeiLR(dCc_c *ccTrp, dCc_c *ccBox);
 
 public:
+    float getXOffset(int idx) { return mCollOffsetX[idx]; }
+    float getYOffset(int idx) { return mCollOffsetY[idx]; }
+
     dActor_c *mpOwner; ///< The actor this collider belongs to.
-    dActor_c *mFriendActor; ///< A second actor that this collider will not collide with.
+    dActor_c *mpFriendActor; ///< A second actor that this collider will not collide with.
 
     u32 unk2; ///< [Unused (?)].
 
@@ -274,17 +299,17 @@ public:
     /**
      * @brief The X offset for a collision.
      *
-     * One entry per category. Each entry describes by how much the collider must be
+     * One entry per kind. Each entry describes by how much the collider must be
      * offset in the X direction in order to not collide with the other collider.
      */
-    float mCollOffsetX[8];
+    float mCollOffsetX[CC_KIND_COUNT];
     /**
      * @brief The Y offset for a collision.
      *
-     * One entry per category. Each entry describes by how much the collider must be
+     * One entry per kind. Each entry describes by how much the collider must be
      * offset in the Y direction in order to not collide with the other collider.
      */
-    float mCollOffsetY[8];
+    float mCollOffsetY[CC_KIND_COUNT];
 
     mVec2_c mCollPos; ///< The position where the last collision occurred.
 
@@ -314,6 +339,7 @@ public:
 private:
     bool mIsLinked; ///< Whether this collider has been placed in the collider list.
 
+private:
     typedef bool (*hitCheck)(dCc_c *, dCc_c *);
 
     /**
@@ -324,6 +350,7 @@ private:
      */
     static hitCheck _hitCheck[4][4];
 
+public:
     static dCc_c *mEntryN; ///< The first collider in the list.
     static dCc_c *mEntryB; ///< The last collider in the list.
 };

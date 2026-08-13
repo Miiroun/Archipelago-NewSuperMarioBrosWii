@@ -53,6 +53,8 @@ public:
         return mRes.syncAllRes();
     }
 
+    inline dRes_c *getResP() { return &mRes; }
+
 private:
     dRes_c mRes; ///< The resource manager.
     resCallback_c mCallback; ///< The callback for after a file has been loaded.

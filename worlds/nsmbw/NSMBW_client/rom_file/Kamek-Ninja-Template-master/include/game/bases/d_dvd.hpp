@@ -6,12 +6,11 @@ namespace dDvd {
 
 class loader_c {
 public:
-    loader_c();
     virtual ~loader_c();
     virtual void freeHeap();
 
-    void *request(const char *, u8, EGG::Heap *);
-    bool remove();
+    void *request(const char *name, u8 allocDirection, EGG::Heap *heap);
+    bool freeResouce();
 
 private:
     u32 mSize;

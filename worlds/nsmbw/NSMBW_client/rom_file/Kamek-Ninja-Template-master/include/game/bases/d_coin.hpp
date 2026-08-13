@@ -10,6 +10,7 @@ public:
     static int execute(); ///< Executes coin rotation.
 
     static mAng3_c getShapeAngle() { return m_h_shapeAngle; }
+    static mAng3_c getRealShapeAngle() { return m_shapeAngle; }
 private:
     static const int COIN_FRAME_COUNT = 64; ///< The coin rotation animation frame count.
     static mAng3_c m_shapeAngle; ///< The rotation to be applied to every coin.

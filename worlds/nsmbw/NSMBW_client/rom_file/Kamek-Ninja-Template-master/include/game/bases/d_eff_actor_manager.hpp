@@ -4,6 +4,7 @@
 class dEffActorMng_c {
 public:
     void createWaterSplashEff(mVec3_c &, unsigned long, s8, mVec3_c);
+    bool createBlockFragEff(mVec3_c &, unsigned long, s8);
 
     static dEffActorMng_c *m_instance;
 };

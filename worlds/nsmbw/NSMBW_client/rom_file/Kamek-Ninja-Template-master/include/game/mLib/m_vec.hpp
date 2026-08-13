@@ -1,5 +1,5 @@
 #pragma once
-#include <nw4r/math.h>
+#include <lib/nw4r/math.h>
 #include <game/mLib/m_angle.hpp>
 #include <lib/egg/math/eggVector.h>
 #include <game/cLib/c_math.hpp>
@@ -7,6 +7,16 @@
 /// A plain-old-data structure version of mVec2_c.
 /// @unofficial
 struct mVec2_POD_c {
+    void set(float fx, float fy) {
+        x = fx;
+        y = fy;
+    }
+    void set(const mVec2_POD_c &v) {
+        set(v.x, v.y);
+    }
+    void setX(float fx) { x = fx; }
+    void setY(float fy) { y = fy; }
+    
     float x;
     float y;
 };
@@ -29,6 +39,7 @@ public:
 
     /// @brief Copy constructor.
     mVec2_c(const mVec2_c &v) { set(v.x, v.y); }
+    mVec2_c(const nw4r::math::VEC2 &v) { set(v.x, v.y); }
 
     void set(float x, float y) {
         this->x = x;
@@ -100,6 +111,10 @@ public:
     /// @brief Inequality operator.
     bool operator!=(const mVec2_c &v) const { return x != v.x || y != v.y; }
 };
+
+inline mVec2_c operator*(float f, const mVec2_c &v) {
+    return mVec2_c(f * v.x, f * v.y);
+}
 
 /// @brief A three-dimensional floating point vector.
 /// @ingroup mlib
@@ -181,7 +196,7 @@ public:
     mVec3_c operator*(f32 f) const { return mVec3_c(f * x, f * y, f * z); }
 
     /// @brief Scalar division operator.
-    mVec3_c operator/(f32 f) const { f32 r = 1.0f / f; return operator*(r); }
+    mVec3_c operator/(f32 f) const { f32 r = 1.0f / f; return mVec3_c(x * r, y * r, z * r); }
 
     /// @brief Equality operator.
     bool operator==(const mVec3_c &v) const { return x == v.x && y == v.y && z == v.z; }
@@ -201,6 +216,14 @@ public:
         return EGG::Mathf::sqrt(PSVECSquareDistance((const Vec*) this, (const Vec*) &other));
     }
 
+    friend mVec3_c operator*(f32 f, const mVec3_c &v) {
+        return mVec3_c(v.x * f, v.y * f, v.z * f);
+    }
+
+    bool isSmallerThan1() const {
+        return PSVECMag(*this) <= 1.0f;
+    }
+    
     /// @brief Normalizes the vector.
     /// @return The vector's magnitude.
     float normalize();

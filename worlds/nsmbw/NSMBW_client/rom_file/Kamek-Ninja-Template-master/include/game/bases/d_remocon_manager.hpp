@@ -1,9 +1,62 @@
 #pragma once
 
+#include <types.h>
+#include <game/mLib/m_pad.hpp>
+#include <game/sLib/s_State.hpp>
+#include <lib/egg/core/eggController.h>
+
+#include <lib/egg/core/eggHeap.h>
+
 class dRemoconMng_c {
 public:
     class dConnect_c {
     public:
+        class dExtension_c {
+        public:
+            virtual ~dExtension_c();
+
+            STATE_FUNC_DECLARE(dExtension_c, Freestyle);
+            STATE_FUNC_DECLARE(dExtension_c, None);
+            STATE_FUNC_DECLARE(dExtension_c, Other);
+            STATE_FUNC_DECLARE(dExtension_c, Wait);
+
+            // New states
+            STATE_FUNC_DECLARE(dExtension_c, Classic);
+            STATE_FUNC_DECLARE(dExtension_c, Gamecube);
+
+            mPad::CH_e mControllerID;
+            u32 mExtensionType;
+            sFStateMgr_c<dExtension_c, sStateMethodUsr_FI_c> mState;
+        };
+
+        virtual ~dConnect_c();
+
+        STATE_FUNC_DECLARE(dConnect_c, Shutdown);
+        STATE_FUNC_DECLARE(dConnect_c, Sleep);
+
+        mPad::CH_e mControllerID;
+        dExtension_c mExtension;
+        u32 m_50;
+        bool mWillDisconnect;
+        bool mIsRumbleEnabled;
+        u32 m_58;
+        sFStateMgr_c<dConnect_c, sStateMethodUsr_FI_c> mState;
+
         static bool m_isBoot;
     };
+
+    dRemoconMng_c();
+
+public:
+    dRemoconMng_c(mPad::CH_e);
+    virtual ~dRemoconMng_c();
+
+    void reset();
+
+    static void create(EGG::Heap *heap);
+    static void execute();
+
+    dConnect_c *mRemocons[4];
+
+    static dRemoconMng_c *m_instance;
 };

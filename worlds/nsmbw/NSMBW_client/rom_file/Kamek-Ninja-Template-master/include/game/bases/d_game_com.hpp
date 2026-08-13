@@ -18,6 +18,7 @@ namespace dGameCom {
     void initRandomSeed(); ///< Initializes the random seed used for randomness.
     u32 getRandomSeed(); ///< Gets a seed used for randomness.
     int rndInt(size_t max);
+    float rnd();
 
     ////////////////////
     // Game Pause API //
@@ -37,6 +38,12 @@ namespace dGameCom {
     bool isGameStop(ulong flag);
     void clearGameStop(); ///< Resets the game stop state.
     void setGameStop();
+
+    //////////////////
+    // Language API //
+    //////////////////
+
+    u8 GetLanguageHBM();
 
     ////////////////////////
     // Model Lighting API //
@@ -80,6 +87,8 @@ namespace dGameCom {
     /// @param fukidashiAction The action prompt type to be hidden.
     void hideFukidashiForSession(int playerId, int fukidashiAction);
 
+    void FUN_800b37b0(int playerId, int fukidashiAction); ///< @unofficial
+
     ////////////////
     // Other APIs //
     ////////////////
@@ -93,17 +102,24 @@ namespace dGameCom {
 
     bool checkRectangleOverlap(mVec3_c *, mVec3_c *, mVec3_c *, mVec3_c *, float); ///< @unofficial
 
+    void SelectCursorSetup();
     void SelectCursorSetup(nw4r::lyt::Pane *pane, int index, bool useSpecialDraw);
+
+    void WindowPaneColorSet(nw4r::lyt::Window *, int);
     float getDispCenterY();
 
     void DispSizeScale(nw4r::math::VEC2 &scale);
 
     void LayoutDispNumber(const int &value, const int &fillLeft, LytTextBox_c *textBox, bool fillWidth);
+    void LayoutDispNumberDigit(const int &value, LytTextBox_c *textBox, bool fillWidth);
 
     bool isNowCourseClear();
-    void SelectCursorSetup();
-    void SelectCursorSetup(nw4r::lyt::Pane *, int, bool);
-    void WindowPaneColorSet(nw4r::lyt::Window *, int);
 
     void initGame();
+
+    bool chkCancelButton(int);
+
+    void AreaLanguageFolder(const char *, char *);
+
+    extern u32 l_gameStop;
 }

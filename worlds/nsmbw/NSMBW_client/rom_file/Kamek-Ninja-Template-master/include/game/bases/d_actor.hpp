@@ -35,8 +35,8 @@ public:
     enum EAT_BEHAVIOR_e {
         EAT_TYPE_NONE, ///< The actor cannot be eaten.
         EAT_TYPE_EAT, ///< The actor can be eaten and then spat out.
-        EAT_TYPE_EAT_PERMANENT, ///< The actor is consumed permanently after being eaten (default).
-        EAT_TYPE_UNK3, ///< Unknown behaviour. Used on Fruits, Pokeys and Giant Fuzzies.
+        EAT_TYPE_DRINK, ///< The actor is consumed permanently after being eaten (default).
+        EAT_TYPE_DRINK_BIG, ///< Used on Fruits, Pokeys and Giant Fuzzies. Creates an egg if applicable.
         EAT_TYPE_FIREBALL, ///< Yoshi can spit a fireball after eating the actor.
         EAT_TYPE_ICEBALL, ///< Yoshi can spit an iceball after eating the actor.
     };
@@ -55,13 +55,13 @@ public:
         CARRY_THROW = BIT_FLAG(1), ///< The actor is being actively thrown by the player.
     };
 
-    /// @brief The collision directions that an actor can respond to.
+    /// @brief The directions the actor can collide with.
     enum BG_COLL_FLAG_e {
-        COLL_NONE = BIT_FLAG(-1), ///< The actor does not collide with any surface.
-        COLL_WALL_R = BIT_FLAG(0), ///< The actor can collide with walls on its right.
-        COLL_WALL_L = BIT_FLAG(1), ///< The actor can collide with walls on its left.
-        COLL_HEAD = BIT_FLAG(2), ///< The actor can collide with ceilings.
-        COLL_FOOT = BIT_FLAG(3), ///< The actor can collide with the ground.
+        COLL_NONE = BIT_FLAG(-1), ///< The actor did not collide with any surface.
+        COLL_WALL_L = BIT_FLAG(0), ///< The actor collided with a wall on its left.
+        COLL_WALL_R = BIT_FLAG(1), ///< The actor collided with a wall on its right.
+        COLL_FOOT = BIT_FLAG(2), ///< The actor collided with the ground.
+        COLL_HEAD = BIT_FLAG(3), ///< The actor collided with a ceiling.
     };
 
     /// @brief Information related to actor spawning.
@@ -102,7 +102,7 @@ public:
     virtual void block_hit_init(); ///< Callback for when a block directly beneath the actor is hit.
 
     virtual bool vf68(dBg_ctr_c *collider) { return true; } ///< Unknown, related to collision. @unofficial
-    virtual s8 *getPlrNo() { return &mPlayerNo; } ///< Gets the player number associated with the actor. See #mPlayerNo.
+    virtual s8 &getPlrNo() { return mPlayerNo; } ///< Gets the player number associated with the actor. See #mPlayerNo.
     virtual mVec2_c getLookatPos() const; ///< Gets the position players look to when focused on the actor.
 
     /// @brief Returns whether the actor can be carried.
@@ -350,27 +350,27 @@ public:
     sRangeDataF mDestroyBound; ///< @todo Figure out the exact purpose of this field.
     u8 mDirection; ///< The actor's facing direction.
     u8 mAreaNo; ///< The actor's zone ID.
-    u8 mBgCollFlags; ///< The collision directions that the actor can respond to.
+    u8 mBgCollFlags; ///< The collision directions that the actor collided with in the previous frame. Value is a BG_COLL_FLAG_e.
 
     u8 *mpSpawnFlags; ///< The spawn flags for the actor. See ACTOR_SPAWN_FLAG_e.
     u16 *mpDeleteVal; ///< @unused
     u8 mEventNums[2]; ///< The event IDs the actor is tracking.
     u64 mEventMask; ///< The event mask, generated from #mEventNums.
 
-    u32 m_23b; ///< @todo Figure out the purpose of this field.
+    int m_23b; ///< @todo Figure out the purpose of this field.
     u16 mSpriteSpawnFlags; ///< The spawn flags from the sprite data entry.
     bool mBlockHit; ///< Whether a block below the actor was hit.
 
     fBaseID_e mEatenByID; ///< The @ref fBase_c::mUniqueID "unique identifier" of the eating actor.
     u8 mEatState; ///< The actor's eat state. Value is a EAT_STATE_e.
-    u8 mEatBehaviour; ///< The actor's eat behaviour. Value is a EAT_BEHAVIOR_e.
+    u8 mEatBehavior; ///< The actor's eat behaviour. Value is a EAT_BEHAVIOR_e.
     mVec3_c mPreEatScale; ///< The actor's scale before being eaten.
 
     EAT_POINTS_e mEatPoints; ///< @copydoc EAT_POINTS_e
     int mAttentionMode; ///< @todo Document this field and its values.
     u32 mAttentionFlags; ///< @todo Document this field and its values.
 
-    dPropelParts_c *mPropelParts; ///< The actor's propeller effect manager.
+    dPropelParts_c *mpPropelParts; ///< The actor's propeller effect manager.
     u8 mKind; ///< The actor's kind. Value is a STAGE_ACTOR_KIND_e.
     s8 mPlayerNo; ///< The player associated with the actor, @p -1 if not associated to any player.
     u8 mExecStopMask; ///< The mask required to disable the @p execute operation for the actor.
@@ -383,6 +383,18 @@ public:
     void setDefaultMaxBound() {
         mMaxBound.set(smc_CULL_XLIMIT, smc_CULL_YLIMIT, smc_CULL_AREA_XLIMIT, smc_CULL_AREA_YLIMIT);
     }
+
+    void setVisibleArea(const mVec2_POD_c &offset, const mVec2_POD_c &size) {
+        mVisibleAreaOffset.set(offset.x, offset.y);
+        mVisibleAreaSize.set(size.x, size.y);
+    }
+
+    float getVisOffsetX() { return mVisibleAreaOffset.x; }
+    float getVisOffsetY() { return mVisibleAreaOffset.y; }
+    float getVisSizeX() { return mVisibleAreaSize.x; }
+    float getVisSizeY() { return mVisibleAreaSize.y; }
+    float getVisTop() { return mPos.y + getVisOffsetY() + getVisSizeY(); }
+    float getVisBottom() { return mPos.y + getVisOffsetY() - getVisSizeY(); }
 
     u8 getKindMask() { return 1 << mKind; }
 

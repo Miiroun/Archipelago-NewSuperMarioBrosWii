@@ -1,0 +1,2 @@
+FUN_808ce8e0=0x808ce8e0
+isSpecialWorldCourseOpen=0x800fc470

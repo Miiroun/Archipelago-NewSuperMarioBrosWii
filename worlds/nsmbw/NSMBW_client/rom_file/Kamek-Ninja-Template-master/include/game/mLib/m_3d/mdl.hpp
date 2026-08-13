@@ -5,13 +5,13 @@
 
 namespace m3d {
     class mdl_c : public smdl_c {
-
+    public:
         class callback_c {
         public:
-            virtual ~callback_c();
-            virtual void timingA(ulong nodeId, nw4r::g3d::ChrAnmResult *anmRes, nw4r::g3d::ResMdl resMdl);
-            virtual void timingB(ulong nodeId, nw4r::g3d::WorldMtxManip *manip, nw4r::g3d::ResMdl resMdl);
-            virtual void timingC(nw4r::math::MTX34 *mtx, nw4r::g3d::ResMdl resMdl);
+            virtual ~callback_c() {}
+            virtual void timingA(ulong nodeId, nw4r::g3d::ChrAnmResult *anmRes, nw4r::g3d::ResMdl resMdl) {}
+            virtual void timingB(ulong nodeId, nw4r::g3d::WorldMtxManip *manip, nw4r::g3d::ResMdl resMdl) {}
+            virtual void timingC(nw4r::math::MTX34 *mtx, nw4r::g3d::ResMdl resMdl) {}
         };
 
         class mdlCallback_c {
@@ -51,6 +51,10 @@ namespace m3d {
 
         bool create(nw4r::g3d::ResMdl resMdl, mAllocator_c *allocator, ulong bufferOption, int viewCount) {
             return create(resMdl, allocator, bufferOption, viewCount, nullptr);
+        }
+
+        bool create(nw4r::g3d::ResMdl resMdl, mAllocator_c *allocator, ulong bufferOption) {
+            return create(resMdl, allocator, bufferOption, 1, nullptr);
         }
 
     private:

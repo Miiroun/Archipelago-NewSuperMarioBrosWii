@@ -1,5 +1,7 @@
 #pragma once
+
 #include <game/bases/d_mj2d_data.hpp>
+#include <lib/egg/core/eggHeap.h>
 
 class dSaveMng_c {
 public:
@@ -10,8 +12,14 @@ public:
     void startNandSave();
     void startNandLoad();
 
+    void initLoadGame(s8 slot);
+
+    static void create(EGG::Heap *heap);
+
+    u8 getLastSelectedFile() {return mHeader.mLastSelectedFile;}
+
     u8 mPad[0x20];
     dMj2dHeader_c mHeader;
 
-    static dSaveMng_c *m_instance;
+    static dSaveMng_c* m_instance;
 };

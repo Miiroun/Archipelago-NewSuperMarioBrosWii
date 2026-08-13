@@ -10,6 +10,7 @@
 #define ACTOR_PARAM_CONFIG(name, offset, size) static const u16 PARAM_##name = ((offset << 8) | size)
 #define ACTOR_PARAM_LOCAL(param, name) ((param >> (PARAM_##name >> 8)) & ((1 << (PARAM_##name & 0xff)) - 1))
 #define ACTOR_PARAM(name) ACTOR_PARAM_LOCAL(mParam, name)
+#define ACTOR_PARAM_GEN(cls, name, value) ((value & ((1 << (cls::PARAM_##name & 0xff)) - 1)) << (cls::PARAM_##name >> 8))
 
 /// @brief The base class for all scenes, actors and various other processes.
 /// @ingroup framework
@@ -100,7 +101,7 @@ public:
     fBase_c(); ///< Constructs a new base.
 
     /// @brief @p new operator override for all bases.
-    /// @details Bases are allocated in mHeap::g_gameHeaps[0] in a top-down direction, and are
+    /// @details Bases are allocated in mHeap::g_gameHeaps[mHeap::GAME_HEAP_DEFAULT] in a top-down direction, and are
     /// zero-initialized.
     static void *operator new(size_t);
     static void operator delete(void *); ///< @p delete operator override for all bases.
@@ -180,6 +181,8 @@ protected:
     virtual ~fBase_c(); ///< Destroys the base.
 
 public:
+    fBaseID_e getID() const { return mUniqueID; }
+
     /// @brief Requests deletion of the base.
     /// @details Calling this function multiple times has no effect.
     void deleteRequest();

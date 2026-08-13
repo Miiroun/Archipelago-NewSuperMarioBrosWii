@@ -12,22 +12,22 @@ class dCircleLightMask_c : public dLightMask_c {
 
 public:
     dCircleLightMask_c() { reset(); };
-    virtual ~dCircleLightMask_c() {}
-
-    virtual u32 init(void*, u32); ///< @unofficial
-    virtual u32 execute();
-    virtual u32 draw();
-
     void reset() {
         mRadius = 0.0f;
         mMask = nullptr;
         mQuad = nullptr;
     }
-
-    void set(float x, float y, float z, float radius) {
-        mPos = mVec3_c(x, y, z);
+    void set(mVec3_c pos, float radius) {
+        mPos = pos;
         mRadius = radius;
     }
+
+
+    virtual u32 init(void*, u32); ///< @unofficial
+    virtual u32 execute();
+    virtual u32 draw();
+
+    virtual ~dCircleLightMask_c() {}
 
     mVec3_c mPos;
     float mRadius;

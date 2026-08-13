@@ -164,8 +164,8 @@ public:
     virtual void setDeathSound_Spin();
     virtual void setDeathSound_Rolling();
 
-    STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieFumi);
-    STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieFall);
+    STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieFumi); ///< Being squished by a jump.
+    STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieFall); ///< Falling out of the screen.
     STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieBigFall);
     STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieSmoke);
     STATE_VIRTUAL_FUNC_DECLARE(dEn_c, DieYoshiFumi);
@@ -186,7 +186,7 @@ public:
 
     virtual bool checkDispIn();
     virtual void setWaterSpeed();
-    virtual void setDamage(dActor_c *actor);
+    virtual bool setDamage(dActor_c *actor);
 
     void boyonInit();
     virtual void boyonBegin();
@@ -199,7 +199,7 @@ public:
 
     virtual void beginFunsui();
     virtual void endFunsui();
-    virtual void isFunsui() const;
+    virtual BOOL isFunsui() const;
 
     virtual bool checkComboClap(int max);
 
@@ -220,7 +220,7 @@ public:
     virtual void yoshifumiEffect(dActor_c *actor);
     void fumistepSE(dActor_c *actor);
     void yoshifumistepSE(dActor_c *actor);
-    void PlayerFumiJump(dActor_c *actor, float);
+    void PlayerFumiJump(dActor_c *actor, float jumpSpeed);
     void setFumiComboScore(dActor_c *actor);
 
     // Nonvirtuals
@@ -275,7 +275,7 @@ public:
     mVec3_c mFootPush2;
     u8 mDeathFallDirection; ///< The X direction to move towards on death.
     u8 mIceDeathDirection; ///< The X direction to move towards on ice death.
-    bool mKilledByLiquid; ///< Whether the enemy was killed by falling in a liquid.
+    bool mKilled; ///< Whether the enemy was killed.
     u8 mPad2[1];
     bool mFootAttr3;
     bool mInLiquid; ///< Whether the enemy is in a liquid.

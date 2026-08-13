@@ -6,3 +6,4 @@ bin
 *.o.d
 /_build/
 /_maps/
+/include/

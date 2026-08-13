@@ -1,10 +1,11 @@
 #include <game/mLib/m_sphere.hpp>
+#include <game/mLib/m_mtx.hpp>
 #include <game/bases/d_wm_lib.hpp>
 
 class dWmViewClip_c {
 public:
     void set( float, float, float, float, const mMtx_c& );
-    bool CheckClipSphere(const mSphere_c *);
+    bool intersectSphere(const mSphere_c *); ///< @unofficial
 };
 
 class dWCamera_c {

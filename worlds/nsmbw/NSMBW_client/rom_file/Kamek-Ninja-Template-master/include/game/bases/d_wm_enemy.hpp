@@ -74,7 +74,7 @@ public:
     void deleteSound();
     void deleteEffect();
     bool csCommand(int id, bool b); ///< @unofficial
-    bool isMainCast();
+    bool FUN_800f88d0(); ///< @unofficial (`isMainCast`?)
     void demoJump(const mVec3_c &pos, JumpData_s &jumpData, float scale); ///< @unofficial
     bool isThroughPoint(int);
     bool isDead();
@@ -102,7 +102,7 @@ private:
         float m_00, m_04, m_08, m_0c;
         u8 mPad[0x42];
         mAng3_c mAngle1;
-        mAng3_c mAngle2;
+        s16 mBgmSyncValue[2];
     };
 
     enum PROC_TYPE_e {
