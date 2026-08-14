@@ -9,7 +9,7 @@ class TestLevelShuffle(NSMBWWorld):
         "randomize_powerups": RandomizePowerups.option_on,
         "starting_world" : 1,
         "use_riivolution" : True,
-        "level_shuffel_riivolution" : True,
+        "level_shuffle_riivolution" : True,
         "music_shuffel_riivolution" : True,
     }
 
@@ -19,7 +19,7 @@ class TestLevelShuffleOff(NSMBWWorld):
         "randomize_powerups": RandomizePowerups.option_on,
         "starting_world" : 1,
         "use_riivolution" : True,
-        "level_shuffel_riivolution" : False,
+        "level_shuffle_riivolution" : False,
         "music_shuffel_riivolution" : True,
     }
 

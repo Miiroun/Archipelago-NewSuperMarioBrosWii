@@ -46,91 +46,50 @@ test
 - Secret exit items
   - update docs
 
-add goomba lock as option
-
 Faster timer countdown speed
 kmWrite32(0x800e3ab8, 0x3403fe90);  // 92 -> 368
 origin? works? : replace time trap with this
 
-Replace all Goombas with Koopas, at the profile level
-kmWrite32(0x8076a814, 0x80afdcb0);
 
 rework options to be better
 -> Send yaml for help
 
-short list of all relevant commands
 
-add 1ups as locations to world : needs option : keep secret until logic
-
-INTRU CLEAR :
-- find function to hook
-- find empty memory that can use
 
 ATLEAST : soft logic is inefficent
-- cached rule builder
 - collect / remove override
 
 Change starting world : ask for help in discord
 
 Edit star coin level icon : new image
 
-JIT
-- Assert my value mem is 0, reset it after use
-- fix so works if code is of greater length
-
-
-
 try Gen a patch file for sc model : if much smaller use it
-
 
 Should check auto load id should load save file state : also file path seems wrong
 
-Update to newer ghidra?
+add wait after press connect before try to connect to ghidra
+
+WANT TO FIX WORLD 9 FOR NEXT VERSION : SEPARATE PER LEVEL SEEMS HARD BUT COULD MAYBE CREATE AN EASY PATCH THAT JUST UNLOCKS ALL BY DEFAULT
+DONT WANT IT THIS BROKEN FOR NEXT VERSION
+playtest : disable_world9_sc_req
+- remove option for player to decide
+
+can just empty inventort of star if not unlocked : same with other pows?
 
 ## Super short term
-- multiplayer
-  - Separate powerup unlocks?
-- Rename:
-  - movement to abilities?
-  - dontrandomoves to default moves?
-  - include option to sanity?
-- button_down and button_up and pipe logic
-- create an function to  and bytes
-- Rando game tile sheet, enemy sheet (or sprite table ?), music etc. Easiest done through riivolution
 - Try redumping my copy of nsmbw : test which guide / method best to link to
 - Ask for help in dc for names
-- Work on preventing sending of locations on title screen
-- Ask for help in dc for names
-- Secret exit items in client !!!
 - Run language test world thing
-- look up hint movie prossessing in ghidra
-- Other shuffles?
-  - enterence
-  - enemy
-  - background
-  - text
-  - object
-  - characters?
 - Add riivolution info to docs
-- test if loading code actually fails the client
-- run /dev x2 and then see which hm aren't showing up : add to dont rando
 - Dolphin wsl
 - Beat some levels on vanilla save file 1 to verify no wrong sends are happening
 - Reword timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
-- Put disclaimer that collect SC immediately doesn't impact logic
-- Add setting to which save file to continuously save/load from
-- Docs mention no changes dolphin setting or keybind
-- Hm in peach castle is not correct amount on free, should remove req of having sc
-- Add key binds to docs
-- Location scout hm: give as hint, as an option
-  - Could maybe change name of hm based on if priority / useful / filler
 - Use dme on intro, try finding way to not release on connect
 - Can I verify dolphin settings? have been changed?
 - Time change default not current
 - implement method to read arc files : needed to change names of subfolders
 - verify that key combos dont overlap
-- point to dumping guide in docs
 - Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
 - Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
 - Add better way of explaining rules
@@ -147,21 +106,9 @@ Update to newer ghidra?
 - Rando enemies: option if remove or add them
 - Try detecting dolphin settings C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config
 - Rework modifiers slightly so that they don't cause issues any more
-- Chance for level to be replaced by backwards version
-- Can i somehow trigger something with hitting ?-blocks?
-- Make sure works with no patch
-- Add test not on save file 1 before sending locations
-- Test manually renaming just 1 file
-- Make don't rando move invisible
-- Remove option page link that doesn't exist
 - What happens when resync state with level comp off
 - Can create level patches if desire with bsdiff4, would be easy if needed
   - if want to change logic etc
-- riivolution level shuffle is backwards
-  - fixed?
-- Emulated memory override ? 
-- Does glitch logic not work??
-  - add test
 - Separate auto start: auto save, auto close
 - detect if unsupported dolphin settings are used
 - Review option creator pr
@@ -173,47 +120,18 @@ Update to newer ghidra?
 -  btw srarcoin 1 in 1-3 is entireely possible with only mushroom by triple jumping, though it is a harder one so I see why it isn't in logic
 - Shuffle sprite table? How much will explode?
 - Publish can't move left patch in nsmbw dc
-- Double jump
-  - https://discord.com/channels/673369321522593794/1396386889052983307/1396386889052983307
-- reuse code for check point for other level elements
 - remove optimiz form modifires : so doesnt causes issue at cost of performance
 - have option to rando towers and airshipps in their own pool
-- If you are using Dolphin Emulator, you need to enable MMU in Config > Advanced (this can only be done while a game is not running).  Next up, the retail game does not display the exception handler by default (most modding bases do). To show it, press , , , , , , , , ,  on Player 1's Wii Remote. Alternatively, Dolphin's log will print out the exception info, so long as both OSReport log types are enabled.
-- Mention common issues if not loading save states
-- Mention dolphin default program in common errors
-- Find other way to invaliditet dolphin cache
-- Test mem1 and 2 issue
-- Should be able to at least relatively easily create kamek patch that can kill mario from externally modified memory
-- Add test with / out exits
 - Rework modifiers so issue doesn't happen
 - Add assert if save slots overlap
 - Ask react if should rando run
-- Faq jit savestate
 - Try moving mem1, see if causes issues
 - Change docs for linux : no need for root if xdotools or ydotools
 - option to shuffle only towers within themselves
 - Try: Ensure that "Enable CPU Overclock" and "Emulated Memory Size Override" are both off in your Dolphin settings
 - Use single adress to mark if have applied patch
-- Use the code software
-- Create nice title screen
-- Install blender plugin for brres
-- Link to setup guide in release
-- Trap to put game in thrown state
-- Ask how kamek 2 loaders work
-- Download keyboard like LM??
-  - https://github.com/BootsinSoots/Archipelago/blob/a65d00434f58781d0286387eeb2575d80ee59791/worlds/luigismansion/iso_helper/LM_Rom.py#L148
-- Auto open riivolution as separate setting 🤔, need to verify game not running
 - Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
-- Multiple Dolphin support:  In your dolphin folder, copy the dolphin.exe and rename it to something else, like Dolphin2.exe Once thats done open Luigis Mansion Client, regardless of whether Dolphin is open or not, and type /change_dolphin_process_name Dolphin2.exe to force DME to use that for LM Client from now on (Alternatively in host.yml, there is now a new option under luigismansion_options that is called dolphin_process_name that you can just change directly, see screenshot)  You will then get a popup that the client MUST be closed otherwise this will not connect to the right dolphin instance (only the client, do not need to close the launcher)  Upon re-opening the client it will now try and connect to Dolphin2.exe instead
-- Hi if you are having hook loop connection issues, you can be because of these things:  1. A not PAL rom (eu rom) 2. Multiple instances of dolphin being open, even library windows count, make sure to have just one. 3. One of the two is running as administrator, they either need to run both as administrator or both not as administrator. 4. Your dolphin version is too old 5.3+ should work, but i recommend any of the 25XX versions or above. (If on linux make sure you use the *flatpak* version others will not work.) 5. For some people setting having their dolphin fallback region to anything but EU/PAL also causes connection issues
-- Update world 9  : use help
-- Look in regi for sand storm and meteor : see if is just an easy flag to change?
-- Ghirdra https://discord.com/channels/673369321522593794/673706884557176832/1477052416598999240
-- Command description for /save and /load are messed up
 - have randomize time increase speed instead of setting clock??
-- shuffle coin and battle levels with normals
-- / shouldn't be in default name for setting
-- Mention ut and fuzzer in credit
 - Auto close dolphin doesn't work on Linux
 - Add if game over : resync state to docs
 - Save on disconnect
@@ -227,18 +145,18 @@ Update to newer ghidra?
 - Option : shuffle coin levels with normal, needs custom logic
 - Write to GameFlag_e?
   - enable debug things etc
+- Don't allow lives and powerups to be maxed out
+- Add local multiplayer to docs
 
 
 
 ## Playtest
 - multiplayer
-- deathlink amnesty
 - do complete playthrough, add spin jump and jump logic + time logic
 - Deathlink group
 - Playtest on linux so the root error is apparent
 - test new read manifest works on frozen and linux
 - test hm options
-- playtest so deathlink amnesty and groups works
 - Change default savestate button
 - command changing saveslot and clearcache slot
 - get_time
@@ -256,10 +174,9 @@ Update to newer ghidra?
 - patch not need watching hint movies
 - Shortcuts
 - Location scout hm
-- Try sending !-switch
-- Title screen replacement
 - q-switch
 - Try skip wii strap patch : see if works to not have bug
+  - does not work on US rev2, atleast
 - Playtest secret exits
 - Cap inven pow at 96
 - Test speed trap
@@ -268,12 +185,15 @@ Update to newer ghidra?
   - download images from wiki
   - Create own illustations of unlocks for itemtracker
 - filename of new extracter
+- p and q switch patch
+- goomba lock doesnt work
+- button_down and button_up and pipe logic
+- Star invent not sending, of by 1, just remove the -1, verify it works
+- start with all hm hinterd
+- level shuffle has proper logic
 
 
 ## Bugs to fix
-- overwrite level comp ?
-  - Heya! So I had an issue with save states. Everything worked fine during the first bit of an AP I did, Everything continued to work fine till this morning after about an hour of game time. For some reason my save states were automatically being loaded instead of saved, and while I did have back-up save states, I did have an issue of that messing with future aspects as all my levels I completed with star coins suddenly went uncleared. The only thing that was unlocked was secret exit paths in levels I cleared with a secret exit but couldn't get that fixed afterwards. I did use the recent version posted not long ago so i'm unsure if this was an issue on my end I could have fixed or not.
-  - I had a back-up save state in Worlds 3 & 9, which were the two worlds I was focusing on and I believe the issues started after beating 9-8 or 9-3? The world 3 back-up state was only a few levels behind (like 2 or 3). However after beating like one or two levels, the game started loading a state it made itself in World 4. So whenever I tried loading the World 9 or World 3 state, things ended up breaking and even one of my back-up states got messed up as the game auto-stated the same moment I save stated. Luckily it was only one of them (I usually make two states just in case) but, yeah the issues started in world 9 but carried over even into world 3 where world 9 was never even touched on that particular state.
 - Can't leave vine without spin jump
   - rework climb
 - i wanted to make note of some issues i encountered while playing this apworld. i've been playing on save file 1, first on accident and later i've just been sticking to it, because the game didn't have any gamebreaking problems with that and i thought this would be good to report in case the future is to make it so you can play on the other save files. it may be hard to tell where save file 1 is causing problems though, so i'm sorry if you can't make use of all this regardless:
@@ -283,14 +203,7 @@ Update to newer ghidra?
 - HM5 : all hm requring castle comp
   - might be problem with patch for skipping world unlocks
 - Som hm req cannon comp
-- Other errors i noticed, 4-1 star coin is collectable with just carry by picking up the koopashell on the little bit of land with the red ring, once i got the propeller mushroom for what i had unlocked, 1-1 star coin 2 and 4-1 starcoin 2 can both be collected with just propeller, and 7-3 starcoin 2 can be collected with climb and propeller,  (i forgot to look if it was in logic before grabbing it, but you can also get 1-castle starcoin 3 with propeller and no p-switch) also hint movie 06 is unobtainable until the game registers 1-tower is completed, meaning it can't be collected until the second progression of world 1 is collected (not entirely sure what progress on hint movies are though, I've had some hint movies pop up and not be in logic, and still haven't been able to get hint movie 09 to show up despite being in logic, though i know the hint movies are weird to get so that might be user error)
-  - the 1-1_sc2 cannot be replicated with their yaml
-- you could also prevent locking yourself out of things by making the shop need you to have the currency, but not actually take it away and instead modify the prices to have some order to the actual shop items
-- 6-4 sc1 logic wrong?
-- 6-3 quest switch doesn't work ?
-- 4-G ice flower?
 - Fix inventory pow on other savefiles
-- Starcoin invent not sending, of by 1, just remove the -1, verify it works
 - Add command to chage which save slot to use for option
 - Why doesnt launcher componenet work while running from source
 - try loading code patch with riivolution
@@ -313,22 +226,18 @@ Update to newer ghidra?
 - Is tracker 0.3.3 broken? for 0.2.1 5-1 ??
 - Loose powerup should put to super if small
 - 9-3 bugged, sends location
+- star works if gotten from menu
 
 
 
 ## Short term
-- Multiplayer support
-  - find other player pointers : for lives and powerups
-  - Kill when in water
 - fix UT-autotab : actually works? : needs to just update on switch and not death
 - Hint movies does not work on other save files?
 - Dereference player  pointer
-- Add support for multiplayer and other savefile support
+- Add support for other savefile
 - Add enemy ambush and toad rescue
-- PERSISTANTSTORAGE instead of local save file
 - I have issue with fuzzing with hooks: UT 
 - Do playthrough, document completion times for time logic
-- Fix so work with multiple dolphin instances (so players can have all games open at same time)
 - Inventory pow doesn't work on other save files
 - toad rescue location
 - toad house doesn't work to set, probably needs to update other location too
@@ -347,6 +256,10 @@ Update to newer ghidra?
 - AFTER JIT clear have proven to work : make post in AP-mod thread about it
 - To-do:  prompt to watch hint movie
 - Need spin to get off vine and yoshi
+- look up hint movie prossessing in ghidra
+- shuffle coin and battle levels with normals
+- add 1ups as locations to world : needs option : keep secret until logic
+- Look in regi for sand storm and meteor : see if is just an easy flag to change?
 
 
 
@@ -428,6 +341,7 @@ Update to newer ghidra?
 - Is there a way in game to see how many worlds you need to complete if you set the yaml to be random? If not, I would like to suggest some way to notify the player how many they need, maybe in peach's castle or something?
 - Don't know how possible it would be, but could there potentially be a starcoin counter on the overworld ui under the level/lives to keep track of how many are collected?
 - Change hint movie names to indicate prog, trap, useful
+- Multiplayer have separate pow restrictions
 
 
 ## ER
@@ -479,6 +393,8 @@ Summery poll
   - Start with powerup
   - Moon jump
   - Each level connection seperate item
+  - Double jump
+    - https://discord.com/channels/673369321522593794/1396386889052983307/1396386889052983307
 - Finding toad in level gives hint
 - TRAPS
   - Sandstorm
@@ -489,6 +405,7 @@ Summery poll
   - Auto scroll
   - Speed up / slow down game clock
   - Ice physics
+  - Trap to put game in thrown state
 - FILLER 
   - Gain this levels check point
   - Get toad house (beginning of world) : toad house is in MJ..game.. files, should be easy tm
@@ -542,6 +459,8 @@ REWORK
 - Unlock other charactes (no gameplay) with player 1 change character fix
 - Difficullty patch levels : make levels harder, similar to other mods, if settings enabled for this
 - Have character be randomized and unlockable
+- Chance for level to be replaced by backwards version
+
 
 
 ## Features I (Miiroun) will not implement

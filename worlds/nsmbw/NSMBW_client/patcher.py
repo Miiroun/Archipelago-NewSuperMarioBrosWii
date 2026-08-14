@@ -129,7 +129,7 @@ class Patcher:
 
 # need to read and modify name of arc files
     def create_riivolution_patch(self):
-        if self.slot_data["level_shuffel_riivolution"]:
+        if self.slot_data["level_shuffle_riivolution"]:
             self.patch_levels()
         if True:
             folder_name = "Object"
@@ -143,7 +143,7 @@ class Patcher:
             #self.patch_subfolder(folder_name, "Pa2", True)
             #self.patch_subfolder(folder_name, "Pa3", True)
 
-        if self.slot_data["music_shuffel_riivolution"]:
+        if self.slot_data["music_shuffle_riivolution"]:
             self.patch_entire_folder(os.path.join("Sound", "stream"))
 
     def patch_files(self, file_names : List[str], folder_name : str, arc_rename : bool = False):
@@ -347,8 +347,8 @@ if __name__ == "__main__":
     _seed = "00000"
     level_order = list(range(sum(LEVELS_PER_WORLD)))
     random.shuffle(level_order)
-    _slot_data = { "level_shuffel_riivolution" : 1,
-                   "music_shuffel_riivolution" : 1,
+    _slot_data = { "level_shuffle_riivolution" : 1,
+                   "music_shuffle_riivolution" : 1,
                    "shuffled_level_order" : level_order}
     _patcher = Patcher(_seed, _slot_data)
 

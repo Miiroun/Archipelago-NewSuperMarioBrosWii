@@ -253,12 +253,12 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "3-C"  : Level(pipe & button_down & button_up & normal_move & door, (True_(), True_(), True_())),  # -8 3-C
 
     # world 4
-    "4-1"  : Level(normal_move & swim & pipe& button_down & button_up, (ice_o | peng | propeller_o | (mini_o & (run | logic_hard)), ice_o | peng | propeller_o | mini_o | (logic_hard & wall_jump & run & ground_pound), peng | ice_o | mini_o | propeller_o | logic_hard)),  # -1
+    "4-1"  : Level(normal_move & swim & pipe& button_down & button_up, (ice_o | peng | propeller_o | (mini_o & (run | logic_hard)) | carry, ice_o | peng | propeller_o | mini_o | (logic_hard & wall_jump & run & ground_pound), peng | ice_o | mini_o | propeller_o | logic_hard)),  # -1
     "4-2"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -2
     "4-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), mini | propeller_o | (peng & crouch & (run | logic_hard)) | (swim & (super_mario | run | (star & logic_hard))), swim & mini)),  # -3
     "4-4"  : Level(pipe & button_down & button_up & normal_move & swim, ((peng | ice_o | propeller_o | mini_o) & p_switch, True_(), True_())),  # -4
     "4-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -5
-    "4-G"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch)), (True_(), True_(), True_()), True_()),  # -6 4-G
+    "4-G"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch) | (ice_peng_o & carry_block)), (True_(), True_(), True_()), True_()),  # -6 4-G
     "4-T"  : Level(pipe & button_down & button_up & normal_move & tower_rules, (True_(), True_(), True_()), True_()),  # -7 4-T
     "4-C"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), True_(), True_())),  # -8 4-C
     "4-A"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & (ground_pound | propeller_o)) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-A
@@ -275,7 +275,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "6-1"  : Level(normal_move, (True_(), True_(), logic_hard | ice | peng_o | propeller_o)),  # -1
     "6-2"  : Level(normal_move & pipe& button_down & button_up, (carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_())),  # -2
     "6-3"  : Level(normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),(True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry))), # 6-3
-    "6-4"  : Level(pipe & button_down & button_up & normal_move , ((logic_hard | yoshi | propeller), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
+    "6-4"  : Level(pipe & button_down & button_up & normal_move, ((carry | yoshi | propeller), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
     "6-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), climb & (carry | propeller_o)), climb),  # -5
     "6-6"  : Level(pipe & button_down & button_up & normal_move & (question_switch | logic_hard), (True_(), True_(), True_()),True_()),  # -6
     "6-T"  : Level(pipe & button_down & button_up & normal_move&tower_rules, (True_(), wall_jump | propeller_o, wall_jump | propeller_o)),  # -7 6-T
@@ -284,7 +284,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
 # world 7
     "7-1"  : Level(normal_move & pipe& button_down & button_up, (wall_jump | propeller_o, True_(), True_())),  # -1
     "7-2"  : Level(pipe & button_down & button_up & normal_move & (swim | propeller_o), (ground_pound | (logic_hard & swim & (ice_peng_o & carry) | (peng_o & crouch)), swim, True_())),  # -2
-    "7-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), climb & p_switch, True_())),  # -3
+    "7-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), climb & p_switch | (climb & propeller_o), True_())),  # -3
     "7-4"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -4
     "7-5"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (True_(), propeller | p_switch, True_())),  # -5
     "7-6"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_()), True_()),  # -6

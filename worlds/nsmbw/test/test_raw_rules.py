@@ -11,7 +11,7 @@ class TestRawRules(NSMBWWorld):
         "bowser_world_unlock" : 0,
         "starcoin_shop_multiplier" : 1,
         "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_ordered,
-        "level_shuffel_riivolution" : LevelShuffleRiivolution.option_false,
+        "level_shuffle_riivolution" : LevelShuffleRiivolution.option_false,
         "hint_movie_sanity" : HintMovieSanity.option_true,
         "include_inventory_powerups": 40,
     }

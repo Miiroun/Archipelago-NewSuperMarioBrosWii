@@ -93,14 +93,14 @@ class MemoryAddresses(object):
         self.map_world = self.map_between("E2",0x8042A04B)
         self.game_recording_state = self.map_between("E2",0x80315b98)
 
-        play_bas_add = self.hard_code({"E2" : 0x8154CCE7,"P1" : 0x8154CCE7}) -0x152
-        self.powerup_state = list([ play_bas_add + 0x152 + i* 0x20c for i in range(4)]) # might be offsey with 0x2d08+0x1
+        #81549FCF
+        play_bas_add = 0x8154459F
+        self.powerup_state = list([ play_bas_add + i* 0x2D18 for i in range(4)]) # might be offsey with 0x2d08+0x1
         assert len(self.powerup_state) == PLAYER_COUNT, f"Powerup_state address list is of wrong size {len(self.powerup_state)}"
 
         # memory map doesnt work for this for some reason
         #self.powerup_state = 0x8154CCE7
 
-        self.player_status = self.map_between("E2",0x8154CC5C)
         self.mario_lifecount = [self.map_between("E2",0x80354E90+i*2) for i in range(PLAYER_COUNT)] # JUST GEUSSING DATA STRUCTURE
         assert len(self.mario_lifecount) == PLAYER_COUNT, f"Mario life count address list is of wrong size {len(self.mario_lifecount)}"
 
@@ -211,7 +211,7 @@ class MemoryAddresses(object):
         self.gravity_start = self.map_between("P1", 0x802f5938)
 
         self.patch_p_switch = self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch")
-        self.patch_q_switch = self.create_patch("P1", 0x809c6168, instru_noop, instru_bne + val_000c, "patch_q_switch")
+        self.patch_q_switch = self.create_patch("P1", 0x809c6168, instru_b+ b'\x00'+ val_0000, instru_bne + val_000c, "patch_q_switch")
 
         self.patch_goomba = self.create_patch("P1", 0x80031210, instru_return, instru_stwu + val_fff0, "patch_goomba")
 
@@ -252,7 +252,8 @@ class MemoryAddresses(object):
 
 
         self.patch_star = [
-            self.create_patch("P1", 0x80A28430, 0x38A00000, 0x38A00294, name="patch_star")
+            #self.create_patch("P1", 0x80A28430, 0x38A00000, 0x38A00294, name="patch_star")
+            self.create_patch("P1", 0x80a28424, instru_noop, instru_beq + val_001c, name="patch_star_level")
         ]
 
             ## patch patches ---------------------------------------------------
@@ -303,25 +304,25 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x803286D8, int_to_bytes(0x8015CFC0, 4), name = "patch_skipp_wii_remote_strap_screen"),
         ]
 
-        lives_limit_change = [
-            self.create_patch("P1", 0x80427C00, int_to_bytes(0x00002710, 4), name = "lives_limit_change" ),
-            self.create_patch("P1", 0x80159A50, int_to_bytes(0x3882ab38, 4), name = "lives_limit_change"),
-        ]
+        #lives_limit_change = [
+        #    self.create_patch("P1", 0x80427C00, int_to_bytes(0x00002710, 4), name = "lives_limit_change" ),
+        #    self.create_patch("P1", 0x80159A50, int_to_bytes(0x3882ab38, 4), name = "lives_limit_change"),
+        #]
 
         exception_handler = self.create_patch("P1", 0x802D7528, int_to_bytes( 0x48000060, 4), name = "exception_handler")
 
         # these are created by MandyIGuess https://github.com/MandyIGuess/MandyIGuess/blob/master/NSMBW-Code-Hooks.md
-        fs_RemoveMultiSelect = [
-            self.create_patch("P1", 0x80783D04, 0x4800001C, name="fs_RemoveMultiSelect"),
-            self.create_patch("P1", 0x807837FC, instru_noop, name="fs_RemoveMultiSelect"),
-            self.create_patch("P1", 0x8078380C, instru_noop, name="fs_RemoveMultiSelect"),
-            self.create_patch("P1", 0x8078394C, instru_noop, name="fs_RemoveMultiSelect"),
-            self.create_patch("P1", 0x8078395C, instru_noop, name="fs_RemoveMultiSelect"),
-            self.create_patch("P1", 0x80784220, instru_noop, name="fs_RemoveMultiSelect"),
-            self.create_patch("P1", 0x80784230, instru_noop, name="fs_RemoveMultiSelect"),
-        ]
+        #fs_RemoveMultiSelect = [
+        #    self.create_patch("P1", 0x80783D04, 0x4800001C, name="fs_RemoveMultiSelect"),
+        #    self.create_patch("P1", 0x807837FC, instru_noop, name="fs_RemoveMultiSelect"),
+        #    self.create_patch("P1", 0x8078380C, instru_noop, name="fs_RemoveMultiSelect"),
+        #    self.create_patch("P1", 0x8078394C, instru_noop, name="fs_RemoveMultiSelect"),
+        #    self.create_patch("P1", 0x8078395C, instru_noop, name="fs_RemoveMultiSelect"),
+        #    self.create_patch("P1", 0x80784220, instru_noop, name="fs_RemoveMultiSelect"),
+        #    self.create_patch("P1", 0x80784230, instru_noop, name="fs_RemoveMultiSelect"),
+        #]
 
-        dontToggleSuperGuideBit = self.create_patch("P1", 0x8006066C, instru_noop, name="dontToggleSuperGuideBit")
+        #dontToggleSuperGuideBit = self.create_patch("P1", 0x8006066C, instru_noop, name="dontToggleSuperGuideBit")
 
         #dontLoseLives = self.create_patch("P1", 0x8006066C, instru_noop, name="dontLoseLives")
 
@@ -331,12 +332,16 @@ class MemoryAddresses(object):
         ]
         # end of MandyIGuess's patches
 
+        disable_world9_sc_req = [
+            self.create_patch("P1", 0x808ced20, instru_noop),
+            self.create_patch("P1", 0x808ced2c, instru_noop),
+        ]
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
             patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
-            patch_skipp_wii_remote_strap_screen, lives_limit_change, exception_handler,
-            fs_RemoveMultiSelect, dontToggleSuperGuideBit, worldMapAfterFinalBoss
+            patch_skipp_wii_remote_strap_screen,  exception_handler, #lives_limit_change,
+            worldMapAfterFinalBoss #dontToggleSuperGuideBit, fs_RemoveMultiSelect, disable_world9_sc_req
         ]
 
         # address 0x80162fb8 might be good to create a branch from

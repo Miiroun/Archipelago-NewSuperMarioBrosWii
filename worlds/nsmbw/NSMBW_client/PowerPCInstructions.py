@@ -18,7 +18,9 @@ instru_6000     : bytes = b'\x60\x00\x00\x00'
 reg_r0     : bytes = b'\x00\x00'
 #reg_sp    : bytes = b'\xff\xf0'
 
-val_0000   : bytes = b'\x00\x00'
+val_00 : bytes = b'\x00'
+
+val_0000   : bytes = val_00 + val_00
 val_0001   : bytes = b'\x00\x01'
 val_0002   : bytes = b'\x00\x02'
 val_0003   : bytes = b'\x00\x03'
@@ -29,6 +31,8 @@ val_0014   : bytes = b'\x00\x14'
 val_0017   : bytes = b'\x00\x17'
 val_0018   : bytes = b'\x00\x18'
 val_0019   : bytes = b'\x00\x19'
+val_001c   : bytes = b'\x00\x1c'
+
 val_ffc0   : bytes = b'\xff\xc0'
 val_ffd0   : bytes = b'\xff\xd0'
 val_ffe0   : bytes = b'\xff\xe0'

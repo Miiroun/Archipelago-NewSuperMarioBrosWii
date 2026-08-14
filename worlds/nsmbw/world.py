@@ -42,7 +42,7 @@ class NSMBWworld(CachedRuleBuilderWorld):
     origin_region_name = "Menu"
     topology_present = True
     ut_can_gen_without_yaml = True
-    glitches_item_name = "glitched_logic"
+    glitches_item_name = ITEM.GlitchedLogic
 
     shuffled_level_order : List[int]
 

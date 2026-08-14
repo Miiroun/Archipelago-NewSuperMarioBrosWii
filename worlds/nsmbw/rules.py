@@ -203,7 +203,7 @@ def set_all_entrance_rules(world: "NSMBWworld") -> None:
     if not is_ut:
         shuffle_level_order(world)
 
-        if world.options.level_shuffel_riivolution.value == True:
+        if world.options.level_shuffle_riivolution.value == True:
             i = 0
 
             _rule = False_().resolve(world)

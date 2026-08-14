@@ -155,14 +155,14 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_save(self):
         """
-        Load save file for client memory.
+        Save data of client memeory to a local save file.
         """
         Utils.async_start(self.ctx.handle_save())
         #self.ctx.handle_save()
 
     def _cmd_load(self):
         """
-        Save data of client memeory to a local save file.
+        Load save file for client memory.
         """
         Utils.async_start(self.ctx.handle_load())
         self.ctx.update_memory_to_server_on_load()
@@ -495,6 +495,8 @@ class NSMBWContext(SuperContext):
 
     unlocked_secret_exits : List[str]
 
+    connection_pause = 0
+
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
             super().__init__(server_address, password)
@@ -560,7 +562,7 @@ class NSMBWContext(SuperContext):
 
                 if not Utils.is_frozen():
                     backwards_compat : List[tuple] = []
-                    # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffel_riivolution", 0)
+                    # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffle_riivolution", 0)
                     for name, value in backwards_compat:
                         if name not in self.slot_data.keys():
                             self.slot_data[name] = value
@@ -658,7 +660,7 @@ class NSMBWContext(SuperContext):
 
 
     async def shutdown(self):
-        if Utils.get_settings()["nsmbw_settings"].auto_open and self.username is not None:
+        if Utils.get_settings()["nsmbw_settings"].auto_save and self.username is not None:
             # this make sures modifiers are cleared when exit
             self.modifiers = []
             self.current_mod_end_time = 0
@@ -731,8 +733,11 @@ class NSMBWContext(SuperContext):
                             await self.handle_in_main_menu()
                             await asyncio.sleep(0.01)
                         else:
-                            await self._handle_game_not_ready()
-                            await asyncio.sleep(1)
+                            if time.time() > self.connection_pause:
+                                await self._handle_game_not_ready()
+                                await asyncio.sleep(1)
+                            else:
+                                await asyncio.sleep(3)
                     except Exception as e:
                         logger.info(traceback.format_exc())
                         self.log_color(f"Failed with error {e}. When handling client logic", "red")
@@ -749,6 +754,7 @@ class NSMBWContext(SuperContext):
                     logger.error(str(e))
                 else:
                     logger.error(traceback.format_exc())
+                    logger.error(e)
                 await asyncio.sleep(3)
                 continue
 
@@ -1287,8 +1293,12 @@ class NSMBWContext(SuperContext):
                         unlocked_powerups[0] = 1
 
                 current_powerup_state = self.game_interface.get_powerupstate(player_num)
+                if bytes_to_int(current_powerup_state) > POWERUP_COUNT:
+                    continue
+
                 if current_powerup_state != b'\x00': # check if small mario
                     current_pow_index = bytes_to_int(current_powerup_state) - 1
+
                     if 0 <= current_pow_index < len(POWERUP_UNLOCK): #, "Something is wrong with reading powerup state"
                         if unlocked_powerups[current_pow_index] == 0:
                             logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
@@ -1343,11 +1353,11 @@ class NSMBWContext(SuperContext):
                 for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                     level_stats = self.game_interface.get_level_stats(world_num,level_num)[0]
                     level_stats &= 0x30 # keeps level completion
-                    if (i * 3 + 3  <= starcoin_count * self.slot_data["starcoin_shop_multiplier.value"]) or (self.slot_data["hint_movie_shop_price_logic"] == HintMovieShopPriceLogic.option_free):
+                    if (i * 3 + 3  <= starcoin_count * self.slot_data["starcoin_shop_multiplier"]) or (self.slot_data["hint_movie_shop_price_logic"] == HintMovieShopPriceLogic.option_free):
                         level_stats |= 0x07
-                    elif 3 * i + 2 == starcoin_count * self.slot_data["starcoin_shop_multiplier.value"]:
+                    elif 3 * i + 2 == starcoin_count * self.slot_data["starcoin_shop_multiplier"]:
                         level_stats |= 0x03
-                    elif 3 * i + 1 == starcoin_count * self.slot_data["starcoin_shop_multiplier.value"]:
+                    elif 3 * i + 1 == starcoin_count * self.slot_data["starcoin_shop_multiplier"]:
                         level_stats |= 0x01
                     else:
                         level_stats |= 0x00
@@ -1360,7 +1370,7 @@ class NSMBWContext(SuperContext):
                                 level_stats |= 0x30
                     if name_level(world_num,level_num) in self.completed_levels:
                        level_stats |= 0x30
-                    if name_secret(SecretExit(world_num,level_num,None,None, None)) in self.completed_levels:
+                    if (name_secret(SecretExit(world_num,level_num,None,1, None)) in self.completed_levels) or (name_secret(SecretExit(world_num,level_num,None,2, None)) in self.completed_levels):
                         level_stats |= 0x30
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats, 1))
                     i += 1
@@ -1495,7 +1505,7 @@ class NSMBWContext(SuperContext):
 
                 case ITEM.FILLER.PowerUp:
                     for player_num in range(PLAYER_COUNT):
-                        self.game_interface.set_powerupstate(int_to_bytes(self.random.randint(1,PLAYER_COUNT+1),1) , player_num)
+                        self.game_interface.set_powerupstate(int_to_bytes(self.random.randint(2,POWERUP_COUNT),1) , player_num) # from 2 since dont want to set to normal or super mario
 
                 case ITEM.FILLER.SuperSpeed:
                     self.modifiers.append(Modifier(ITEM.FILLER.SuperSpeed, 90))
@@ -1789,7 +1799,7 @@ class NSMBWContext(SuperContext):
                     subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path), "-s", str(rii_path / "StateSaves" / f"{self.game_interface.current_game}.s0{self.save_slot}") ])
                 else:
                     subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
-                await asyncio.sleep(10)
+                self.connection_pause = time.time() + 20
         else:
             logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
 

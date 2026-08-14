@@ -171,7 +171,7 @@ def create_all_items(world: NSMBWworld) -> None:
         else:
             world.options.abilites_included.value -= {ITEM.ABILITIES.Jump}
 
-    if not world.options.level_shuffel_riivolution.value:
+    if not world.options.level_shuffle_riivolution.value:
         world.options.abilites_included.value = world.options.abilites_included.value -extra_start_items[starting_world_num]
         world.options.level_elements_included.value -= extra_start_items[starting_world_num]
 

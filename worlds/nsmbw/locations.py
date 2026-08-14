@@ -186,7 +186,7 @@ def pos_to_level_name(pos : int) -> tuple[int, int]:
 def shuffle_level_order(world: NSMBWworld) -> bool:
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
-    if world.options.level_shuffel_riivolution.value == True:
+    if world.options.level_shuffle_riivolution.value == True:
         not_shuffled = world.shuffled_level_order.copy()
 
         secret_exits = list([(secret_exit.world,secret_exit.level) for secret_exit in SECRET_EXIT])

@@ -69,6 +69,15 @@ They mostly include auto open, load, etc, lots of file and folder paths and othe
 Among them are alternative to the keyboard library for Linux, and which slot to use for clearing cache.
 
 
+## Prominent commands
+/explain <location_name>
+- explains the logic for a location
+/debug
+- prints lots of debug info
+/match_server_state
+- if your save file was somehow messed up will this fix it
+
+
 ## Known quirks / bugs / help with debug
 - You will always start in world 1, and will have to manually move to a world that you have unlocked with the worldmap.
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
@@ -102,7 +111,7 @@ What is different from vanilla
 Multiplayer?
 - You can play NSMBW multiplay 2 ways:
   1) Same-slot co-op: Both connect to the same archipelago slot separately. This entails you play seperate levels but a level completed for you get marked for your friend. Run /change_collection_level 2 for a better experience
-  2) Local/Dolphin net-play: Not supported currently.
+  2) Local/Dolphin net-play: Works, just connect your controllers and it should function. Might have small issues with deathlink and some movements.
 Tracker?
 - A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
 Rivvolution patch?
@@ -132,12 +141,8 @@ Are there bugs?
 ## Debug tips
 - Run /debug and post your logs in the archipelago discord thread for NSMBW
 - Restart launcher and computer after installing if the client doesn't show up in launcher or something doesn't work.
-- Make sure you are on at least archipelago 0.6.7, lastest world and game version is US rev2 (and the file format is either .iso or .wbfs, .rvz will not work) and are playing on save file 2.
-- If you have problem with the tracker, try updating it.
-- Do not have another dolphin instance open when you start client.
+- Update all relevant programs: NSMBW, archipelago, tracker, dolphin
 - Connect to the server from the client after you are on the world map in game if you have problems on the title screen.
-- Try running some client commands related to your issue.
-  - If you have trouble with moves unlocking, death-link etc it probably issue with JIT_chache. The client automaticly makes savestate by pressing shirt+F8 and them F8. Make sure you have these button combos mapped to save-states in dolphoin.
 - If you can not solve your problem, run the debug launcher (found inside your archipelago directory) and send a screenshot of the client in the nsmbw thread in the archipelago discord server.
 
 

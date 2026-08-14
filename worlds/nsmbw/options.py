@@ -45,7 +45,8 @@ class StarcoinSanity(Toggle):
 class StarCoinCollectImmediately(Toggle):
     """
     If enabled will send checks for star coins directly when collected,
-    otherwise will send them on level completion
+    otherwise will send them on level completion.
+    Does NOT impact logic, you will still be expected to complete a level before its star coins are in logic.
     """
     display_name = "Star Coin Collect immediately"
     default = True
@@ -60,6 +61,9 @@ class RandomizeAbilities(Toggle):
 class AbilitiesIncluded(ItemSet):
     """
 
+
+    You can add run to this list, it works problem free, but have proven to not be fun.
+    More abilities exists as secret options as they are at least partially broken.
     """
     valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
     default = valid_keys - {ITEM.ABILITIES.ButtonUp.value, ITEM.ABILITIES.ButtonDown.value,
@@ -629,7 +633,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
                           f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
-    if Utils.get_settings()["nsmbw_settings"].allow_gen_difficult_settings:
+    if Utils.get_settings()["nsmbw_settings"].allow_gen_difficult_settings or len(world.multiworld.player_ids) == 1:
         if world.options.include_inventory_powerups.value > 100:
             raise OptionError(f"(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,"
                                   f"if you still wish to use this, enable allow_gen_difficult_settings in your host.yaml")
@@ -662,7 +666,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         world.options.hint_movie_shop_price_logic.value = HintMovieShopPriceLogic.default
 
 
-    if (world.options.level_shuffel_riivolution.value + world.options.music_shuffel_riivolution.value
+    if (world.options.level_shuffle_riivolution.value + world.options.music_shuffle_riivolution.value
             > 0 and world.options.use_riivolution.value == False):
         raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")
 

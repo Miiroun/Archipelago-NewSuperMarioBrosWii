@@ -138,12 +138,13 @@ class NSMBWInterface(object):
 
             if self.current_game:
                 if not self.is_in_worldmap():
-                    logger.info("It is recommended to be on the worldmap instead of main menu when connecting to the archipelago server")
+                    pass
+                    #logger.info("It is recommended to be on the worldmap instead of main menu when connecting to the archipelago server")
                     # raise ValueError("You need to be on the worldmap to connect to the server")
                     #return False
                 self.log_color(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}", "blue")
 
-                self.shuffle_sprites()
+                Utils.async_start(self.shuffle_sprites())
 
                 return True
             else:
@@ -376,13 +377,19 @@ class NSMBWInterface(object):
 
 
             clear_address = 0x80BBB000
+            while self.dolphin_client.read_address(clear_address, 4) != val_0000 + val_0000:
+                sleep(0.01)
             self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
             return True
         return False
 
     def write_instruction(self, address: int, data: bytes) -> bool:
         if self.slot_data["use_riivolution"]:
-            return self.write_instruction_clear_cache_in_game(address, data)
+            ret_val = True
+            for i in range(math.ceil(len(data) / 4)):
+                ret_val &= self.write_instruction_clear_cache_in_game(address + 4* i, data[i * 4:(i + 1) * 4])
+                sleep(0.01)
+            return ret_val
 
 
         current_value = self.dolphin_client.read_address(address, len(data))
@@ -453,17 +460,18 @@ class NSMBWInterface(object):
             if ITEM.ABILITIES.Swim in slot_data_ablities_included:
                 if not ITEM.ABILITIES.Swim in unlocked_moves:
                     if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
-                        logger.info("The floor is lava, but water is actually the floor, so don't touch it.")
+                        logger.info("You touched water without swim unlocked, so you died.")
                         await self.kill_player()
                         self.set_water_state(int_to_bytes(0,4))
                     else:
                         pass
                         #print(bytes_to_int(self.get_water_state()))
 
-
+            # this is just for menu
             if ITEM.ABILITIES.Star in slot_data_ablities_included:
                 if not ITEM.ABILITIES.Star in unlocked_moves:
                     self.set_star_timer(int_to_bytes(0, 4))
+            patch_ability(ITEM.ABILITIES.Star, self.memory_addresses.patch_star)
 
 
             patch_ability(ITEM.ABILITIES.Climb, [
@@ -566,6 +574,11 @@ class NSMBWInterface(object):
 
 
     async def shuffle_sprites(self):
+        # Replace all Goombas with Koopas, at the profile level
+        # kmWrite32(0x8076a814, 0x80afdcb0);
+
+        # should create a list of valid sprites to shuffle
+        return # causes craches
         sprite_table = []
         sprite_count = 750
         for i in range(sprite_count):
@@ -663,9 +676,6 @@ class NSMBWInterface(object):
         address = self.memory_addresses.powerup_state[player_num]
         powerup_state = self.dolphin_client.read_address(address,1)
         return powerup_state
-    def get_player_status(self) -> bytes:
-        address = self.memory_addresses.player_status+3 # beacuse 4 bytes
-        return self.dolphin_client.read_address(address,1)
     def get_savefile_num(self) -> int:
         address = self.get_dSaveMng_c_address() +0x6
         num =  bytes_to_int(self.dolphin_client.read_address(address,1))+1
@@ -719,7 +729,7 @@ class NSMBWInterface(object):
 
     def get_sprite(self, num) -> bytes:
         address = self.memory_addresses.sprite_init_table_start + 2 * num
-        return self.dolphin_client.read_address(address)
+        return self.dolphin_client.read_address(address, 2)
 
 
     def set_worldstats(self,world_num : int, status : bytes):

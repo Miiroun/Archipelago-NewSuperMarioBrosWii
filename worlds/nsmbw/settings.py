@@ -148,7 +148,7 @@ class NSMBWSettings(settings.Group):
     debug_mode : DebugMode | bool = not Utils.is_frozen()
 
     collect_level : CollectLevel | int = CollectLevel(1)
-    ut_pack_path: UTPackPath | str = UTPackPath(r"nsmbw/Poptracker_pack_NSMBW.zip")
+    ut_pack_path: UTPackPath | str = UTPackPath(r"Poptracker_pack_NSMBW.zip")
     save_file_path : SaveFileLocation |  str = SaveFileLocation("nsmbw")
     allow_gen_difficult_settings : AllowGenDiffSettings | bool = False
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
