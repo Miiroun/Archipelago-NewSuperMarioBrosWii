@@ -804,6 +804,7 @@ class NSMBWContext(SuperContext):
         self.game_interface.update_check_sum()
         await self.game_interface.alive_player()
         await self.ut_auto_tab()
+        await self.handle_screen_transition()
 
         await asyncio.sleep(0.1)
 
@@ -833,6 +834,7 @@ class NSMBWContext(SuperContext):
 
         await self.ut_auto_tab()
         await self.game_interface.patch_runtime_on_load() # unsure where to put this, just needs to run once, but good if does multiple times if not applied correctly
+        await self.handle_screen_transition()
         await asyncio.sleep(0.1)
 
         if self.game_interface.should_clear >= 1:
@@ -1534,7 +1536,7 @@ class NSMBWContext(SuperContext):
             if current_lives > self.prev_lifecount[player_num]:
                 self.prev_lifecount[player_num] = self.game_interface.get_lives_count(player_num)
 
-            if is_dead and self.game_interface.get_in_stage_flag()[3] == 0 and (not self.game_interface.is_in_level() or not self.game_interface.is_in_menu()): #self.prev_lifecount[player_num] == 0:
+            if is_dead and self.game_interface.is_screen_transition() and (not self.game_interface.is_in_level() or not self.game_interface.is_in_menu()): #self.prev_lifecount[player_num] == 0:
                 is_dead = False
                 print("Overwrote sending death because looks like game is closing")
 
@@ -1677,6 +1679,11 @@ class NSMBWContext(SuperContext):
                     self.game_interface.set_gravity(int_to_bytes(0xbf666666, 4)) # -0.9
                 case _:
                         raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
+
+    async def handle_screen_transition(self):
+        if self.game_interface.is_screen_transition():
+            self.update_memory_to_server_on_load()
+
 
     async def ut_auto_tab(self):
         if tracker_loaded and self.slot:

@@ -234,10 +234,11 @@ def create_all_items(world: NSMBWworld) -> None:
     for item in itempool:
         itempool_names.append(item.name)
 
-    for item in important_items:
-        assert item in ITEM_NAME_TO_ID.keys(), f"Invalid item name {item} in important_items"
-        if item in itempool_names:
-            world.multiworld.early_items[world.player][item] = 1
+    if world.options.make_important_early_items:
+        for item in important_items:
+            assert item in ITEM_NAME_TO_ID.keys(), f"Invalid item name {item} in important_items"
+            if item in itempool_names:
+                world.multiworld.early_items[world.player][item] = 1
 
     unique_filler = set()
 

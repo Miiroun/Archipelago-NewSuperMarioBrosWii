@@ -6,7 +6,9 @@
 - [NSMBW AP-World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - A legally dumped copy of New Super Mario Bros Wii (US rev 2) (both .iso and .wbfs works)
   - If this is not the edition of your copy, see [en_NSMBW.md](../docs/en_NSMBW.md) for list of features known to be broken on other versions.
-  - To dump your game first install the [wii homebrew channel](http://wiibrew.org/wiki/Homebrew_setup) and then use [cleanrip](https://wiibrew.org/wiki/CleanRip) to dump your game to and SD-card.
+  - To dump your game first install the [wii homebrew channel](http://wiibrew.org/wiki/Homebrew_setup), likely by using [Wilbrand](http://wiibrew.org/wiki/Wilbrand) or [Str2hax](https://wiibrew.org/wiki/Str2hax) (recommended).
+  - Optionally install [Open Shop Channel](https://oscwii.org/), which you can then use to install one of the following programs.
+  - Use [cleanrip](https://wiibrew.org/wiki/CleanRip) or [usb loader gx](https://usbloadergx.com/) (recommended) to dump your game to the SD-card.
 - [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) (Optionally) 
 
 

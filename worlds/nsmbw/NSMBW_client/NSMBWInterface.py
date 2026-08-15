@@ -213,6 +213,9 @@ class NSMBWInterface(object):
         #print(f"record state {self.get_record_state()}")
         return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
+    def is_screen_transition(self) -> bool:
+        return self.get_in_stage_flag()[3] == 0
+
     def save_file_offset(self):
         # this function should probably not be used
         savefile_num = self.get_savefile_num()

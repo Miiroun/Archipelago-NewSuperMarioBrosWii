@@ -341,7 +341,8 @@ class MemoryAddresses(object):
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
             patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
             patch_skipp_wii_remote_strap_screen,  exception_handler, #lives_limit_change,
-            worldMapAfterFinalBoss #dontToggleSuperGuideBit, fs_RemoveMultiSelect, disable_world9_sc_req
+            worldMapAfterFinalBoss, #dontToggleSuperGuideBit, fs_RemoveMultiSelect,
+            disable_world9_sc_req
         ]
 
         # address 0x80162fb8 might be good to create a branch from

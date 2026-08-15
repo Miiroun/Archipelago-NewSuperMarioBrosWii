@@ -6,40 +6,17 @@
 - lots of play testing to do.
 
 ## Super super short term
-!MANUAL BACKGROUND RENAME WORKS!
-
 Collect overwride
 
 Write desciptions for options
 
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
-Ask in dc for better option names
-Playtest multiplayer
-Do we need to load to clear or does it on save too?
-Check point similar
-  func 80a92888 for red coin ring
-  func 80aa7470 snake block
-  func 80a9cc70 poky
-  func 80a5d2d0 daEnLiftRotHalf_c
-  80a88920 chep chep
-
-
-How solve issue where to load game on start or connect if use riivolution or not
-- need to update docs
-Test AP map visual editor
-- does new auto riivo work ? move old start to on open
-
-use wiithon for arc unpacking??
-- maybe switch to it instead of dolphin tools
 
 DC
 - option + setting review
 
-I've been making a list of hint movie unlocks for y'all, I'm about half way through the list, hint movie 9 unlocks only after you beat all levels in worlds 1-8, which also means for it to work 8-7 has to be shown as complete on the map, i remember when i was doing the archipelago 8-7  never completed as a shortcut to the airship, it won't count unless every level in the first 8 worlds is blue
-
 FIX generation and client bugs
 test
-- sc model
 - gravity
 - load 1 background
 
@@ -55,7 +32,6 @@ rework options to be better
 -> Send yaml for help
 
 
-
 ATLEAST : soft logic is inefficent
 - collect / remove override
 
@@ -65,9 +41,7 @@ Edit star coin level icon : new image
 
 try Gen a patch file for sc model : if much smaller use it
 
-Should check auto load id should load save file state : also file path seems wrong
-
-add wait after press connect before try to connect to ghidra
+file path load state seems wrong
 
 WANT TO FIX WORLD 9 FOR NEXT VERSION : SEPARATE PER LEVEL SEEMS HARD BUT COULD MAYBE CREATE AN EASY PATCH THAT JUST UNLOCKS ALL BY DEFAULT
 DONT WANT IT THIS BROKEN FOR NEXT VERSION
@@ -76,8 +50,11 @@ playtest : disable_world9_sc_req
 
 can just empty inventort of star if not unlocked : same with other pows?
 
+
+Look spoiler log with topology_present
+
+
 ## Super short term
-- Try redumping my copy of nsmbw : test which guide / method best to link to
 - Ask for help in dc for names
 - Run language test world thing
 - Add riivolution info to docs
@@ -94,8 +71,6 @@ can just empty inventort of star if not unlocked : same with other pows?
 - Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
 - Add better way of explaining rules
   - Does this solve issue?
-- load last save state directly? : should be able to
-- Pause dolphin, increment slowly: find bites in black : verify issue there not menu generally
 - Can find value hardcoded for level timer? Add memwatch for func that changes it
   - Can make > vanilla?, would be nice
 - Ask react for help invent pow
@@ -124,12 +99,7 @@ can just empty inventort of star if not unlocked : same with other pows?
 - have option to rando towers and airshipps in their own pool
 - Rework modifiers so issue doesn't happen
 - Add assert if save slots overlap
-- Ask react if should rando run
-- Try moving mem1, see if causes issues
-- Change docs for linux : no need for root if xdotools or ydotools
 - option to shuffle only towers within themselves
-- Try: Ensure that "Enable CPU Overclock" and "Emulated Memory Size Override" are both off in your Dolphin settings
-- Use single adress to mark if have applied patch
 - Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
 - have randomize time increase speed instead of setting clock??
 - Auto close dolphin doesn't work on Linux
@@ -147,6 +117,9 @@ can just empty inventort of star if not unlocked : same with other pows?
   - enable debug things etc
 - Don't allow lives and powerups to be maxed out
 - Add local multiplayer to docs
+- Match server state it might be nice to have this automatically done after every death/level complettion/etc if possible
+- Make early items an option
+- !MANUAL BACKGROUND RENAME WORKS!
 
 
 
@@ -216,7 +189,6 @@ can just empty inventort of star if not unlocked : same with other pows?
 - Still disconnect error
 - force_hook : assert connected
 - exit course sometimes send death
-- Hm 5 probably not a problem
 - 2-2sc1 & sc2
 - 1-C sc3
 - World 9 not properly reset when dying
@@ -260,6 +232,9 @@ can just empty inventort of star if not unlocked : same with other pows?
 - shuffle coin and battle levels with normals
 - add 1ups as locations to world : needs option : keep secret until logic
 - Look in regi for sand storm and meteor : see if is just an easy flag to change?
+- look for doStateChange
+  - can improve climb and swim
+- 
 
 
 
