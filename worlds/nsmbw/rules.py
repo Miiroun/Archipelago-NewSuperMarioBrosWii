@@ -15,134 +15,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .world import NSMBWworld
 
-if Utils.__version__ == "0.6.7":
-    class AtLeast(NestedRule[TWorld], game="Archipelago"):
-        """A rule that returns true when at least N child rules evaluate as true"""
-
-        count: int | FieldResolver
-
-        def __init__(
-            self,
-            count: int | FieldResolver,
-            *children: Rule[TWorld],
-            options: Iterable[OptionFilter] = (),
-            filtered_resolution: bool = False,
-        ) -> None:
-            super().__init__(*children, options=options, filtered_resolution=filtered_resolution)
-            self.count = count
-
-        @override
-        def _instantiate(self, world: TWorld) -> Rule.Resolved:
-            count = resolve_field(self.count, world, int)
-            if count == 0:
-                return True_().resolve(world)
-
-            children_to_process = [c.resolve(world) for c in self.children]
-            return AtLeast.from_resolved(count, world, children_to_process)
-
-        @classmethod
-        def from_resolved(cls, count: int, world: TWorld, children_to_process: list[Rule.Resolved]) -> Rule.Resolved:
-            clauses: list[Rule.Resolved] = []
-
-            while children_to_process:
-                child = children_to_process.pop(0)
-                if child.always_true:
-                    if count == 1:
-                        return child
-                    count -= 1
-                    continue
-                if child.always_false:
-                    # falses can be ignored
-                    continue
-
-                clauses.append(child)
-
-            if len(clauses) < count:
-                return False_().resolve(world)
-            if count == 1:
-                # Switch to Or which has more optimized handling
-                return Or.from_resolved(world, clauses)
-            if count == len(clauses):
-                # Switch to And which has more optimized handling
-                return And.from_resolved(world, clauses)
-            return AtLeast.Resolved(
-                tuple(clauses),
-                count=count,
-                player=world.player,
-                caching_enabled=getattr(world, "rule_caching_enabled", False),
-            )
-
-        @override
-        def to_dict(self) -> dict[str, Any]:
-            output = super().to_dict()
-            count = self.count
-            output["count"] = count.to_dict() if isinstance(count, FieldResolver) else count
-            return output
-
-        @override
-        @classmethod
-        def from_dict(cls, data: Mapping[str, Any], world_cls: "type[World]") -> Self:
-            args = cls._parse_field_resolvers(data, world_cls.game)
-            options = OptionFilter.multiple_from_dict(data.get("options", ()))
-            children = [world_cls.rule_from_dict(c) for c in data.get("children", ())]
-            return cls(
-                args.pop("count"),
-                *children,
-                options=options,
-                filtered_resolution=data.get("filtered_resolution", False),
-            )
-
-        class Resolved(NestedRule.Resolved):
-            count: int
-
-            @override
-            def _evaluate(self, state: CollectionState) -> bool:
-                count = self.count
-                for rule in self.children:
-                    if rule(state):
-                        if count == 1:
-                            return True
-                        count -= 1
-                return False
-
-            @override
-            def explain_json(self, state: CollectionState | None = None) -> list[JSONMessagePart]:
-                messages: list[JSONMessagePart] = []
-                if state is None:
-                    messages = [
-                        {"type": "text", "text": "At least "},
-                        {"type": "color", "color": "cyan", "text": str(self.count)},
-                        {"type": "text", "text": " of ("},
-                    ]
-                else:
-                    satisfied_count = sum(1 if child(state) else 0 for child in self.children)
-                    messages = [
-                        {"type": "text", "text": "At least "},
-                        {"type": "color", "color": "cyan", "text": f"{satisfied_count}/{self.count}"},
-                        {"type": "text", "text": " of ("},
-                    ]
-                for i, child in enumerate(self.children):
-                    if i > 0:
-                        messages.append({"type": "text", "text": ", "})
-                    messages.extend(child.explain_json(state))
-                messages.append({"type": "text", "text": ")"})
-                return messages
-
-            @override
-            def explain_str(self, state: CollectionState | None = None) -> str:
-                clauses = ", ".join([c.explain_str(state) for c in self.children])
-                if state is None:
-                    return f"At least {self.count} of ({clauses})"
-                satisfied_count = sum(1 if child(state) else 0 for child in self.children)
-                return f"At least {satisfied_count}/{self.count} of ({clauses})"
-
-            @override
-            def __str__(self) -> str:
-                clauses = ", ".join([str(c) for c in self.children])
-                return f"At least {self.count} of ({clauses})"
-
-
-
 
 def set_all_rules(world: "NSMBWworld") -> None:
     set_all_entrance_rules(world)
@@ -284,31 +156,12 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
 
     for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))
-        # hades soft logic thats ored with glitched logic, but also make sure you have climb
-        #soft_logic = rules.HasFromList(*worlds_list, count=req_world_com) | Has(ITEM.GlitchedLogic) #& (rules.Has(ITEM.MOVEMENT.Climb)  | [OptionFilter(RandomizeMovement, RandomizeMovement.option_off)])
 
-        # world is assuemed so this is just level
-        world_toad      = [2, 1, 6, 4, 1, 7, 1, 0]
-        world_star      = [3, 5, 0, 5, 5, 6, 6, 0]
-        world_enemy     = [4, 5, 2, 1, 6, 3, 7, 3]
+        req_num = math.floor((i/ world.options.include_inventory_powerups.value) * 70)
+        invent_rule_general = Has(ITEM.FAKE.InventoryPow.value, count=req_num) & door & climb
+        invent_rule_no_toad =  Has(ITEM.FAKE.InventoryPowNoToad.value, count=req_num)
 
-        soft_logic_list : Rule = []
-        for world_num in range(1,8+1):
-            _rule = Has(name_base(world_num, world_toad[world_num-1], assert_=False)) & raw_rules.climb & raw_rules.door
-            for _ in range(4):
-                soft_logic_list.append(_rule)
-
-            _rule = Has(name_base(world_num, world_star[world_num-1], assert_=False))
-            soft_logic_list.append(_rule)
-
-            _rule =Has(name_base(world_num, world_enemy[world_num-1], assert_=False))
-            for _ in range(6):
-                soft_logic_list.append(_rule)
-
-        hard_logic : Rule = rules.Or(*soft_logic_list)
-        soft_logic : Rule = AtLeast(math.floor((i/ world.options.include_inventory_powerups.value) * 70), *soft_logic_list) | raw_rules.GlitchedRule()
-        invent_rule : Rule = hard_logic & soft_logic
-        world.set_rule(invent_pow, invent_rule)
+        world.set_rule(invent_pow, invent_rule_no_toad | invent_rule_general)
 
 
 

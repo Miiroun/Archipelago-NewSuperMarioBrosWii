@@ -13,11 +13,25 @@ from .Common import *
 from .Utils import cast_object_to_type
 from .items import NSMBWItem
 
-collection_map : Dict [str, int] = {
+collection_map_no_toad : Dict [str, int] = {}
+collection_map_general : Dict [str, int] = {}
 
-}
+world_toad      = [2, 1, 6, 4, 1, 7, 1, 0]
+world_star      = [3, 5, 0, 5, 5, 6, 6, 0]
+world_enemy     = [4, 5, 2, 1, 6, 3, 7, 3]
 
-class NSMBWworld(CachedRuleBuilderWorld):
+for world_num in range(1, 8+1):
+    collection_map_general.update({
+        name_base(world_num, world_toad[world_num - 1], assert_=False)  : 4,
+    })
+
+    collection_map_no_toad.update({
+        name_base(world_num, world_star[world_num - 1], assert_=False)  : 1,
+        name_base(world_num, world_enemy[world_num - 1], assert_=False) : 6,
+    })
+collection_map_general.update(collection_map_no_toad)
+
+class NSMBWworld(World):
     """
     The ap-world for new super mario bros. wii
     """
@@ -91,10 +105,15 @@ class NSMBWworld(CachedRuleBuilderWorld):
         change = super(NSMBWworld, self).collect(state, item)
 
         if change:
-            pass
-            #bp_amount = collection_map.get(item.name, 0)
-            #if bp_amount:
-            #    state.prog_items[item.player]["BP"] += bp_amount
+            amount = collection_map_general.get(item.name, 0)
+            if amount:
+                pass
+                state.prog_items[item.player][ITEM.FAKE.InventoryPow.value] += amount
+
+            amount = collection_map_no_toad.get(item.name, 0)
+            if amount:
+                pass
+                #state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] += amount
 
         return change
 
@@ -102,10 +121,16 @@ class NSMBWworld(CachedRuleBuilderWorld):
         change = super(NSMBWworld, self).remove(state, item)
 
         if change:
-            pass
-            #bp_amount = collection_map.get(item.name, 0)
-            #if bp_amount:
-            #    state.prog_items[item.player]["BP"] -= bp_amount
+
+            amount = collection_map_general.get(item.name, 0)
+            if amount:
+                pass
+                state.prog_items[item.player][ITEM.FAKE.InventoryPow.value] -= amount
+
+            amount = collection_map_no_toad.get(item.name, 0)
+            if amount:
+                pass
+                #state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] -= amount
 
         return change
 

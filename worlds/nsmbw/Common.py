@@ -102,6 +102,10 @@ class ITEM:
         #ToadHouse = "Toad House"
         LowGravity      = "Low Gravity"
 
+    class FAKE(StrEnum):
+        InventoryPow        = "InventoryPowAccessible"
+        InventoryPowNoToad  = "InventoryPowAccessibleNoToad"
+
     StarCoin        = "Starcoin"
     Time            = "Time"
     GlitchedLogic   = "glitched logic"

@@ -6,8 +6,6 @@
 - lots of play testing to do.
 
 ## Super super short term
-Collect overwride
-
 Write desciptions for options
 
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
@@ -32,9 +30,6 @@ rework options to be better
 -> Send yaml for help
 
 
-ATLEAST : soft logic is inefficent
-- collect / remove override
-
 Change starting world : ask for help in discord
 
 Edit star coin level icon : new image
@@ -55,31 +50,20 @@ Look spoiler log with topology_present
 
 
 ## Super short term
-- Ask for help in dc for names
-- Run language test world thing
 - Add riivolution info to docs
 - Dolphin wsl
 - Beat some levels on vanilla save file 1 to verify no wrong sends are happening
 - Reword timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
-- Use dme on intro, try finding way to not release on connect
-- Can I verify dolphin settings? have been changed?
 - Time change default not current
 - implement method to read arc files : needed to change names of subfolders
 - verify that key combos dont overlap
 - Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
 - Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
-- Add better way of explaining rules
-  - Does this solve issue?
 - Can find value hardcoded for level timer? Add memwatch for func that changes it
   - Can make > vanilla?, would be nice
-- Ask react for help invent pow
-- Color pallet rando? : would be realy fun and possible?
-- Maybe separate movement, rename to abilities and level_elements: move over pow, ?switch, flagpole
-- Look at flagpole patch in ghirdra
 - Sprite table start 	8030a340	8031ab4c
 - Rando enemies: option if remove or add them
-- Try detecting dolphin settings C:\Users\Anton\AppData\Roaming\Dolphin Emulator\Config
 - Rework modifiers slightly so that they don't cause issues any more
 - What happens when resync state with level comp off
 - Can create level patches if desire with bsdiff4, would be easy if needed
