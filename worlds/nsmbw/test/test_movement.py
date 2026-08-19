@@ -3,7 +3,7 @@ from ..items import extra_start_items
 from ..locations import name_level, name_starcoin
 
 
-class TestMovementOff(NSMBWWorld):
+class TestMovementOff(NSMBWTestBase):
     options = {
         "randomize_abilites" : False,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
@@ -39,7 +39,7 @@ class TestMovementOff(NSMBWWorld):
                 self.assertTrue(self.world.get_region(name_base(world_num, 1)).can_reach(self.multiworld.state))
 
 
-class TestMovementOn(NSMBWWorld):
+class TestMovementOn(NSMBWTestBase):
     options = {
         "randomize_abilites" : True,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,

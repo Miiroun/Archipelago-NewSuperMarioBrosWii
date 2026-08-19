@@ -180,7 +180,7 @@ def name_tower_clear(world_num : int) -> str:
 
 def name_hintmovie(i:int) -> str:
     assert 1 <= i <= HINTMOVIE_COUNT
-    return f"Hintmovie{i:02}"
+    return f"Hintmovie {i:02}"
 
 def name_inventory(i : int) -> str:
     assert 1 <= i <= 999, f" i: {i} is too large"

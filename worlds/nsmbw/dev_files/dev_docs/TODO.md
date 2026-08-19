@@ -16,18 +16,15 @@ DC
 FIX generation and client bugs
 test
 - gravity
-- load 1 background
 
 - Secret exit items
-  - update docs
+  - update docs / options
 
 Faster timer countdown speed
 kmWrite32(0x800e3ab8, 0x3403fe90);  // 92 -> 368
 origin? works? : replace time trap with this
 
-
-rework options to be better
--> Send yaml for help
+Send yaml for help
 
 
 Change starting world : ask for help in discord
@@ -36,18 +33,27 @@ Edit star coin level icon : new image
 
 try Gen a patch file for sc model : if much smaller use it
 
-file path load state seems wrong
-
 WANT TO FIX WORLD 9 FOR NEXT VERSION : SEPARATE PER LEVEL SEEMS HARD BUT COULD MAYBE CREATE AN EASY PATCH THAT JUST UNLOCKS ALL BY DEFAULT
 DONT WANT IT THIS BROKEN FOR NEXT VERSION
 playtest : disable_world9_sc_req
 - remove option for player to decide
 
-can just empty inventort of star if not unlocked : same with other pows?
-
 
 Look spoiler log with topology_present
 
+
+Clean up dev files : remove from repo?
+- Clean up git ripo
+
+patch function that checks if level is unlocked
+
+bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
+
+why all hm in logic?
+
+fix carry shell patch
+
+remove star from inventory is bugged
 
 ## Super short term
 - Add riivolution info to docs
@@ -66,8 +72,6 @@ Look spoiler log with topology_present
 - Rando enemies: option if remove or add them
 - Rework modifiers slightly so that they don't cause issues any more
 - What happens when resync state with level comp off
-- Can create level patches if desire with bsdiff4, would be easy if needed
-  - if want to change logic etc
 - Separate auto start: auto save, auto close
 - detect if unsupported dolphin settings are used
 - Review option creator pr
@@ -96,7 +100,6 @@ Look spoiler log with topology_present
 - Shuffle in coin and battle stages into main levels
 - Improve how swim locks
   - Improve error messages
-- Option : shuffle coin levels with normal, needs custom logic
 - Write to GameFlag_e?
   - enable debug things etc
 - Don't allow lives and powerups to be maxed out
@@ -148,6 +151,7 @@ Look spoiler log with topology_present
 - Star invent not sending, of by 1, just remove the -1, verify it works
 - start with all hm hinterd
 - level shuffle has proper logic
+- inventory star removal
 
 
 ## Bugs to fix
@@ -336,6 +340,9 @@ Look spoiler log with topology_present
 - Entering 8-A boss without ground pound freezes game
 - something is making locations missing from tracker
 - NO idea why, but the big urchins in World 4-3 SC3 Room are producing an insane amount of bubbles and lagging the game lmao
+- I got stuck in world 8 once, normally I'd farm enemy encounters for the mushrooms, however, the lava bubble was a strange case 
+  - because the first encounter for it was fine, you can beat it no problem. But the second encounter is impossible without climb
+
 
 Summery poll
 - Stabilty
@@ -355,6 +362,12 @@ Summery poll
   - Double jump
     - https://discord.com/channels/673369321522593794/1396386889052983307/1396386889052983307
 - Finding toad in level gives hint
+- Unlocks : future planed movement
+  - "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove),
+  - "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), red coins - ring, stopmping on enemeies
+  - "pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)
+  - spring
+
 - TRAPS
   - Sandstorm
   - Darkness

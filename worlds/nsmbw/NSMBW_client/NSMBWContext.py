@@ -3,7 +3,7 @@ from .NSMBWInterface import *
 from .patcher import Patcher
 from ..options import HintMovieShopPriceLogic, AlternativeGoal
 from ..Common import *
-from .. import NSMBWworld
+from .. import NSMBWworld, locations
 
 import json
 import os
@@ -169,11 +169,11 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
         #self.ctx.handle_load()
 
-    def _cmd_starcoin_count(self):
+    def _cmd_starcoins(self):
         """
         Returns the amount of star coin items sent to client.
         """
-        logger.info(f"Star coin count {self.ctx.starcoin_count}")
+        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data["bowser_star_unlock"]} for unlocking bowser")
 
     def _cmd_world_unlocked(self):
         """
@@ -205,6 +205,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         self.ctx.game_interface.should_clear
         self.ctx.game_interface.clear_cache()
+
     def _cmd_reconnect_dolphin(self):
         """
         A command to try and rehook dolphin
@@ -357,7 +358,15 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 f" You have unlocked {self.ctx.boss_health}/{9} items which means a boss takes {10 - self.ctx.boss_health} hits to kill")
         else:
             logger.info("Boss health rando is disabled")
-    
+
+    if Utils.get_settings()["nsmbw_settings"].debug_mode:
+        def _cmd_get_level_rando(self,name):
+            """Prints where a location has been rando to"""
+            world_num, level_num = base_bijection(name)
+            randod_world_num1, randod_level_num1 = locations.pos_to_level_name(
+                self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
+            logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
+
     def _cmd_print_slot_data(self):
         """Prints all slot data, useful for debuging"""
         logger.info(f"SLOT DATA")
@@ -373,8 +382,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         data = dir(set_obj)
         logger.info(data)
 
-
-    def _cmd_get_versions(self):
+    def _cmd_versions(self):
         """Prints out a few diffrent versions that is useful to know"""
         logger.info(
                     f"OS                        : {sys.platform}\n"
@@ -408,7 +416,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         
         logger.info("---- Info regarding setup ----")        
         self._cmd_help()
-        self._cmd_get_versions()
+        self._cmd_versions()
         self._cmd_debug_deathlink()
         self._cmd_status()
         self._cmd_print_slot_data()
@@ -418,7 +426,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         #self._cmd_received()
         #self._cmd_missing()
         self._cmd_unlocks()
-        self._cmd_starcoin_count()
+        self._cmd_starcoins()
         self._cmd_world_unlocked()
         self._cmd_completed_worlds()
         self._cmd_get_time()
@@ -592,10 +600,6 @@ class NSMBWContext(SuperContext):
 
                 if self.slot_data["use_riivolution"]:
                     Utils.async_start(self.patch_and_run_game())
-
-                # hints for all hint movies
-                if self.slot_data["hint_movie_sanity"]:
-                    Utils.async_start(self.send_msgs([{"cmd":"CreateHints", "locations" : list( 3000 + i for i in range(1,HINTMOVIE_COUNT +1))}]))
 
                 self.game_interface.slot_data = self.slot_data
                 self.game_interface.auto_clear_cache = not self.slot_data["use_riivolution"]
@@ -844,6 +848,9 @@ class NSMBWContext(SuperContext):
 
     async def handle_in_main_menu(self):
         await self.game_interface.alive_player()
+        await self.game_interface.patch_runtime_on_load()
+        await self.handle_receive_items()
+
 
         await asyncio.sleep(0.5)
         if self.game_interface.should_clear >= 1:
@@ -1038,6 +1045,7 @@ class NSMBWContext(SuperContext):
     async def check_hintmovies(self):
         if self.slot_data['hint_movie_sanity'] == True:
             if self.game_interface.get_level_world() == b'\x28':  # checks if in peach castle
+                await self.send_hints_hm()
                 checked_locations = []
                 for hm_num in range(1, HINTMOVIE_COUNT + 1):
                     if hm_num in DEPRIO_HM:
@@ -1172,9 +1180,6 @@ class NSMBWContext(SuperContext):
     async def check_inventory_powerups(self):
         checked_locations = []
 
-        if len(self.previous_inventory) == 0:
-            for i in range(POWERUP_COUNT + 1+1):
-                self.previous_inventory.append(99)
 
         total_invent_to_add = 0
         for i in range(POWERUP_COUNT+1):
@@ -1182,7 +1187,10 @@ class NSMBWContext(SuperContext):
             if current_item > self.previous_inventory[i]:
                 total_invent_to_add += current_item - self.previous_inventory[i]
             if current_item > 96:
-                self.game_interface.set_inventory_items(int_to_bytes(current_item, 1), i)
+                self.game_interface.set_inventory_items(int_to_bytes(96, 1), i)
+            if i == POWERUP_COUNT:
+                if (self.slot_data["randomize_abilites"]) and (ITEM.ABILITIES.Star in self.slot_data["abilites_included"]):
+                    self.game_interface.set_inventory_items(int_to_bytes(0, 1), i)
             self.previous_inventory[i] = current_item
 
         if total_invent_to_add >= 8:
@@ -1577,32 +1585,10 @@ class NSMBWContext(SuperContext):
                 }])
 
     async def handle_is_world_unlocked(self, unlocked_worlds : list):
-        # this function currenly does nothing since it should now be imposible to be in a world you dont have access to
+       lowest_unlocked = unlocked_worlds.index(1) +1
 
-        current_map_world = self.game_interface.get_map_world()[0] + 1
+       self.game_interface.set_starting_world(lowest_unlocked)
 
-        current_world = current_map_world #self.game_interface.is_in_menu():
-        if (sum(unlocked_worlds) >= 1)  and (not self.game_interface.is_in_level()) and (self.game_interface.is_in_worldmap()) and (not self.game_interface.is_in_menu()):  # this is a check for if recived items yet
-            lowest_unlocked : int
-            try:
-                lowest_unlocked = unlocked_worlds.index(1)  # will give error if no world is at unlockstate 1
-            except ValueError:
-                lowest_unlocked = 0
-
-
-            if not (current_world in range(0, 9+1)):
-                if not current_map_world in [19,256]: # 19 is world3 second area
-                    logger.info(f"Current world {current_world} is not well defined")
-                    #self.game_interface.set_world(int_to_bytes(lowest_unlocked, 1))
-                    pass
-            else:
-                if unlocked_worlds[current_world - 1] == 0:
-                    self.game_interface.set_world(int_to_bytes(lowest_unlocked, 1))
-                    #print(f"World {current_world+1} is not unlocked")
-                    if self.has_complained_about_world != current_world:
-                         self.log_color(f"World {current_world} is not unlocked, please move to a world that is", "red")
-                        #await self.game_interface.kill_player()
-                    self.has_complained_about_world = current_world
 
     async def handle_unlocked_time(self, num_time):
         if self.slot_data["randomize_time"] != 0:
@@ -1783,29 +1769,30 @@ class NSMBWContext(SuperContext):
 
     async def patch_and_run_game(self):
         auto_start: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
+        auto_load : bool = get_settings()["nsmbw_settings"].auto_load
         input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
         try:
             assert input_iso_path is not None, "Add a path to your game file in host.yaml"
             assert Path(input_iso_path).exists(), "Your game file path is invalid"
         except AssertionError as e:
             logger.error(e)
-        short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{self.seed_name}.json"
 
-        if not short_cut_path.exists():
-            _patcher = Patcher(self.seed_name, self.slot_data)
+        _patcher = Patcher(self.username, self.seed_name, self.slot_data)
+        if not _patcher.shortcut_path.exists():
             _patcher.patch()
 
         dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
         assert dolphin_path.exists(), "dolphin.exe needs to be correct"
-        assert short_cut_path.exists(), "need to have created shortcut successfully"
+        assert _patcher.shortcut_path.exists(), "need to have created shortcut successfully"
 
         if dolphin_interface_client.assert_no_running_dolphin():
             if auto_start:
-                if (Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists():
-                    rii_path = Path(get_settings()['nsmbw_settings'].dolphin_riivolution_folder_path).parent.parent.parent
-                    subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path), "-s", str(rii_path / "StateSaves" / f"{self.game_interface.current_game}.s0{self.save_slot}") ])
+                if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
+                    rii_path = _patcher.output_path.parent.parent.parent
+                    save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
+                    subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
                 else:
-                    subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+                    subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path)])
                 self.connection_pause = time.time() + 20
         else:
             logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
@@ -1856,6 +1843,13 @@ class NSMBWContext(SuperContext):
         except Exception as e:
             logger.info(e)
 
+    async def send_hints_hm(self):
+        # hints for all hint movies
+        if self.slot_data["hint_movie_sanity"]:
+            loc = list([3000 + i for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
+
+            if set(loc) - set(self.locations_scouted) > 0: # test if sent hint before
+                Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": loc, "create_as_hint": 1}]))
 
 #end of class
 

@@ -3,7 +3,7 @@ from .bases import *
 # TODO
 # need to have a test for world 3, especially 3-4, 3-5, 3-C to make sure they are reachable correctly
 
-class ShortcutOff(NSMBWWorld):
+class ShortcutOff(NSMBWTestBase):
     options = {
         "shortcuts_sanity" : IncludeShortcuts.option_false,
         "starting_world": 3,
@@ -37,7 +37,7 @@ class ShortcutOff(NSMBWWorld):
 
 
 
-class ShortcutOn(NSMBWWorld):
+class ShortcutOn(NSMBWTestBase):
     options = {
         "shortcuts_sanity": IncludeShortcuts.option_true,
         "starting_world": 3,

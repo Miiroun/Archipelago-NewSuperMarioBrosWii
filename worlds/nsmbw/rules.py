@@ -125,7 +125,6 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
         for hm_num in range(1,HINTMOVIE_COUNT+1):
             if hm_num in DEPRIO_HM:
                 continue
-            location = world.get_location(name_hintmovie(hm_num))
             #oftlogic for hm
             total_cost += hm_req[hm_num-1][0] #logic asume you have to get enought starcoins to get them in order
             match world.options.hint_movie_shop_price_logic:
@@ -138,8 +137,10 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
                 case _:
                     raise ValueError(f"option {world.options.hint_movie_shop_price_logic} is not acounted for")
 
+            hard_logic : Rule = rules.Has(ITEM.StarCoin, count=math.ceil(hm_req[hm_num-1][0] / world.options.starcoin_shop_multiplier.value) ) & hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1]))
+            hm_rule : Rule = (soft_logic | GlitchedRule()) & hard_logic
 
-            hm_rule = (soft_logic | (GlitchedRule()) & rules.Has(ITEM.StarCoin, count=math.ceil(hm_req[hm_num-1][0] / world.options.starcoin_shop_multiplier.value) ) & hm_req[hm_num-1][2] & rules.Has(name_base(hm_req[hm_num-1][1][0],hm_req[hm_num-1][1][1])))
+            location = world.get_location(name_hintmovie(hm_num))
             world.set_rule(location, hm_rule)
 
     if world.options.shortcuts_sanity.value == True:

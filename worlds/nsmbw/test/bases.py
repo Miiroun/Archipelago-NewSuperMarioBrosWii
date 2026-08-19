@@ -4,5 +4,5 @@ from ..Common import *
 
 
 
-class NSMBWWorld(WorldTestBase):
+class NSMBWTestBase(WorldTestBase):
     game = game_name

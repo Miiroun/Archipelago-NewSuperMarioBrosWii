@@ -1,7 +1,7 @@
 from .bases import *
 
 
-class WorldBase(NSMBWWorld):
+class WorldBase(NSMBWTestBase):
     options = {
         "randomize_abilites": True,
         "abilites_included": AbilitiesIncluded.default,

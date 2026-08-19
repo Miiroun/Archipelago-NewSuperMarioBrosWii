@@ -1,24 +1,22 @@
-from .bases import NSMBWWorld
-from ..Common import *
-from ..options import HintMovieShopPriceLogic
+from .bases import *
 
 
-class TestHintMoviesFree(NSMBWWorld):
+class TestHintMoviesFree(NSMBWTestBase):
     options = {
         "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_free,
     }
 
-class TestHintMoviesOrdered(NSMBWWorld):
+class TestHintMoviesOrdered(NSMBWTestBase):
     options = {
         "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_ordered,
     }
 
-class TestHintMoviesAll(NSMBWWorld):
+class TestHintMoviesAll(NSMBWTestBase):
     options = {
         "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_all,
     }
 
-class TestHintMoviesProgressive(NSMBWWorld):
+class TestHintMoviesProgressive(NSMBWTestBase):
     options = {
         "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_progressive,
     }

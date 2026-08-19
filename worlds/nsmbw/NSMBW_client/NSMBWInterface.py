@@ -471,9 +471,9 @@ class NSMBWInterface(object):
                         #print(bytes_to_int(self.get_water_state()))
 
             # this is just for menu
-            if ITEM.ABILITIES.Star in slot_data_ablities_included:
-                if not ITEM.ABILITIES.Star in unlocked_moves:
-                    self.set_star_timer(int_to_bytes(0, 4))
+            #if ITEM.ABILITIES.Star in slot_data_ablities_included:
+            #    if not ITEM.ABILITIES.Star in unlocked_moves:
+            #        self.set_star_timer(int_to_bytes(0, 4))
             patch_ability(ITEM.ABILITIES.Star, self.memory_addresses.patch_star)
 
 
@@ -748,7 +748,7 @@ class NSMBWInterface(object):
         address = self.memory_addresses.powerup_state[player_num]
         self.dolphin_client.write_address(address, powerup_state)
     def set_inventory_items(self, value : bytes, type_num : int):
-        address = self.get_dMj2dGame_c_address()+0x9 + type_num -1
+        address = self.get_dMj2dGame_c_address()+0x9 + type_num
         self.dolphin_client.write_address(address, value)
     def set_level_stats(self, world_num, level_num, data : bytes):
         dMj2dGame_c_address = self.get_dMj2dGame_c_address()+0x3
@@ -811,6 +811,10 @@ class NSMBWInterface(object):
     def set_sprite(self, num, data : bytes):
         address = self.memory_addresses.sprite_init_table_start + 2 * num
         self.write_instruction(address, data)
+
+    def set_starting_world(self, world_num : int):
+        address =self.memory_addresses.adress_starting_world
+        self.write_instruction(address, b'\x38\xa0' + int_to_bytes(world_num-1, 2)) # li r5, world_num
 
 
     def update_check_sum(self):

@@ -1,6 +1,6 @@
 from .bases import *
 
-class TestRawRules(NSMBWWorld):
+class TestRawRules(NSMBWTestBase):
     options = {
         "randomize_abilites" : False,
         "randomize_powerups" : RandomizePowerups.option_on,

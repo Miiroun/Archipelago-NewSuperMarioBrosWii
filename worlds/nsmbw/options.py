@@ -55,32 +55,39 @@ class StarCoinCollectImmediately(Toggle):
 
 class RandomizeAbilities(Toggle):
     """
-
+    If ability randomizer should be enabled. (former movement rando)
+    If enabled will shuffle all abilities in Abilities Included into the item pool
+    They will need to be unlocked to be used.
     """
 
 class AbilitiesIncluded(ItemSet):
     """
-
-
-    More abilities exists as secret options as they are at least partially broken or have no logic.
-    They are Spin jump, Climb, button up, button down
+    Which abilities are shuffled into the item pool.
+    Requires Randomize Abilities to be enabled.
+    More abilities exists as secret options as they have smaller issues.
+    They are: Spin jump and Climb
     """
-    valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
-    default = valid_keys - {ITEM.ABILITIES.ButtonUp.value, ITEM.ABILITIES.ButtonDown.value,
-               ITEM.ABILITIES.SpinJump.value,ITEM.ABILITIES.Climb.value} #  ITEM.ABILITIES.Run.value,
+    valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value,
+                                   ITEM.ABILITIES.ButtonDown.value, ITEM.ABILITIES.ButtonUp.value,
+                                   ITEM.ABILITIES.Jump.value}
+    default = valid_keys - {ITEM.ABILITIES.SpinJump.value,ITEM.ABILITIES.Climb.value} #  ITEM.ABILITIES.Run.value,
 
 
 class RandomizeLevelElements(Toggle):
     """
-
+    Whether level elements (also called level gimmicks) should be shuffled into the item pool.
+    Uses the list from LevelElementsIncluded
     """
 
 class LevelElementsIncluded(ItemSet):
     """
-
+    Which level elements are shuffled into the item pool.
+    Requires Randomize Level Elements to be enabled.
+    The only valid none default option is pipe, which still is required for most world starts.
     """
     valid_keys = set(LEVEL_ELEMENTS)
     default = valid_keys - {ITEM.LEVELELEMENTS.Pipe.value}
+
 
 class RandomizeEnemies(Choice):
     """
@@ -90,6 +97,8 @@ class RandomizeEnemies(Choice):
     option_off = 0
     option_add = 1
     option_remove = 2
+    visibility = Visibility.none
+
 
 class EnemiesIncluded(ItemSet):
     """
@@ -97,6 +106,8 @@ class EnemiesIncluded(ItemSet):
     """
     valid_keys = set(ENEMIES)
     default = valid_keys
+    visibility = Visibility.none
+
 
 
 class RandomizePowerups(Choice):
@@ -399,7 +410,8 @@ class SaveStateSlot(Range):
 
 class ModifierMultiplierPercentage(Range):
     """
-    A percentage which to multiply modifier time with.
+    Modifiers are temporary buffs / debuffs gained from filler / traps.
+    The length of all modifiers are multiplied by this percentage.
     Modifiers still clears on death.
     """
     display_name = "Modifier time Multiplier Percentage"

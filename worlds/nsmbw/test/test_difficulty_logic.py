@@ -1,9 +1,7 @@
 from .bases import *
-from ..items import extra_start_items
-from ..locations import name_level, name_starcoin
 
 
-class TestDifficultyLogic(NSMBWWorld):
+class TestDifficultyLogic(NSMBWTestBase):
     options = {
         "randomize_abilites": False,
         "randomize_powerups": RandomizePowerups.option_on_except_mushroom,

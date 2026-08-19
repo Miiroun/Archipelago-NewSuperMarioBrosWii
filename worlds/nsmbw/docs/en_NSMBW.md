@@ -133,6 +133,11 @@ Why does the client auto press hotkeys?
 Can I run this randomizer on real hardware?
 - No, since most modifications are run through the external python client. There are no plans to implement this.
 - You are however encouraged to run the other nsmbw randomizers mentioned bellow, which works on hardware.
+What does the star coin item do?
+- They can do up to 3 things depending on what you have enabled:
+  1) Enables you to buy hint movies 
+  2) Required to unlock world 9 levels 
+  3) Required to unlock 8-C
 Are there bugs?
 - Expect bugs, it is still in development.
 - Report a bug either at the [github](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/issues) or in the NSMBW thread in the [AP discord](https://discord.com/channels/731205301247803413/1327187652864380948), make sure to mention your game revision.

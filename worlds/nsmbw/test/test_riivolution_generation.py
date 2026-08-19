@@ -3,7 +3,7 @@ from ..locations import pos_to_level_name, level_name_to_pos
 
 
 
-class TestLevelShuffle(NSMBWWorld):
+class TestLevelShuffle(NSMBWTestBase):
     options = {
         "randomize_movement": True,
         "randomize_powerups": RandomizePowerups.option_on,
@@ -13,7 +13,7 @@ class TestLevelShuffle(NSMBWWorld):
         "music_shuffel_riivolution" : True,
     }
 
-class TestLevelShuffleOff(NSMBWWorld):
+class TestLevelShuffleOff(NSMBWTestBase):
     options = {
         "randomize_movement": True,
         "randomize_powerups": RandomizePowerups.option_on,

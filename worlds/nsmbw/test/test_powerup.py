@@ -1,5 +1,5 @@
 from .bases import *
-class TestPowerupOff(NSMBWWorld):
+class TestPowerupOff(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_off,
@@ -11,7 +11,7 @@ class TestPowerupOff(NSMBWWorld):
         self.assertTrue(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
 
 
-class TestPowerupOnExceptMushroom(NSMBWWorld):
+class TestPowerupOnExceptMushroom(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
@@ -25,7 +25,7 @@ class TestPowerupOnExceptMushroom(NSMBWWorld):
         self.assertTrue(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
 
 
-class TestPowerupOnProgressive(NSMBWWorld):
+class TestPowerupOnProgressive(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on_progressive,
@@ -41,7 +41,7 @@ class TestPowerupOnProgressive(NSMBWWorld):
         self.assertTrue(self.world.get_location(name_starcoin(1, 1, 1)).can_reach(self.multiworld.state))
 
 
-class TestPowerupOn(NSMBWWorld):
+class TestPowerupOn(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on,

@@ -256,7 +256,9 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x80a28424, instru_noop, instru_beq + val_001c, name="patch_star_level")
         ]
 
-            ## patch patches ---------------------------------------------------
+        self.adress_starting_world = self.map_between("P1", 0x80102bb8)
+
+        ## patch patches ---------------------------------------------------
 
         #Skip title screen movies
         # credit to mkwcat for creating this patch

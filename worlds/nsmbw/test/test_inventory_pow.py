@@ -1,6 +1,6 @@
 from .bases import *
 
-class InventoryBase(NSMBWWorld):
+class InventoryBase(NSMBWTestBase):
     options = {
         "include_inventory_powerups" : 0,
         "randomize_powerups" : RandomizePowerups.option_off

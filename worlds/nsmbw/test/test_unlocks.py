@@ -1,6 +1,6 @@
 from .bases import *
 
-class TestUnlocksOn(NSMBWWorld):
+class TestUnlocksOn(NSMBWTestBase):
     options = {
         "randomize_abilites" : True,
         "abilites_included" : AbilitiesIncluded.valid_keys,
@@ -10,7 +10,7 @@ class TestUnlocksOn(NSMBWWorld):
         "enemies_included" : EnemiesIncluded.valid_keys,
     }
 
-class TestUnlocksOnEnemyRemove(NSMBWWorld):
+class TestUnlocksOnEnemyRemove(NSMBWTestBase):
     options = {
         "randomize_abilites" : True,
         "abilites_included" : AbilitiesIncluded.valid_keys,
@@ -21,7 +21,7 @@ class TestUnlocksOnEnemyRemove(NSMBWWorld):
 
     }
 
-class TestUnlocksIncludeOff(NSMBWWorld):
+class TestUnlocksIncludeOff(NSMBWTestBase):
     options = {
                  "randomize_abilites" : True,
         "abilites_included" : {},
@@ -32,7 +32,7 @@ class TestUnlocksIncludeOff(NSMBWWorld):
     }
 
 
-class TestUnlocksRandoOff(NSMBWWorld):
+class TestUnlocksRandoOff(NSMBWTestBase):
     options = {
          "randomize_abilites" : False,
         "abilites_included" : AbilitiesIncluded.valid_keys,
@@ -42,7 +42,7 @@ class TestUnlocksRandoOff(NSMBWWorld):
         "enemies_included" : EnemiesIncluded.valid_keys,
     }
 
-class TestUnlocksOff(NSMBWWorld):
+class TestUnlocksOff(NSMBWTestBase):
     options = {
         "randomize_abilites" : False,
         "abilites_included" : {},

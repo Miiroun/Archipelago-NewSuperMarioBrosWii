@@ -2,7 +2,7 @@ from .bases import *
 from ..locations import name_level, name_starcoin
 
 
-class TestHardModeOff(NSMBWWorld):
+class TestHardModeOff(NSMBWTestBase):
     options = {
         "randomize_abilites" : True,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
@@ -34,7 +34,7 @@ class TestHardModeOff(NSMBWWorld):
 
 
 
-class TestHardModeOn(NSMBWWorld):
+class TestHardModeOn(NSMBWTestBase):
     options = {
         "randomize_abilites" : True,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,

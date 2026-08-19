@@ -47,15 +47,6 @@ for world_num in range(1,9+1):
 for nick in nicks:
     ITEM_NAME_GROUPS.update({nick[0]: {nick[1]}})
 
-# future planed movement
-#dont even want to try
-# [ "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove),
-# "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), red coins - ring, stopmping on enemeies]
-# temporarily given up on
-# ["pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)]
-
-# re purposed (merged)
-#, "climb_ladders", "climb_vine", "swing_vine", "climb_pole", "sneak",  "cary_blocks",
 
 for i, movement_unlock in enumerate(UNLOCKS):
     ITEM_NAME_TO_ID.update({movement_unlock : 301 + i})

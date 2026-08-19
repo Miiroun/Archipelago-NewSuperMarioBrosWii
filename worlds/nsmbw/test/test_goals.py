@@ -1,17 +1,17 @@
 from .bases import *
 
-class TestGoalBowser(NSMBWWorld):
+class TestGoalBowser(NSMBWTestBase):
     options = {
         "alternative_goal": AlternativeGoal.option_bowser,
     }
 
 
-class TestGoalStarCoins(NSMBWWorld):
+class TestGoalStarCoins(NSMBWTestBase):
     options = {
         "alternative_goal": AlternativeGoal.option_starcoins,
     }
 
-class TestGoalHintMovies(NSMBWWorld):
+class TestGoalHintMovies(NSMBWTestBase):
     options = {
         "alternative_goal": AlternativeGoal.option_hintmovies,
         "hint_movie_sanity" : True,

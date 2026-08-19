@@ -57,16 +57,16 @@ def copy_rename_internal_arc(source : Path, destination : Path, source_name : st
 
 
 class Patcher:
-    seed : str
     slot_data : dict
     input_path : Path
     output_path : Path
     random : Random
     region : str
 
-    def __init__(self, seed : str, slot_data : dict):
-        self.seed = seed
+    def __init__(self, slot_name : str, seed : str, slot_data : dict):
         self.slot_data = slot_data
+
+        self.name = f"nsmbw_ap_{slot_name}_{seed}"
 
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
@@ -75,12 +75,18 @@ class Patcher:
         output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path
         #else:
         #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
-        self.output_path = Path(output_path) / f"nsmbw_ap_seed{seed}"
+        self.output_path = Path(output_path) / self.name
 
         file_name = Utils.get_settings()["nsmbw_settings"].game_file_path.split(".")[0].split("/")[-1]
         self.temp_dir = Path(tempfile.gettempdir()) / "nsmbw" /  file_name / "DATA"
 
-        self.random = Random(self.seed)
+        self.random = Random(seed)
+
+        self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"{self.name}.json"
+
+
+        self.get_region()
+
 
     def copy_riivolution_skeleton(self):
         apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
@@ -194,7 +200,7 @@ class Patcher:
 
         os.makedirs(self.output_path / "Stage", exist_ok=True)
         for i in range(len(level_shuffle)):
-            shutil.copy(self.temp_dir /"files" / "Stage" / level_name_converter(*levels[i]), self.output_path / "Stage" / level_name_converter(*level_shuffle[i]))
+            shutil.copy(self.temp_dir /"files" / "Stage" / level_name_converter(*level_shuffle[i]), self.output_path / "Stage" / level_name_converter(*levels[i]))
 
     def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False):
         temp_path = self.temp_dir / "files" / folder_name
@@ -209,7 +215,7 @@ class Patcher:
 
 
     def create_riivolution_xml(self):
-        wiidisc = ET.Element('wiidisc', {"version" : "1", "shiftfiles":"true", "root":fr"/nsmbw_ap_seed{self.seed}/", "log":"true"}) #does shiftfiles need to be true?
+        wiidisc = ET.Element('wiidisc', {"version" : "1", "shiftfiles":"true", "root":fr"/{self.name}/", "log":"true"}) #does shiftfiles need to be true?
         tree = ET.ElementTree(wiidisc)
 
         _id = ET.SubElement(wiidisc, "id", {"game" : "SMN"})
@@ -243,7 +249,7 @@ class Patcher:
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/US/Layout/openingTitle/openingTitle.arc"})
 
         # external save
-        ET.SubElement(_patch, "savegame", {"external" : r"/save/{$__gameid}{$__region}","clone" : "false"})
+        ET.SubElement(_patch, "savegame", {"external" : f"/AP_nsmbw_saves/{self.name}", "clone" : "false"})
 
         # graphics
         ET.SubElement(_patch, "folder", {"external" : fr"Stage/", "disc":fr"/Stage/", "create":"true"})
@@ -261,7 +267,7 @@ class Patcher:
 
         #print("-------XML-----------------")
         #print(ET.tostring(wiidisc))
-        destination = self.output_path.parent / "riivolution" / f"nsmbw_ap_seed{self.seed}.xml"
+        destination = self.output_path.parent / "riivolution" / f"{self.name}.xml"
 
         ET.indent(tree, '\t')
         with open(destination, "w+") as file_name:
@@ -274,7 +280,7 @@ class Patcher:
     def create_desktop_shortcut(self):
         data = {
             "base-file": str(self.input_path),
-            "display-name": f"apnsmbw_{self.seed}",
+            "display-name": f"{self.name}",
             "riivolution" : {
                 "patches" : [
                     {
@@ -286,7 +292,7 @@ class Patcher:
                             }
                         ],
                         "root" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path)),
-                        "xml" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path) / "riivolution" / f"nsmbw_ap_seed{self.seed}.xml"),
+                        "xml" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path) / "riivolution" / f"{self.name}.xml"),
                     }
                 ]
             },
@@ -294,23 +300,22 @@ class Patcher:
             "version" : 1
         }
 
-        destination = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts"
 
-        destination.mkdir(parents=True, exist_ok=True)
+        self.shortcut_path.parent.mkdir(parents=True, exist_ok=True)
 
 
-        with open(destination/ f"seed{self.seed}.json", "w+") as file_name:
+        with open(self.shortcut_path, "w+") as file_name:
             #json.dump(data, file_name, indent=4)
             file_name.write(json.dumps(data, indent=2).replace("\\\\", r"\/"))
-        assert (destination/ f"seed{self.seed}.json").exists(), "need to have created shortcut successfully"
-        print(destination/ f"seed{self.seed}.json")
+        assert (self.shortcut_path).exists(), "need to have created shortcut successfully"
+        print(self.shortcut_path)
 
     def get_region(self):
         with open(self.temp_dir / 'disc' / 'header.bin') as f:
             self.region = f.read(6)
 
     def patch(self):
-        logger.info(f"Begin patching seed{self.seed}")
+        logger.info(f"Begin patching name: {self.name}")
         logger.info(f"output file path: {self.output_path}")
 
         logger.info("tests if old rando exist")
@@ -322,7 +327,6 @@ class Patcher:
         self.extract_game()
 
         logger.info(f"Collects game info")
-        self.get_region()
 
         logger.info(f"Copying standard riivolution to {self.output_path}")
         self.copy_riivolution_skeleton()
