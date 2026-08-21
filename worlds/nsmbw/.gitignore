@@ -1,0 +1,15 @@
+# kamek stuff
+/NSMBW_client/riivolution_patch/Kamek-Ninja-Template/_maps/
+/NSMBW_client/riivolution_patch/Kamek-Ninja-Template/_build/
+/NSMBW_client/riivolution_patch/Kamek-Ninja-Template/_build
+/NSMBW_client/riivolution_patch/Kamek-Ninja-Template/code_based_on/
+
+*.o
+
+#dev file stuff
+/dev_files/experiment.ipynb
+/dev_files/symbols_E2_dolphin.map
+/dev_files/symbols_E2_rem_ghidra.map
+/dev_files/symbols_P1_rem_ghidra.map
+/dev_files/unused_patch_files
+/dev_files/code_based_on/

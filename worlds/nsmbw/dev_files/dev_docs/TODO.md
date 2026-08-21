@@ -4,42 +4,22 @@
 - documentation to update
 - option descriptio
 - lots of play testing to do.
+- complete froozen playtest on wsl
 
 ## Super super short term
 Write desciptions for options
 
 Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
 
-DC
-- option + setting review
+DC: option + setting review
 
-FIX generation and client bugs
-test
-- gravity
 
 - Secret exit items
   - update docs / options
 
-Faster timer countdown speed
-kmWrite32(0x800e3ab8, 0x3403fe90);  // 92 -> 368
-origin? works? : replace time trap with this
-
-Send yaml for help
-
-
-Change starting world : ask for help in discord
 
 Edit star coin level icon : new image
-
 try Gen a patch file for sc model : if much smaller use it
-
-WANT TO FIX WORLD 9 FOR NEXT VERSION : SEPARATE PER LEVEL SEEMS HARD BUT COULD MAYBE CREATE AN EASY PATCH THAT JUST UNLOCKS ALL BY DEFAULT
-DONT WANT IT THIS BROKEN FOR NEXT VERSION
-playtest : disable_world9_sc_req
-- remove option for player to decide
-
-
-Look spoiler log with topology_present
 
 
 Clean up dev files : remove from repo?
@@ -47,13 +27,11 @@ Clean up dev files : remove from repo?
 
 patch function that checks if level is unlocked
 
+world 9 patch doesnt work
+patch starting time doesnt work
+
 bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
 
-why all hm in logic?
-
-fix carry shell patch
-
-remove star from inventory is bugged
 
 ## Super short term
 - Add riivolution info to docs
@@ -93,11 +71,6 @@ remove star from inventory is bugged
 - Auto close dolphin doesn't work on Linux
 - Add if game over : resync state to docs
 - Save on disconnect
-- Don't send loc on savefile 1
-- Improve dolphin error more
-  - Give debug tips in list
-  - Print as list
-- Shuffle in coin and battle stages into main levels
 - Improve how swim locks
   - Improve error messages
 - Write to GameFlag_e?
@@ -111,7 +84,6 @@ remove star from inventory is bugged
 
 
 ## Playtest
-- multiplayer
 - do complete playthrough, add spin jump and jump logic + time logic
 - Deathlink group
 - Playtest on linux so the root error is apparent
@@ -128,8 +100,6 @@ remove star from inventory is bugged
 - allow_gen_difficult_settings
 - Setting for being in debug mode instead of if frozen
 - star coin multiplyer for hm
-- Does time rando work??
-- reprompt_gamefile
 - Ydotool
 - patch not need watching hint movies
 - Shortcuts
@@ -152,43 +122,23 @@ remove star from inventory is bugged
 - start with all hm hinterd
 - level shuffle has proper logic
 - inventory star removal
+- gravity
+- secret exit items
+- powerup_grace
+- mod time trap
+- test: 9-3 & 9-8 doesn't auto send stat coin on collect
+- Deathlink grace
 
 
 ## Bugs to fix
-- Can't leave vine without spin jump
-  - rework climb
-- i wanted to make note of some issues i encountered while playing this apworld. i've been playing on save file 1, first on accident and later i've just been sticking to it, because the game didn't have any gamebreaking problems with that and i thought this would be good to report in case the future is to make it so you can play on the other save files. it may be hard to tell where save file 1 is causing problems though, so i'm sorry if you can't make use of all this regardless:
-  - oh yea one more. on occasion there was some weird enemy AI going on. a fire bro threw its fireball to the right when it was facing the left, probably just when it was about to turn to face the other way, and a few boos were able to pursue me regardless of the direction mario was facing while climbing on a pole, enabling them to move vertically pretty fast. maybe these things were just caused by lag?
-  - enemy AI being weird
-- ?switch doesnt disable, is permanently on
-- HM5 : all hm requring castle comp
-  - might be problem with patch for skipping world unlocks
-- Som hm req cannon comp
-- Fix inventory pow on other savefiles
-- Add command to chage which save slot to use for option
-- Why doesnt launcher componenet work while running from source
-- try loading code patch with riivolution
-- sends everything when fades to black
-- All backgrounds are dark
-  - need to modify internal of the .arc file
-- 9-3 & 9-8 doesn't auto send stat coin on collect
-- This isn't a priority so you can focus on it later, but here's an error that was produced after running the command ```Traceback (most recent call last):   File "MultiServer.py", line 1350, in __call__   File "C:\ProgramData\Archipelago\custom_worlds\tracker.apworld\tracker\TrackerClient.py", line 250, in _cmd_explain     explain(self.ctx, lookup_name)     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^   File "C:\ProgramData\Archipelago\custom_worlds\tracker.apworld\tracker\TrackerClient.py", line 1512, in explain     dest_id = current_world.location_name_to_id[dest_name]               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^ KeyError: '9-1'```
-  - Do I not add event locations to world 9??
-- Still disconnect error
-- force_hook : assert connected
-- exit course sometimes send death
-- 2-2sc1 & sc2
-- 1-C sc3
-- World 9 not properly reset when dying
-  - Looks like after a death in 9-3 exclusively the default state of World 9 is stored I've died in other World 9 levels without the World being set like this
-  - Entering the level was possible while the circle was solid black, and the clear/sc checks were sent out properly when the level was completed 
-  - However, the world state was not reset (level clear saw the same situation as the screenshot), and I switched worlds and came back to be able to do other levels
-- Is tracker 0.3.3 broken? for 0.2.1 5-1 ??
-- Loose powerup should put to super if small
-- 9-3 bugged, sends location
-- star works if gotten from menu
-
-
+- 9-3 bugged, sends location on complete, freeze on death
+- fix carry shell patch
+- remove star from inventory is bugged
+- riivolution patch sometimes random crashes on startup
+- problem re acquire time mod
+- time rando
+- collect immediately doesnt work
+- crash when complete 9-3
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death
@@ -222,8 +172,10 @@ remove star from inventory is bugged
 - Look in regi for sand storm and meteor : see if is just an easy flag to change?
 - look for doStateChange
   - can improve climb and swim
-- 
-
+- Fix inventory pow on other savefiles
+- Shuffle in coin and battle stages into main levels
+- Can't leave vine without spin jump
+  - rework climb
 
 
 ## Broken versions
@@ -256,7 +208,6 @@ remove star from inventory is bugged
 - Bases on death messages create an ingame text message
 - Change how world9 and peach function for better savestates : edit how worlds unlock, could try follow save address in dolphin
 - make all levels unlock from start of world
-- Riivolution patch that changes world map unlock order and which level required to leave
 - Use persistent storage? for save file data instead of creating files?
 - Implement light geck-code parsing?
 - World enemies
@@ -297,8 +248,6 @@ remove star from inventory is bugged
 - Ask AP-world dev for x% of filler should be local option
   - Ask about x% local filler
 - locations for simple things ? 100 coins, top of flagpole, 100 lives, 100 inventory pow, etc ?
-- P-switch as locations
-- 8005e4c0 holds trigger A function, might be able to hijack to send death nice?
 - Kamek patch to detect if ap is connected
 - Hm option: cumulative but order is sorted after hm unlock order
 - Is there a way in game to see how many worlds you need to complete if you set the yaml to be random? If not, I would like to suggest some way to notify the player how many they need, maybe in peach's castle or something?
@@ -327,9 +276,7 @@ remove star from inventory is bugged
   - Marios animation start from back of world
 - Sneak freezes game
 - Hint movies that requires all level completion don't work in game : vertify still problem
-- DOLPHIN CONNECTION ISSUE
 - game randomly freezes : inconsistent experience
-- !switch doesnt block levels like 8-5 which are instant
 - goomba patch errors when level doesn't goomba: rough write
 - sometimes loading world crashes game
   - yea so loading my state from world 4-C and then trying to switch worlds just crashes : invalid read
@@ -342,6 +289,12 @@ remove star from inventory is bugged
 - NO idea why, but the big urchins in World 4-3 SC3 Room are producing an insane amount of bubbles and lagging the game lmao
 - I got stuck in world 8 once, normally I'd farm enemy encounters for the mushrooms, however, the lava bubble was a strange case 
   - because the first encounter for it was fine, you can beat it no problem. But the second encounter is impossible without climb
+- Level rando sometimes craches game
+- HM5 : all hm requring castle comp
+  - might be problem with patch for skipping world unlocks
+- Som hm req cannon comp
+- exit course sometimes send death
+- Skip into cutsceen does work sometimes? : skips if spam click intro
 
 
 Summery poll
@@ -367,7 +320,6 @@ Summery poll
   - "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), red coins - ring, stopmping on enemeies
   - "pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)
   - spring
-
 - TRAPS
   - Sandstorm
   - Darkness
@@ -398,22 +350,19 @@ Summery poll
   - Discover each room
   - Killing each enemy type
   - Top of flagpole
+  - P-switch as locations
 - ITEMS
   - Enemy remove : should work same as checkpoint
   - Enemy add (trap item): readds enemy, works as above
   - Tilting plattform
 
-REWORK
-- P&Q switch work as checkpoint
-- need to reformat rule?
-  - dict with named dataclass ?
-    - { "1-1" : Level(clear, sc1, sc2, sc3, secret = True, 1ups= true, 100coins = true, red ring = true)
 
 ## Game patches
 - Coin worlds single player
 - Skipp playing hint movies when buying them
 - Update world map - file
 - AP-images for toad houses
+- SMW like powerup storage
 
 
 ## Long term

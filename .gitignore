@@ -30,7 +30,6 @@
 *multisave
 *.archipelago
 *.apsave
-*.BIN
 *.puml
 
 setups
@@ -201,13 +200,8 @@ Thumbs.db
 [Dd]esktop.ini
 *wbfs
 *.iso
-/worlds/nsmbw/NSMBW_client/wii-code-tools/__init__.py
+
 /fuzz_output/
-/worlds/nsmbw/NSMBW_client/wii-code-tools/address-map.txt
+
+#nsmbw stuff
 /nsmbw/
-/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/_maps/
-/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/_build/
-/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/_build
-*.o
-/nsmbw/nsmbw_saves
-/worlds/nsmbw/NSMBW_client/rom_file/Kamek-Ninja-Template-master/code_based_on/

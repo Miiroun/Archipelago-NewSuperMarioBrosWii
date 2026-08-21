@@ -1,0 +1,19 @@
+#pragma once
+#include <propelparts/bases/d_a_lift_bg_base.hpp>
+#include <game/mLib/m_vec.hpp>
+
+class daLiftBgRotation_c : public daLiftBgBase_c {
+public:
+    virtual bool initMovement();
+    virtual void executeMovement();
+
+    fBase_c *findController();
+
+    fBaseID_e mControllerID;
+    mVec2_c mDeltaPos;
+    mVec2_c mOrigin;
+
+    // Settings
+    u8 mRotationIdx;
+    bool mAlwaysUp;
+};
