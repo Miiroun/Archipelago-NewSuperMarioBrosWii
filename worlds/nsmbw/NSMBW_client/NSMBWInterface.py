@@ -18,7 +18,7 @@ from ..Common import *
 
 
 logger = logging.getLogger("Client")
-if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only != 0):
+if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library != 0):
     try:
         from . import keyboard
     except ImportError as e:
@@ -209,7 +209,8 @@ class NSMBWInterface(object):
         return 1 == self.get_on_map()[0]
 
     def is_in_menu(self):
-        return self.get_in_main_menu() == b'\x01' and (bytes_to_int(self.get_level_level()) + 1 != 21) # for some reason this triggers in 4-G
+        problematic_levels_num = [3,7,21]
+        return (self.get_in_main_menu() == b'\x01') and not (bytes_to_int(self.get_level_level()) + 1  in problematic_levels_num) # for some reason this triggers in 4-G
         #print(f"record state {self.get_record_state()}")
         return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
@@ -265,17 +266,17 @@ class NSMBWInterface(object):
 
     def _linux_send_hotkey(self, fkey : int, shift : bool) -> bool:
         """Deliver a Dolphin hotkey on Linux"""
-        if Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only == 1:
+        if Utils.get_settings()["nsmbw_settings"].keypress_library == 1:
             if shutil.which("xdotool") is None:
                 self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey 'F{8}', shift:{shift}.","red")
                 return False
-        if Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only == 2:
+        if Utils.get_settings()["nsmbw_settings"].keypress_library == 2:
             if shutil.which("ydotool") is None:
                 self.log_color(f"ydotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey 'F{8}', shift:{shift}.","red")
                 return False
 
         try:
-            match  Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
+            match  Utils.get_settings()["nsmbw_settings"].keypress_library:
                 case 1:
                     if shift:
                         combo = f"F{fkey} + shift"
@@ -289,7 +290,7 @@ class NSMBWInterface(object):
                         combo = ["42:1", f"{58+fkey}:1",f"{58+fkey}:0", "42:0"]
                     subprocess.run(["ydotool", "key", *combo],check=True,capture_output=True,)
                 case _:
-                    raise Exception(f"Unacunted case { Utils.get_settings()['nsmbw_settings'].use_xdotool_instead_of_keyboard_linux_only}")
+                    raise Exception(f"Unacunted case { Utils.get_settings()['nsmbw_settings'].keypress_library}")
             return True
         except Exception as e:
             logger.info(traceback.format_exc())
@@ -305,7 +306,7 @@ class NSMBWInterface(object):
             logger.info(f"Saved savestate to slot {slot}")
 
         try:
-            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only != 0:
+            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library != 0:
                 self._linux_send_hotkey(slot, True)
             else:
                 time.sleep(wait_long)
@@ -333,7 +334,7 @@ class NSMBWInterface(object):
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
         try:
-            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].use_xdotool_instead_of_keyboard_linux_only:
+            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library:
                 self._linux_send_hotkey(slot, False)
             else:
                 time.sleep(wait_short)
@@ -371,39 +372,33 @@ class NSMBWInterface(object):
         #logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
         #            " JIT cache manualy (JIT -> clear chache).")
 
-    def write_instruction_clear_cache_in_game(self, address: int, data: bytes) -> bool:
-        current_value = self.dolphin_client.read_address(address, len(data))
-        if current_value != data:
-            #current_value = self.dolphin_client.read_address(address, len(data))
+    def clear_cache_in_game(self, address: int) -> None:
+        clear_address = 0x80BBB000
+        while (self.dolphin_client.read_address(clear_address, 4) != val_0000 + val_0000):
+            sleep(0.01)
 
-            self.dolphin_client.write_address(address, data)
+        sleep(0.01)
 
+        self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
 
-            clear_address = 0x80BBB000
-            while self.dolphin_client.read_address(clear_address, 4) != val_0000 + val_0000:
-                sleep(0.01)
-            self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
-            return True
-        return False
+        sleep(0.01)
 
     def write_instruction(self, address: int, data: bytes) -> bool:
-        if self.slot_data["use_riivolution"]:
-            ret_val = True
-            for i in range(math.ceil(len(data) / 4)):
-                ret_val &= self.write_instruction_clear_cache_in_game(address + 4* i, data[i * 4:(i + 1) * 4])
-                sleep(0.01)
-            return ret_val
-
-
         current_value = self.dolphin_client.read_address(address, len(data))
         if current_value != data:
             self.dolphin_client.write_address(address, data)
-            #logger.info("Instruction changed")
-            self.should_clear += 1
+
+            if self.slot_data["use_riivolution"] == True:
+                for i in range(math.ceil(len(data) / 4)):
+                    self.clear_cache_in_game(address + 4 * i)
+            else:
+
+                self.should_clear += 1
 
             return True
         else:
             return False
+
 
     def apply_patch(self, patch : CodePatch | Iterable, reverse : bool=False, double_check : bool = True):
         # this allows recursive patching
@@ -419,15 +414,15 @@ class NSMBWInterface(object):
             if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
                 raise ValueError(f"bytes {current_bytes} at addr {patch.addr : x} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
         if not reverse:
-            if patch.clear:
-                self.write_instruction(patch.addr, patch.code)
-            else:
-                self.dolphin_client.write_address(patch.addr, patch.code)
+            #if patch.clear:
+            self.write_instruction(patch.addr, patch.code)
+            #else:
+            #    self.dolphin_client.write_address(patch.addr, patch.code)
         elif hasattr(patch, "origin"):
-            if patch.clear:
-                self.write_instruction(patch.addr, patch.origin)
-            else:
-                self.dolphin_client.write_address(patch.addr, patch.origin)
+            #if patch.clear:
+            self.write_instruction(patch.addr, patch.origin)
+            #else:
+            #    self.dolphin_client.write_address(patch.addr, patch.origin)
         else:
             raise ValueError(f"patch {patch} {patch.name} is not a valid patch, tried to reverse without origin set")
 
@@ -443,7 +438,7 @@ class NSMBWInterface(object):
         slot_data_ablities_included = self.slot_data["abilites_included"]
         def patch_ability(name : str, patch : CodePatch | Iterable, double_check=True):
             if name in slot_data_ablities_included:
-                self.apply_patch(patch, reverse=name in unlocked_moves, double_check=double_check)
+                self.apply_patch(patch, reverse=(name in unlocked_moves), double_check=double_check)
 
         if self.slot_data["randomize_abilites"] == True:
             # ground pound, should look at og memmory to renable ones unlocked
@@ -518,7 +513,7 @@ class NSMBWInterface(object):
                 #        pass
 
 
-            patch_ability(ITEM.ABILITIES.Carry, [self.memory_addresses.patch_throw,
+            patch_ability(ITEM.ABILITIES.Carry, [#self.memory_addresses.patch_throw,
                                                  self.memory_addresses.patch_carry_shell,
                                                  self.memory_addresses.patch_carry_block,])
 
@@ -763,7 +758,7 @@ class NSMBWInterface(object):
     def set_red_switch(self, data : bytes):
         address = self.memory_addresses.red_switch_state
         self.dolphin_client.write_address(address,data)
-    def set_time_left(self, data : bytes):
+    def set_time_left(self, data : bytes): # unused
         address = self.memory_addresses.time_left
         if self.is_in_level():
             self.dolphin_client.write_address(address,data)
@@ -816,6 +811,12 @@ class NSMBWInterface(object):
         address =self.memory_addresses.adress_starting_world
         self.write_instruction(address, b'\x38\xa0' + int_to_bytes(world_num-1, 2)) # li r5, world_num
 
+    def set_starting_time(self, time : int):
+        # default 999
+        address1 = self.memory_addresses.address_starting_time
+        address2 = self.memory_addresses.address_starting_time + 8
+        self.write_instruction(address1, instru_noop + instru_noop)
+        self.write_instruction(address2, int_to_bytes(0x3880, 2) + int_to_bytes(time, 2))
 
     def update_check_sum(self):
         # didnt manage to make this one work
@@ -866,7 +867,7 @@ class NSMBWInterface(object):
             try:
                 self.dolphin_client.connect()
                 time.sleep(0.1)
-                if self.dolphin_client.is_connected():
+                if self.dolphin_client.is_connected() and self.dolphin_client.dolphin.is_hooked():
                     self.log_color(f"Successfully force connected", "green")
                     return
                 else:

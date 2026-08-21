@@ -258,6 +258,10 @@ class MemoryAddresses(object):
 
         self.adress_starting_world = self.map_between("P1", 0x80102bb8)
 
+        self.patch_fast_timer = self.create_patch("P1",0x800e3ab8, 0x3403fe90,0x3403ffa4, name="fast_timer")
+
+        self.address_starting_time = self.map_between("P1", 0x800e3a00)
+
         ## patch patches ---------------------------------------------------
 
         #Skip title screen movies
@@ -297,7 +301,7 @@ class MemoryAddresses(object):
         # Exit Course Anytime [mkwcat] https://github.com/mkwcat/gecko-codes/blob/master/source/nsmbw/Exit-Course-Anytime.cpp
         exit_course_anytime = self.create_patch("P1", 0x800B4EA8,instru_li + b'\x03' + b'\x01' , name="exit_course_anytime")
 
-        disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear")
+        #disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear")
 
         # Skip Wii Remote Strap Screen PAL by CLF78
         patch_skipp_wii_remote_strap_screen = [
@@ -337,11 +341,16 @@ class MemoryAddresses(object):
         disable_world9_sc_req = [
             self.create_patch("P1", 0x808ced20, instru_noop),
             self.create_patch("P1", 0x808ced2c, instru_noop),
+            self.create_patch("P1", 0x808ca084, instru_noop),
+            self.create_patch("P1", 0x800fd080, instru_noop),
+            self.create_patch("P1", 0x80907da4, instru_li + val_0000),
+
+            #self.create_patch("P1", 0x800fc534, 0x281e0000 )
         ]
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
             patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
-            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime, disable_game_over_item_clear,
+            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime,# disable_game_over_item_clear,
             patch_skipp_wii_remote_strap_screen,  exception_handler, #lives_limit_change,
             worldMapAfterFinalBoss, #dontToggleSuperGuideBit, fs_RemoveMultiSelect,
             disable_world9_sc_req

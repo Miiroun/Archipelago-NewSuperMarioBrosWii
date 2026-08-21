@@ -71,7 +71,7 @@ class Patcher:
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
         output_path : Path
-        #if Utils.get_settings()["nsmbw_settings"].auto_open:
+        #if Utils.get_settings()["nsmbw_settings"].auto_start:
         output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path
         #else:
         #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
@@ -90,7 +90,7 @@ class Patcher:
 
     def copy_riivolution_skeleton(self):
         apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
-        _from = apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "rom_file" / "Riivolution_template"
+        _from = apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
         assert apnsmbw_file.exists(), f"folder {apnsmbw_file} does not exist"
         assert _from.exists(), f"folder {_from} does not exits"
 
@@ -99,7 +99,7 @@ class Patcher:
 
     def patch_bsdiff(self):
         apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
-        _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "rom_file" / "Riivolution_patch_data"
+        _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
         assert _from.exists()
 
         PatchDetatils = []#("openingTitle", "Layout") # ("star_coin.arc", "Object")

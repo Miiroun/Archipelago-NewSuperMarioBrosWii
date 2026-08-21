@@ -18,7 +18,8 @@ collection_map_general : Dict [str, int] = {}
 
 world_toad      = [2, 1, 6, 4, 1, 7, 1, 0]
 world_star      = [3, 5, 0, 5, 5, 6, 6, 0]
-world_enemy     = [4, 5, 2, 1, 6, 3, 7, 3]
+world_enemy     = [4, 5, 2, 1, 6, 3, 7, 0] # 8-3 should be for enemy, however they sometimes require climb
+# collect override might not be best : maybe an event for each source : with an multiple, then we can do collect on event items
 
 for world_num in range(1, 8+1):
     collection_map_general.update({
@@ -54,7 +55,7 @@ class NSMBWworld(World):
     item_name_groups  = items.ITEM_NAME_GROUPS
 
     origin_region_name = "Menu"
-    topology_present = True
+    topology_present = False
     ut_can_gen_without_yaml = True
     glitches_item_name = ITEM.GlitchedLogic
 
@@ -71,7 +72,7 @@ class NSMBWworld(World):
         regions.create_and_connect_regions(self)
         locations.create_all_locations(self)
 
-        if Utils.get_settings()["nsmbw_settings"].debug_mode and not getattr(self.multiworld, "generation_is_fake", False):
+        if Utils.get_settings()["nsmbw_settings"].debug_mode and not getattr(self.multiworld, "generation_is_fake", False) and self.topology_present:
             state = self.multiworld.get_all_state(False,allow_partial_entrances=True)
             state.update_reachable_regions(self.player)
             visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)

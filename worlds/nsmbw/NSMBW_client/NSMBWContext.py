@@ -1,3 +1,5 @@
+import math
+
 from . import dolphin_interface_client
 from .NSMBWInterface import *
 from .patcher import Patcher
@@ -41,7 +43,7 @@ class ModifiedState(IntEnum):
 
 
 modifier_type_litteral = Literal[ITEM.TRAPS.ThrowTrap, ITEM.TRAPS.ReverseControlTrap, ITEM.TRAPS.GoombaTrap, ITEM.TRAPS.MovementLockTrap,
-    ITEM.FILLER.SuperSpeed, ITEM.TRAPS.SlowTrap, ITEM.TRAPS.GravityTrap, ITEM.FILLER.LowGravity]
+    ITEM.FILLER.SuperSpeed, ITEM.TRAPS.SlowTrap, ITEM.TRAPS.GravityTrap, ITEM.FILLER.LowGravity, ITEM.TRAPS.TimeTrap]
 
 class Modifier(NamedTuple):
     type : modifier_type_litteral
@@ -79,7 +81,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """Set the value of deathlink_amnesty"""
         value = int(amount)
         self.ctx.death_link_amnesty_cap = value
-        logger.info(f"Deathlink amnesty set to {self.ctx.death_link_amnesty_count}/{self.ctx.death_link_amnesty_cap}")
+        logger.info(f"Deathlink amnesty set to {self.ctx.death_link_amnesty_cap}")
+
+    def _cmd_deathlink_grace(self, amount):
+        """Set the value of deathlink_grace"""
+        value = int(amount)
+        self.ctx.death_link_grace_cap = value
+        logger.info(f"Deathlink grace set to {self.ctx.death_link_grace_cap}")
 
 
     def _cmd_debug_deathlink(self):
@@ -93,7 +101,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                     dl group: '{self.ctx.death_link_group}' \n
                     dl group in slot data: '{self.ctx.slot_data['death_link_group']}' \n
                     current tags: {self.ctx.tags} \n
-                    Amnesty: {self.ctx.death_link_amnesty_count}/{self.ctx.slot_data['death_link_amnesty']}""")
+                    Amnesty: {self.ctx.death_link_amnesty_count}/{self.ctx.death_link_amnesty_cap}
+                    Grace: {self.ctx.death_link_grace_count}/{self.ctx.death_link_grace_cap}""")
 
         if (f"DeathLink{self.ctx.death_link_group}" in self.ctx.tags) ^ (self.ctx.death_link_enabled): # xor ?
             logger.info(f"there is a missmatch between group and tags, please report this")
@@ -141,6 +150,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"No type active")
             else:
                 logger.info(f"No type active, mod '{self.ctx.current_mod} time left {self.ctx.current_mod_end_time-time.time()}")
+                logger.info(f"Mod list {self.ctx.modifiers}")
 
     def _cmd_refresh_mod(self):
         """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
@@ -173,7 +183,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         Returns the amount of star coin items sent to client.
         """
-        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data["bowser_star_unlock"]} for unlocking bowser")
+        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['bowser_star_unlock']} for unlocking bowser")
 
     def _cmd_world_unlocked(self):
         """
@@ -257,12 +267,12 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         assert value in ["0", "1", "2"], "Allowed values are 0, 1 or 2"
         Utils.get_settings()["nsmbw_settings"]["collect_level"] = value
 
-    def _cmd_toggle_auto_open(self):
+    def _cmd_toggle_auto_start(self):
         """
         Toggles the auto open setting in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["nsmbw_settings"]["auto_open"] ^= True
-        logger.info(f"Auto clear open: {Utils.get_settings()['nsmbw_settings']['auto_open']}")
+        Utils.get_settings()["nsmbw_settings"]["auto_start"] ^= True
+        logger.info(f"Auto clear open: {Utils.get_settings()['nsmbw_settings']['auto_start']}")
 
     def _cmd_toggle_auto_start_riivolution(self):
         """
@@ -382,6 +392,12 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         data = dir(set_obj)
         logger.info(data)
 
+    def _cmd_print_other_data(self):
+        if self.ctx.username is not None:
+            logger.info(f"power-up grace : {self.ctx.powerup_grace}")
+        else:
+            logger.info(f"Not conencted to dolphin")
+
     def _cmd_versions(self):
         """Prints out a few diffrent versions that is useful to know"""
         logger.info(
@@ -421,6 +437,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_status()
         self._cmd_print_slot_data()
         self._cmd_print_settings()
+        self._cmd_print_other_data()
 
         logger.info("---- Info regarding items ----")        
         #self._cmd_received()
@@ -505,6 +522,8 @@ class NSMBWContext(SuperContext):
 
     connection_pause = 0
 
+    powerup_grace : int = 0
+
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
             super().__init__(server_address, password)
@@ -544,6 +563,9 @@ class NSMBWContext(SuperContext):
 
         self.death_link_amnesty_count = 0
         self.death_link_amnesty_cap = 1
+
+        self.death_link_grace_count = 0
+        self.death_link_grace_cap = 1
 
 
 
@@ -653,22 +675,24 @@ class NSMBWContext(SuperContext):
                 #print(args)
                 pass
                 #recived when sening out ut map update
+            case "LocationInfo":
+                pass
             case _:
                 print(f"Recived package with unknow command: {cmd}")
         super().on_package(cmd, args)
 
     async def disconnect(self, allow_autoreconnect: bool = False):
-        #if Utils.get_settings()["nsmbw_settings"].auto_open:
+        #if Utils.get_settings()["nsmbw_settings"].auto_start:
         #    await self.handle_save()
         await super().disconnect(allow_autoreconnect)
 
 
     async def shutdown(self):
-        if Utils.get_settings()["nsmbw_settings"].auto_save and self.username is not None:
+        if self.username is not None:
             # this make sures modifiers are cleared when exit
             self.modifiers = []
             self.current_mod_end_time = 0
-            Utils.async_start(self.handle_modifiers())
+            await self.handle_modifiers()
             await asyncio.sleep(0.1)
             Utils.async_start(self.handle_save())
         await super().shutdown()
@@ -681,8 +705,13 @@ class NSMBWContext(SuperContext):
 
     def on_deathlink(self, data: Utils.Dict[str, Utils.Any]) -> None:
         if  data["time"] > self.last_death_link + 1: # margin
-            print("Recived deathlink")
-            Utils.async_start(self.game_interface.kill_player())
+            self.death_link_grace_count += 1
+            if self.death_link_grace_count >= self.death_link_grace_cap:
+                print("Recived deathlink")
+                self.death_link_grace_count = 0
+                Utils.async_start(self.game_interface.kill_player())
+            else:
+                logger.info(f"Deathlink grace {self.death_link_grace_count} / {self.death_link_grace_cap}")
             self.last_death_link = time.time()
             self.is_pending_death_link_reset = True
         super().on_deathlink(data)
@@ -777,9 +806,9 @@ class NSMBWContext(SuperContext):
         """If the game is not connected or not in a playable state, this will attempt to retry connecting to the game."""
         if self.connection_state == ConnectionState.DISCONNECTED:
             if self.game_interface.connect_to_game():
+                await self.handle_load()
+                await self.game_interface.patch_runtime_on_load()
                 if Utils.get_settings()["nsmbw_settings"].auto_load:
-                    await self.handle_load()
-                    await self.game_interface.patch_runtime_on_load()
                     await asyncio.sleep(1)
                     self.update_memory_to_server_on_load()
             else:
@@ -862,9 +891,10 @@ class NSMBWContext(SuperContext):
         if self.username is None:
             logger.info("Connect to sever before saving")
             return
-        await asyncio.sleep(0.5)
-        self.game_interface.save_state(self.save_slot)
-        await asyncio.sleep(0.5)
+        if Utils.get_settings()["nsmbw_settings"].auto_save:
+            await asyncio.sleep(0.5)
+            self.game_interface.save_state(self.save_slot)
+            await asyncio.sleep(0.5)
 
         print(f"Seedname {self.seed_name}")
         if self.seed_name != "" and (not (self.seed_name is None)):
@@ -885,6 +915,8 @@ class NSMBWContext(SuperContext):
                 "handled_num" : self.handled_num,
                 "save_slot" : self.save_slot,
                 "death_link_amnesty_cap" : self.death_link_amnesty_cap,
+                "death_link_grace_cap" : self.death_link_grace_cap,
+                "powerup_grace" : self.powerup_grace,
             }
             with open(path / f"{self.seed_name}.json", "w+") as file_name:
                 json.dump(data, file_name)
@@ -909,6 +941,7 @@ class NSMBWContext(SuperContext):
                 await self.update_death_link(data["deathlink_enabled"])
                 await self.update_death_link_group(data["deathlink_group"])
                 self.death_link_amnesty_cap = data["death_link_amnesty_cap"]
+                self.death_link_grace_cap = data["death_link_grace_cap"]
 
                 self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
 
@@ -916,12 +949,14 @@ class NSMBWContext(SuperContext):
                 self.moded_levelstats = data["moded_levelstats"]
                 self.handled_num = data["handled_num"]
                 self.save_slot = data["save_slot"]
+                self.powerup_grace = data["powerup_grace"]
 
                 logger.info("Loaded from file")
 
-                await asyncio.sleep(0.5)
-                self.game_interface.load_state(self.save_slot)
-                await asyncio.sleep(0.5)
+                if Utils.get_settings()["nsmbw_settings"].auto_load:
+                    await asyncio.sleep(0.5)
+                    self.game_interface.load_state(self.save_slot)
+                    await asyncio.sleep(0.5)
 
                 await asyncio.sleep(1)
                 self.update_memory_to_server_on_load()
@@ -1009,7 +1044,7 @@ class NSMBWContext(SuperContext):
 
         for world_num in world_nums:
             for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
-                level_status = self.game_interface.get_level_stats(world_num,level_num)[0]
+                level_status = bytes_to_int(self.game_interface.get_level_stats(world_num,level_num))
 
                 def send_sc_check(sc_num=0):
                     location_name = name_starcoin(world_num, level_num, sc_num)
@@ -1226,6 +1261,8 @@ class NSMBWContext(SuperContext):
                 self.starcoin_count += 1
             elif item_id == 102:
                 self.time += 1
+            elif item_id == 103:
+                self.boss_health += 1
             elif 201 <= item_id <= 299:
                 self.unlocked_worlds[item_id - 201] += 1
             elif 301 <= item_id <= 399:
@@ -1249,7 +1286,7 @@ class NSMBWContext(SuperContext):
                 elif item_name == ITEM.Time:
                     print(f"A time extension was received")
                 elif item_name == ITEM.BossHealth:
-                    self.boss_health += 1
+                    print("Boss health recived")
                 elif 201 <= item_id <= 299:
                     world_num = item_id - 200
                     if world_num != 9 and self.unlocked_worlds[world_num-1] == 1:
@@ -1283,7 +1320,7 @@ class NSMBWContext(SuperContext):
         #if self.game_interface.is_in_level():
         await self.handle_traps()
         await self.handle_filler()
-        await self.handle_unlocked_time(self.time)
+        await self.handle_unlocked_time()
         await self.handle_boss_health()
 
 
@@ -1293,6 +1330,8 @@ class NSMBWContext(SuperContext):
 
     async def handle_unlocked_powerups(self, unlocked_powerups : list):
         for player_num in range(PLAYER_COUNT):
+            current_powerup_state = self.game_interface.get_powerupstate(player_num)
+
             # this if statement makes powerup progresive
             if self.slot_data["randomize_powerups"] >=1:
                 if self.slot_data["randomize_powerups"] == 1:
@@ -1302,7 +1341,6 @@ class NSMBWContext(SuperContext):
                         unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
                         unlocked_powerups[0] = 1
 
-                current_powerup_state = self.game_interface.get_powerupstate(player_num)
                 if bytes_to_int(current_powerup_state) > POWERUP_COUNT:
                     continue
 
@@ -1324,7 +1362,19 @@ class NSMBWContext(SuperContext):
                                     self.game_interface.set_powerupstate(b'\x01', player_num)
                     else:
                         print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
-                self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
+            # handle powerup grace
+            current_powerup_state = self.game_interface.get_powerupstate(player_num)
+            current_pow_int = bytes_to_int(current_powerup_state)
+            prev_pow_int = bytes_to_int(self.prev_powerup[player_num])
+
+            if self.powerup_grace >= 1:
+                if (current_pow_int <= 1) and (current_pow_int < prev_pow_int):
+                    self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)
+                    self.powerup_grace -= 1
+                    logger.info("Used a power-up grace")
+
+
+            self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
 
     async def handle_unlocked_worlds(self, unlocked_worlds):
         # when leaving a level the game somtimes freezes when world1 is not unlocked
@@ -1424,9 +1474,8 @@ class NSMBWContext(SuperContext):
 
                 case ITEM.TRAPS.TimeTrap:
                     logger.info("Check your clock, do you have enought time?")
-                    time_left = bytes_to_int(self.game_interface.get_time_left())
-                    if 0 < time_left < 500:
-                        self.game_interface.set_time_left(int_to_bytes(time_left // 2, 4))  #half times left
+                    self.modifiers.append(Modifier(ITEM.TRAPS.TimeTrap, 99999)) # want to stay until death
+
 
                 case ITEM.TRAPS.LosePowerupTrap:
                     logger.info("What happened to your power up?")
@@ -1528,6 +1577,10 @@ class NSMBWContext(SuperContext):
                 case ITEM.FILLER.LowGravity:
                     self.modifiers.append(Modifier(ITEM.FILLER.LowGravity, 90))
 
+                case ITEM.FILLER.PowerUpGrace:
+                    self.powerup_grace += 1
+                    logger.info("Got a Power-up grace")
+
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
                     raise Exception(f"Filler {item_name} is not implemented")
@@ -1590,12 +1643,17 @@ class NSMBWContext(SuperContext):
        self.game_interface.set_starting_world(lowest_unlocked)
 
 
-    async def handle_unlocked_time(self, num_time):
+    async def handle_unlocked_time(self):
         if self.slot_data["randomize_time"] != 0:
-            current_time = bytes_to_int(self.game_interface.get_time_left())
-            new_time = (num_time* 0x1e0000)//self.slot_data["randomize_time"]
-            if (new_time < current_time) and (0x000010 < current_time  < 0x400000) and self.game_interface.is_in_level():
-                self.game_interface.set_time_left(int_to_bytes(new_time, 4))
+            # old system
+            #current_time = bytes_to_int(self.game_interface.get_time_left())
+            #new_time = (self.time * 0x1e0000)//self.slot_data["randomize_time"]
+            #if (new_time < current_time) and (0x000010 < current_time  < 0x400000) and self.game_interface.is_in_level():
+            #    self.game_interface.set_time_left(int_to_bytes(new_time, 4))
+
+            # new system
+            time_mult = self.time / self.slot_data["randomize_time"]
+            self.game_interface.set_starting_time(math.ceil(time_mult * 500))
 
     async def handle_boss_health(self):
         if self.slot_data["randomize_boss_health"] != 0:
@@ -1624,6 +1682,8 @@ class NSMBWContext(SuperContext):
                     self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
                 case ITEM.TRAPS.GravityTrap:
                     self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
+                case ITEM.TRAPS.TimeTrap:
+                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_fast_timer, reverse=True)
                 case _:
                     raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
             self.current_mod = ""
@@ -1663,6 +1723,8 @@ class NSMBWContext(SuperContext):
                     self.game_interface.set_gravity(int_to_bytes(0xbcf5c28f, 4)) # -0.03
                 case ITEM.TRAPS.GravityTrap:
                     self.game_interface.set_gravity(int_to_bytes(0xbf666666, 4)) # -0.9
+                case ITEM.TRAPS.TimeTrap:
+                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_fast_timer, reverse=False)
                 case _:
                         raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
 
@@ -1799,7 +1861,7 @@ class NSMBWContext(SuperContext):
 
 
     async def run_game(self):
-        auto_start: bool = get_settings()["nsmbw_settings"].auto_open
+        auto_start: bool = get_settings()["nsmbw_settings"].auto_start
         gamefile : str = get_settings()["nsmbw_settings"].game_file_path
 
 
@@ -1846,10 +1908,11 @@ class NSMBWContext(SuperContext):
     async def send_hints_hm(self):
         # hints for all hint movies
         if self.slot_data["hint_movie_sanity"]:
-            loc = list([3000 + i for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
+            loc = set([3000 + i for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
 
-            if set(loc) - set(self.locations_scouted) > 0: # test if sent hint before
-                Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": loc, "create_as_hint": 1}]))
+            if len(loc - self.locations_info.keys() - self.locations_scouted - self.checked_locations)> 0: # test if sent hint before
+                Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": list(loc), "create_as_hint": 2}]))
+                self.locations_scouted |= loc
 
 #end of class
 

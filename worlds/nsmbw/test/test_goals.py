@@ -12,7 +12,10 @@ class TestGoalStarCoins(NSMBWTestBase):
     }
 
 class TestGoalHintMovies(NSMBWTestBase):
+    hint_movie_shop_price_logic : ClassVar[int]
+
     options = {
         "alternative_goal": AlternativeGoal.option_hintmovies,
         "hint_movie_sanity" : True,
+        "hint_movie_shop_price_logic" : HintMovieShopPriceLogic.option_ordered
     }

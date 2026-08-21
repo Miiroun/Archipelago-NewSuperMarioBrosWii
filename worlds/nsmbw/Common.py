@@ -17,7 +17,7 @@ LEVEL_COUNT = 77
 
 
 DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
-DEPRIO_HM += [6, 9, 27, 37, 41, 43,51, 54, 55] # broken ?
+DEPRIO_HM += [6, 9, 12, 27, 37, 41, 43,51, 54, 55] # broken ?
 
 
 # exit_type is if secret or normal exit 1== normal, 2==secret
@@ -92,7 +92,7 @@ class ITEM:
         GravityTrap         = "Gravity Trap"
 
     class FILLER(StrEnum):
-        FillInventory   = "fill inventory"
+        FillInventory   = "Fill Inventory"
         OneUps          = "1-ups"
         CoinOne         = "Coin x01"
         CoinTen         = "Coin x10"
@@ -101,6 +101,7 @@ class ITEM:
         SuperSpeed      = "Super Speed"
         #ToadHouse = "Toad House"
         LowGravity      = "Low Gravity"
+        PowerUpGrace    = "Power-up Grace"
 
     class FAKE(StrEnum):
         InventoryPow        = "InventoryPowAccessible"
@@ -188,7 +189,11 @@ def name_inventory(i : int) -> str:
 
 def name_world_unlock(world_num : int):
     assert 1 <= world_num <= 9
-    return f"World{world_num} progressive"
+    if world_num != 9:
+        return f"World{world_num} progressive"
+    else:
+        return f"World{world_num}"
+
 
 def name_1ups(world_num : int, level_num : int) -> str:
     assert_valid_level(world_num,level_num)

@@ -137,6 +137,8 @@ class RandomizeTime(Range):
     default = 0
     #default = 5
 
+    visibility = Visibility.none
+
 class RandomizeBossHealth(Toggle):
     """
     If enabled all kopalings will start out with having 10 health.
@@ -355,9 +357,21 @@ class DeathLinkAmnesty(Range):
     """
     display_name = "Death Link Amnesty"
     range_start = 1
+    range_end = 100
+
+    default = 1
+
+class DeathLinkGrace(Range):
+    """
+    The amount of deaths required to receive a deathlink.
+    Keep at 1 for every death to be received.
+    """
+    range_start = 1
     range_end = 25
 
     default = 1
+
+
 
 class AmountSupportReceived(Range):
     """
@@ -523,6 +537,7 @@ class NSMBWOptions(PerGameCommonOptions):
     death_link : DeathLink
     death_link_group : DeathLinkGroup
     death_link_amnesty : DeathLinkAmnesty
+    death_link_grace : DeathLinkGrace
     starcoin_collect_immediately : StarCoinCollectImmediately
 
     save_state_slot : SaveStateSlot
@@ -612,6 +627,7 @@ option_groups = [
             DeathLink,
             DeathLinkGroup,
             DeathLinkAmnesty,
+            DeathLinkGrace,
             StarCoinCollectImmediately,
             SaveStateSlot,
             ModifierMultiplierPercentage,
