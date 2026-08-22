@@ -39,7 +39,7 @@ class TestHardModeOn(NSMBWTestBase):
         "randomize_abilites" : True,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
-        "logic_difficulty" : LogicDifficulty.option_difficult,
+        "logic_difficulty" : LogicDifficulty.option_hard,
         "logic_outside_powerups" : LogicOutsidePowerups.option_allow,
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,

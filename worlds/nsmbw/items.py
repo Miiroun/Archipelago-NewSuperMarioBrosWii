@@ -41,7 +41,7 @@ nicks : List[Tuple[str,str]] = [
     ("spin", ITEM.ABILITIES.SpinJump.value),
     ("mushroom", ITEM.POWERUP.Super_Mushroom.value)
 ]
-for world_num in range(1,9+1):
+for world_num in range(1,8+1):
     nicks.append((f"World{world_num}", name_world_unlock(world_num)))
 
 for nick in nicks:

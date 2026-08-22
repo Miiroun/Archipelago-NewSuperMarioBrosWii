@@ -78,19 +78,19 @@ def set_all_entrance_rules(world: "NSMBWworld") -> None:
         if world.options.level_shuffle_riivolution.value == True:
             i = 0
 
-            _rule = False_().resolve(world)
-
-            unbeatable = True
-            while unbeatable:
+            beatable = False
+            while not beatable:
                 status = shuffle_level_order(world)
 
                 # this makes sure the first 2 levels are beatable
                 randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
                 randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
                 #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
-                _rule = (LevelRules[name_base(randod_world_num1, randod_level_num1)][0]).resolve(world)
+                _rule1 = (LevelRules[name_base(randod_world_num1, randod_level_num1)].clear).resolve(world)
+                _rule2 = (LevelRules[name_base(randod_world_num2, randod_level_num2)].clear).resolve(world)
 
-                unbeatable = not _rule(world.multiworld.state) and status
+
+                beatable = _rule1(world.multiworld.state) and _rule2(world.multiworld.state) and status
 
                 i += 1
                 if i > 1_000:
@@ -100,15 +100,6 @@ def set_all_entrance_rules(world: "NSMBWworld") -> None:
 
 
 def set_all_location_rules(world: "NSMBWworld") -> None:
-    #regions = []
-    #for i in range(1, 9):
-    #    regions.append(world.get_region(f"World_{i}_1"))
-    #    if i != 9:
-    #        regions.append(world.get_region(f"World_{i}_2"))
-
-
-
-
     #sets basic rules for each levels star coin
     #
     for world_num in range(1, 9+1):  # worlds

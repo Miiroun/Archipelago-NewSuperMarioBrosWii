@@ -98,7 +98,7 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 - Deathlink problems:
   - If not received, try running /kill, if this does not work, make sure you have changed the dolphin settings in the set-up guide.
   - If not sending, try turing off your deathlink group and then toggle deathlink off and on again.
-  - Run /deathlink_debug to get information about its current state.
+  - Run /deathlink_debug to get information about its current state and post this information in the archipelago discord.
 - Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files
 - If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
 
@@ -128,8 +128,9 @@ I want to help with this game, how do I start?
 Why is a level in logic?
 - Run /explain <levelname> and /explain_more <levelname>.
 - This will give you the rule for the location, you can run /movements to get a list of active movements. 
-Why does the client auto press hotkeys?
+Why does the client auto press hotkeys to save and load save states?
   - This is a solution to clear the JIT cache by making and loading a save state. If the specific keycombo causes issues you can change them in your game yaml and in host.yaml.
+  - You can skip this if you enable use_riivolution in your yaml.
 Can I run this randomizer on real hardware?
 - No, since most modifications are run through the external python client. There are no plans to implement this.
 - You are however encouraged to run the other nsmbw randomizers mentioned bellow, which works on hardware.

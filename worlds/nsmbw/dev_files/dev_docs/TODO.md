@@ -14,23 +14,11 @@ Mention riivolution, keybindings and dolphin default program in setup guide : sh
 DC: option + setting review
 
 
-- Secret exit items
-  - update docs / options
-
-
 Edit star coin level icon : new image
 try Gen a patch file for sc model : if much smaller use it
 
 
-Clean up dev files : remove from repo?
-- Clean up git ripo
-
-patch function that checks if level is unlocked
-
-world 9 patch doesnt work
 patch starting time doesnt work
-
-bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
 
 
 ## Super short term
@@ -176,6 +164,7 @@ bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower c
 - Shuffle in coin and battle stages into main levels
 - Can't leave vine without spin jump
   - rework climb
+- bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
 
 
 ## Broken versions

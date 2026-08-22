@@ -190,8 +190,9 @@ carry &= carry & spin_jump # this is temp, only until we changed all carry to ei
 #other rules
 outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | GlitchedRule() # and with this rule
 # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
-logic_hard = [OptionFilter(LogicDifficulty, LogicDifficulty.option_difficult)] | GlitchedRule()
-logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
+logic_hard   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_hard)] | GlitchedRule()
+logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] | logic_hard # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
+logic_easy   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_easy)] | logic_normal
 
 # more powerup stuff
 ice_peng = ice | peng
@@ -273,17 +274,17 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "5-C"  : Level(pipe & button_down & button_up & normal_move & door & TimeRule(150), (wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_())),  # -8 5-C
 # world 6
     "6-1"  : Level(normal_move, (True_(), True_(), logic_hard | ice | peng_o | propeller_o)),  # -1
-    "6-2"  : Level(normal_move & pipe& button_down & button_up, (carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_())),  # -2
+    "6-2"  : Level(normal_move & pipe& button_down & button_up & (swim | run | logic_normal), (carry | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_())),  # -2
     "6-3"  : Level(normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),(True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry))), # 6-3
     "6-4"  : Level(pipe & button_down & button_up & normal_move, ((carry | yoshi | propeller), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
     "6-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), climb & (carry | propeller_o)), climb),  # -5
     "6-6"  : Level(pipe & button_down & button_up & normal_move & (question_switch | logic_hard), (True_(), True_(), True_()),True_()),  # -6
     "6-T"  : Level(pipe & button_down & button_up & normal_move&tower_rules, (True_(), wall_jump | propeller_o, wall_jump | propeller_o)),  # -7 6-T
     "6-C"  : Level(pipe & button_down & button_up & normal_move& door, (True_(), True_(), True_())),  # -8 6-C
-    "6-A"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (ground_pound | propeller_o | (logic_hard & ((peng_o & crouch & wall_jump) | (carry & (ice | peng_o)))), ground_pound | propeller_o, ground_pound | propeller_o | (logic_hard & peng_o & crouch))),  # -9 6-A
+    "6-A"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (ground_pound  | (logic_hard & ((peng_o & crouch & wall_jump) | (carry & (ice | peng_o)))), ground_pound , ground_pound  | (logic_hard & peng_o & crouch))),  # -9 6-A
 # world 7
     "7-1"  : Level(normal_move & pipe& button_down & button_up, (wall_jump | propeller_o, True_(), True_())),  # -1
-    "7-2"  : Level(pipe & button_down & button_up & normal_move & (swim | propeller_o), (ground_pound | (logic_hard & swim & (ice_peng_o & carry) | (peng_o & crouch)), swim, True_())),  # -2
+    "7-2"  : Level(pipe & button_down & button_up & normal_move & (swim | (propeller_o & logic_easy)), (ground_pound | (logic_hard & swim & (ice_peng_o & carry) | (peng_o & crouch)), swim, True_())),  # -2
     "7-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), climb & p_switch | (climb & propeller_o), True_())),  # -3
     "7-4"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -4
     "7-5"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (True_(), propeller | p_switch, True_())),  # -5

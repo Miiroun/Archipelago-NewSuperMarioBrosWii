@@ -1435,6 +1435,8 @@ class NSMBWContext(SuperContext):
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats, 1))
                     i += 1
         elif current_world_num == 9:
+            if self.slot_data["use_riivolution"]:
+                return
             if self.moded_levelstats == ModifiedState.UNMODIFIED:
                 self.moded_levelstats = ModifiedState.MODWOLD1_8
                 for level_num in range(1, 8+1):

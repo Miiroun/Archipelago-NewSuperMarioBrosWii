@@ -188,10 +188,11 @@ class IncludeLevelCompletion(Toggle):
     default = True
 
 
-class IncludeShortcuts(Toggle):
+class ShortcutSanity(Toggle):
     """
-    If true makes shortcuts like cannons and 7-6 and 8-7 turn into locations.
-    Even if option is off will still disable shortcuts.
+    Turns all secret exit and some normal exits into unlockable items.
+    Exits need to still be unlocked as vanilla to be able to be used.
+    Even if option is off will still disable non-necessary shortcuts.
     """
     display_name = "Include Shortcuts"
     default = True
@@ -243,10 +244,16 @@ class LogicDifficulty(Choice):
     """
     If hard will make locations that require glitches to be in logic,
     recommended to normal.
+    Easy                 : Logic should mostly account for "vanilla" solutions, trivial platforming.
+    Normal (Recommended) : Still easy platforming, but some creative solutions will be in logic.
+    Hard                 : Logic expects you to do very hard skips
     """
     display_name = "Logic Difficulty"
-    option_normal = 0
-    option_difficult = 1
+
+    option_easy     = 1
+    option_normal   = 3
+    option_hard     = 5
+    #option_extrem = 7
     default = option_normal
     #visibility  = Option.visibility.none
 
@@ -352,18 +359,18 @@ class DeathLinkGroup(FreeText):
 
 class DeathLinkAmnesty(Range):
     """
-    The amount of deaths required to send a deathlink.
+    How many deaths it takes to send a deathlink.
     Keep at 1 for every death to send.
     """
     display_name = "Death Link Amnesty"
     range_start = 1
     range_end = 100
 
-    default = 1
+    default = 5
 
 class DeathLinkGrace(Range):
     """
-    The amount of deaths required to receive a deathlink.
+    How many deathlinks it takes to receive a death.
     Keep at 1 for every death to be received.
     """
     range_start = 1
@@ -434,7 +441,7 @@ class ModifierMultiplierPercentage(Range):
     default = 100
 
 
-class EnemiyShuffle(Toggle):
+class EnemyShuffle(Toggle):
     """
 
     """
@@ -492,7 +499,7 @@ class ImportantEarlyItems(Toggle):
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
     include_level_completion : IncludeLevelCompletion
-    shortcuts_sanity : IncludeShortcuts
+    shortcuts_sanity : ShortcutSanity
     hint_movie_sanity : HintMovieSanity
     starcoin_sanity: StarcoinSanity
     include_inventory_powerups : IncludeNumberInventoryItems
@@ -543,7 +550,7 @@ class NSMBWOptions(PerGameCommonOptions):
     save_state_slot : SaveStateSlot
     modifier_multiplier_percentage : ModifierMultiplierPercentage
 
-    enemie_shuffle : EnemiyShuffle
+    enemy_shuffle : EnemyShuffle
     use_riivolution : UseRiivolutionOptions
     level_shuffle_riivolution : LevelShuffleRiivolution
     music_shuffle_riivolution : MusicShuffleRiivolution
@@ -560,7 +567,7 @@ option_groups = [
     OptionGroup(
         "Locations ",
         [
-            IncludeShortcuts,
+            ShortcutSanity,
             IncludeLevelCompletion,
             HintMovieSanity,
             StarcoinSanity,
@@ -682,6 +689,9 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
                                   f"if you still wish to use this, enable allow_gen_difficult_settings in your host.yaml")
         if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_ordered:
             raise OptionError("(NSMBW generation error) Option ordered for HintMovieShopPriceLogic can rarely create unbeatable seeds and therefor needs to enable allow_gen_difficult_settings in your host.yaml ")
+
+        if world.options.logic_difficulty == LogicDifficulty.option_hard:
+            raise OptionError("(NSMBW generation error) Logic difficulty set to hard without enabling allow_gen_difficult_settings in host.yaml")
 
     MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:

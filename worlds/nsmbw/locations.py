@@ -219,6 +219,6 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
         assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
         assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder {world.shuffled_level_order}, counter {Counter(world.shuffled_level_order)} must have unique elements"
 
-        return (not world.shuffled_level_order[level_name_to_pos(3,4)] == level_name_to_pos(3,5)) and (not world.shuffled_level_order[level_name_to_pos(3,5)] == level_name_to_pos(3,4))
+        return not (world.shuffled_level_order[level_name_to_pos(3,4)] == level_name_to_pos(3,5) or world.shuffled_level_order[level_name_to_pos(3,5)] == level_name_to_pos(3,4))
     else:
         return True

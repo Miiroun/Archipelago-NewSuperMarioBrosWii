@@ -7,8 +7,8 @@ import yaml
 import json
 #import scipy
 
-#map_name = "nsmbw"
-map_name = "multi"
+map_name = "nsmbw"
+#map_name = "multi"
 
 game_name_cap = "NSMBW"
 

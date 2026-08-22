@@ -9,13 +9,13 @@ class TestDifficultyLogic(NSMBWTestBase):
 
 class TestDiffHardAllowOutsidePow(TestDifficultyLogic):
     options = TestDifficultyLogic.options | {
-        "logic_difficulty": LogicDifficulty.option_difficult,
+        "logic_difficulty": LogicDifficulty.option_hard,
         "logic_outside_powerup": LogicOutsidePowerups.option_allow,
     }
 
 class TestDiffHardDisallowOutsidePow(TestDifficultyLogic):
     options = TestDifficultyLogic.options | {
-        "logic_difficulty": LogicDifficulty.option_difficult,
+        "logic_difficulty": LogicDifficulty.option_hard,
         "logic_outside_powerup": LogicOutsidePowerups.option_disallow,
     }
 
@@ -29,4 +29,9 @@ class TestDiffNormalDisallowOutsidePow(TestDifficultyLogic):
     options = TestDifficultyLogic.options | {
         "logic_difficulty": LogicDifficulty.option_normal,
         "logic_outside_powerup": LogicOutsidePowerups.option_disallow,
+    }
+
+class TestDifficultyEasy(NSMBWTestBase):
+    options = {
+        "logic_difficulty": LogicDifficulty.option_easy,
     }
