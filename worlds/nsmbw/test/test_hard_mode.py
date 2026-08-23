@@ -8,7 +8,7 @@ class TestHardModeOff(NSMBWTestBase):
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_normal,
-        "logic_outside_powerups": LogicOutsidePowerups.option_allow,
+        "logic_outside_powerups": True,
 
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,
@@ -40,7 +40,7 @@ class TestHardModeOn(NSMBWTestBase):
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_hard,
-        "logic_outside_powerups" : LogicOutsidePowerups.option_allow,
+        "logic_outside_powerups" : True,
         "bowser_star_unlock" : 100,
         "bowser_world_unlock" : 4,
     }

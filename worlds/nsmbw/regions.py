@@ -50,7 +50,7 @@ def connect_regions(world: NSMBWworld) -> None:
                     world.star_coin_req_per_world_9_level[i] = 20*(i+1)
             case World9UnlockCondition.option_gaussian:
                 for i in range(8):
-                    world.star_coin_req_per_world_9_level[i] = int(round( world.random.normalvariate(20*8/2,40)))
+                    world.star_coin_req_per_world_9_level[i] = int(round( world.random.normalvariate(80,40)))
                     if world.star_coin_req_per_world_9_level[i] <0:
                         world.star_coin_req_per_world_9_level[i] = 0
                     if world.star_coin_req_per_world_9_level[i] > 231-10: # 10 is margin

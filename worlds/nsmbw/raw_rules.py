@@ -188,7 +188,7 @@ carry &= carry & spin_jump # this is temp, only until we changed all carry to ei
 
 
 #other rules
-outside_powerups = [OptionFilter(LogicOutsidePowerups, LogicOutsidePowerups.option_allow)] | GlitchedRule() # and with this rule
+outside_powerups = [OptionFilter(LogicOutsidePowerups, True)] | GlitchedRule() # and with this rule
 # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
 logic_hard   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_hard)] | GlitchedRule()
 logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] | logic_hard # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
@@ -262,7 +262,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "4-G"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch) | (ice_peng_o & carry_block)), (True_(), True_(), True_()), True_()),  # -6 4-G
     "4-T"  : Level(pipe & button_down & button_up & normal_move & tower_rules, (True_(), True_(), True_()), True_()),  # -7 4-T
     "4-C"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), True_(), True_())),  # -8 4-C
-    "4-A"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & (ground_pound | propeller_o)) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-A
+    "4-A"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & ground_pound) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-A
 # world 5
     "5-1"  : Level(normal_move & (climb | propeller_o) & pipe, (super_mario & ground_pound, swim | mini_o, ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound)))),  # -1
     "5-2"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), (carry_block & spin_jump) | propeller_o | (max_mini & logic_hard & outside_powerups))),  # -2

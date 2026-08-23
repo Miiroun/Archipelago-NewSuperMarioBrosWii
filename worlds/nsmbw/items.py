@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from BaseClasses import Item, ItemClassification
 from .Common import *
-from .options import RandomizePowerups
+from .options import RandomizePowerups, ShortcutSanity
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -180,15 +180,15 @@ def create_all_items(world: NSMBWworld) -> None:
 
 
     if world.options.randomize_abilites.value:
-        for unlock in world.options.abilites_included.value:
+        for unlock in sorted(world.options.abilites_included.value):
             itempool.append(world.create_item(unlock))
 
     if world.options.randomize_level_elements.value:
-        for unlock in world.options.level_elements_included.value:
+        for unlock in sorted(world.options.level_elements_included.value):
             itempool.append(world.create_item(unlock))
 
     if world.options.randomize_enemies.value != 0:
-        for unlock in world.options.enemies_included.value:
+        for unlock in sorted(world.options.enemies_included.value):
             itempool.append(world.create_item(unlock))
 
 
@@ -209,15 +209,19 @@ def create_all_items(world: NSMBWworld) -> None:
         for _ in range(9):
             itempool.append(world.create_item(ITEM.BossHealth))
 
-    if world.options.shortcuts_sanity.value == True:
+    if world.options.shortcuts_sanity.value == ShortcutSanity.option_enabled:
         for secret_exit in SECRET_EXIT:
             if secret_exit.is_item:
                 itempool.append(world.create_item(name_secret(secret_exit)))
-    else:
+    elif world.options.shortcuts_sanity.value == ShortcutSanity.option_disabled:
         excluded_items |=  {name_secret(SecretExit(3, 4, 5, 2, True)),
                             name_secret(SecretExit(7, 8, 6, 2, True)),
                             name_secret(SecretExit(8, 2, 7, 2, True)),
                             }
+    elif world.options.shortcuts_sanity.value == ShortcutSanity.option_dont_lock:
+        for secret_exit in SECRET_EXIT:
+            if secret_exit.is_item:
+                excluded_items |= {name_secret(secret_exit)}
 
 
     # handle important items
@@ -243,11 +247,11 @@ def create_all_items(world: NSMBWworld) -> None:
     needed_number_of_filler_items = number_of_unfilled_locations - number_of_items
 
     if needed_number_of_filler_items >= len(unique_filler):
-        for unq_fill in list(unique_filler):
+        for unq_fill in sorted(unique_filler):
             itempool.append(world.create_item(unq_fill))
     else:
-        _choice = world.random.choices(list(unique_filler), k= needed_number_of_filler_items)
-        for unq_fill in list(unique_filler):
+        _choice = world.random.choices(sorted(unique_filler), k= needed_number_of_filler_items)
+        for unq_fill in sorted(unique_filler):
             if unq_fill in _choice:
                 itempool.append(world.create_item(unq_fill))
             else:

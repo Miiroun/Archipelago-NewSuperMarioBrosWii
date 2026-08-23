@@ -30,7 +30,7 @@
    - If you do have it enabled make sure 
 
 
-## How to play (use_riivolution disabled) 
+## How to play (use_riivolution disabled) (0.2.2 or earlier)
 1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
 2) This should prompt you for your game file. (You can repromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
    - If you want the game to auto start
@@ -45,13 +45,14 @@
 
 
 ## How to play (use_riivolution enabled) (only on 0.3.0 or newer versions)
-0) Make sure auto_open is turned OFF and (recommended, not mandatory) auto_open_riivolution is turned ON, in host.yaml.
-1) Open the archipelago launcher (restart if it was open before) and find NSMBW Client, open it.
-2) You will be promoted for your game file and some dolphin files. You can change their values later on in host.yaml.
+0) In `host.yaml`, under the section `nsmbw_settings`. assert `auto_open` is `false` and `auto_open_riivolution` is `true`.
+1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
+2) You will be promoted for the location of your dolphin install if they are not located automatically. You can change their values later on in `host.yaml`.
+ - Linux only: you may have to install `dolphin_emu_tool` separate from dolphin.
 3) Enter your connection details and press CONNECT in the client.
 4) The game will now open automatically. If it does not, you can right-click your game in dolphin → start with riivolution patch. Enable just the patch for this async and start the game.
 5) Select SAVEFILE 2 to play on.
-6)
+6) Play the game: Beat levels and collect star coins.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
 
 

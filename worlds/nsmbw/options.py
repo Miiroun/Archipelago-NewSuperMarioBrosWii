@@ -24,7 +24,7 @@ class AlternativeGoal(Choice):
 
 class TrapChance(Range):
     """
-    Percentage chance that any given filler item will be replaced with traps.
+    The percentage ratio of fillers that will be traps.
     """
 
     display_name = "Trap Chance"
@@ -36,7 +36,7 @@ class TrapChance(Range):
 
 class StarcoinSanity(Toggle):
     """
-    If enabled will include 231 star coins as checks and star coins will be received as items.
+    If enabled will include 231 star coins as locations and items.
     If disabled will still create the star coins as ap items but place them in their vanilla locations.
     """
     display_name = "Starcoin Sanity"
@@ -64,6 +64,7 @@ class AbilitiesIncluded(ItemSet):
     """
     Which abilities are shuffled into the item pool.
     Requires Randomize Abilities to be enabled.
+    Consider not enabling run on your first attempt since it slows you down significantly.
     More abilities exists as secret options as they have smaller issues.
     They are: Spin jump and Climb
     """
@@ -111,8 +112,11 @@ class EnemiesIncluded(ItemSet):
 
 
 class RandomizePowerups(Choice):
-    """
-    Will make power ups not unlockable until items check are sent to reunlock them.
+    __doc__ = f"""
+    Will randomize {POWERUP_UNLOCK}. Notably Star counts as an ability.
+    They will require the archipelago item to pick its super 
+    on_except_mushroom: (recommended) Will randomize all powerups except Super Mushroom. 
+    on_progressive: Treats all powerups as Super Mushroom if the item Super Mushroom is not received.
     """
     display_name = "Randomize Power-ups"
     option_off = 0
@@ -148,8 +152,8 @@ class RandomizeBossHealth(Toggle):
 
 class HintMovieSanity(Toggle):
     """
-    Makes the hint movies in peach castles into locations, adds 65 locations.
-    If remove this then compensate with starter locations to keep #locations > #items.
+    Hint movies in peach castles are locations, adds 65 locations.
+    You will need to receive starcoin items and complete levels to buy them.
     """
     display_name = "Include Hint Movies"
     default = False
@@ -157,9 +161,9 @@ class HintMovieSanity(Toggle):
 class HintMovieShopPriceLogic(Choice):
     """
     This option changes how logic for hint movies is decided.
-    free : hint movies does not cost starcoin items. (recommended)
-    ordered : logic assumes you buy the movies in order, doing otherwise messes with logic (and can very rarely make you seed unbeatable)
-    all : logic assumes you have all star coins before a movie is in logic. This causes them to be very late spheres
+    free (recommended)            : Hint movies does not cost starcoin items, just needs levels to be unlocked.
+    ordered                       : Logic assumes you buy the movies in order, doing otherwise messes with logic (and can very rarely make you seed unbeatable).
+    all                           : Logic assumes you have all star coins before a movie is in logic. This causes them to be very late spheres.
     progressive (not implemented) : Groups hintmovies together and requires all in that group to be bought before unlocking next group.
     """
     display_name = "Hint Movie Shop Price Logic"
@@ -182,20 +186,27 @@ class StarCoinShopMultiplier(Range):
 
 class IncludeLevelCompletion(Toggle):
     """
-    This makes completing a level into a location, adds 231 locations.
+    All level clears are locations.
+    Adds 231 locations.
+    (Strongly recommended to enabled).
     """
     display_name = "Include Level Completion"
     default = True
 
 
-class ShortcutSanity(Toggle):
+class ShortcutSanity(Choice):
     """
-    Turns all secret exit and some normal exits into unlockable items.
-    Exits need to still be unlocked as vanilla to be able to be used.
-    Even if option is off will still disable non-necessary shortcuts.
+    Enabled:Turns all secret exit and some normal exits into locations and unlockable items.
+        Exits still needs to be unlocked as vanilla to be able to be used.
+    Disabled : Lock disable non-necessary shortcuts, no ap location / items will be created.
+    Dont_lock : Like disabled but most shortcuts (excluding cannons) will behave as vanilla.
     """
     display_name = "Include Shortcuts"
-    default = True
+    option_disabled = 0
+    option_enabled = 1
+    option_dont_lock = 2
+
+    default = option_enabled
 
 
 class OneupsSanity(Toggle):
@@ -257,14 +268,12 @@ class LogicDifficulty(Choice):
     default = option_normal
     #visibility  = Option.visibility.none
 
-class LogicOutsidePowerups(Choice):
+class LogicOutsidePowerups(Toggle):
     """
-    Set this to allow if you want solution involving bringing powerups from outside the level to be in logic.
+    If on then solutions involving bringing powerups from outside the level will be considered in logic.
     """
     display_name = "Logic Outside Power-ups"
-    option_disallow = 0
-    option_allow = 1
-    default = option_allow
+    default = True
 
 class StartingWorld(Choice):
     """
@@ -286,7 +295,7 @@ class World9UnlockCondition(Choice):
     BETA
     Select in which way world 9 levels will be unlocked
     Linear      : 9-1 req 20 SC, 9-2 req e0 SC, etc.
-    Gaussian    : The unlocking will be a gaussian distribution with mean = 80 SC and standard deviation = 40
+    Gaussian    : The unlocking will be a gaussian distribution with mean = 80 SC and standard deviation = 40 SC
     Unlocked    : Not locked
     """
     display_name = "World 9 Unlock Condition"
@@ -312,7 +321,7 @@ class IncludeNumberInventoryItems(Range):
 
 class MakeWorldCompPriority(Toggle):
     """
-    Makes half world completion and world completion priority locations, e.g. they will have a good item.
+    Makes half world completion and world completion priority locations -> they will have a good item.
     Causes generation failures ~0.5% if enabled.
     """
     display_name = "Make World Completion Priority"
@@ -321,7 +330,7 @@ class MakeWorldCompPriority(Toggle):
 
 class BowserCastleStarUnlock(Range):
     """
-    This setting applies requirements of at least x star coins to unlock final level
+    Requires at least x star coins to unlock final level or goal.
     Recommended to have bellow ~ 200 to not get fill errors
     """
 
@@ -333,8 +342,7 @@ class BowserCastleStarUnlock(Range):
 
 class BowserCastleWorldUnlock(Range):
     """
-    This setting applies requirements to unlock final level
-    Set this to amount of worlds needed to beat the game
+    Requirement of beating at least x of worlds to unlock final level.
     """
 
     display_name = "Bowser Castle Unlock World"
@@ -343,16 +351,12 @@ class BowserCastleWorldUnlock(Range):
 
     default = 2
 
-class DeathLink(DeathLink):
-    """
-    Enable death-link as default, can be toggled in client.
-    """
-    display_name = "Death Link"
-    default = False
 
 class DeathLinkGroup(FreeText):
-    """Death Link only applies to players with an identical Group name.
-    Games that don't support the Group option count as having an empty group name."""
+    """
+    Death Link only applies to players with an identical Group name.
+    Games that don't support the Group option count as having an empty group name.
+    """
     display_name = "Death Link Group"
     rich_text_doc = True
     default = ""
@@ -382,7 +386,7 @@ class DeathLinkGrace(Range):
 
 class AmountSupportReceived(Range):
     """
-    This setting will set the amount of 1ups and powerups send to inventory when receiving their corresponding items.
+    Sets the amount of 1ups and powerups send to inventory when receiving their corresponding items.
     If set to -1 it will randomize between 1 and 10 each time you get an item
     """
     display_name = "Amount Support items received from ap-items"
@@ -393,7 +397,7 @@ class AmountSupportReceived(Range):
 
 class FillerItems(OptionCounter):
     """
-    Select which filler items you want to have be possible to generate.
+    elect which filler items and in which ration to be generated.
     """
     display_name = "Filler Items"
     valid_keys = set(FILLER)
@@ -402,7 +406,7 @@ class FillerItems(OptionCounter):
 
 class TrapItems(OptionCounter):
     """
-    Select which filler items you want to have be possible to generate.
+    Select which trap items and in which ration to be generated.
     """
     display_name = "Trap Items"
     valid_keys = set(TRAPS)
@@ -448,30 +452,42 @@ class EnemyShuffle(Toggle):
     visibility = Visibility.none
 
 
-class UseRiivolutionOptions(Toggle):
-    """This needs to be enabled if you want to use any other riivolution based options"""
+class UseRiivolution(Toggle):
+    """
+    Creates a riivolution patch when connecting the client to the server.
+    If disabled the client will instead rely on memory patching.
+    Required to:
+     - Use other riivolution based options.
+     - Not having the client autoload save states.
+     - See custom randomizer graphics (log and starcoin model)
+
+    """
     display_name = "Use Riivolution (early alpha, dont expect to be able to finish run with this)"
     default = False
-    #visibility = Visibility.none
 
 
 class LevelShuffleRiivolution(Toggle):
-    """Shuffles the level order, requires riivolution to be enabled."""
+    """
+    Shuffles the level order.
+    Requires use_riivolution to be enabled.
+    """
     display_name = "Level Shuffle Riivolution"
     default = False
-    #visibility = Visibility.none
 
 
 class MusicShuffleRiivolution(Toggle):
-    """Shuffles the background, requires riivolution to be enabled."""
+    """
+    Shuffles the background music and sound effects.
+    Requires use_riivolution to be enabled.
+    """
     display_name = "Music Shuffle Riivolution"
     default = False
-    #visibility = Visibility.none
 
 
 class BackgroundShuffleRiivolution(Toggle):
     """
-
+    Shuffles the level backgrounds.
+    Requires use_riivolution to be enabled.
     """
     visibility = Visibility.none
 
@@ -489,9 +505,10 @@ class TileSheetShuffleRiivolution(Toggle):
     """
     visibility = Visibility.none
 
+
 class ImportantEarlyItems(Toggle):
     """
-    Marks some important items as early, creates a more fun playthrough
+    Marks some important items as early, resulting in a more fun playthrough.
     """
     default = True
 
@@ -551,7 +568,7 @@ class NSMBWOptions(PerGameCommonOptions):
     modifier_multiplier_percentage : ModifierMultiplierPercentage
 
     enemy_shuffle : EnemyShuffle
-    use_riivolution : UseRiivolutionOptions
+    use_riivolution : UseRiivolution
     level_shuffle_riivolution : LevelShuffleRiivolution
     music_shuffle_riivolution : MusicShuffleRiivolution
     background_shuffle_riivolution : BackgroundShuffleRiivolution
@@ -620,7 +637,7 @@ option_groups = [
     OptionGroup(
         "Riivolution",
         [
-            UseRiivolutionOptions,
+            UseRiivolution,
             LevelShuffleRiivolution,
             MusicShuffleRiivolution,
             BackgroundShuffleRiivolution,
@@ -663,7 +680,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if (world.options.starcoin_sanity.value == False):
         #print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 15
-    if (world.options.shortcuts_sanity.value == False):
+    if (world.options.shortcuts_sanity.value == ShortcutSanity.option_disabled):
         #print(f"(NSMBW generation error) Turning off shortcuts_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if 0 <= req_start_loc:
@@ -683,15 +700,16 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
                           f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
-    if Utils.get_settings()["nsmbw_settings"].allow_gen_difficult_settings and len(world.multiworld.player_ids) >= 1:
+
+    if (Utils.get_settings()["nsmbw_settings"].allow_gen_impactful_settings == False) and (len(world.multiworld.player_ids) >= 2):
         if world.options.include_inventory_powerups.value > 100:
             raise OptionError(f"(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,"
-                                  f"if you still wish to use this, enable allow_gen_difficult_settings in your host.yaml")
+                                  f"if you still wish to use this, enable allow_gen_impactful_settings in your host.yaml")
         if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_ordered:
-            raise OptionError("(NSMBW generation error) Option ordered for HintMovieShopPriceLogic can rarely create unbeatable seeds and therefor needs to enable allow_gen_difficult_settings in your host.yaml ")
+            raise OptionError("(NSMBW generation error) Option ordered for HintMovieShopPriceLogic can rarely create unbeatable seeds and therefor needs to enable allow_gen_impactful_settings in your host.yaml ")
 
         if world.options.logic_difficulty == LogicDifficulty.option_hard:
-            raise OptionError("(NSMBW generation error) Logic difficulty set to hard without enabling allow_gen_difficult_settings in host.yaml")
+            raise OptionError("(NSMBW generation error) Logic difficulty set to hard without enabling allow_gen_impactful_settings in host.yaml")
 
     MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:

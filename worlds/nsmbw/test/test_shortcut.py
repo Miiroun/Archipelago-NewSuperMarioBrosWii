@@ -5,7 +5,7 @@ from .bases import *
 
 class ShortcutOff(NSMBWTestBase):
     options = {
-        "shortcuts_sanity" : ShortcutSanity.option_false,
+        "shortcuts_sanity" : ShortcutSanity.option_disabled,
         "starting_world": 3,
         "randomize_abilites": False,
         "randomize_powerups": False,
@@ -39,7 +39,7 @@ class ShortcutOff(NSMBWTestBase):
 
 class ShortcutOn(NSMBWTestBase):
     options = {
-        "shortcuts_sanity": ShortcutSanity.option_true,
+        "shortcuts_sanity": ShortcutSanity.option_enabled,
         "starting_world": 3,
         "randomize_abilites": False,
         "randomize_powerups": RandomizePowerups.option_off,

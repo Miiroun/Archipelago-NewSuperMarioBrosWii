@@ -3,7 +3,7 @@ class TestPowerupOff(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_off,
-        "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
+        "logic_outside_powerup" : True,
         "starting_world" : 1,
     }
 
@@ -15,7 +15,7 @@ class TestPowerupOnExceptMushroom(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on_except_mushroom,
-        "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
+        "logic_outside_powerup" : True,
         "starting_world": 1,
     }
 
@@ -29,7 +29,7 @@ class TestPowerupOnProgressive(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on_progressive,
-        "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
+        "logic_outside_powerup" : True,
         "starting_world": 1,
     }
 
@@ -45,7 +45,7 @@ class TestPowerupOn(NSMBWTestBase):
     options = {
         "randomize_movement" : False,
         "randomize_powerups" : RandomizePowerups.option_on,
-        "logic_outside_powerup" : LogicOutsidePowerups.option_allow,
+        "logic_outside_powerup" : True,
         "starting_world": 1,
     }
 

@@ -68,6 +68,7 @@ patch starting time doesnt work
 - Match server state it might be nice to have this automatically done after every death/level complettion/etc if possible
 - Make early items an option
 - !MANUAL BACKGROUND RENAME WORKS!
+- time rando is broken : fix for 0.3.1?
 
 
 
@@ -98,7 +99,6 @@ patch starting time doesnt work
 - Playtest secret exits
 - Cap inven pow at 96
 - Test speed trap
-- Playtest jit clear replacement
 - Work more on map pack:
   - download images from wiki
   - Create own illustations of unlocks for itemtracker
@@ -116,6 +116,8 @@ patch starting time doesnt work
 - mod time trap
 - test: 9-3 & 9-8 doesn't auto send stat coin on collect
 - Deathlink grace
+- put HM descriptions in client
+- Game over
 
 
 ## Bugs to fix
@@ -124,7 +126,6 @@ patch starting time doesnt work
 - remove star from inventory is bugged
 - riivolution patch sometimes random crashes on startup
 - problem re acquire time mod
-- time rando
 - collect immediately doesnt work
 - crash when complete 9-3
 
@@ -165,6 +166,7 @@ patch starting time doesnt work
 - Can't leave vine without spin jump
   - rework climb
 - bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
+- why does global mutation fuzzer hook fail at settings??
 
 
 ## Broken versions
@@ -243,6 +245,7 @@ patch starting time doesnt work
 - Don't know how possible it would be, but could there potentially be a starcoin counter on the overworld ui under the level/lives to keep track of how many are collected?
 - Change hint movie names to indicate prog, trap, useful
 - Multiplayer have separate pow restrictions
+- Should probably store levels completed in data storage instead of looking at level completion
 
 
 ## ER

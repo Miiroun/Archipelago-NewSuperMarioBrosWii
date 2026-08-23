@@ -1864,11 +1864,12 @@ class NSMBWContext(SuperContext):
 
     async def run_game(self):
         auto_start: bool = get_settings()["nsmbw_settings"].auto_start
-        gamefile : str = get_settings()["nsmbw_settings"].game_file_path
 
 
         if dolphin_interface_client.assert_no_running_dolphin():
             if auto_start:
+                gamefile: str = get_settings()["nsmbw_settings"].game_file_path
+
                 Utils.open_file(gamefile)
                 logger.error("Failed to auto start dolphin, make sure your file path is correct")
         else:
