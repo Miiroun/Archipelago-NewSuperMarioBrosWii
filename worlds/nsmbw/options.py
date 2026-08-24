@@ -582,7 +582,7 @@ class NSMBWOptions(PerGameCommonOptions):
 # If we want to group our options by similar type, we can do so as well. This looks nice on the website.
 option_groups = [
     OptionGroup(
-        "Locations ",
+        "Locations",
         [
             ShortcutSanity,
             IncludeLevelCompletion,
@@ -625,12 +625,13 @@ option_groups = [
         ]
     ),
     OptionGroup(
-        "Filler and traps",
+        "Filler and Traps",
         [
             FillerItems,
             TrapItems,
             TrapChance,
             AmountSupportReceived,
+            ModifierMultiplierPercentage,
             PercentageFillerForcedLocal,
         ]
     ),
@@ -646,15 +647,19 @@ option_groups = [
         ],
     ),
     OptionGroup(
-        "Other",
+        "DeathLink",
         [
             DeathLink,
             DeathLinkGroup,
             DeathLinkAmnesty,
             DeathLinkGrace,
+        ],
+    ),
+            OptionGroup(
+        "Other",
+        [
             StarCoinCollectImmediately,
             SaveStateSlot,
-            ModifierMultiplierPercentage,
             StarCoinShopMultiplier,
             ImportantEarlyItems,
         ],

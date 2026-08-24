@@ -18,8 +18,8 @@ class NSMBWSettings(settings.Group):
 
         # this code overwrites default in setting
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:
-            _filetypes = [("Select your NSMBW game file", [".iso", ".wbfs"])]
-            super().browse(_filetypes, **kwargs)
+            _filetypes = [("Game dump", [".iso", ".wbfs"])]
+            return super().browse(_filetypes, **kwargs)
     class DolphinFolderPath(settings.UserFolderPath):
         """Path to dolphin program directory, used only on windows"""
 
@@ -110,7 +110,7 @@ class NSMBWSettings(settings.Group):
         required = True
 
 
-    game_file_path: GameFilePath  = GameFilePath(r"nsmbw.wbfs")
+    game_file_path: GameFilePath  = GameFilePath(r"New SUPER MARIO BROS. Wii.iso")
 
     auto_start: AutoStartGame | bool = False
     auto_start_riivolution : AutoStartRiivolution | bool = True

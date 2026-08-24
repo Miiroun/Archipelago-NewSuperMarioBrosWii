@@ -6,26 +6,99 @@
 - lots of play testing to do.
 - complete froozen playtest on wsl
 
-## Super super short term
-Write desciptions for options
-
-Mention riivolution, keybindings and dolphin default program in setup guide : shorten and simplify? so people dont skipp
-
-DC: option + setting review
-
-
-Edit star coin level icon : new image
-try Gen a patch file for sc model : if much smaller use it
-
-
-patch starting time doesnt work
-
 
 ## Super short term
-- Add riivolution info to docs
 - Dolphin wsl
-- Beat some levels on vanilla save file 1 to verify no wrong sends are happening
-- Reword timer modifier option
+
+## Playtest
+- do complete playthrough, add spin jump and jump logic + time logic
+- Deathlink group
+- Playtest on linux so the root error is apparent
+- test new read manifest works on frozen and linux
+- test hm options
+- Change default savestate button
+- command changing saveslot and clearcache slot
+- get_time
+- Boss health
+- DisableGameOverItemClear
+- Setting for being in debug mode instead of if frozen
+- star coin multiplyer for hm
+- Ydotool
+- Shortcuts
+- Location scout hm
+- q-switch
+- Try skip wii strap patch : see if works to not have bug
+  - does not work on US rev2, atleast
+- Playtest secret exits
+- Cap inven pow at 96
+- Test speed trap
+- filename of new extracter
+- p and q switch patch
+- goomba lock doesnt work
+- button_down and button_up and pipe logic
+- Star invent not sending, of by 1, just remove the -1, verify it works
+- start with all hm hinterd
+- level shuffle has proper logic
+- inventory star removal
+- gravity
+- secret exit items
+- mod time trap
+- test: 9-3 & 9-8 doesn't auto send stat coin on collect
+- Deathlink grace
+- put HM descriptions in client
+- Game over
+
+
+## Bugs to fix
+- 9-3 bugged, sends location on complete, freeze on death
+- fix carry shell patch
+- remove star from inventory is bugged
+- riivolution patch sometimes random crashes on startup
+- problem re acquire time mod
+- collect immediately doesnt work
+- crash when complete 9-3
+- p-switch : different spawn form block and not
+
+
+## Short term
+- fix UT-autotab : actually works? : needs to just update on switch and not death
+- Hint movies does not work on other save files?
+- Dereference player  pointer
+- Add support for other savefile
+- Add enemy ambush and toad rescue
+- I have issue with fuzzing with hooks: UT 
+- Do playthrough, document completion times for time logic
+- Inventory pow doesn't work on other save files
+- toad rescue location
+- toad house doesn't work to set, probably needs to update other location too
+  - toad add1  80c807f0
+  - toad add2  80c80f22
+- Spin jump no logic, also no logic without normal jump
+- flagpool score as location?
+- Create notes in /explain more
+- Make secret exit items to reunlock them
+- assert early items are actually early, write test?
+- Figure out how to change HM unlock condition?
+- Work on UT tracker pack
+  - After 0.3.0, other things are higher priority
+- request channel in ap-dc
+- change starting world 
+- AFTER JIT clear have proven to work : make post in AP-mod thread about it
+- To-do:  prompt to watch hint movie
+- Need spin to get off vine and yoshi
+- look up hint movie prossessing in ghidra
+- shuffle coin and battle levels with normals
+- add 1ups as locations to world : needs option : keep secret until logic
+- Look in regi for sand storm and meteor : see if is just an easy flag to change?
+- look for doStateChange
+  - can improve climb and swim
+- Fix inventory pow on other savefiles
+- Shuffle in coin and battle stages into main levels
+- Can't leave vine without spin jump
+  - rework climb
+- bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
+- why does global mutation fuzzer hook fail at settings??
+- Rework timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
 - Time change default not current
 - implement method to read arc files : needed to change names of subfolders
@@ -69,104 +142,9 @@ patch starting time doesnt work
 - Make early items an option
 - !MANUAL BACKGROUND RENAME WORKS!
 - time rando is broken : fix for 0.3.1?
-
-
-
-## Playtest
-- do complete playthrough, add spin jump and jump logic + time logic
-- Deathlink group
-- Playtest on linux so the root error is apparent
-- test new read manifest works on frozen and linux
-- test hm options
-- Change default savestate button
-- command changing saveslot and clearcache slot
-- get_time
-- load prev save state when loading riivolution directly instead of loading it after entering
-  - test so works
-- Boss health
-- DisableGameOverItemClear
-- Time custome rule
-- allow_gen_difficult_settings
-- Setting for being in debug mode instead of if frozen
-- star coin multiplyer for hm
-- Ydotool
-- patch not need watching hint movies
-- Shortcuts
-- Location scout hm
-- q-switch
-- Try skip wii strap patch : see if works to not have bug
-  - does not work on US rev2, atleast
-- Playtest secret exits
-- Cap inven pow at 96
-- Test speed trap
-- Work more on map pack:
-  - download images from wiki
-  - Create own illustations of unlocks for itemtracker
-- filename of new extracter
-- p and q switch patch
-- goomba lock doesnt work
-- button_down and button_up and pipe logic
-- Star invent not sending, of by 1, just remove the -1, verify it works
-- start with all hm hinterd
-- level shuffle has proper logic
-- inventory star removal
-- gravity
-- secret exit items
-- powerup_grace
-- mod time trap
-- test: 9-3 & 9-8 doesn't auto send stat coin on collect
-- Deathlink grace
-- put HM descriptions in client
-- Game over
-
-
-## Bugs to fix
-- 9-3 bugged, sends location on complete, freeze on death
-- fix carry shell patch
-- remove star from inventory is bugged
-- riivolution patch sometimes random crashes on startup
-- problem re acquire time mod
-- collect immediately doesnt work
-- crash when complete 9-3
-
-## Short term
-- fix UT-autotab : actually works? : needs to just update on switch and not death
-- Hint movies does not work on other save files?
-- Dereference player  pointer
-- Add support for other savefile
-- Add enemy ambush and toad rescue
-- I have issue with fuzzing with hooks: UT 
-- Do playthrough, document completion times for time logic
-- Inventory pow doesn't work on other save files
-- toad rescue location
-- toad house doesn't work to set, probably needs to update other location too
-  - toad add1  80c807f0
-  - toad add2  80c80f22
-- Spin jump no logic, also no logic without normal jump
-- flagpool score as location?
-- Create notes in /explain more
-- Make secret exit items to reunlock them
-- assert early items are actually early, write test?
-- Figure out how to change HM unlock condition?
-- Work on UT tracker pack
-  - After 0.3.0, other things are higher priority
-- request channel in ap-dc
-- change starting world 
-- AFTER JIT clear have proven to work : make post in AP-mod thread about it
-- To-do:  prompt to watch hint movie
-- Need spin to get off vine and yoshi
-- look up hint movie prossessing in ghidra
-- shuffle coin and battle levels with normals
-- add 1ups as locations to world : needs option : keep secret until logic
-- Look in regi for sand storm and meteor : see if is just an easy flag to change?
-- look for doStateChange
-  - can improve climb and swim
-- Fix inventory pow on other savefiles
-- Shuffle in coin and battle stages into main levels
-- Can't leave vine without spin jump
-  - rework climb
-- bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
-- why does global mutation fuzzer hook fail at settings??
+  - patch starting time doesnt work
+- Edit star coin level icon : new image
+  - gameScene.arc
 
 
 ## Broken versions
@@ -246,6 +224,10 @@ patch starting time doesnt work
 - Change hint movie names to indicate prog, trap, useful
 - Multiplayer have separate pow restrictions
 - Should probably store levels completed in data storage instead of looking at level completion
+- Work more on map pack:
+  - download images from wiki
+  - Create own illustations of unlocks for itemtracker
+- patch not need watching hint movies
 
 
 ## ER

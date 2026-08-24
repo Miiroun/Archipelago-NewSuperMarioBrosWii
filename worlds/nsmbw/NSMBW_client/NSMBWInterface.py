@@ -91,8 +91,13 @@ class NSMBWInterface(object):
 
 
 
-    def connect_to_game(self):
+    def connect_to_game(self) -> bool:
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
+        if get_num_dolphin_instances() != 1:
+            logger.info(f"Detected num of dolphin instances = {get_num_dolphin_instances()}, should be 1.")
+            print(f"Presses: {list(psutil.process_iter())}")
+            return False
+
         # This error message doesnt work, allways detecs as 0 for me
         #if get_num_dolphin_instances() != 2 and Utils.is_windows:
         #    self.log_color(f"Make sure you have no other dolphin instances, detected {get_num_dolphin_instances()}/2 instances. Ignore this if you can still connect", "red")

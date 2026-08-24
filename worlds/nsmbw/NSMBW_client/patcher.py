@@ -4,22 +4,22 @@ import json
 import os
 import subprocess
 import sys
-from io import BufferedReader, TextIOWrapper
 from pathlib import Path
+import zipfile
 
 import logging
 from random import Random
 
-
-import Utils
 import shutil
 import tempfile
 
+import Utils
 from ..Common import *
-from ..Utils import bytes_to_int
+
 import bsdiff4
 
-import wiithon
+# wiithon problematic to import
+#from .wiithon.src.wiithon.formats import Rarc
 
 
 logger = logging.getLogger("Client")
@@ -77,7 +77,8 @@ class Patcher:
         #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
         self.output_path = Path(output_path) / self.name
 
-        file_name = Utils.get_settings()["nsmbw_settings"].game_file_path.split(".")[0].split("/")[-1]
+        file_name = os.path.basename(Path(Utils.get_settings()["nsmbw_settings"].game_file_path))
+
         self.temp_dir = Path(tempfile.gettempdir()) / "nsmbw" /  file_name / "DATA"
 
         self.random = Random(seed)
@@ -85,38 +86,66 @@ class Patcher:
         self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"{self.name}.json"
 
 
-        self.get_region()
 
 
     def copy_riivolution_skeleton(self):
-        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
-        _from = apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
-        assert apnsmbw_file.exists(), f"folder {apnsmbw_file} does not exist"
-        assert _from.exists(), f"folder {_from} does not exits"
+        if not Utils.is_frozen():
+            apnsmbw_file =  Path(Utils.user_path("")) / "worlds" / "nsmbw"
+            _from = apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
+            assert apnsmbw_file.exists(), f"folder {apnsmbw_file} does not exist"
+            assert _from.exists(), f"folder {_from} does not exits"
 
 
-        shutil.copytree(_from, self.output_path, dirs_exist_ok=True)
+            shutil.copytree(_from, self.output_path, dirs_exist_ok=True)
+        else:
+            with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
+                _dir  = zipfile.Path(zf) / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
+
+                for member in zf.infolist():
+                    if not member.filename.startswith(_dir.at):
+                        continue
+                    member.filename = member.filename.replace(_dir.at, "")
+                    zf.extract(member, self.output_path)
 
     def patch_bsdiff(self):
-        apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
-        _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
-        assert _from.exists()
+        patch_data = [("star_coin", "Object", "Object")]
+        #("openingTitle", "Layout") # ("star_coin.arc", "Object")
 
-        PatchDetatils = []#("openingTitle", "Layout") # ("star_coin.arc", "Object")
+        if Utils.is_frozen():
+            temp_dir = Path(tempfile.gettempdir()) / "nsmbw" / "patch_data"
+            temp_dir.mkdir(exist_ok=True, parents=True)
 
-        for name, folder in PatchDetatils:
-            path_data_loc = _from / folder / f"patch_{name}.bin"
-            assert path_data_loc.parent.exists(), f"folder {path_data_loc} does not exist"
-            assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
+            with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
+                path_data_loc_dir = zipfile.Path(zf) / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
+                for member in zf.infolist():
+                    if not member.filename.startswith(path_data_loc_dir.at):
+                        continue
+                    member.filename = os.path.basename(member.filename)
+                    zf.extract(member, temp_dir)
 
-
-            original_file_loc = self.temp_dir / "files" / RegionNames[self.region] / folder/ name / f"{name}.arc"
+        for name, folder_source, folder_patch in patch_data:
+            original_file_loc = self.temp_dir / "files" / folder_source / f"{name}.arc"
             assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
+            destination_path = self.output_path / folder_patch / f"{name}.arc"
+            destination_path.parent.mkdir(exist_ok=True, parents=True)
 
+            if Utils.is_frozen():
+                temp_dir = Path(tempfile.gettempdir()) / "nsmbw" / "patch_data"
 
-            destination_path = self.output_path / folder / f"{name}.arc"
+                path_data_loc = temp_dir / f"patch_{name}.bin"
 
-            bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
+                bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
+
+            else:
+                apnsmbw_file = Path(Utils.user_path("")) / "worlds" / "nsmbw"
+                _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
+                assert _from.exists()
+
+                path_data_loc = _from / folder_patch / f"patch_{name}.bin"
+                assert path_data_loc.parent.exists(), f"folder {path_data_loc} does not exist"
+                assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
+
+                bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
             assert destination_path.exists(), f"folder {destination_path} does not exist"
 
 
@@ -130,8 +159,9 @@ class Patcher:
             subprocess.run([str(dolp_tool), "extract",
                     "--input", str(self.input_path),
                     "--output", str(path_to)])
+            print(f"Game extract successful")
         else:
-            logger.info(f"Game extract already exists")
+            print(f"Game extract already exists")
 
 # need to read and modify name of arc files
     def create_riivolution_patch(self):
@@ -311,8 +341,8 @@ class Patcher:
         print(self.shortcut_path)
 
     def get_region(self):
-        with open(self.temp_dir / 'disc' / 'header.bin') as f:
-            self.region = f.read(6)
+        with open(self.temp_dir / 'disc' / 'header.bin', "rb") as f:
+            self.region = f.read(6).decode('ascii')
 
     def patch(self):
         logger.info(f"Begin patching name: {self.name}")
@@ -327,6 +357,7 @@ class Patcher:
         self.extract_game()
 
         logger.info(f"Collects game info")
+        self.get_region()
 
         logger.info(f"Copying standard riivolution to {self.output_path}")
         self.copy_riivolution_skeleton()

@@ -213,7 +213,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         Refreshes the JIT cashe (by save and load savestate). Usefull if something like moves are not updating.
         """
-        self.ctx.game_interface.should_clear
+        self.ctx.game_interface.should_clear += 1
         self.ctx.game_interface.clear_cache()
 
     def _cmd_reconnect_dolphin(self):
@@ -720,8 +720,9 @@ class NSMBWContext(SuperContext):
 
         text : str
         if Utils.is_frozen():
-            with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
-                text = zipfile.Path(zf, at="nsmbw/archipelago.json").read_text(encoding='UTF-8')
+            with (zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf):
+                apnsmbw_file = zipfile.Path(zf) / "nsmbw" / "archipelago.json"
+                text = apnsmbw_file.read_text(encoding='UTF-8')
         else:
             apnsmbw_file: Path = Path(__file__).parent.parent
             with (apnsmbw_file / "archipelago.json").open( "r", encoding="UTF-8") as f:
@@ -1840,27 +1841,29 @@ class NSMBWContext(SuperContext):
             assert Path(input_iso_path).exists(), "Your game file path is invalid"
         except AssertionError as e:
             logger.error(e)
+        try:
+            _patcher = Patcher(self.username, self.seed_name, self.slot_data)
+            if not _patcher.shortcut_path.exists():
+                _patcher.patch()
 
-        _patcher = Patcher(self.username, self.seed_name, self.slot_data)
-        if not _patcher.shortcut_path.exists():
-            _patcher.patch()
+            dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
+            assert dolphin_path.exists(), "dolphin.exe needs to be correct"
+            assert _patcher.shortcut_path.exists(), "need to have created shortcut successfully"
 
-        dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
-        assert dolphin_path.exists(), "dolphin.exe needs to be correct"
-        assert _patcher.shortcut_path.exists(), "need to have created shortcut successfully"
-
-        if dolphin_interface_client.assert_no_running_dolphin():
-            if auto_start:
-                if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
-                    rii_path = _patcher.output_path.parent.parent.parent
-                    save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
-                    subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
-                else:
-                    subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path)])
-                self.connection_pause = time.time() + 20
-        else:
-            logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
-
+            if dolphin_interface_client.assert_no_running_dolphin():
+                if auto_start:
+                    if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
+                        rii_path = _patcher.output_path.parent.parent.parent
+                        save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
+                        subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
+                    else:
+                        subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path)])
+                    self.connection_pause = time.time() + 20
+            else:
+                logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
+        except Exception as e:
+            logger.info(traceback.format_exc())
+            self.log_color(f"Patching error: {e}", "red")
 
     async def run_game(self):
         auto_start: bool = get_settings()["nsmbw_settings"].auto_start
