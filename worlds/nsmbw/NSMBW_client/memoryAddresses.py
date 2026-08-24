@@ -167,20 +167,20 @@ class MemoryAddresses(object):
         self.patch_spin_jump = self.create_patch("P1", 0x8005e780, instru_lbz_r3 + val_0000, origin=instru_lbz_r3 + val_0017, name="spin_jump")
 
         self.patch_climb_pole = [self.create_patch("E2", 0x80072180, PowerPCInstructions.instru_li + PowerPCInstructions.reg_r0,origin =  b'\x94\x21\xff\xb0', name="climb_pole1"),
-                                 self.create_patch("E2", 0x80072184, PowerPCInstructions.instru_return,origin=b'\x7c\x08\x02\xa6', name = "climb_pole2")]
-        self.patch_climb_ladder = self.create_patch(f"E2", 0x800d1dc0,PowerPCInstructions.instru_return, b"\x2c\x05" + PowerPCInstructions.reg_r0, name="climb_ladder")
-        self.patch_climb_tarzan_vine = self.create_patch("P1", 0x80137460, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "climb_tarzan")
-        self.patch_climb_vine_still = self.create_patch("E2", 0x80132c70, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_still")
-        self.patch_climb_vine_fall = self.create_patch("E2", 0x801327f0, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_fall")
+                                 self.create_patch("E2", 0x80072184, PowerPCInstructions.instru_blr, origin=b'\x7c\x08\x02\xa6', name ="climb_pole2")]
+        self.patch_climb_ladder = self.create_patch(f"E2", 0x800d1dc0, PowerPCInstructions.instru_blr, b"\x2c\x05" + PowerPCInstructions.reg_r0, name="climb_ladder")
+        self.patch_climb_tarzan_vine = self.create_patch("P1", 0x80137460, PowerPCInstructions.instru_blr, PowerPCInstructions.instru_stwu + b"\xff\xc0", "climb_tarzan")
+        self.patch_climb_vine_still = self.create_patch("E2", 0x80132c70, PowerPCInstructions.instru_blr, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_still")
+        self.patch_climb_vine_fall = self.create_patch("E2", 0x801327f0, PowerPCInstructions.instru_blr, PowerPCInstructions.instru_stwu + b"\xff\xc0", "vine_fall")
 
         button_off_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x00'
         button_on_instru = PowerPCInstructions.instru_lhz + b'\x03\x00\x04'
 
 
-        self.patch_throw = self.create_patch("P1", 0x8005e680, PowerPCInstructions.instru_return, b'\x4b\xff\xff\x50', "throw")
+        self.patch_throw = self.create_patch("P1", 0x8005e680, PowerPCInstructions.instru_blr, b'\x4b\xff\xff\x50', "throw")
         self.patch_carry_shell = [self.create_patch("P1", 0x8005e5f0, b'\x38\x00\x00\x00', button_on_instru,"carry_shell1"),
                                   self.create_patch("P1", 0x8005e5fc, b'\x38\x00\x00\x00', button_on_instru,"carry_shell2")]
-        self.patch_carry_block = self.create_patch("P1",0x8012e330, PowerPCInstructions.instru_return, b'\x94\x21\xff\xf0')
+        self.patch_carry_block = self.create_patch("P1", 0x8012e330, PowerPCInstructions.instru_blr, b'\x94\x21\xff\xf0')
 
 
         self.patch_button_run = self.create_patch("P1",0x8005e610,PowerPCInstructions.instru_lhz + b'\x03\xff\xff', button_on_instru,"button_run")
@@ -210,10 +210,19 @@ class MemoryAddresses(object):
 
         self.gravity_start = self.map_between("P1", 0x802f5938)
 
-        self.patch_p_switch = self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch")
-        self.patch_q_switch = self.create_patch("P1", 0x809c6168, instru_b+ b'\x00'+ val_0000, instru_bne + val_000c, "patch_q_switch")
+        # these patch values need to be diffrent for P1 at least, differ from decomp
+        self.patch_p_switch = [#self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch_block"),
+                               #self.create_patch("P1", 0x80a197f8, 0x38000003, 0x38000001, "patch_p_switch")]
+                                #self.create_patch("P1", 0x8030a9a8, b'\x01\x91', b'\x00\x49', "patch_p_switch")
+            #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch")
+            ]
 
-        self.patch_goomba = self.create_patch("P1", 0x80031210, instru_return, instru_stwu + val_fff0, "patch_goomba")
+        self.patch_q_switch = [#self.create_patch("P1", 0x809c6168, instru_b+ b'\x00'+ val_0000, instru_bne + val_000c, "patch_q_switch_block"),
+                               #self.create_patch("P1", 0x80a19828, 0x38000001, 0x38000003, "patch_q_switch")]
+                                #self.create_patch("P1", 0x8030a9d0, b'\x01\x91', b'\x00\x4a', "patch_q_switch")
+            ]
+
+        self.patch_goomba = self.create_patch("P1", 0x80031210, instru_blr, instru_stwu + val_fff0, "patch_goomba")
 
         self.sprite_init_table_start = self.map_between("P1", 0x8076a748)
 
@@ -222,26 +231,26 @@ class MemoryAddresses(object):
 
         self.patch_door = self.create_patch("E2",0x8002b2a4, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_ffff, PowerPCInstructions.instru_check_eq + PowerPCInstructions.val_0000)
 
-        self.patch_pipe = self.create_patch("P1", 0x8004f300, PowerPCInstructions.instru_return, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffc0)
+        self.patch_pipe = self.create_patch("P1", 0x8004f300, PowerPCInstructions.instru_blr, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffc0)
 
         self.patch_jump = self.create_patch("P1", 0x8005e758, PowerPCInstructions.instru_bne, PowerPCInstructions.instru_beq)
 
         self.patch_ground_pound = [self.create_patch("E2",0x8005E300, b'\x38\x60\x00\x00', b'\x94\x21\xFF\xF0'),
-                                   self.create_patch("E2",0x8005E304,PowerPCInstructions.instru_return, b'\x7C\x08\x02\xA6' ),]
+                                   self.create_patch("E2", 0x8005E304, PowerPCInstructions.instru_blr, b'\x7C\x08\x02\xA6'), ]
 
         self.patch_wall_slide = [
             self.create_patch("E2", 0x801284C0, b'\x94\x21\xFF\xF0', b'\x38\x60\x00\x00'),
-            self.create_patch("E2", 0x801284C4, b'\x7C\x08\x02\xA6', PowerPCInstructions.instru_return)
+            self.create_patch("E2", 0x801284C4, b'\x7C\x08\x02\xA6', PowerPCInstructions.instru_blr)
 
         ]
 
         self.patch_wall_jump = [
             self.create_patch("E2", 0x801285D0, b'\x38\x60\x00\x00', b'\x94\x21\xFF\xE0'),
-            self.create_patch("E2", 0x801285D4, PowerPCInstructions.instru_return, b'\x7C\x08\x02\xA6'),
+            self.create_patch("E2", 0x801285D4, PowerPCInstructions.instru_blr, b'\x7C\x08\x02\xA6'),
         ]
 
         self.patch_crouch = [
-            self.create_patch("E2",0x8014DBB0,  b'\x38\x60\x00\x00' + PowerPCInstructions.instru_return, b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6', "yoshi"),
+            self.create_patch("E2", 0x8014DBB0,  b'\x38\x60\x00\x00' + PowerPCInstructions.instru_blr, b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6', "yoshi"),
             self.create_patch("E2",0x8012D490, b'\x38\x60\x00\x00' + b'\x4E\x80\x00\x20', b'\x94\x21\xFF\xF0' + b'\x7C\x08\x02\xA6' ,"normal")
         ]
 

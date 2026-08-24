@@ -39,7 +39,12 @@ ITEM_NAME_GROUPS.update({"Worlds" : set(name_world_unlock(i) for i in range(1,9+
 
 nicks : List[Tuple[str,str]] = [
     ("spin", ITEM.ABILITIES.SpinJump.value),
-    ("mushroom", ITEM.POWERUP.Super_Mushroom.value)
+    ("mushroom", ITEM.POWERUP.Super_Mushroom.value),
+    ("Proppeller", ITEM.POWERUP.Propeller_Mushroom.value),
+    ("Mini", ITEM.POWERUP.Mini_Mushroom.value),
+    ("Fire", ITEM.POWERUP.Fire_Flower.value),
+    ("Ice", ITEM.POWERUP.Ice_Flower.value),
+    ("Penguin", ITEM.POWERUP.Penguin_Suit.value),
 ]
 for world_num in range(1,8+1):
     nicks.append((f"World{world_num}", name_world_unlock(world_num)))

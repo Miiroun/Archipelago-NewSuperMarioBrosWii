@@ -96,23 +96,37 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.username is None:
             logger.info(f"Connect to AP-server before running debug_deathlink")
             return
-        logger.info(f"""Debug info about deathlink \n
-                    dl enabled: {self.ctx.death_link_enabled} \n
-                    dl group: '{self.ctx.death_link_group}' \n
-                    dl group in slot data: '{self.ctx.slot_data['death_link_group']}' \n
-                    current tags: {self.ctx.tags} \n
-                    Amnesty: {self.ctx.death_link_amnesty_count}/{self.ctx.death_link_amnesty_cap}
-                    Grace: {self.ctx.death_link_grace_count}/{self.ctx.death_link_grace_cap}""")
+        logger.info(f"""Debug info about deathlink 
+                    dl enabled  : {self.ctx.death_link_enabled} 
+                    dl group    : '{self.ctx.death_link_group}' 
+                    dl group in slot data: '{self.ctx.slot_data['death_link_group']}' 
+                    current tags: {self.ctx.tags} 
+                    Amnesty     : {self.ctx.death_link_amnesty_count}/{self.ctx.death_link_amnesty_cap}
+                    Grace       : {self.ctx.death_link_grace_count}/{self.ctx.death_link_grace_cap}""")
 
         if (f"DeathLink{self.ctx.death_link_group}" in self.ctx.tags) ^ (self.ctx.death_link_enabled): # xor ?
             logger.info(f"there is a missmatch between group and tags, please report this")
+
+
+    def _cmd_start(self):
+        """
+        starts game
+        """
+        if self.ctx.username is None:
+            logger.info(f"Connect before auto start")
+            return
+        if self.ctx.slot_data["use_riivolution"]:
+            Utils.async_start(self.ctx.patch_and_run_game(True))
+
+        else:
+            Utils.async_start(self.ctx.run_game(True))
+
 
 
     def _cmd_reapply_checks(self):
         """
         Do this command if some checks haven't been applied because of wrong cache.
         """
-        self.ctx.items_handled = []
         self.ctx.locations_handled = []
         self.ctx.prossesed_inventory_powerup_locations = 0
         self.ctx.handled_num = -1
@@ -389,12 +403,22 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         data = ""
         #for attr in set_obj:
         #    data += f"{attr}: {set_obj[attr]}"
-        data = dir(set_obj)
+        data = dict(set_obj)
         logger.info(data)
+
+    def _cmd_print_item_prossess_data(self):
+        if self.ctx.username is not None:
+            logger.info(f"""
+            Filler         : {self.ctx.filler}
+            Traps         : {self.ctx.traps}
+            power-up grace : {self.ctx.powerup_grace}
+            """)
+        else:
+            logger.info(f"Not conencted to dolphin")
 
     def _cmd_print_other_data(self):
         if self.ctx.username is not None:
-            logger.info(f"power-up grace : {self.ctx.powerup_grace}")
+            pass
         else:
             logger.info(f"Not conencted to dolphin")
 
@@ -447,6 +471,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_world_unlocked()
         self._cmd_completed_worlds()
         self._cmd_get_time()
+        self._cmd_print_item_prossess_data()
 
         logger.info("---- Info regarding errors ----")        
         if tracker_loaded:
@@ -481,7 +506,6 @@ class NSMBWContext(SuperContext):
 
 
     #Created for NSMBW
-    items_handled : List[NetworkItem] = []
     locations_handled = []
     completed_levelstats : List[List[bytes]]
     moded_levelstats : ModifiedState = ModifiedState.UNMODIFIED
@@ -528,7 +552,6 @@ class NSMBWContext(SuperContext):
         if real:
             super().__init__(server_address, password)
         self.game_interface = NSMBWInterface(logger, self.log_color)
-        self.items_handled = []
         self.locations_handled = []
         self.command_processor.ctx = self
 
@@ -1023,7 +1046,7 @@ class NSMBWContext(SuperContext):
 
                 if sc_status == 0:  # becomes 0 if collected
                     world_num, level_num = self.game_interface.get_world_level_num_in_level()
-                    if (world_num, level_num) != (0, 0):
+                    if (world_num, level_num) == (0, 0):
                         continue
 
                     location_name = name_starcoin(world_num, level_num, sc_num)
@@ -1254,10 +1277,13 @@ class NSMBWContext(SuperContext):
         self.unlocked_secret_exits = []
         #print(f"handled_num {self.handled_num}")
 
-        i = 0
-        for network_item in self.items_received:
+        for i, network_item in enumerate(self.items_received):
             item_id = network_item.item
             item_name = NSMBWworld.item_id_to_name[item_id]
+
+            if (item_name is None) or (item_id == 0):
+                continue
+
             if item_id == 101:
                 self.starcoin_count += 1
             elif item_id == 102:
@@ -1270,55 +1296,49 @@ class NSMBWContext(SuperContext):
                 self.unlocks.append(item_name)
             elif 601 <= item_id <= 699:
                 self.unlocked_powerups[item_id - 601] = 1
-            i += 1
 
-            if not network_item in self.items_handled:
-                if i < self.handled_num:
-                    continue
-                if item_name is None:
-                    continue
+            if i < self.handled_num:
+                continue
+            self.handled_num += 1
 
-                #logger.info(
-                print(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
+            #this is processed once per item
+            print(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
 
-                if item_name == ITEM.StarCoin:
-                    # implement read of starcoin count and increase by one
-                    print(f"A starcoin was received")
-                elif item_name == ITEM.Time:
-                    print(f"A time extension was received")
-                elif item_name == ITEM.BossHealth:
-                    print("Boss health recived")
-                elif 201 <= item_id <= 299:
-                    world_num = item_id - 200
-                    if world_num != 9 and self.unlocked_worlds[world_num-1] == 1:
-                        logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
-                    else:
-                        print(f"World {world_num} was received.")
-                elif 301 <= item_id <= 399:
-                    print(f"Received move {item_name} ")
-                elif 401 <= item_id <= 499:
-                    self.traps.append(item_name)
-                elif 501 <= item_id <= 599:
-                    self.filler.append(item_name)
-                elif 601 <= item_id <= 699:
-                    print(f"Power-up {item_name} was received ")
-                elif 701 <= item_id <= 799:
-                    self.unlocked_secret_exits.append(item_name)
+            if item_name == ITEM.StarCoin:
+                # implement read of starcoin count and increase by one
+                print(f"A starcoin was received")
+            elif item_name == ITEM.Time:
+                print(f"A time extension was received")
+            elif item_name == ITEM.BossHealth:
+                print("Boss health recived")
+            elif 201 <= item_id <= 299:
+                world_num = item_id - 200
+                if world_num != 9 and self.unlocked_worlds[world_num-1] == 1:
+                    logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
                 else:
-                    print(f"Handling for {item_name} haven't been implemented")
+                    print(f"World {world_num} was received.")
+            elif 301 <= item_id <= 399:
+                print(f"Received move {item_name} ")
+            elif 401 <= item_id <= 499:
+                self.traps.append(item_name)
+            elif 501 <= item_id <= 599:
+                self.filler.append(item_name)
+            elif 601 <= item_id <= 699:
+                print(f"Power-up {item_name} was received ")
+            elif 701 <= item_id <= 799:
+                self.unlocked_secret_exits.append(item_name)
+            else:
+                print(f"Handling for {item_name} haven't been implemented")
 
-                self.items_handled.append(network_item)
 
 
 
-        self.handled_num = i+1
         # proccess code
-        await self.handle_unlocked_worlds(self.unlocked_worlds)  # if this not here then game freez
-        await self.handle_unlocked_powerups(self.unlocked_powerups)
-        await self.handle_is_world_unlocked(self.unlocked_worlds)
+        await self.handle_unlocked_worlds()
+        await self.handle_is_world_unlocked()
+        await self.handle_unlocked_powerups()
         await self.handle_set_sc_count(self.starcoin_count)
         await self.game_interface.handle_unlocks(self.unlocks, self.current_mod)
-        #if self.game_interface.is_in_level():
         await self.handle_traps()
         await self.handle_filler()
         await self.handle_unlocked_time()
@@ -1329,7 +1349,8 @@ class NSMBWContext(SuperContext):
 
 
 
-    async def handle_unlocked_powerups(self, unlocked_powerups : list):
+    async def handle_unlocked_powerups(self):
+        unlocked_powerups = self.unlocked_powerups.copy()
         for player_num in range(PLAYER_COUNT):
             current_powerup_state = self.game_interface.get_powerupstate(player_num)
 
@@ -1377,13 +1398,13 @@ class NSMBWContext(SuperContext):
 
             self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
 
-    async def handle_unlocked_worlds(self, unlocked_worlds):
+    async def handle_unlocked_worlds(self):
         # when leaving a level the game somtimes freezes when world1 is not unlocked
         use_world_one = self.game_interface.is_in_worldmap()#self.game_interface.is_in_level()#not (current_map_world in [7,8])
         for world_num in range(1 , 9 + 1):
-            if unlocked_worlds[world_num - 1] >= 1 or ((not use_world_one) and world_num == 1):
+            if self.unlocked_worlds[world_num - 1] >= 1 or ((not use_world_one) and world_num == 1):
                 self.game_interface.set_worldstats(world_num, b'\x01')
-            elif unlocked_worlds[world_num - 1] == 0:
+            elif self.unlocked_worlds[world_num - 1] == 0:
                 self.game_interface.set_worldstats(world_num, b'\x00')
 
 
@@ -1640,8 +1661,8 @@ class NSMBWContext(SuperContext):
                     }
                 }])
 
-    async def handle_is_world_unlocked(self, unlocked_worlds : list):
-       lowest_unlocked = unlocked_worlds.index(1) +1
+    async def handle_is_world_unlocked(self):
+       lowest_unlocked = self.unlocked_worlds.index(1) +1
 
        self.game_interface.set_starting_world(lowest_unlocked)
 
@@ -1832,7 +1853,7 @@ class NSMBWContext(SuperContext):
                                  "color": color}
         self.ui.print_json([text_msg])
 
-    async def patch_and_run_game(self):
+    async def patch_and_run_game(self, override = False):
         auto_start: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
         auto_load : bool = get_settings()["nsmbw_settings"].auto_load
         input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
@@ -1851,7 +1872,7 @@ class NSMBWContext(SuperContext):
             assert _patcher.shortcut_path.exists(), "need to have created shortcut successfully"
 
             if dolphin_interface_client.assert_no_running_dolphin():
-                if auto_start:
+                if auto_start or override:
                     if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
                         rii_path = _patcher.output_path.parent.parent.parent
                         save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
@@ -1865,12 +1886,12 @@ class NSMBWContext(SuperContext):
             logger.info(traceback.format_exc())
             self.log_color(f"Patching error: {e}", "red")
 
-    async def run_game(self):
+    async def run_game(self, start_override = False):
         auto_start: bool = get_settings()["nsmbw_settings"].auto_start
 
 
         if dolphin_interface_client.assert_no_running_dolphin():
-            if auto_start:
+            if auto_start or start_override:
                 gamefile: str = get_settings()["nsmbw_settings"].game_file_path
 
                 Utils.open_file(gamefile)

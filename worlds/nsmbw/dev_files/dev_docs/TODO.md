@@ -1,8 +1,6 @@
 # TODO 
 ## Release TODO
 - bug fixes to work out
-- documentation to update
-- option descriptio
 - lots of play testing to do.
 - complete froozen playtest on wsl
 
@@ -13,12 +11,10 @@
 ## Playtest
 - do complete playthrough, add spin jump and jump logic + time logic
 - Deathlink group
-- Playtest on linux so the root error is apparent
 - test new read manifest works on frozen and linux
 - test hm options
 - Change default savestate button
 - command changing saveslot and clearcache slot
-- get_time
 - Boss health
 - DisableGameOverItemClear
 - Setting for being in debug mode instead of if frozen
@@ -30,35 +26,30 @@
 - Try skip wii strap patch : see if works to not have bug
   - does not work on US rev2, atleast
 - Playtest secret exits
-- Cap inven pow at 96
 - Test speed trap
-- filename of new extracter
 - p and q switch patch
 - goomba lock doesnt work
 - button_down and button_up and pipe logic
 - Star invent not sending, of by 1, just remove the -1, verify it works
 - start with all hm hinterd
 - level shuffle has proper logic
-- inventory star removal
-- gravity
 - secret exit items
-- mod time trap
-- test: 9-3 & 9-8 doesn't auto send stat coin on collect
 - Deathlink grace
 - put HM descriptions in client
 - Game over
 
 
 ## Bugs to fix
-- 9-3 bugged, sends location on complete, freeze on death
-- fix carry shell patch
-- remove star from inventory is bugged
+- 9-3 bugged, sends location on complete
 - riivolution patch sometimes random crashes on startup
-- problem re acquire time mod
-- collect immediately doesnt work
 - crash when complete 9-3
 - p-switch : different spawn form block and not
-
+- ut doesnt work with new inventory pow logic
+- crash on level completion and p-switch (no patch)
+  - not patches, continues override or riivolution
+  - seems to be music? p-switch works but not level clear, why?
+- p and q switch broken : remove?
+- 9-8  doesnt send imiditly
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death
@@ -228,6 +219,7 @@
   - download images from wiki
   - Create own illustations of unlocks for itemtracker
 - patch not need watching hint movies
+- brick rando: look at EN_OBJ_HATENA_BLOCK, daEnBlockMain_c
 
 
 ## ER
@@ -246,8 +238,6 @@
   - Starting on world map
 
 ## Difficult small bugs to fix
-- Sometimes invisible on worldmap
-  - Marios animation start from back of world
 - Sneak freezes game
 - Hint movies that requires all level completion don't work in game : vertify still problem
 - game randomly freezes : inconsistent experience

@@ -417,7 +417,11 @@ class NSMBWInterface(object):
         if not patch.origin is None:
             current_bytes = self.dolphin_client.read_address(patch.addr, len(patch.code))
             if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
-                raise ValueError(f"bytes {current_bytes} at addr {patch.addr : x} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
+                test = (f"bytes {current_bytes} at addr {patch.addr : x} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
+                if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                    raise ValueError(test)
+                else:
+                    self.log_color(test, "red")
         if not reverse:
             #if patch.clear:
             self.write_instruction(patch.addr, patch.code)
@@ -503,8 +507,8 @@ class NSMBWInterface(object):
                 #address_sneak_walk = self.memory_addresses.address_kani_walk
                 #address_sneak_hang = self.memory_addresses.address_kani_hang
                 #if not "climb" in unlocks:
-                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_return)
-                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_return)
+                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_blr)
+                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_blr)
                 #else:
                 #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffe0)
                 #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffd0)
@@ -538,9 +542,9 @@ class NSMBWInterface(object):
 
     async def handle_level_gimick(self, unlocks : List[str]):
         slot_data_element_included = self.slot_data["level_elements_included"]
-        def patch_element(name : str, patch : CodePatch | Iterable):
+        def patch_element(name : str, patch : CodePatch | Iterable, double_check : bool = True):
             if name in slot_data_element_included:
-                self.apply_patch(patch, name in unlocks)
+                self.apply_patch(patch, name in unlocks, double_check = double_check)
 
         patch_element(ITEM.LEVELELEMENTS.CheckPoint, self.memory_addresses.patch_check_point)
 
