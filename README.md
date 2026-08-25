@@ -11,7 +11,7 @@ LATEST RELEASE
 [NSMBW](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases)
 
 
-Check out [worlds/nsmbw/docs](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW_miiroun_dev/worlds/nsmbw) for the source code, 
+Check out [worlds/nsmbw](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW_miiroun_dev/worlds/nsmbw) for the source code, 
 and [dev_docs](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW_miiroun_dev/worlds/nsmbw/dev_files/dev_docs) for the explanation of the code.
 
 # [Archipelago](https://archipelago.gg) ![Discord Shield](https://discordapp.com/api/guilds/731205301247803413/widget.png?style=shield) | [Install](https://github.com/ArchipelagoMW/Archipelago/releases)

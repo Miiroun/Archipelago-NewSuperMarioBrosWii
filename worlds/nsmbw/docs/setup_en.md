@@ -48,7 +48,7 @@
 0) In `host.yaml`, under the section `nsmbw_settings`. assert `auto_open` is `false` and `auto_open_riivolution` is `true`.
 1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
 2) You will be promoted for the location of your dolphin install if they are not located automatically. You can change their values later on in `host.yaml`.
- - Linux only: you may have to install `dolphin_emu_tool` separate from dolphin.
+ - Linux only: On some distros like Fedora and Arch users (including SteamOS) you have to install `dolphin-emu-tool` separate from dolphin. It is included in the ´flat-pak´ version.
 3) Enter your connection details and press CONNECT in the client.
 4) The game will now open automatically. If it does not, you can right-click your game in dolphin → start with riivolution patch. Enable just the patch for this async and start the game.
 5) Select SAVEFILE 2 to play on.

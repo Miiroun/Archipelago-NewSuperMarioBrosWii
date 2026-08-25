@@ -72,7 +72,7 @@ class Patcher:
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
         output_path : Path
         #if Utils.get_settings()["nsmbw_settings"].auto_start:
-        output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path
+        output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder
         #else:
         #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
         self.output_path = Path(output_path) / self.name
@@ -151,17 +151,46 @@ class Patcher:
 
 
     def extract_game(self):
-        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool_path)
+        path_to = self.temp_dir.parent
+
+        if is_linux:
+            if is_flatpak_installed():
+                dolphin_tool_cmd = [
+                    "flatpak",
+                    "run",
+                    "--command=dolphin-tool",
+                    f"--filesystem={path_to}",
+                    f"--filesystem={self.input_path}:ro",
+                    "org.DolphinEmu.dolphin-emu"]
+            else:
+                dolphin_tool_cmd = ["dolphin-tool"]
+
+            result = subprocess.run(
+                dolphin_tool_cmd + [
+                "extract",
+                "--input", str(self.input_path),
+                "--output", str(path_to)
+            ])
+            if result.returncode == 0:
+                return
+            else:
+                logger.info(f"Problem with extracting game files, fall back to manully locating dolphin-tool")
+
+        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool)
         assert dolp_tool.exists() , f"the path {dolp_tool} to DolphinTool is invaild"
 
-        path_to = self.temp_dir.parent
         if not (path_to.exists()  and (path_to / "Data" / "files").exists()):
-            subprocess.run([str(dolp_tool), "extract",
-                    "--input", str(self.input_path),
-                    "--output", str(path_to)])
+            subprocess.run([
+                str(dolp_tool),
+                "extract",
+                "--input", str(self.input_path),
+                "--output", str(path_to)
+            ])
             print(f"Game extract successful")
         else:
             print(f"Game extract already exists")
+
+
 
 # need to read and modify name of arc files
     def create_riivolution_patch(self):
@@ -321,8 +350,8 @@ class Patcher:
                                 "section-name": "NSMBWAP"
                             }
                         ],
-                        "root" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path)),
-                        "xml" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path) / "riivolution" / f"{self.name}.xml"),
+                        "root" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder)),
+                        "xml" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder) / "riivolution" / f"{self.name}.xml"),
                     }
                 ]
             },
@@ -392,7 +421,7 @@ if __name__ == "__main__":
 
     _patcher.patch()
 
-    dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
+    dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe)
     short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{_patcher.seed}.json"
 
     assert short_cut_path.exists(), ""

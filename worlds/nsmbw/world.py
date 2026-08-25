@@ -114,7 +114,7 @@ class NSMBWworld(World):
             amount = collection_map_no_toad.get(item.name, 0)
             if amount:
                 pass
-                #state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] += amount
+                state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] += amount
 
         return change
 
@@ -131,7 +131,7 @@ class NSMBWworld(World):
             amount = collection_map_no_toad.get(item.name, 0)
             if amount:
                 pass
-                #state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] -= amount
+                state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] -= amount
 
         return change
 

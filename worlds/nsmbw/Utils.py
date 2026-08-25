@@ -1,5 +1,8 @@
+import shutil
+import subprocess
 from typing import Callable, Any
 import operator
+import Utils
 
 RegionNames = {
     "SMNE01" : "US",
@@ -57,3 +60,17 @@ def cast_object_to_type(_object, _type) -> Any:
             return dict(_object)
         case _:
             raise TypeError(f"Type {type(_object)} of object {_object} is not supported")
+
+def is_flatpak_installed():
+    assert Utils.is_linux, "Linux needs to be selected to detect flatpak"
+    if shutil.which("flatpak"):
+        result = subprocess.run([
+            "flatpak",
+            "info",
+            "org.DolphinEmu.dolphin-emu"])
+        if result.returncode == 0:
+            print(f"Flatpak Dolphin Tool Installation detected")
+            return True
+
+    print(f"Flatpak Dolphin Tool Installation NOT detected")
+    return False

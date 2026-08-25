@@ -1,22 +1,23 @@
 # Credit
-
 ## Main developer
-- Miiroun
+- Miiroun : Coded apworld, client and patches.
 
 
-# Others that helped
+## Others that helped
 - React : Created most of logic
 - Sponk : Created 3d model of star coin merged with archipelago logo
 - Matgamer2575 : started project and found some memory addresses
+- Adibtw : Consulted Linux compatibility
 - IndyGibb : PRed some light code changes using Claude
-- techmuse : helped with locating addresses
+- Techmuse : helped with locating addresses
 - LuigiXRules : Fixed typos in documentation, provided helpful insight and playtested Us rev1
+- Gid10 : Minor Playtest
 
 
-# Communities that helped
+## Communities that helped
 - NSMBW thread in Archipelago dc server (for feature requests and playtesting)
 - Archipelago dc server (worlddev help and documentation)
-- Horizon & NSMBW Hacking Depo discord servers (for knowledge about the game)
+- Horizon & NSMBW Hacking Depo discord servers (knowledge about the game)
 
 
 # NSMBW_logo:
@@ -78,6 +79,7 @@ NSMBW Client and AP-world are both licenced under MIT with copyright by miiroun.
 
 
 ## Libraries licensed under MIT bundled with this client
+- Archipelago
 - Keyboard (Python library)
 - wii-code-tools
 - Kamek-Ninja-Template

@@ -153,7 +153,7 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
         invent_rule_general = Has(ITEM.FAKE.InventoryPow.value, count=req_num) & door & climb
         invent_rule_no_toad =  Has(ITEM.FAKE.InventoryPowNoToad.value, count=req_num)
 
-        world.set_rule(invent_pow, invent_rule_no_toad | invent_rule_general)
+        world.set_rule(invent_pow, invent_rule_no_toad | invent_rule_general | GlitchedRule())
 
 
 

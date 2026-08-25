@@ -15,14 +15,12 @@
 - test hm options
 - Change default savestate button
 - command changing saveslot and clearcache slot
-- Boss health
 - DisableGameOverItemClear
 - Setting for being in debug mode instead of if frozen
 - star coin multiplyer for hm
 - Ydotool
 - Shortcuts
 - Location scout hm
-- q-switch
 - Try skip wii strap patch : see if works to not have bug
   - does not work on US rev2, atleast
 - Playtest secret exits
@@ -45,9 +43,6 @@
 - crash when complete 9-3
 - p-switch : different spawn form block and not
 - ut doesnt work with new inventory pow logic
-- crash on level completion and p-switch (no patch)
-  - not patches, continues override or riivolution
-  - seems to be music? p-switch works but not level clear, why?
 - p and q switch broken : remove?
 - 9-8  doesnt send imiditly
 

@@ -6,7 +6,7 @@ from pathlib import Path
 import Utils
 from .Common import *
 import settings
-
+#import winreg
 
 class NSMBWSettings(settings.Group):
     settings_key = "nsmbw_settings"
@@ -20,18 +20,25 @@ class NSMBWSettings(settings.Group):
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:
             _filetypes = [("Game dump", [".iso", ".wbfs"])]
             return super().browse(_filetypes, **kwargs)
-    class DolphinFolderPath(settings.UserFolderPath):
+    class DolphinFolder(settings.UserFolderPath):
         """Path to dolphin program directory, used only on windows"""
+        # looked around, cannot find dolphin in registry keys
+        #def __init__(self) -> None:
+        #    REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\App Paths"
+        #    oKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH)
+        #    path = winreg.QueryValueEx(oKey, "Dolphin.exe")
+        #    super().__init__(path)
 
-    class DolphinExePath(settings.UserFilePath):
+    class DolphinExe(settings.OptionalUserFilePath):
         """A path to your dolphin program"""
         is_exe = True
 
-    class DolphinToolsPath(settings.UserFilePath):
+    class DolphinTool(settings.OptionalUserFilePath):
         """A path to your dolphin tools program"""
         is_exe = True
+        #description = ""
 
-    class DolphinRiivolutionFolderPath(settings.UserFolderPath):
+    class DolphinRiivolutionFolder(settings.UserFolderPath):
         """A path to dolphins riivolution folder, on Windows found in %appdata%/Dolphin Emultator/Load/riivolution"""
 
     class AutoStartGame(settings.Bool):
@@ -129,20 +136,28 @@ class NSMBWSettings(settings.Group):
 
 
     if Utils.is_windows:
-        dolphin_folder_path : DolphinFolderPath = DolphinFolderPath(os.path.join(os.environ['programfiles'], "Dolphin-x64"))
-        dolphin_riivolution_folder_path = DolphinRiivolutionFolderPath(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution"))
+        dolphin_folder : DolphinFolder = DolphinFolder(os.path.join(os.environ['programfiles'], "Dolphin-x64"))
+        dolphin_riivolution_folder = DolphinRiivolutionFolder(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution"))
 
     elif Utils.is_macos:
-        dolphin_exe_path  : DolphinExePath = DolphinExePath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
-        dolphin_tool_path : DolphinToolsPath = DolphinToolsPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
-        dolphin_riivolution_folder_path = DolphinRiivolutionFolderPath(Path(r"~") / "Library" / "Application Support"/"Dolphin"/"Load"/"Riivolution")
+        dolphin_exe  : DolphinExe = DolphinExe(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Dolphin")
+        dolphin_tool : DolphinTool = DolphinTool(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "DolphinTools")
+        dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Load" / "Riivolution")
 
     elif Utils.is_linux:
         keypress_library: KeypressLibrary  = KeypressLibrary(0)
 
-        dolphin_exe_path : DolphinExePath  =    DolphinExePath(                   subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout)
-        dolphin_riivolution_folder_path =       DolphinRiivolutionFolderPath(Path(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout) / "Load" / "Riivolution")
-        dolphin_tool_path : DolphinToolsPath  = DolphinToolsPath(                 subprocess.run(["whereis", "dolphin-emu-tools"], capture_output=True, text=True).stdout)
+        #dolphin_exe : DolphinExe  = DolphinExe("dolphin-emu")
+        #DolphinExe(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout)
+        if is_flatpak_installed():
+            dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) /".local"/"share"/"dolphin-emu"/"Load"/ "Riivolution")
+        else:
+            dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) / ".var" / "app"/ "org.DolphinEmu.dolphin-emu" / "data"/ "dolphin-emu" / "Load"/ "Riivolution")
+
+        #dolphin_riivolution_folder =   DolphinRiivolutionFolder(Path("dolphin-emu") / "Load" / "Riivolution")
+        #DolphinRiivolutionFolder(Path(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout) / "Load" / "Riivolution")
+        dolphin_tool : DolphinTool  = DolphinTool("dolphin-tool")
+        #DolphinTool(subprocess.run(["whereis", "dolphin-emu-tools"], capture_output=True, text=True).stdout)
 
     else:
         raise Exception("Unsupported OS")

@@ -1669,6 +1669,7 @@ class NSMBWContext(SuperContext):
 
     async def handle_unlocked_time(self):
         if self.slot_data["randomize_time"] != 0:
+            pass
             # old system
             #current_time = bytes_to_int(self.game_interface.get_time_left())
             #new_time = (self.time * 0x1e0000)//self.slot_data["randomize_time"]
@@ -1676,8 +1677,9 @@ class NSMBWContext(SuperContext):
             #    self.game_interface.set_time_left(int_to_bytes(new_time, 4))
 
             # new system
-            time_mult = self.time / self.slot_data["randomize_time"]
-            self.game_interface.set_starting_time(math.ceil(time_mult * 500))
+            #time_mult = self.time / self.slot_data["randomize_time"]
+            #self.game_interface.set_starting_time(math.ceil(time_mult * 500))
+            # crashes game on level clear
 
     async def handle_boss_health(self):
         if self.slot_data["randomize_boss_health"] != 0:
@@ -1837,6 +1839,9 @@ class NSMBWContext(SuperContext):
                     if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.missing_locations:
                         current_bytes &= 0x37 - (2 **(sc_num - 1))
                 skipp_levels = [(1,8),(2,8),(3,8),(4,9),(5,8),(6,9),(7,9),(8,9)]
+                for world_num in range(1,8+1):
+                    if self.unlocked_worlds[world_num-1] == 0:
+                        skipp_levels.append((world_num, 7 + (world_num in (7,8))))
                 if ((world_num, level_num) in skipp_levels) and Utils.get_settings()["nsmbw_settings"].collect_level == 1:
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes, 1))
                     continue
@@ -1853,6 +1858,31 @@ class NSMBWContext(SuperContext):
                                  "color": color}
         self.ui.print_json([text_msg])
 
+    def get_dolphin_run_command(self) -> List[str]:
+        if Utils.is_windows:
+            dolphin_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "Dolphin.exe"
+            assert dolphin_path.exists(), "dolphin.exe needs to be correct"
+            return [str(dolphin_path)]
+
+        elif Utils.is_macos:
+            dolphin_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe)
+            assert dolphin_path.exists(), "dolphin.exe needs to be correct"
+            return [str(dolphin_path)]
+
+        elif Utils.is_linux:
+            if is_flatpak_installed():
+                return [
+                    "flatpak",
+                    "run",
+                    f"--filesystem={get_settings()["nsmbw_settings"].game_file_path}:ro"
+                    "org.DolphinEmu.dolphin-emu"
+                ]
+            else:
+                return [
+                    "dolphin-emu"
+                ]
+
+
     async def patch_and_run_game(self, override = False):
         auto_start: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
         auto_load : bool = get_settings()["nsmbw_settings"].auto_load
@@ -1867,8 +1897,7 @@ class NSMBWContext(SuperContext):
             if not _patcher.shortcut_path.exists():
                 _patcher.patch()
 
-            dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder_path) /  "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe_path)
-            assert dolphin_path.exists(), "dolphin.exe needs to be correct"
+
             assert _patcher.shortcut_path.exists(), "need to have created shortcut successfully"
 
             if dolphin_interface_client.assert_no_running_dolphin():
@@ -1876,9 +1905,9 @@ class NSMBWContext(SuperContext):
                     if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
                         rii_path = _patcher.output_path.parent.parent.parent
                         save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
-                        subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
+                        subprocess.Popen(self.get_dolphin_run_command() + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
                     else:
-                        subprocess.Popen([str(dolphin_path), "-e", str(_patcher.shortcut_path)])
+                        subprocess.Popen(self.get_dolphin_run_command() + ["-e", str(_patcher.shortcut_path)])
                     self.connection_pause = time.time() + 20
             else:
                 logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
@@ -1903,7 +1932,7 @@ class NSMBWContext(SuperContext):
 
     async def detect_dolphin_settings(self):
         try:
-            settings_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder_path).parent.parent / "Config"
+            settings_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder).parent.parent / "Config"
             assert settings_path.exists(), f"path {settings_path} does not exist"
 
             Dolphin = settings_path / "Dolphin.ini"
