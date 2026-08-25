@@ -1,22 +1,11 @@
 # TODO 
 ## Release TODO
-- bug fixes to work out
-- lots of play testing to do.
-- complete froozen playtest on wsl
+- complete froozen playtest from wsl
 
-
-## Super short term
-- Dolphin wsl
 
 ## Playtest
-- starcoin multiplyer for hm
-- p and q switch patch
-
 
 ## Bugs to fix
-- riivolution patch sometimes random crashes on startup
-- p-switch : different spawn form block and not
-- ut doesnt work with new inventory pow logic
 
 
 ## Short term
@@ -100,6 +89,7 @@
 - time brocken
 - do complete playthrough, add spin jump and jump logic + time logic
 - put HM descriptions in client
+- fix climb, ?switch
 
 
 ## Broken versions
@@ -227,6 +217,7 @@
 - Som hm req cannon comp
 - exit course sometimes send death
 - Skip into cutsceen does work sometimes? : skips if spam click intro
+- riivolution patch sometimes random crashes on startup
 
 
 Summery poll

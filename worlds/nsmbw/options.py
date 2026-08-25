@@ -86,7 +86,7 @@ class LevelElementsIncluded(ItemSet):
     Requires Randomize Level Elements to be enabled.
     The only valid none default option is pipe, which still is required for most world starts.
     """
-    valid_keys = set(LEVEL_ELEMENTS)
+    valid_keys = set(LEVEL_ELEMENTS) - {ITEM.LEVELELEMENTS.QuestSwitch.value}
     default = valid_keys - {ITEM.LEVELELEMENTS.Pipe.value}
 
 

@@ -212,15 +212,22 @@ class MemoryAddresses(object):
 
         # these patch values need to be diffrent for P1 at least, differ from decomp
         self.patch_p_switch = [#self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch_block"),
-                               #self.create_patch("P1", 0x80a197f8, 0x38000003, 0x38000001, "patch_p_switch")]
+                               self.create_patch("P1", 0x80a197f8, 0x38000004, 0x38000001, "patch_p_switch"),
                                 #self.create_patch("P1", 0x8030a9a8, b'\x01\x91', b'\x00\x49', "patch_p_switch")
-            #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch")
+                                #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch")
+                                #self.create_patch("P1", 0x80000000, instru_blr,0x38000001, "patch_p_switch")
             ]
+        #self.patch_p_switch[0].addr = 0x80a19838
 
+        # differences betwen P1 and E2 + ?swich seems to be default makes this patch hard to do
         self.patch_q_switch = [#self.create_patch("P1", 0x809c6168, instru_b+ b'\x00'+ val_0000, instru_bne + val_000c, "patch_q_switch_block"),
-                               #self.create_patch("P1", 0x80a19828, 0x38000001, 0x38000003, "patch_q_switch")]
+                               #self.create_patch("P1", 0x80a197e4, 0x38800004, 0x38800000, "patch_q_switch"),
                                 #self.create_patch("P1", 0x8030a9d0, b'\x01\x91', b'\x00\x4a', "patch_q_switch")
-            ]
+                                #self.create_patch("P1", 0x80000000, instru_blr, 0x38000002, "patch_q_switch")
+                                #CodePatch(, 0x28000049, 0x2800004a,"patch_q_switch")
+        ]
+        #self.patch_q_switch[0].addr = 0x80a19898
+
 
         self.patch_goomba = self.create_patch("P1", 0x80031210, instru_blr, instru_stwu + val_fff0, "patch_goomba")
 

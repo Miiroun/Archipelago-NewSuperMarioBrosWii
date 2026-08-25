@@ -4,7 +4,7 @@ READ FIRST
 [SETUP GUIDE](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/setup_en.md)
 
 Then skim though
-[GLOSSARY](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md)
+[Game info](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md)
 , if you have any issues read the Debug tips first and then ask for help in the archipelago discord. 
 
 LATEST RELEASE

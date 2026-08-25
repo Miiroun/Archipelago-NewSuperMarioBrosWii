@@ -9,7 +9,7 @@
 - Progression / useful items
   - 17 World unlocks (are progressive, requires 2 to unlock whole world except world 9)
   - 231 Star coins: used for buying hint movies, unlocking world 9 levels and bowser 
-  - Power-up unlocks (star counted as a ability)
+  - Power-up unlocks (star counts as an ability)
   - Ability unlocks (previously movements)
     - Ground pound
     - Wall Jump
@@ -116,6 +116,7 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
   - If not sending, try turing off your deathlink group and then toggle deathlink off and on again.
   - Run `/deathlink_debug` or `/debug` (0.3.0) to get information about its current state and post this information in the archipelago discord.
 - Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files
+- Music shuffle can cause crashes when you reach some parts of the game. To fix this deleate the `Sounds` directory from `Dolphin Emulator\Load\Riivolution\nsmbw_ap_<seedname>\Sounds` 
 - If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
 
 
