@@ -6,6 +6,7 @@
 ## Others that helped
 - React : Created most of logic
 - Sponk : Created 3d model of star coin merged with archipelago logo
+- CrazyJoe : Created the custom title screen
 - Matgamer2575 : started project and found some memory addresses
 - Adibtw : Consulted Linux compatibility
 - IndyGibb : PRed some light code changes using Claude
@@ -22,7 +23,7 @@
 
 # NSMBW_logo:
 - Image by miiroun
-- Remixed of archipelago logo by Krista Corkos and Christopher Wilson, lisensed under [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/)
+- Remixed of archipelago logo by Krista Corkos and Christopher Wilson, licensed under [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/)
 - Based on star coins in mario, made by nintendo
 
 

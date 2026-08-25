@@ -149,10 +149,10 @@ class NSMBWSettings(settings.Group):
 
         #dolphin_exe : DolphinExe  = DolphinExe("dolphin-emu")
         #DolphinExe(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout)
-        if not is_flatpak_installed():
-            dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) /".local"/"share"/"dolphin-emu"/"Load"/ "Riivolution")
-        else:
+        if is_flatpak_installed():
             dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) / ".var" / "app"/ "org.DolphinEmu.dolphin-emu" / "data"/ "dolphin-emu" / "Load"/ "Riivolution")
+        else:
+            dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) /".local"/"share"/"dolphin-emu"/"Load"/ "Riivolution")
 
         #dolphin_riivolution_folder =   DolphinRiivolutionFolder(Path("dolphin-emu") / "Load" / "Riivolution")
         #DolphinRiivolutionFolder(Path(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout) / "Load" / "Riivolution")
