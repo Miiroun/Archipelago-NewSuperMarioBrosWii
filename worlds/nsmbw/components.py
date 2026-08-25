@@ -34,13 +34,12 @@ components.append(
         game_name="NSMBW",
         component_type=Type.CLIENT,
         supports_uri=True,
-        icon="nsmbw_icon",
-
+        icon="nsmbw",
     )
 )
 
 
-icon_paths["nsmbw_icon"] = f"ap:{__name__}/NSMBW_client/img/nsmbw_icon.png"
+icon_paths["nsmbw"] = f"ap:{__name__}/NSMBW_client/img/nsmbw_icon.png"
 
 
 # There are two optional parameters that are worth drawing attention to here: "game_name" and "supports_uri".

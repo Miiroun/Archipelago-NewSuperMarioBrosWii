@@ -9,48 +9,18 @@
 - Dolphin wsl
 
 ## Playtest
-- do complete playthrough, add spin jump and jump logic + time logic
-- Deathlink group
-- test new read manifest works on frozen and linux
-- test hm options
-- Change default savestate button
-- command changing saveslot and clearcache slot
-- DisableGameOverItemClear
-- Setting for being in debug mode instead of if frozen
-- star coin multiplyer for hm
-- Ydotool
-- Shortcuts
-- Location scout hm
-- Try skip wii strap patch : see if works to not have bug
-  - does not work on US rev2, atleast
-- Playtest secret exits
-- Test speed trap
+- starcoin multiplyer for hm
 - p and q switch patch
-- goomba lock doesnt work
-- button_down and button_up and pipe logic
-- Star invent not sending, of by 1, just remove the -1, verify it works
-- start with all hm hinterd
-- level shuffle has proper logic
-- secret exit items
-- Deathlink grace
-- put HM descriptions in client
-- Game over
 
 
 ## Bugs to fix
-- 9-3 bugged, sends location on complete
 - riivolution patch sometimes random crashes on startup
-- crash when complete 9-3
 - p-switch : different spawn form block and not
 - ut doesnt work with new inventory pow logic
-- p and q switch broken : remove?
-- 9-8  doesnt send imiditly
+
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death
-- Hint movies does not work on other save files?
-- Dereference player  pointer
-- Add support for other savefile
 - Add enemy ambush and toad rescue
 - I have issue with fuzzing with hooks: UT 
 - Do playthrough, document completion times for time logic
@@ -60,7 +30,6 @@
   - toad add1  80c807f0
   - toad add2  80c80f22
 - Spin jump no logic, also no logic without normal jump
-- flagpool score as location?
 - Create notes in /explain more
 - Make secret exit items to reunlock them
 - assert early items are actually early, write test?
@@ -86,9 +55,7 @@
 - why does global mutation fuzzer hook fail at settings??
 - Rework timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
-- Time change default not current
 - implement method to read arc files : needed to change names of subfolders
-- verify that key combos dont overlap
 - Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
 - Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
 - Can find value hardcoded for level timer? Add memwatch for func that changes it
@@ -115,9 +82,6 @@
 - option to shuffle only towers within themselves
 - Rework setup guide with auto launch disabled : if turned off riivolution, move to game info
 - have randomize time increase speed instead of setting clock??
-- Auto close dolphin doesn't work on Linux
-- Add if game over : resync state to docs
-- Save on disconnect
 - Improve how swim locks
   - Improve error messages
 - Write to GameFlag_e?
@@ -131,6 +95,11 @@
   - patch starting time doesnt work
 - Edit star coin level icon : new image
   - gameScene.arc
+- Rework swim?
+- goomba lock doesnt work
+- time brocken
+- do complete playthrough, add spin jump and jump logic + time logic
+- put HM descriptions in client
 
 
 ## Broken versions
@@ -215,6 +184,10 @@
   - Create own illustations of unlocks for itemtracker
 - patch not need watching hint movies
 - brick rando: look at EN_OBJ_HATENA_BLOCK, daEnBlockMain_c
+- Make penguin progressive?
+- Hint movies does not work on other save files?
+- Dereference player  pointer
+- Add support for other savefile
 
 
 ## ER
@@ -296,9 +269,7 @@ Summery poll
   - screen clear gp : give player x amount
   - spawn random objects
 - Features from gecko
-  - Speed trap
   - fall damage trap
-- Make penguin progressive
 - LOCATIONS
   - 100 coins  : store # amount coin enter, add a watch for when it loops around
   - 1 ups : just look at if player life increase: not from coin
@@ -310,6 +281,7 @@ Summery poll
   - Killing each enemy type
   - Top of flagpole
   - P-switch as locations
+  - flagpool score as location?
 - ITEMS
   - Enemy remove : should work same as checkpoint
   - Enemy add (trap item): readds enemy, works as above

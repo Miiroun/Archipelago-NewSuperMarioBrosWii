@@ -64,9 +64,12 @@ def launch_NSMBW_client(*args):
 
 async def shutdown():
     if Utils.get_settings()["nsmbw_settings"].auto_close:
-        os.system("taskkill /im Dolphin.exe")
-        await asyncio.sleep(3)
-        os.system("taskkill /im Dolphin.exe")
+        if Utils.is_windows:
+            os.system("taskkill /im Dolphin.exe")
+            await asyncio.sleep(3)
+            os.system("taskkill /im Dolphin.exe")
+        else:
+            logger.info(f"Auto close not implemented for non windows OS:es")
 
 
 

@@ -144,7 +144,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
             hintmovie_location = get_location_names_with_ids([name_hintmovie(i)])
             world.get_region("Peach castle").add_locations(hintmovie_location, NSMBWLocation)
 
-    if world.options.include_level_completion.value == True:
+    if world.options.level_completion.value == True:
         for world_num in range(1, 9+1):  # worlds
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 flagpole = get_location_names_with_ids([name_level(world_num, level_num)])

@@ -129,11 +129,11 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """
         self.ctx.locations_handled = []
         self.ctx.prossesed_inventory_powerup_locations = 0
-        self.ctx.handled_num = -1
+        self.ctx.handled_num = 0
         self.ctx.prev_sent_locations = set()
 
     if Utils.get_settings()["nsmbw_settings"].debug_mode:
-        def _cmd_dev(self, key: str = ""):
+        def _cmd_clear(self, key: str = ""):
             """
             A cheat command useful for developing.
             """
@@ -145,6 +145,22 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 self.ctx.game_interface.set_level_stats(int(world_num), int(level_num), b'\x37')
             else:
                 logger.info(r"Error in key for /dev")
+
+        def _cmd_set_pow(self, pow : str):
+            """
+            Cheat command that sets your powerup
+            """
+            try:
+                pow = int(pow)
+            except Exception:
+                pass
+
+            if type(pow) != int:
+                if pow in POWERUP_UNLOCK:
+                    pow = POWERUP_UNLOCK.index(pow)+1
+
+            for player_num in range(PLAYER_COUNT):
+                self.ctx.game_interface.set_powerupstate(int_to_bytes(pow, 1), player_num)
 
         def _cmd_add_mod(self, type_, time_):
             """ Adds type, """
@@ -409,9 +425,10 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_print_item_prossess_data(self):
         if self.ctx.username is not None:
             logger.info(f"""
-            Filler         : {self.ctx.filler}
-            Traps         : {self.ctx.traps}
-            power-up grace : {self.ctx.powerup_grace}
+            Filler                  : {self.ctx.filler}
+            Traps                   : {self.ctx.traps}
+            power-up grace          : {self.ctx.powerup_grace}
+            unlocked_secret_exits   : {self.ctx.unlocked_secret_exits}
             """)
         else:
             logger.info(f"Not conencted to dolphin")
@@ -511,7 +528,7 @@ class NSMBWContext(SuperContext):
     moded_levelstats : ModifiedState = ModifiedState.UNMODIFIED
     prev_powerup : List[bytes]
     starcoin_count : int = 0
-    completed_levels : list
+    completed_levels : List[str]
     prev_lifecount : List[int]
     prossesed_inventory_powerup_locations : int = 0
     previous_inventory : List[int]
@@ -568,7 +585,7 @@ class NSMBWContext(SuperContext):
 
         self.death_link_group = ""
 
-        self.handled_num = -1
+        self.handled_num = 0
 
         self.random = Random()
 
@@ -724,6 +741,8 @@ class NSMBWContext(SuperContext):
         ui = super().make_gui()
         self.get_version()
         ui.base_title = f"New Super Mario Bros Wii Client {self.manifest_version}, Archipelago version:"
+
+        #ui.icon = f"ap:{__name__}/NSMBW_client/img/nsmbw_icon.png"
         return ui
 
     def on_deathlink(self, data: Utils.Dict[str, Utils.Any]) -> None:
@@ -735,7 +754,6 @@ class NSMBWContext(SuperContext):
                 Utils.async_start(self.game_interface.kill_player())
             else:
                 logger.info(f"Deathlink grace {self.death_link_grace_count} / {self.death_link_grace_cap}")
-            self.last_death_link = time.time()
             self.is_pending_death_link_reset = True
         super().on_deathlink(data)
 
@@ -1021,7 +1039,9 @@ class NSMBWContext(SuperContext):
 
     async def handle_checked_location(self):
         if self.game_interface.get_savefile_num() == 1:
-            self.log_color(f"You are playing on save file 1, to prevent errors, no locations will be sent.", "red")
+            text = f"You are playing on save file 1, to prevent errors, no locations will be sent."
+            #self.log_color(text, "red")
+            print(text)
             return
 
         checked_locations = []
@@ -1166,8 +1186,8 @@ class NSMBWContext(SuperContext):
                     if not NSMBWworld.location_name_to_id[exit_name] in self.locations_handled:
                         checked_locations.append(NSMBWworld.location_name_to_id[exit_name])
                         self.completed_levels.append(exit_name)
-                        print(f"You collected a check for {exit_name}, but the cannon/exit will be locked to make the randomizer more interesting.")
-                    if not exit_name in self.unlocked_secret_exits:
+                        print(f"You collected a check for {exit_name}")
+                    if not (exit_name in self.unlocked_secret_exits):
                         self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
                 elif (exit_name in self.unlocked_secret_exits) and (exit_name in self.completed_levels):
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + byte_to_check, 1))
@@ -1296,6 +1316,8 @@ class NSMBWContext(SuperContext):
                 self.unlocks.append(item_name)
             elif 601 <= item_id <= 699:
                 self.unlocked_powerups[item_id - 601] = 1
+            elif 701 <= item_id <= 799:
+                self.unlocked_secret_exits.append(item_name)
 
             if i < self.handled_num:
                 continue
@@ -1326,7 +1348,7 @@ class NSMBWContext(SuperContext):
             elif 601 <= item_id <= 699:
                 print(f"Power-up {item_name} was received ")
             elif 701 <= item_id <= 799:
-                self.unlocked_secret_exits.append(item_name)
+                print(f"Exit: {item_name} was received")
             else:
                 print(f"Handling for {item_name} haven't been implemented")
 
@@ -1603,7 +1625,7 @@ class NSMBWContext(SuperContext):
 
                 case ITEM.FILLER.PowerUpGrace:
                     self.powerup_grace += 1
-                    logger.info("Got a Power-up grace")
+                    logger.info("You got a Power-up grace")
 
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
@@ -1662,9 +1684,12 @@ class NSMBWContext(SuperContext):
                 }])
 
     async def handle_is_world_unlocked(self):
-       lowest_unlocked = self.unlocked_worlds.index(1) +1
+        try:
+           lowest_unlocked = self.unlocked_worlds.index(1) +1
+        except ValueError: # this fails if all worlds are at level 2
+            lowest_unlocked = self.unlocked_worlds.index(2) + 1
 
-       self.game_interface.set_starting_world(lowest_unlocked)
+        self.game_interface.set_starting_world(lowest_unlocked)
 
 
     async def handle_unlocked_time(self):
@@ -1756,7 +1781,8 @@ class NSMBWContext(SuperContext):
 
     async def handle_screen_transition(self):
         if self.game_interface.is_screen_transition():
-            self.update_memory_to_server_on_load()
+            pass
+            #self.update_memory_to_server_on_load()
 
 
     async def ut_auto_tab(self):
@@ -1832,24 +1858,27 @@ class NSMBWContext(SuperContext):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 current_bytes = bytes_to_int(self.game_interface.get_level_stats(world_num, level_num))
 
+                if self.slot_data["starcoin_sanity"]:
+                    for sc_num in range(1,3+1):
+                        if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.checked_locations:
+                            current_bytes |= 0x00 + (2**(sc_num - 1))
+                        if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.missing_locations:
+                            current_bytes &= 0x37 - (2 **(sc_num - 1))
 
-                for sc_num in range(1,3+1):
-                    if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.checked_locations:
-                        current_bytes |= 0x00 + (2**(sc_num - 1))
-                    if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.missing_locations:
-                        current_bytes &= 0x37 - (2 **(sc_num - 1))
-                skipp_levels = [(1,8),(2,8),(3,8),(4,9),(5,8),(6,9),(7,9),(8,9)]
-                for world_num in range(1,8+1):
-                    if self.unlocked_worlds[world_num-1] == 0:
-                        skipp_levels.append((world_num, 7 + (world_num in (7,8))))
-                if ((world_num, level_num) in skipp_levels) and Utils.get_settings()["nsmbw_settings"].collect_level == 1:
-                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes, 1))
-                    continue
+                if self.slot_data["level_completion"]:
+                    skipp_levels = [(1,8),(2,8),(3,8),(4,9),(5,8),(6,9),(7,9),(8,9)]
+                    for world_num in range(1,8+1):
+                        if self.unlocked_worlds[world_num-1] == 0:
+                            skipp_levels.append((world_num, 7 + (world_num in (7,8))))
+                    if ((world_num, level_num) in skipp_levels) and Utils.get_settings()["nsmbw_settings"].collect_level == 1:
+                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes, 1))
+                        continue
 
-                if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.checked_locations:
-                    current_bytes |= 0x10
-                if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.missing_locations:
-                    current_bytes &= 0x07
+                    if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.checked_locations:
+                        current_bytes |= 0x10
+                    if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.missing_locations:
+                        current_bytes &= 0x07
+
                 self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes,1))
 
     def log_color(self, text: str, color: str ) -> None:
@@ -1874,7 +1903,7 @@ class NSMBWContext(SuperContext):
                 return [
                     "flatpak",
                     "run",
-                    f"--filesystem={get_settings()["nsmbw_settings"].game_file_path}:ro"
+                    f"--filesystem={get_settings()['nsmbw_settings'].game_file_path}:ro"
                     "org.DolphinEmu.dolphin-emu"
                 ]
             else:
@@ -1896,6 +1925,7 @@ class NSMBWContext(SuperContext):
             _patcher = Patcher(self.username, self.seed_name, self.slot_data)
             if not _patcher.shortcut_path.exists():
                 _patcher.patch()
+            _patcher.get_region()
 
 
             assert _patcher.shortcut_path.exists(), "need to have created shortcut successfully"
@@ -1908,7 +1938,7 @@ class NSMBWContext(SuperContext):
                         subprocess.Popen(self.get_dolphin_run_command() + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
                     else:
                         subprocess.Popen(self.get_dolphin_run_command() + ["-e", str(_patcher.shortcut_path)])
-                    self.connection_pause = time.time() + 20
+                    self.connection_pause = time.time() + 10
             else:
                 logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
         except Exception as e:

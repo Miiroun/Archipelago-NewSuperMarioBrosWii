@@ -608,6 +608,9 @@ class NSMBWInterface(object):
         world_num = bytes_to_int(self.get_world_level()) + 1
         level_num = bytes_to_int(self.get_level_level()) + 1
 
+        if world_num == 9:
+            return level_num, world_num
+
         if (1 <= level_num <= 7 or level_num in [21, 22, 24, 25, 38]):  # becomes 0 if collected
             # https://horizon.miraheze.org/wiki/Level_Names_and_Features
             if 0 <= level_num <= 7:

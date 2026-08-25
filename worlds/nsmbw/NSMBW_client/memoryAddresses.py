@@ -312,11 +312,11 @@ class MemoryAddresses(object):
 
         #disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear") # not working, by Li
         # fixed game_over_patch by miiroun
-        game_over_patch = [
-            self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear"),
-            self.create_patch("P1", 0x80789044, instru_noop, name="DisableGameOverItemClear"),
-            self.create_patch("P1", 0x80789028, instru_noop, name="level_clear"),
-        ]
+        #game_over_patch = [
+        #    self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear"),
+        #    self.create_patch("P1", 0x80789044, instru_noop, name="DisableGameOverItemClear"),
+        #    self.create_patch("P1", 0x80789028, instru_noop, name="level_clear"),
+        #]
 
         # Skip Wii Remote Strap Screen PAL by CLF78
         patch_skipp_wii_remote_strap_screen = [
@@ -368,7 +368,7 @@ class MemoryAddresses(object):
             patch_skipp_move_next_world,patch_allways_save,exit_course_anytime,# disable_game_over_item_clear,
             patch_skipp_wii_remote_strap_screen,  exception_handler, #lives_limit_change,
             worldMapAfterFinalBoss, #dontToggleSuperGuideBit, fs_RemoveMultiSelect,
-            disable_world9_sc_req, game_over_patch,
+            disable_world9_sc_req, #game_over_patch,
         ]
 
         # address 0x80162fb8 might be good to create a branch from

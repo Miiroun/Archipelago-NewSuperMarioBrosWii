@@ -184,7 +184,7 @@ class StarCoinShopMultiplier(Range):
     default = 3
 
 
-class IncludeLevelCompletion(Toggle):
+class LevelCompletion(Toggle):
     """
     All level clears are locations.
     Adds 231 locations.
@@ -462,8 +462,8 @@ class UseRiivolution(Toggle):
      - See custom randomizer graphics (log and starcoin model)
 
     """
-    display_name = "Use Riivolution (early alpha, dont expect to be able to finish run with this)"
-    default = False
+    display_name = "Use Riivolution"
+    default = True
 
 
 class LevelShuffleRiivolution(Toggle):
@@ -477,6 +477,7 @@ class LevelShuffleRiivolution(Toggle):
 
 class MusicShuffleRiivolution(Toggle):
     """
+    WARNING: Causes caches on some seeds, may need manual removal.
     Shuffles the background music and sound effects.
     Requires use_riivolution to be enabled.
     """
@@ -515,7 +516,7 @@ class ImportantEarlyItems(Toggle):
 
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
-    include_level_completion : IncludeLevelCompletion
+    level_completion : LevelCompletion
     shortcuts_sanity : ShortcutSanity
     hint_movie_sanity : HintMovieSanity
     starcoin_sanity: StarcoinSanity
@@ -585,7 +586,7 @@ option_groups = [
         "Locations",
         [
             ShortcutSanity,
-            IncludeLevelCompletion,
+            LevelCompletion,
             HintMovieSanity,
             StarcoinSanity,
             IncludeNumberInventoryItems,
@@ -669,8 +670,8 @@ option_groups = [
 option_presets = {}
 
 def adjust_options(world : "NSMBWworld"): # cannot type check because circular imports : NSMBWworld
-    if world.options.include_level_completion.value + world.options.starcoin_sanity.value <= 0 and len(world.multiworld.player_ids) == 1:
-        raise OptionError(f"(NSMBW generation error) Turn on at least one of include_level_completion or starcoin_sanity when generation alone")
+    if world.options.level_completion.value + world.options.starcoin_sanity.value <= 0 and len(world.multiworld.player_ids) == 1:
+        raise OptionError(f"(NSMBW generation error) Turn on at least one of level_completion or starcoin_sanity when generation alone")
 
     # This section tests if to many location options are turned off and tries to compensate for it.
     req_start_loc = -10
@@ -678,8 +679,8 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if (world.options.hint_movie_sanity.value == False):
         #print(f"(NSMBW generation error) Turning off hint_movie_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
-    if (world.options.include_level_completion.value == False):
-            #print(f"(NSMBW generation error) Turning off include_level_completion can cause fill errors with a low amount of num_starting_locations.")
+    if (world.options.level_completion.value == False):
+            #print(f"(NSMBW generation error) Turning off level_completion can cause fill errors with a low amount of num_starting_locations.")
             req_start_loc += 30
             req_start_loc_max += 15
     if (world.options.starcoin_sanity.value == False):
@@ -698,8 +699,8 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
               f"consider lowering this to get a more enjoyable experience.")
 
     # this tries to prevent num loc > num items
-    if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.include_level_completion.value * 71 +
-        world.options.hint_movie_sanity.value *65 +world.options.include_inventory_powerups.value) #world comp, madatory  + 17
+    if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.level_completion.value * 71 +
+                world.options.hint_movie_sanity.value * 65 + world.options.include_inventory_powerups.value) #world comp, madatory  + 17
          <= 10+
         (itm :=  world.options.randomize_time.value
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):

@@ -209,7 +209,12 @@ class Patcher:
             #self.patch_subfolder(folder_name, "Pa3", True)
 
         if self.slot_data["music_shuffle_riivolution"]:
-            self.patch_entire_folder(os.path.join("Sound", "stream"))
+            #self.patch_entire_folder(os.path.join("Sound", "stream"))
+            folder_name = os.path.join("Sound", "stream")
+            temp_path = self.temp_dir / "files" / folder_name
+            file_names: List[str] = os.listdir(temp_path)
+            file_names.remove("switch_lr.n.32.brstm")
+            self.patch_files(file_names, folder_name, False)
 
     def patch_files(self, file_names : List[str], folder_name : str, arc_rename : bool = False):
         temp_path = self.temp_dir / "files" / folder_name
