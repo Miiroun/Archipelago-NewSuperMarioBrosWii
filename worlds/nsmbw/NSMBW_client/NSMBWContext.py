@@ -1907,7 +1907,7 @@ class NSMBWContext(SuperContext):
                                  "color": color}
         self.ui.print_json([text_msg])
 
-    def get_dolphin_run_command(self) -> List[str]:
+    def get_dolphin_run_command(self, _patcher, save_state_file = "") -> List[str]:
         if Utils.is_windows:
             dolphin_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "Dolphin.exe"
             assert dolphin_path.exists(), "dolphin.exe needs to be correct"
@@ -1920,16 +1920,24 @@ class NSMBWContext(SuperContext):
 
         elif Utils.is_linux:
             if is_flatpak_installed():
-                return [
+                val =  [
                     "flatpak",
                     "run",
-                    f"--filesystem={get_settings()['nsmbw_settings'].game_file_path}:ro"
+                    f"--filesystem={str(_patcher.shortcut_path)}:ro",
+                ]
+                if save_state_file != "":
+                    val.append(f"--filesystem={str(save_state_file)}:ro"),
+                val += [
+                    f"--filesystem={str(get_settings()['nsmbw_settings'].game_file_path)}:ro",
                     "org.DolphinEmu.dolphin-emu"
                 ]
+                return val
             else:
                 return [
                     "dolphin-emu"
                 ]
+        else:
+            raise Exception("Unsupported OS")
 
 
     async def patch_and_run_game(self, override = False):
@@ -1955,9 +1963,9 @@ class NSMBWContext(SuperContext):
                     if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
                         rii_path = _patcher.output_path.parent.parent.parent
                         save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
-                        subprocess.Popen(self.get_dolphin_run_command() + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
+                        subprocess.Popen(self.get_dolphin_run_command(_patcher, save_state_file) + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
                     else:
-                        subprocess.Popen(self.get_dolphin_run_command() + ["-e", str(_patcher.shortcut_path)])
+                        subprocess.Popen(self.get_dolphin_run_command(_patcher) + ["-e", str(_patcher.shortcut_path)])
                     self.connection_pause = time.time() + 10
             else:
                 logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")

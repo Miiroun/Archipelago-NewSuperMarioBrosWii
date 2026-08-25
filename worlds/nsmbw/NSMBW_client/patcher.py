@@ -152,6 +152,7 @@ class Patcher:
 
     def extract_game(self):
         path_to = self.temp_dir.parent
+        path_to.mkdir(exist_ok=True, parents=True)
 
         if is_linux:
             if is_flatpak_installed():
@@ -159,8 +160,8 @@ class Patcher:
                     "flatpak",
                     "run",
                     "--command=dolphin-tool",
-                    f"--filesystem={path_to}",
-                    f"--filesystem={self.input_path}:ro",
+                    f"--filesystem={str(path_to)}",
+                    f"--filesystem={str(self.input_path)}:ro",
                     "org.DolphinEmu.dolphin-emu"]
             else:
                 dolphin_tool_cmd = ["dolphin-tool"]
@@ -332,6 +333,7 @@ class Patcher:
         #print("-------XML-----------------")
         #print(ET.tostring(wiidisc))
         destination = self.output_path.parent / "riivolution" / f"{self.name}.xml"
+        destination.parent.mkdir(exist_ok=True, parents=True)
 
         ET.indent(tree, '\t')
         with open(destination, "w+") as file_name:

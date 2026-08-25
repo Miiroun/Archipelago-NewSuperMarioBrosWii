@@ -1,8 +1,6 @@
 # TODO 
 ## Release TODO
-- complete froozen playtest from wsl
-
-
+I looked into riivolution path, at least for my Ubuntu WSL flatpack it is at `~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Load/Riivolution`.  Dolphin-tools seems to be running for me, but I cannot find where it extracts too. 
 ## Playtest
 
 ## Bugs to fix
