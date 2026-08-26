@@ -37,3 +37,6 @@ class TestLevelShuffleOff(NSMBWTestBase):
                 test_world_num, test_level_num = pos_to_level_name(self.world.shuffled_level_order[level_name_to_pos(world_num, level_num)])
                 assert test_world_num == world_num, f"{test_world_num} != {world_num}"
                 assert test_level_num == level_num, f"{test_level_num} != {level_num} : {world_num}"
+
+        for i in range(77):
+            assert level_name_to_pos(*pos_to_level_name(i)) == i, f"{i} != {name_base(*pos_to_level_name(i))}"

@@ -121,7 +121,7 @@ class NSMBWSettings(settings.Group):
 
     auto_start: AutoStartGame | bool = False
     auto_start_riivolution : AutoStartRiivolution | bool = True
-    auto_load : AutoLoadState | bool = True
+    auto_load : AutoLoadState | bool = False
     auto_save: AutoSaveGame | bool = True
     auto_close: AutoCloseGame | bool = False
 

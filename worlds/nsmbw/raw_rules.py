@@ -285,7 +285,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
 # world 7
     "7-1"  : Level(normal_move & pipe& button_down & button_up, (wall_jump | propeller_o, True_(), True_())),  # -1
     "7-2"  : Level(pipe & button_down & button_up & normal_move & (swim | (propeller_o & logic_easy)), (ground_pound | (logic_hard & swim & (ice_peng_o & carry) | (peng_o & crouch)), swim, True_())),  # -2
-    "7-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), climb & p_switch | (climb & propeller_o), True_())),  # -3
+    "7-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), climb & p_switch | (climb & propeller_o), True_()) ),  # -3
     "7-4"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -4
     "7-5"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (True_(), propeller | p_switch, True_())),  # -5
     "7-6"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_()), True_()),  # -6

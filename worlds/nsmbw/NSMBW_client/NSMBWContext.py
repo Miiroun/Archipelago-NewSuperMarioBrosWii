@@ -2025,12 +2025,13 @@ class NSMBWContext(SuperContext):
 
     async def send_hints_hm(self):
         # hints for all hint movies
-        if self.slot_data["hint_movie_sanity"]:
-            loc = set([3000 + i for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
+        if self.slot_data["hint_hint_movies"]:
+            if self.slot_data["hint_movie_sanity"]:
+                loc = set([3000 + i for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
 
-            if len(loc - self.locations_info.keys() - self.locations_scouted - self.checked_locations)> 0: # test if sent hint before
-                Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": list(loc), "create_as_hint": 2}]))
-                self.locations_scouted |= loc
+                if len(loc - self.locations_info.keys() - self.locations_scouted - self.checked_locations)> 0: # test if sent hint before
+                    Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": list(loc), "create_as_hint": 2}]))
+                    self.locations_scouted |= loc
 
 #end of class
 

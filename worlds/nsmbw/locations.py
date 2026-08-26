@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 from BaseClasses import  Location, LocationProgressType
 
 from . import items
@@ -130,10 +132,10 @@ def create_regular_locations(world: NSMBWworld) -> None:
 
     if world.options.shortcuts_sanity.value == True:
         for secret_exit in SECRET_EXIT:
-            world_num = secret_exit[0]
-            level_num = secret_exit[1]
+            world_num = secret_exit.world
+            level_num = secret_exit.level
             level_location = get_location_names_with_ids([name_secret(secret_exit)])
-            world.get_region(name_base(world_num,level_num)).add_locations(level_location, NSMBWLocation)
+            world.get_region(name_base(world_num,level_num) + " start").add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
     if world.options.hint_movie_sanity.value == True:
@@ -184,40 +186,59 @@ def pos_to_level_name(pos : int) -> tuple[int, int]:
 
 
 def shuffle_level_order(world: NSMBWworld) -> bool:
+    is_ut = getattr(world.multiworld, "generation_is_fake", False)
+    if is_ut:
+        return True
+
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
     if world.options.level_shuffle_riivolution.value == True:
-        not_shuffled = world.shuffled_level_order.copy()
+        not_shuffled = deepcopy(world.shuffled_level_order)
 
-        secret_exits = list([(secret_exit.world,secret_exit.level) for secret_exit in SECRET_EXIT])
+        secret_exits : List[Tuple[int,int]] = list()
+        for secret_exit_ in SECRET_EXIT:
+            if secret_exit_.exit_type == 2:
+                secret_exits.append((secret_exit_.world, secret_exit_.level))
+
         castle_group = [(1,8),(3,8),(4,8),(5,8), (7,9)]
-        def add_to_list(list_to_add: list) -> list:
-            shuffle_copy = list_to_add.copy()
-            world.random.shuffle(shuffle_copy)
-            return list(zip(list_to_add, shuffle_copy))
+
+        def add_to_list(list_to_add: List[Tuple[int,int]]) -> List[Tuple[int,int]]:
+            id_list = list(map(lambda x : level_name_to_pos(x[0], x[1]), list_to_add))
+
+            id_list_shuffle = deepcopy(id_list)
+            world.random.shuffle(id_list_shuffle)
+            return list(zip(id_list, id_list_shuffle))
 
         dont_shuffle = [(2,8), (6,8), (8,3), (8,9)]
 
-        world.shuffled_level_order = [0] * sum(LEVELS_PER_WORLD)
+
+        world.shuffled_level_order = [0,] * int(sum(LEVELS_PER_WORLD))
 
 
-        for obj in dont_shuffle:
-            world.shuffled_level_order[level_name_to_pos(obj[0], obj[1])] = level_name_to_pos(obj[0], obj[1])
-            not_shuffled.remove(level_name_to_pos(obj[0], obj[1]))
 
-        shuffle_list = add_to_list(secret_exits) + add_to_list(castle_group)
-        for obj1, obj2 in shuffle_list:
-            world.shuffled_level_order[level_name_to_pos(obj1[0], obj1[1])] = level_name_to_pos(obj2[0], obj2[1])
-            assert level_name_to_pos(obj1[0], obj1[1]) in not_shuffled, f"{level_name_to_pos(obj1[0], obj1[1])}, {obj1} is not in {not_shuffled}"
-            not_shuffled.remove(level_name_to_pos(obj1[0], obj1[1]))
+        shuffle_specific_list : List[Tuple[int,int]] = add_to_list(secret_exits) + add_to_list(castle_group)
 
-        not_shuffled_shuffle = not_shuffled.copy()
+        for item in dont_shuffle:
+            shuffle_specific_list += add_to_list([item])
+
+        for _from, _to in shuffle_specific_list:
+            world.shuffled_level_order[_from] = _to
+
+            # does not matter which we remove, both should be removed since its an bijection
+            assert _from in not_shuffled, f"_from: {_from}"
+            not_shuffled.remove(_from)
+
+
+        not_shuffled_shuffle = deepcopy(not_shuffled)
         world.random.shuffle(not_shuffled_shuffle)
+
         for pos1, pos2 in zip(not_shuffled,not_shuffled_shuffle):
             world.shuffled_level_order[pos1] = pos2
 
         assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
         assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder {world.shuffled_level_order}, counter {Counter(world.shuffled_level_order)} must have unique elements"
+        assert pos_to_level_name(level_name_to_pos(2,8)) == (2,8), "test rando still works"
+        assert Counter(world.shuffled_level_order)[0] == 1, "no duplicates"
 
         return not (world.shuffled_level_order[level_name_to_pos(3,4)] == level_name_to_pos(3,5) or world.shuffled_level_order[level_name_to_pos(3,5)] == level_name_to_pos(3,4))
     else:

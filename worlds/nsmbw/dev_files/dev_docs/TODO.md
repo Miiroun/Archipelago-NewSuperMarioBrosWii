@@ -1,9 +1,14 @@
 # TODO 
 # Super Short term
 - complete playtest, do ap with a few games for fun, on frozen
-
+- rename some options : make .. prio
+- make hint hint movie an option
+- UT doesn't work with level shuffle? just star coin och secret exit
+- return assert _rule is not None
+- run test to validate hint movies hint, starcoin logic and secret exit logic
 
 ## Playtest
+- secret exit rando onto themself
 
 ## Bugs to fix
 

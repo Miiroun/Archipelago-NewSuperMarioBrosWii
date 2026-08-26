@@ -174,6 +174,13 @@ class HintMovieShopPriceLogic(Choice):
 
     default = option_free
 
+class HintHintMovies(Toggle):
+    """
+    Free hints all hint movies when you reach peace castle.
+    """
+
+    default = True
+
 class StarCoinShopMultiplier(Range):
     """
     A multiplier for what a star coin is worth when buying from the hint movie store.
@@ -545,9 +552,10 @@ class NSMBWOptions(PerGameCommonOptions):
     starting_world: StartingWorld
     world9_unlock_condition : World9UnlockCondition
     hint_movie_shop_price_logic : HintMovieShopPriceLogic
+    hint_hint_movies : HintHintMovies
     starcoin_shop_multiplier : StarCoinShopMultiplier
     make_world_comp_priority : MakeWorldCompPriority
-    make_important_early_items : ImportantEarlyItems
+    important_early_items : ImportantEarlyItems
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems

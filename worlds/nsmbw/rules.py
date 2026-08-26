@@ -106,8 +106,10 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1]+1):
             for sc in range(1, 3 + 1):
                 # makes starcoins in logic if this level is cleared
+                randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world_num, level_num)])
+
                 star_coin = world.get_location(name_starcoin(world_num, level_num, sc))
-                sc_logic = LevelRules[name_base(world_num, level_num)][1][sc - 1]
+                sc_logic = LevelRules[name_base(randod_world_num1, randod_level_num1)].starcoins[sc - 1]
                 world.set_rule(star_coin, sc_logic )
 
     hm_req = specific_hintmovie_requierments()
@@ -139,10 +141,15 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
             world_num = secret_exit.world
             level_num = secret_exit.level
             secret_exit_loc = world.get_location(name_secret(secret_exit))
+
+            randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world_num, level_num)])
+
             if secret_exit.exit_type == 2:
                 #assert len( LevelRules[name_base(world_num, level_num)]) == 3, f"Make sure lists is of correct size for {name_base(world_num, level_num)}"
-                world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) &
-                               LevelRules[name_base(world_num, level_num)][2])
+                _rule = LevelRules[name_base(randod_world_num1, randod_level_num1)].secret_exit
+                assert _rule is not None, f"werid rando for {name_base(world_num,level_num)} to {name_base(randod_world_num1, randod_level_num1)}"
+                world.set_rule(secret_exit_loc, rules.Has(name_base(randod_world_num1, randod_level_num1)) & _rule)
+
             elif secret_exit.exit_type == 1:
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) )
 
