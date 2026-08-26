@@ -1,5 +1,6 @@
 # TODO 
 # Super Short term
+- complete playtest, do ap with a few games for fun, on frozen
 
 
 ## Playtest

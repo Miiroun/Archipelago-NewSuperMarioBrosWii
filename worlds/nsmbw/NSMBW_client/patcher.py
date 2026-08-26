@@ -83,7 +83,7 @@ class Patcher:
 
         self.random = Random(seed)
 
-        self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"{self.name}.json"
+        self.shortcut_path = Path(tempfile.gettempdir()) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
 
 
 
@@ -105,6 +105,8 @@ class Patcher:
                     if not member.filename.startswith(_dir.at):
                         continue
                     member.filename = member.filename.replace(_dir.at, "")
+                    if member.filename == "":
+                        continue
                     zf.extract(member, self.output_path)
 
     def patch_bsdiff(self):
@@ -119,6 +121,8 @@ class Patcher:
                 path_data_loc_dir = zipfile.Path(zf) / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
                 for member in zf.infolist():
                     if not member.filename.startswith(path_data_loc_dir.at):
+                        continue
+                    if member.filename == path_data_loc_dir.at:
                         continue
                     member.filename = os.path.basename(member.filename)
                     zf.extract(member, temp_dir)

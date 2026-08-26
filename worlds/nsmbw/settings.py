@@ -56,7 +56,7 @@ class NSMBWSettings(settings.Group):
     class AutoCloseGame(settings.Bool):
         """Enable if you want to close the game automatically"""
 
-    class SaveFileLocation(settings.OptionalLocalFolderPath):
+    class SaveFileLocation(settings.OptionalUserFolderPath): #Local
         """A path that the nsmbw client uses to store data about saves"""
 
 

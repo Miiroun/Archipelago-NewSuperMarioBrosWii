@@ -58,3 +58,6 @@ Helpfull websites
 - https://fenixfox-studios.com/manual/powerpc/index.html
 - https://fenixfox-studios.com/manual/powerpc/registers.html
 
+
+Decomp insight:
+- https://wuffs.org/blog/reversing-games-with-hashcat
