@@ -742,26 +742,30 @@ class NSMBWContext(SuperContext):
         ui = super().make_gui()
         self.get_version()
         ui.base_title = f"New Super Mario Bros Wii Client {self.manifest_version}, Archipelago version:"
-        return ui
+        class NSMBWManager(ui):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                if is_frozen():
+                    _path = Path(tempfile.gettempdir()) / "nsmbw" / "nsmbw_icon.png"
+                    if not _path.exists():
+                        _path.parent.mkdir(parents=True, exist_ok=True)
+                        with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
+                            _dir = zipfile.Path(zf) / "nsmbw" / "NSMBW_client" / "img" / "nsmbw_icon.png"
+
+                            for member in zf.infolist():
+                                if not member.filename == _dir.at:
+                                    continue
+                                member.filename = os.path.basename(member.filename)
+                                zf.extract(member, _path)
+
+                    self.icon = str(_path / "nsmbw_icon.png")
+                else:
+                    self.icon = str(Path(Utils.user_path()) / "worlds" / "nsmbw" / "NSMBW_client" / "img" / "nsmbw_icon.png")
+
+        return NSMBWManager
 
     def run_gui(self):
         super().run_gui()
-        if is_frozen():
-            _path = Path(tempfile.gettempdir()) / "nsmbw" / "nsmbw_icon.png"
-            if not _path.exists():
-                _path.parent.mkdir(parents=True, exist_ok=True)
-                with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
-                    _dir = zipfile.Path(zf) / "nsmbw" / "NSMBW_client" / "img" / "nsmbw_icon.png"
-
-                    for member in zf.infolist():
-                        if not member.filename == _dir.at:
-                            continue
-                        member.filename = os.path.basename(member.filename)
-                        zf.extract(member, _path)
-
-            self.ui.icon = str(_path / "nsmbw_icon.png")
-        else:
-            self.ui.icon = str(Path(Utils.user_path()) / "worlds" / "nsmbw" / "NSMBW_client" / "img" / "nsmbw_icon.png")
 
 
 
