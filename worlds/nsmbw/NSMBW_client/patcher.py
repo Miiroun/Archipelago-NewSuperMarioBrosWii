@@ -103,8 +103,9 @@ class Patcher:
                     zf.extract(member, self.output_path)
 
     def patch_bsdiff(self):
-        patch_data = [("star_coin", "Object", "Object")]
-        #("openingTitle", "Layout") # ("star_coin.arc", "Object")
+        from worlds.nsmbw.dev_files import generate_diff_files
+
+        patch_data = generate_diff_files.patch_details(self)
 
         if Utils.is_frozen():
             temp_dir = Path(tempfile.gettempdir()) / "nsmbw" / "patch_data"

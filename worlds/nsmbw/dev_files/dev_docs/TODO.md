@@ -1,56 +1,13 @@
 # TODO 
 # Super Short term
+- unlocks on unit test fails a lot, beacuse of pipe?
+- 99 coin location
+- 1up location
 
 ## Playtest
 
 
 ## Bugs to fix
-- crash when far in 2-6 (at 7-2), 7-3 (at 3-T), error : Failed to find an archive/BRRES 
-- dont think it is music, is it just levels that dont like to be moved?
-- crashed when collected sc 3-T (6-1)
-
-
-# New Super Mario Bros Wii
-## About
-New Super Mario Bros Wii (nsmbw) is a 2d mario game by Nintendo on the Wii console released in 2009.
-
-The archipealgo implementation randomizes level clears, star coins, hint movies, level order, powerups, abilities and level elements among other things.
-
-
-## Docs
-[Setup Guide](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/setup_en.md)
-
-[Game Info](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md)
-
-[credit and ai disclosure](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/credit.md)
-
-[**DOWNLOAD**](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
-
-
-## Links
-[Old Thread](#"New Super Mario Bros Wii (NSMBW)")
-
-[WIKI](archipelago.miraheze.org/wiki/NSMBW)
-
-[About Logic](https://discord.com/channels/731205301247803413/1327187652864380948/1519440576506892429)
-Why something is in logic.
-
-[Hint Movie Logic](https://discord.com/channels/731205301247803413/1327187652864380948/1540567527048876082)
-If you need help for when a hint movie becomes accessible.
-
-[Development Docs]([dev_docs](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW/worlds/nsmbw/dev_files/dev_docs)
-If you are interested in helping with development, read these.
-
-# Tracker
-There is not any image tracker currently but #universal-tracker is supported and recommended.
-A pop-tracker pack is in development.
-
-.
-.
-.
-.
-
-
 
 
 ## Short term
