@@ -3,8 +3,12 @@
 - unlocks on unit test fails a lot, beacuse of pipe?
 - 99 coin location
 - 1up location
+- wii-code-tools not MIT?? mandela effect
+  - convince roadrunner to release or code it myself.
+- find dolphin registry key 
 
 ## Playtest
+- boss key : all versions
 
 
 ## Bugs to fix

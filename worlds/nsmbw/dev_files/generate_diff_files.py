@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 
 from worlds.nsmbw.NSMBW_client.patcher import Patcher
@@ -9,6 +10,7 @@ def patch_details(_patcher : "Patcher"):
     PatchDetails = [
         ("star_coin", "Object", "Object"),
         ("openingTitle", os.path.join(RegionNames[_patcher.region],"Layout","openingTitle" ), "Layout"),
+        ("key_boss_castle", "Object", "Object"),
     ]
     return PatchDetails
 
@@ -43,5 +45,8 @@ def gen_diff_files():
 
 
 if __name__ == "__main__":
+
+    assert os.path.basename(Utils.get_settings()["nsmbw_settings"].game_file_path) == "New Super Mario Bros. Wii (USA) (En,Fr,Es) (Rev 2).wbfs"
+
     gen_diff_files()
 
