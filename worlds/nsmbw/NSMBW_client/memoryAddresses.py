@@ -166,7 +166,7 @@ class MemoryAddresses(object):
         self.patch_check_point = self.create_patch("P1",0x807E215C, instru_6000, origin=instru_beq + val_0014, name="check point")
         self.patch_spin_jump = self.create_patch("P1", 0x8005e780, instru_lbz_r3 + val_0000, origin=instru_lbz_r3 + val_0017, name="spin_jump")
 
-        self.patch_climb_pole = [self.create_patch("E2", 0x80072180, PowerPCInstructions.instru_li + PowerPCInstructions.reg_r0,origin =  b'\x94\x21\xff\xb0', name="climb_pole1"),
+        self.patch_climb_pole = [self.create_patch("E2", 0x80072180, PowerPCInstructions.instru_li_r3 + PowerPCInstructions.reg_r0, origin =b'\x94\x21\xff\xb0', name="climb_pole1"),
                                  self.create_patch("E2", 0x80072184, PowerPCInstructions.instru_blr, origin=b'\x7c\x08\x02\xa6', name ="climb_pole2")]
         self.patch_climb_ladder = self.create_patch(f"E2", 0x800d1dc0, PowerPCInstructions.instru_blr, b"\x2c\x05" + PowerPCInstructions.reg_r0, name="climb_ladder")
         self.patch_climb_tarzan_vine = self.create_patch("P1", 0x80137460, PowerPCInstructions.instru_blr, PowerPCInstructions.instru_stwu + b"\xff\xc0", "climb_tarzan")
@@ -212,7 +212,7 @@ class MemoryAddresses(object):
 
         # these patch values need to be diffrent for P1 at least, differ from decomp
         self.patch_p_switch = [#self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch_block"),
-                               self.create_patch("P1", 0x80a197f8, 0x38000004, 0x38000001, "patch_p_switch"),
+                               self.create_patch("P1", 0x80a197f8, 0x38000003, 0x38000001, "patch_p_switch"),
                                 #self.create_patch("P1", 0x8030a9a8, b'\x01\x91', b'\x00\x49', "patch_p_switch")
                                 #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch")
                                 #self.create_patch("P1", 0x80000000, instru_blr,0x38000001, "patch_p_switch")
@@ -225,6 +225,10 @@ class MemoryAddresses(object):
                                 #self.create_patch("P1", 0x8030a9d0, b'\x01\x91', b'\x00\x4a', "patch_q_switch")
                                 #self.create_patch("P1", 0x80000000, instru_blr, 0x38000002, "patch_q_switch")
                                 #CodePatch(, 0x28000049, 0x2800004a,"patch_q_switch")
+                                #does not work, just p-switch
+                                #self.create_patch("P1", 0x800d88f0, instru_blr, instru_li_r0 + val_0001, "patch_both_switches"),
+                                #self.create_patch("P1", 0x800d891c, 0x7ca00078, instru_li_r0 + val_0001, "?-switch = p_switch?"),
+
         ]
         #self.patch_q_switch[0].addr = 0x80a19898
 
@@ -246,8 +250,8 @@ class MemoryAddresses(object):
                                    self.create_patch("E2", 0x8005E304, PowerPCInstructions.instru_blr, b'\x7C\x08\x02\xA6'), ]
 
         self.patch_wall_slide = [
-            self.create_patch("E2", 0x801284C0, b'\x94\x21\xFF\xF0', b'\x38\x60\x00\x00'),
-            self.create_patch("E2", 0x801284C4, b'\x7C\x08\x02\xA6', PowerPCInstructions.instru_blr)
+            self.create_patch("E2", 0x801284C0, b'\x38\x60\x00\x00', b'\x94\x21\xFF\xF0', ),
+            self.create_patch("E2", 0x801284C4, PowerPCInstructions.instru_blr, b'\x7C\x08\x02\xA6', )
 
         ]
 
@@ -284,14 +288,14 @@ class MemoryAddresses(object):
         # credit to mkwcat for creating this patch
         patch_skipp_title_screen = [
             self.create_patch("P1",  0x80781FB8, int_to_bytes(0x60000000, 4), origin = instru_beq + val_0010),
-            self.create_patch("P1",  0x80781FBC, int_to_bytes(0x38600000, 4), origin = instru_li + val_0001)
+            self.create_patch("P1", 0x80781FBC, int_to_bytes(0x38600000, 4), origin =instru_li_r3 + val_0001)
         ]
 
         # skip cutscene played when new file created
         # inspired by NSMBWerPlus https://github.com/Ryguy0777/NSMBWerPlus/blob/master/Kamek/bugfixes.yaml (doesnt work)
         # this (functioning) is my (miirouns) creation, you are allowed to use it without credit
         patch_skipp_intro_cutscene = [
-            #self.create_patch("P1", 0x809191C8, instru_noop, origin=instru_li + val_0008),
+            #self.create_patch("P1", 0x809191C8, instru_noop, origin=instru_li_r3 + val_0008),
             #self.create_patch("P1", 0x809191D8, instru_noop, origin= instru_b)
             self.create_patch("P1", 0x809191c4, instru_b+b'\x00\x00\x18', origin=instru_beq + val_0018, name="skipp_intro")
 
@@ -299,9 +303,9 @@ class MemoryAddresses(object):
 
         #these 3 are from mkwcat pipe rando, line 580->587 https://github.com/mkwcat/nsmbw-pipe-randomizer/blob/master/src/nsmbw-random-pipe.cpp
         patch_show_all_world_sc_screen = [
-            self.create_patch("P1", 0x807749A8, instru_li + val_0001, name="world"),
-            self.create_patch("P1", 0x80776B00, instru_li + val_0001, name="airship"),
-            self.create_patch("P1", 0x80776B3C, instru_li + val_0001, name="final_castle")
+            self.create_patch("P1", 0x807749A8, instru_li_r3 + val_0001, name="world"),
+            self.create_patch("P1", 0x80776B00, instru_li_r3 + val_0001, name="airship"),
+            self.create_patch("P1", 0x80776B3C, instru_li_r3 + val_0001, name="final_castle")
         ]
 
         #// Always go to the next world when the castle level is completed, reversed from mkwcat pipe rando
@@ -315,7 +319,7 @@ class MemoryAddresses(object):
         ]
 
         # Exit Course Anytime [mkwcat] https://github.com/mkwcat/gecko-codes/blob/master/source/nsmbw/Exit-Course-Anytime.cpp
-        exit_course_anytime = self.create_patch("P1", 0x800B4EA8,instru_li + b'\x03' + b'\x01' , name="exit_course_anytime")
+        exit_course_anytime = self.create_patch("P1", 0x800B4EA8, instru_li_r3 + b'\x03' + b'\x01', name="exit_course_anytime")
 
         #disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear") # not working, by Li
         # fixed game_over_patch by miiroun
@@ -365,7 +369,7 @@ class MemoryAddresses(object):
             self.create_patch("P1", 0x808ced2c, instru_noop),
             self.create_patch("P1", 0x808ca084, instru_noop),
             self.create_patch("P1", 0x800fd080, instru_noop),
-            self.create_patch("P1", 0x80907da4, instru_li + val_0000),
+            self.create_patch("P1", 0x80907da4, instru_li_r3 + val_0000),
 
             #self.create_patch("P1", 0x800fc534, 0x281e0000 )
         ]

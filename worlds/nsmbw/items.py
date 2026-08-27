@@ -57,17 +57,18 @@ for i, movement_unlock in enumerate(UNLOCKS):
     ITEM_NAME_TO_ID.update({movement_unlock : 301 + i})
     if movement_unlock in important_items:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression | ItemClassification.useful})
-    elif movement_unlock in [ITEM.LEVELELEMENTS.CheckPoint]:
-        DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.useful})
     else:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({"Abilites" : set(ABILITIES)})
-ITEM_NAME_GROUPS.update({"Level elements" : set(LEVEL_ELEMENTS)})
-ITEM_NAME_GROUPS.update({"Enemies" : set(ENEMIES)})
-ITEM_NAME_GROUPS.update({"Unlocks" : set(UNLOCKS)})
+ITEM_NAME_GROUPS.update({
+    "Abilites" : set(ABILITIES),
+    "Level elements" : set(LEVEL_ELEMENTS),
+    "Enemies" : set(ENEMIES),
+    "Unlocks" : set(UNLOCKS)
+})
 
-
-
+DEFAULT_ITEM_CLASSIFICATIONS.update({
+    ITEM.LEVELELEMENTS.CheckPoint : ItemClassification.useful
+})
 
 for i, trap in enumerate(TRAPS):
     ITEM_NAME_TO_ID.update({trap : 401 + i})

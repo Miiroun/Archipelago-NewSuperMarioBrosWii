@@ -148,7 +148,7 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
                 #assert len( LevelRules[name_base(world_num, level_num)]) == 3, f"Make sure lists is of correct size for {name_base(world_num, level_num)}"
                 _rule = LevelRules[name_base(randod_world_num1, randod_level_num1)].secret_exit
                 assert _rule is not None, f"werid rando for {name_base(world_num,level_num)} to {name_base(randod_world_num1, randod_level_num1)}"
-                world.set_rule(secret_exit_loc, rules.Has(name_base(randod_world_num1, randod_level_num1)) & _rule)
+                world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) & _rule) # TODO remove this temp has_base, it is just for legacy reasons
 
             elif secret_exit.exit_type == 1:
                 world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) )

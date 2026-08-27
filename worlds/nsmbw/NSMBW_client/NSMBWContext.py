@@ -1,4 +1,5 @@
 import math
+import shutil
 
 from . import dolphin_interface_client
 from .NSMBWInterface import *
@@ -268,7 +269,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"Ablities")
                 logger.info(f"You currently have: {set(self.ctx.unlocks) & abilites_included}")
                 logger.info(f"And you are missing: {abilites_included - set(self.ctx.unlocks)}")
-                logger.info(f"With the following movements excluded: {set(ABILITIES) - abilites_included}")
+                logger.info(f"With the following excluded: {set(ABILITIES) - abilites_included}")
             else:
                 logger.info("You dont have ability rando enabled.")
             if self.ctx.slot_data["randomize_level_elements"] == True:
@@ -276,7 +277,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info("Level Elements")
                 logger.info(f"You currently have: {set(self.ctx.unlocks) & elements_included}")
                 logger.info(f"And you are missing: {elements_included - set(self.ctx.unlocks)}")
-                logger.info(f"With the following movements excluded: {set(ABILITIES) - elements_included}")
+                logger.info(f"With the following excluded: {set(ABILITIES) - elements_included}")
             else:
                 logger.info("You dont have level element rando enabled.")
 
@@ -285,10 +286,21 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info("Enemies")
                 logger.info(f"You currently have: {set(self.ctx.unlocks) & enemies_included}")
                 logger.info(f"And you are missing: {enemies_included - set(self.ctx.unlocks)}")
-                logger.info(f"With the following movements excluded: {set(ENEMIES) - enemies_included}")
+                logger.info(f"With the following excluded: {set(ENEMIES) - enemies_included}")
             else:
                 logger.info("You dont have enemy rando enabled.")
 
+            if self.ctx.slot_data["randomize_powerups"] == True:
+                logger.info("Powerups:")
+                txt = ""
+                for pow in range(POWERUP_COUNT):
+                    if self.ctx.unlocked_powerups[pow] != 0:
+                        txt += f"{POWERUP_UNLOCK[pow]} is unlocked\n"
+                    else:
+                        txt += f"{POWERUP_UNLOCK[pow]} is locked\n"
+                logger.info(txt)
+            else:
+                logger.info(f"You do not have powerups enabled")
     def _cmd_change_collection_level(self, value):
         """
         Set this to specify how client should respond to a location being remotely collected.
@@ -310,14 +322,14 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Toggles the auto open setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_start_riivolution"] ^= True
-        logger.info(f"Auto clear open: {Utils.get_settings()['nsmbw_settings']['auto_start_riivolution']}")
+        logger.info(f"Auto open: {Utils.get_settings()['nsmbw_settings']['auto_start_riivolution']}")
 
     def _cmd_toggle_auto_load(self):
         """
         Toggles the auto load setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_load"] ^= True
-        logger.info(f"Auto clear load: {Utils.get_settings()['nsmbw_settings']['auto_load']}")
+        logger.info(f"Auto load: {Utils.get_settings()['nsmbw_settings']['auto_load']}")
 
 
     def _cmd_toggle_auto_save(self):
@@ -325,7 +337,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Toggles the auto save setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_save"] ^= True
-        logger.info(f"Auto clear save: {Utils.get_settings()['nsmbw_settings']['auto_save']}")
+        logger.info(f"Auto save: {Utils.get_settings()['nsmbw_settings']['auto_save']}")
 
 
     def _cmd_toggle_auto_close(self):
@@ -333,7 +345,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Toggles the auto close setting in host.yaml, is constant for all multiworld.
         """
         Utils.get_settings()["nsmbw_settings"]["auto_close"] ^= True
-        logger.info(f"Auto clear close: {Utils.get_settings()['nsmbw_settings']['auto_close']}")
+        logger.info(f"Auto close: {Utils.get_settings()['nsmbw_settings']['auto_close']}")
 
     def _cmd_auto_clear_cache(self):
         """Toggles wherethere to automatically clear cache. If you turn it of you will have to manually do it (by loading a savestate) for deathlink, movementrando and more to work. This is not saved betwen sestions"""
@@ -355,8 +367,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         """Syncs your in game completion to the archipelago multiservers completed locations"""
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
-        if self.ctx.game_interface.memory_addresses is not None:
-            self.ctx.update_memory_to_server_on_load()
+        self.ctx.update_memory_to_server_on_load()
 
     def _cmd_clear_inventory(self):
         """Clears your inventory of powerups (except 5).
@@ -370,16 +381,37 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         logger.info(f"Successfully cleared your inventory of powerups")
 
     def _cmd_change_save_state_slot(self, slot):
-        """"""
+        """Changes the save state slot used for saving data."""
         num = int(slot)
         assert 1 <= num <= 8
         self.ctx.save_slot = num
 
     def _cmd_change_clear_cache_slot(self, slot):
-        """"""
+        """Changes the save state slot used for clrearing the JIT cache."""
         num = int(slot)
         assert 1 <= num <= 8
         Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot = num
+
+    def _cmd_rm_tmp(self):
+        """Delete all files used for creating the patch files (including all created patches, but not save data) and other temporary files."""
+
+        nsmbw_dir = Path(tempfile.gettempdir()) / "nsmbw"
+        if nsmbw_dir.exists():
+            shutil.rmtree(nsmbw_dir)
+
+        Riivolution = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder)
+
+        files = os.listdir(Riivolution)
+        for file in files:
+            if file.startswith("nsmbw_ap_"):
+                shutil.rmtree(Riivolution / file)
+
+        files = os.listdir(Riivolution / "riivolution")
+        for file in files:
+            if file.startswith("nsmbw_ap_"):
+                os.remove(Riivolution / "riivolution" / file)
+
+        logger.info(f"Successfully deleated all temporary files.")
 
     def _cmd_get_time(self):
         """Prints how much time you have recived"""
@@ -400,13 +432,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         else:
             logger.info("Boss health rando is disabled")
 
-    if Utils.get_settings()["nsmbw_settings"].debug_mode:
-        def _cmd_get_level_rando(self,name):
-            """Prints where a location has been rando to"""
-            world_num, level_num = base_bijection(name)
-            randod_world_num1, randod_level_num1 = locations.pos_to_level_name(
-                self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
-            logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
+    #if Utils.get_settings()["nsmbw_settings"].debug_mode:
+    def _cmd_get_level_rando(self,name):
+        """Prints where a location has been rando to"""
+        world_num, level_num = base_bijection(name)
+        randod_world_num1, randod_level_num1 = locations.pos_to_level_name(
+            self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
+        logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
 
     def _cmd_print_slot_data(self):
         """Prints all slot data, useful for debuging"""
@@ -683,8 +715,7 @@ class NSMBWContext(SuperContext):
                             ## TODO need to handle if in peach castle etc
                             world_num, level_num = level_bijection(location)
                             skipp_levels = [(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9), (8, 9)]
-                            if ((world_num, level_num) in skipp_levels) and Utils.get_settings()[
-                                "nsmbw_settings"].collect_level <= 1:
+                            if ((world_num, level_num) in skipp_levels) and Utils.get_settings()["nsmbw_settings"].collect_level <= 1:
                                 return
                             current_bytes = self.game_interface.get_level_stats(world_num, level_num)
                             bytes_to_set = bytes_to_int(current_bytes) | 0x10
@@ -735,7 +766,7 @@ class NSMBWContext(SuperContext):
             self.current_mod_end_time = 0
             await self.handle_modifiers()
             await asyncio.sleep(0.1)
-            Utils.async_start(self.handle_save())
+            await self.handle_save()
         await super().shutdown()
 
     def make_gui(self):
@@ -965,11 +996,7 @@ class NSMBWContext(SuperContext):
         print(f"Seedname {self.seed_name}")
         if self.seed_name != "" and (not (self.seed_name is None)):
             path = Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves"
-            try:
-                path.mkdir(parents=True)
-                print(f"Directory '{path}' created successfully.")
-            except FileExistsError:
-                print(f"Directory '{path}' already exists.")
+            path.mkdir(parents=True, exist_ok=True)
 
             data = {
                 "completed_levels": self.completed_levels,
@@ -1806,7 +1833,7 @@ class NSMBWContext(SuperContext):
     async def handle_screen_transition(self):
         if self.game_interface.is_screen_transition():
             pass
-            #self.update_memory_to_server_on_load()
+            self.update_memory_to_server_on_load()
 
 
     async def ut_auto_tab(self):
@@ -1877,31 +1904,41 @@ class NSMBWContext(SuperContext):
     def update_memory_to_server_on_load(self):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             return
+        if self.game_interface.memory_addresses is None:
+            return
+
+        skipp_levels = [(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9), (8, 9)]
+        for world_num in range(1, 8 + 1):
+            if self.unlocked_worlds[world_num - 1] == 0:
+                skipp_levels.append((world_num, 7 + (world_num in (7, 8))))
+
 
         for world_num in range(1,9+1):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 current_bytes = bytes_to_int(self.game_interface.get_level_stats(world_num, level_num))
 
-                if self.slot_data["starcoin_sanity"]:
+                if self.slot_data["starcoin_sanity"] == True:
                     for sc_num in range(1,3+1):
                         if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.checked_locations:
                             current_bytes |= 0x00 + (2**(sc_num - 1))
-                        if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.missing_locations:
-                            current_bytes &= 0x37 - (2 **(sc_num - 1))
+                        elif NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.missing_locations:
+                            pass
+                            #current_bytes &= 0x37 - (2 **(sc_num - 1))
+                        else:
+                            print(f"What is happening with {NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)]}, {name_starcoin(world_num, level_num, sc_num)}")
 
-                if self.slot_data["level_completion"]:
-                    skipp_levels = [(1,8),(2,8),(3,8),(4,9),(5,8),(6,9),(7,9),(8,9)]
-                    for world_num in range(1,8+1):
-                        if self.unlocked_worlds[world_num-1] == 0:
-                            skipp_levels.append((world_num, 7 + (world_num in (7,8))))
-                    if ((world_num, level_num) in skipp_levels) and Utils.get_settings()["nsmbw_settings"].collect_level == 1:
-                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes, 1))
-                        continue
 
-                    if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.checked_locations:
-                        current_bytes |= 0x10
-                    if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.missing_locations:
-                        current_bytes &= 0x07
+                if self.slot_data["level_completion"] == True:
+
+                    if not (((world_num, level_num) in skipp_levels) and (Utils.get_settings()["nsmbw_settings"].collect_level == 1)):
+                        if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.checked_locations:
+                            current_bytes |= 0x10
+                        elif NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.missing_locations:
+                            pass
+                            #current_bytes &= 0x27
+                        else:
+                            print(f"What is happening with {NSMBWworld.location_name_to_id[name_level(world_num, level_num)]}, {name_base(world_num, level_num)}")
+
 
                 self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes,1))
 
@@ -2035,19 +2072,3 @@ class NSMBWContext(SuperContext):
 
 #end of class
 
-
-
-
-
-
-
-
-
-
-def get_in_logic(ctx, items=None, locations=None):
-    if items is None:
-        items = []
-    ctx.items_received = [(item,) for item in items]  # to account for the list being ids and not Items
-    ctx.missing_locations = locations
-    updateTracker(ctx)
-    return ctx.locations_available

@@ -6,6 +6,7 @@ from BaseClasses import  Location, LocationProgressType
 
 from . import items
 from .Common import *
+from .options import AlternativeGoal
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -92,7 +93,7 @@ def create_all_locations(world: NSMBWworld) -> None:
 def make_locations_priority(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
         if world_num != 9:
-            if world.options.make_world_comp_priority.value == True:
+            if world.options.world_comp_priority.value == True:
                 world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
                 world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
@@ -163,8 +164,16 @@ def create_events(world: NSMBWworld) -> None:
             world.get_region(name_base(world_num, level_num)).add_event(flagpole,name_base(world_num, level_num), location_type=NSMBWLocation, item_type=items.NSMBWItem, show_in_spoiler=False)
 
     #events could be usefully for merging split paths
-
-    world.get_region(name_base(8, 9)).add_event("Victory", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
+    match world.options.alternative_goal.value:
+        case AlternativeGoal.option_bowser:
+            _region = world.get_region(name_base(8, 9))
+        case AlternativeGoal.option_starcoins:
+            _region = world.get_region("Menu")
+        case AlternativeGoal.option_hintmovies:
+            _region = world.get_region("Peach castle")
+        case _:
+            raise ValueError
+    _region.add_event("Victory", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
 # these are used in world.shuffled_level_order
 def level_name_to_pos(world_num : int, level_num : int) -> int:
@@ -210,13 +219,22 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             return list(zip(id_list, id_list_shuffle))
 
         dont_shuffle = [(2,8), (6,8), (8,3), (8,9)]
+        #dont_shuffle += [(2,6), (7,3)] # dont know why crash
 
+        #secret_exits.remove((2,6))
+        secret_exits.remove((4,7))
+        secret_exits.remove((7,8))
+
+        tower_secret_group = [(4,7), (7,8)]
+        tower_group = [(1,7), (2,7), (3,7), (5,7), (6,7), (8,8), ]
+
+        airship_group = [(4,9), (6,9), (8,10)]
 
         world.shuffled_level_order = [0,] * int(sum(LEVELS_PER_WORLD))
 
 
 
-        shuffle_specific_list : List[Tuple[int,int]] = add_to_list(secret_exits) + add_to_list(castle_group)
+        shuffle_specific_list : List[Tuple[int,int]] = add_to_list(secret_exits) + add_to_list(castle_group) + add_to_list(tower_secret_group) + add_to_list(tower_group) + add_to_list(airship_group)
 
         for item in dont_shuffle:
             shuffle_specific_list += add_to_list([item])

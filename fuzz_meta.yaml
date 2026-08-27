@@ -2,10 +2,10 @@ null:
   progression_balancing: 50 #
 NSMBW: #
   progression_balancing: normal
-  make_world_comp_priority: false
+  world_comp_priority: false
   use_riivolution : true
   hint_movie_sanity: true
-  include_level_completion : true
+  level_completion : true
   #starting_world: world4
 
 

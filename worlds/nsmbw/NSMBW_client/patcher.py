@@ -70,21 +70,14 @@ class Patcher:
 
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
-        output_path : Path
-        #if Utils.get_settings()["nsmbw_settings"].auto_start:
-        output_path = Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder
-        #else:
-        #    output_path = Utils.get_settings()["nsmbw_settings"].save_file_path
-        self.output_path = Path(output_path) / self.name
+        self.output_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder) / self.name
 
         file_name = os.path.basename(Path(Utils.get_settings()["nsmbw_settings"].game_file_path))
-
         self.temp_dir = Path(tempfile.gettempdir()) / "nsmbw" /  file_name / "DATA"
 
         self.random = Random(seed)
 
         self.shortcut_path = Path(tempfile.gettempdir()) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
-
 
 
 

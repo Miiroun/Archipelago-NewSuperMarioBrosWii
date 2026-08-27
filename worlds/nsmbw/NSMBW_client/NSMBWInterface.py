@@ -810,7 +810,7 @@ class NSMBWInterface(object):
         #self.dolphin_client.write_address(address, data) #toadLocation
     def set_boss_health(self, hits : int):
         for address in [self.memory_addresses.bosshealth1, self.memory_addresses.bosshealth2, self.memory_addresses.bosshealthBowJR]:
-           self.write_instruction(address, intru_li_other + int_to_bytes(hits * 6, 2))
+           self.write_instruction(address, instru_li_r0 + int_to_bytes(hits * 6, 2))
     def set_gravity(self, data : bytes):
         for i in range(6):
             address = self.memory_addresses.gravity_start + 6 * 4

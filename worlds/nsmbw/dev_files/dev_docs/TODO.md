@@ -1,16 +1,56 @@
 # TODO 
 # Super Short term
-- complete playtest, do ap with a few games for fun, on frozen
-- rename some options : make .. prio
-- make hint hint movie an option
-- UT doesn't work with level shuffle? just star coin och secret exit
-- return assert _rule is not None
-- run test to validate hint movies hint, starcoin logic and secret exit logic
 
 ## Playtest
-- secret exit rando onto themself
+
 
 ## Bugs to fix
+- crash when far in 2-6 (at 7-2), 7-3 (at 3-T), error : Failed to find an archive/BRRES 
+- dont think it is music, is it just levels that dont like to be moved?
+- crashed when collected sc 3-T (6-1)
+
+
+# New Super Mario Bros Wii
+## About
+New Super Mario Bros Wii (nsmbw) is a 2d mario game by Nintendo on the Wii console released in 2009.
+
+The archipealgo implementation randomizes level clears, star coins, hint movies, level order, powerups, abilities and level elements among other things.
+
+
+## Docs
+[Setup Guide](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/setup_en.md)
+
+[Game Info](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md)
+
+[credit and ai disclosure](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/credit.md)
+
+[**DOWNLOAD**](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
+
+
+## Links
+[Old Thread](#"New Super Mario Bros Wii (NSMBW)")
+
+[WIKI](archipelago.miraheze.org/wiki/NSMBW)
+
+[About Logic](https://discord.com/channels/731205301247803413/1327187652864380948/1519440576506892429)
+Why something is in logic.
+
+[Hint Movie Logic](https://discord.com/channels/731205301247803413/1327187652864380948/1540567527048876082)
+If you need help for when a hint movie becomes accessible.
+
+[Development Docs]([dev_docs](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/tree/NSMBW/worlds/nsmbw/dev_files/dev_docs)
+If you are interested in helping with development, read these.
+
+# Tracker
+There is not any image tracker currently but #universal-tracker is supported and recommended.
+A pop-tracker pack is in development.
+
+.
+.
+.
+.
+
+
 
 
 ## Short term
@@ -23,8 +63,6 @@
 - toad house doesn't work to set, probably needs to update other location too
   - toad add1  80c807f0
   - toad add2  80c80f22
-- Spin jump no logic, also no logic without normal jump
-- Create notes in /explain more
 - Make secret exit items to reunlock them
 - assert early items are actually early, write test?
 - Figure out how to change HM unlock condition?
@@ -95,6 +133,9 @@
 - do complete playthrough, add spin jump and jump logic + time logic
 - put HM descriptions in client
 - fix climb, ?switch
+- make switches progressive with new patch?
+- yoshi req spin to get free from
+- 6-5 swim does not work on moving water
 
 
 ## Broken versions

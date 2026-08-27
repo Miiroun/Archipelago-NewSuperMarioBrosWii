@@ -69,9 +69,12 @@ class AbilitiesIncluded(ItemSet):
     They are: Spin jump and Climb
     """
     valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value,
-                                   ITEM.ABILITIES.ButtonDown.value, ITEM.ABILITIES.ButtonUp.value,
-                                   ITEM.ABILITIES.Jump.value}
-    default = valid_keys - {ITEM.ABILITIES.SpinJump.value,ITEM.ABILITIES.Climb.value} #  ITEM.ABILITIES.Run.value,
+                                   ITEM.ABILITIES.Jump.value
+                                   }
+
+    default = valid_keys - {ITEM.ABILITIES.SpinJump.value,ITEM.ABILITIES.Climb.value,
+                            ITEM.ABILITIES.ButtonDown.value, ITEM.ABILITIES.ButtonUp.value,
+                            } #  ITEM.ABILITIES.Run.value,
 
 
 class RandomizeLevelElements(Toggle):
@@ -326,7 +329,7 @@ class IncludeNumberInventoryItems(Range):
     range_end = 999
     default = 10
 
-class MakeWorldCompPriority(Toggle):
+class WorldCompPriority(Toggle):
     """
     Makes half world completion and world completion priority locations -> they will have a good item.
     Causes generation failures ~0.5% if enabled.
@@ -533,7 +536,7 @@ class NSMBWOptions(PerGameCommonOptions):
     red_coin_ring : RedCoinRing
     roulet_block : RouletBlock
     kill_enemies : KillEnemies
-    top_off_flag_pole : TopOffFlagpole
+    top_off_flagpole : TopOffFlagpole
 
 
     randomize_powerups : RandomizePowerups
@@ -554,7 +557,7 @@ class NSMBWOptions(PerGameCommonOptions):
     hint_movie_shop_price_logic : HintMovieShopPriceLogic
     hint_hint_movies : HintHintMovies
     starcoin_shop_multiplier : StarCoinShopMultiplier
-    make_world_comp_priority : MakeWorldCompPriority
+    world_comp_priority : WorldCompPriority
     important_early_items : ImportantEarlyItems
 
     amount_support_received : AmountSupportReceived
@@ -598,7 +601,7 @@ option_groups = [
             HintMovieSanity,
             StarcoinSanity,
             IncludeNumberInventoryItems,
-            MakeWorldCompPriority,
+            WorldCompPriority,
         ],
     ),
     OptionGroup(
