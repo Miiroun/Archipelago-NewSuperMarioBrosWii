@@ -82,7 +82,7 @@ class NSMBWContext(SuperContext):
 
 
     #Created for NSMBW
-    locations_handled = []
+    locations_handled : List[int]
     completed_levelstats : List[List[bytes]]
     moded_levelstats : ModifiedState = ModifiedState.UNMODIFIED
     prev_powerup : List[bytes]
@@ -126,8 +126,8 @@ class NSMBWContext(SuperContext):
 
     goal : bool = False
 
-    coin_count_level_start : int = 0
     coin_overflow : int = 0
+    coin_prev_overflow : int = 0
 
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
@@ -610,10 +610,10 @@ class NSMBWContext(SuperContext):
             print(text)
             return
 
-        checked_locations = []
+        checked_locations : List[int] = []
         checked_locations += await self.check_starcoins()
-        checked_locations += await self.check_1ups()
         checked_locations += await self.check_coins()
+        checked_locations += await self.check_1ups()
         checked_locations += await self.check_hintmovies()
         checked_locations += await self.check_level_completion(self.unlocked_worlds)
 
@@ -674,6 +674,38 @@ class NSMBWContext(SuperContext):
         self.locations_handled += checked_locations
         return checked_locations
 
+    async def check_coins(self):
+        checked_locations = []
+
+        if self.slot_data["nintynine_coin_sanity"] == True:
+            if self.game_interface.is_in_level():
+                LEVEL = self.game_interface.get_world_level_num_in_level()
+                if LEVEL == (0,0):
+                    return checked_locations
+
+                current_coins = self.game_interface.get_coin_count()
+                if current_coins < self.coin_prev_overflow:
+                    self.coin_overflow += 100
+                    for player_num in range(PLAYER_COUNT):
+                        self.prev_lifecount[player_num] += 1
+
+                self.coin_prev_overflow = current_coins
+
+
+                coins = self.coin_overflow + current_coins
+                if LevelRules[name_base(*LEVEL)].amount_coins <= coins:
+                    location_name = name_99coins(*LEVEL)
+                    loc_id = NSMBWworld.location_name_to_id[location_name]
+                    if loc_id not in self.locations_handled:
+                        checked_locations.append(loc_id)
+                        print(f"Locaton: {location_name} compleated")
+
+            else:
+                self.coin_overflow = -self.game_interface.get_coin_count()
+
+        self.locations_handled += checked_locations
+        return checked_locations
+
     async def check_1ups(self):
         checked_locations = []
 
@@ -682,35 +714,18 @@ class NSMBWContext(SuperContext):
                 current_lives = self.game_interface.get_lives_count(player_num)
                 if current_lives > self.prev_lifecount[player_num]:
                     self.prev_lifecount[player_num] = current_lives
-                    world_num, level_num = self.game_interface.get_world_level_num_in_level()
-                    if (world_num, level_num) != (0, 0):
-                        checked_locations.append(name_1ups(world_num, level_num))
+                    LEVEL = self.game_interface.get_world_level_num_in_level()
+                    if LEVEL != (0, 0):
+                        location_name = name_1ups(*LEVEL)
+                        loc_id = NSMBWworld.location_name_to_id[location_name]
+                        if loc_id not in self.locations_handled:
+                            checked_locations.append(loc_id)
+                            print(f"Locaton: {location_name} compleated")
 
         self.locations_handled += checked_locations
         return checked_locations
 
-    async def check_coins(self):
-        checked_locations = []
 
-        if self.slot_data["nintynine_coin_sanity"] == True:
-            if self.game_interface.is_in_level():
-                world_num, level_num = self.game_interface.get_world_level_num_in_level()
-
-
-                current_coins = self.game_interface.get_coin_count()
-                if current_coins == self.coin_count_level_start - 1: # this roll over is problematic if starts with 100 0r 0, or collect when should not
-                    self.game_interface.set_coin_count(self.coin_count_level_start)
-                    self.coin_overflow += 99
-
-                if LevelRules[name_base(world_num, level_num)].amount_coins <= self.coin_overflow + current_coins:
-                    checked_locations.append(name_99coins(world_num, level_num))
-
-            else:
-                self.coin_count_level_start = self.game_interface.get_coin_count()
-                self.coin_overflow = 0
-
-        self.locations_handled += checked_locations
-        return checked_locations
     async def check_hintmovies(self):
         if self.slot_data['hint_movie_sanity'] == True:
             if self.game_interface.get_level_world() == b'\x28':  # checks if in peach castle

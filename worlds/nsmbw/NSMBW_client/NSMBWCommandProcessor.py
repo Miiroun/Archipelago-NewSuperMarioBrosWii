@@ -9,6 +9,7 @@ import time
 import traceback
 
 import Utils
+from ..raw_rules import LevelRules
 from ..settings import NSMBWSettings
 
 if TYPE_CHECKING:
@@ -426,7 +427,22 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         else:
             logger.info("Boss health rando is disabled")
 
-    def 
+    def _cmd_coins(self):
+        if self.ctx.game_interface.memory_addresses is None:
+            logger.info("Connect to server before running /coins")
+            return
+
+        current_coins = self.ctx.game_interface.get_coin_count()
+        coins = current_coins + self.ctx.coin_overflow
+
+        LEVEL = self.ctx.game_interface.get_world_level_num_in_level()
+        if LEVEL == (0,0):
+            logger.info(f"Not in a level")
+            return
+
+        req = LevelRules[name_base(*LEVEL)].amount_coins
+
+        logger.info(f"You have collected {coins} out of {req}")
 
     # if Utils.get_settings()["nsmbw_settings"].debug_mode:
     def _cmd_get_level_rando(self, name):
