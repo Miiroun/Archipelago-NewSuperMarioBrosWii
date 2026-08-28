@@ -47,6 +47,7 @@ class DolphinClient:
             self.dolphin.hook()
             sleep(0.01)
         if (not self.is_connected()) or (not self.dolphin.is_hooked()):
+            print(f"is_connected: {self.is_connected()}, {self.dolphin.is_hooked()}")
             error_mess = ("""
 Dolphin Connection error, verify the following in this order:
       1) The game is running in the dolphin emulator.

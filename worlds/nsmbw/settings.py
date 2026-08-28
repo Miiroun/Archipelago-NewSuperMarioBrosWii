@@ -6,7 +6,37 @@ from pathlib import Path
 import Utils
 from .Common import *
 import settings
-#import winreg
+
+if Utils.is_windows:
+    import winreg
+
+
+# Computer\HKEY_CLASSES_ROOT\Applications\Dolphin.exe\shell\open\command
+# Computer\HKEY_CURRENT_USER\Software\Classes\Applications\Dolphin.exe\shell\open\command
+# r"Software\Microsoft\Windows\CurrentVersion\App Paths"
+
+# looked around, cannot find dolphin in registry keys
+def get_dolphin_path_windows() -> str:
+    try:
+        REG_PATH = r"Software\Classes\Applications\Dolphin.exe\shell\open"
+        oKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH)
+        winreg_path = winreg.QueryValue(oKey, "command")
+        dolph_exe = Path(winreg_path.split(f'"')[1])
+        # print(f"winreg_path: {winreg_path}")
+        # print(f"dolph_exe {dolph_exe}")
+
+        if dolph_exe.exists():
+            return str(dolph_exe.parent)
+
+    except Exception as e:
+        print(f"Exception: {e} when loading regesty key")
+
+    envior_path = Path(os.environ['programfiles']) / "Dolphin-x64"
+
+    if envior_path.exists():
+        return str(envior_path)
+    else:
+        return "Dolphin-x64"
 
 class NSMBWSettings(settings.Group):
     settings_key = "nsmbw_settings"
@@ -25,12 +55,6 @@ class NSMBWSettings(settings.Group):
         Path to dolphin program directory, used only on windows
         Example: C:\Program Files\Dolphin-x64
         """
-        # looked around, cannot find dolphin in registry keys
-        #def __init__(self) -> None:
-        #    REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\App Paths"
-        #    oKey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH)
-        #    path = winreg.QueryValueEx(oKey, "Dolphin.exe")
-        #    super().__init__(path)
 
     class DolphinExe(settings.OptionalUserFilePath):
         r"""
@@ -146,13 +170,13 @@ class NSMBWSettings(settings.Group):
 
 
     if Utils.is_windows:
-        dolphin_folder : DolphinFolder = DolphinFolder(os.path.join(os.environ['programfiles'], "Dolphin-x64"))
-        dolphin_riivolution_folder = DolphinRiivolutionFolder(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution"))
+        dolphin_folder : DolphinFolder = DolphinFolder(get_dolphin_path_windows())
+        dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution"))
 
     elif Utils.is_macos:
         dolphin_exe  : DolphinExe = DolphinExe(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Dolphin")
         dolphin_tool : DolphinTool = DolphinTool(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "DolphinTools")
-        dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Load" / "Riivolution")
+        dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Load" / "Riivolution")
 
     elif Utils.is_linux:
         keypress_library: KeypressLibrary  = KeypressLibrary(0)
@@ -160,9 +184,9 @@ class NSMBWSettings(settings.Group):
         #dolphin_exe : DolphinExe  = DolphinExe("dolphin-emu")
         #DolphinExe(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout)
         if is_flatpak_installed():
-            dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) / ".var" / "app"/ "org.DolphinEmu.dolphin-emu" / "data"/ "dolphin-emu" / "Load"/ "Riivolution")
+            dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(Path(os.environ['HOME']) / ".var" / "app"/ "org.DolphinEmu.dolphin-emu" / "data"/ "dolphin-emu" / "Load"/ "Riivolution")
         else:
-            dolphin_riivolution_folder = DolphinRiivolutionFolder(Path(os.environ['HOME']) /".local"/"share"/"dolphin-emu"/"Load"/ "Riivolution")
+            dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(Path(os.environ['HOME']) /".local"/"share"/"dolphin-emu"/"Load"/ "Riivolution")
 
         #dolphin_riivolution_folder =   DolphinRiivolutionFolder(Path("dolphin-emu") / "Load" / "Riivolution")
         #DolphinRiivolutionFolder(Path(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout) / "Load" / "Riivolution")

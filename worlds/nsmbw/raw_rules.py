@@ -295,7 +295,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "7-C"  : Level(pipe & button_down & button_up & normal_move & door & (run | (super_mario & logic_hard)), (super_mario, True_(), wall_jump | propeller_o)),  # 7-C
 # world 8
     "8-1"  : Level(normal_move & jump & run & pipe & button_up & (button_left | logic_hard) & TimeRule(150), (True_(), carry_block, True_())),  # -1
-    "8-2"  : Level(pipe & button_down & button_up & normal_move & button_left & pipe & button_down & TimeRule(100), (True_(), True_(), True_()), button_left),  # -2
+    "8-2"  : Level(normal_move & button_left & pipe & button_down & TimeRule(100), (True_(), True_(), True_()), button_left),  # -2
     "8-3"  : Level(pipe & button_down & button_up & normal_move & (run | crouch) & TimeRule(100), (True_(), True_(), True_())),  # -3
     "8-4"  : Level(pipe & button_down & button_up & normal_move & swim & question_switch & TimeRule(150), (True_(),True_(),True_())),  # -4
     "8-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), carry, True_())),  # -5

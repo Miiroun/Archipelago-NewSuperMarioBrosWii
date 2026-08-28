@@ -93,7 +93,7 @@ def set_all_entrance_rules(world: "NSMBWworld") -> None:
                 beatable = _rule1(world.multiworld.state) and _rule2(world.multiworld.state) and status
 
                 i += 1
-                if i > 1_000:
+                if i > 10_000:
                     raise Exception(f"Faild to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
 
     set_level_entrance_rules(world)

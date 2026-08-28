@@ -1,27 +1,17 @@
 # TODO 
 # Super Short term
 - unlocks on unit test fails a lot, because of pipe?
-- 99 coin location
-- 1up location
+  - hard in world8 to find 2 levels that do not require pipe
 - wii-code-tools not MIT?? mandela effect
   - convince roadrunner to release or code it myself.
   - email roadrunner about wii-code-tools-license
   - give them 48 hours to answer
-- find dolphin registry key 
-- update credit with lots of links
 
 
 ## Playtest
-- 9-3 sends sc immiditly
-- 1ups
-- star coin
 
 
 ## Bugs to fix
-- something logic broken
-  - hard logic?
-
-- Typo in error message
 
 
 ## Short term

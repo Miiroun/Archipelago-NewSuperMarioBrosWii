@@ -157,6 +157,7 @@ class NSMBWContext(SuperContext):
         self.current_mod = ""
         self.current_mod_end_time = 2**64
 
+        self.unlocks = []
         self.traps = []
         self.filler = []
 

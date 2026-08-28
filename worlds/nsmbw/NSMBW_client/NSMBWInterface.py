@@ -156,8 +156,8 @@ class NSMBWInterface(object):
 
                 return True
             else:
-                self.log_color(f"Fail with dolphin connection somewhere", "red")
-                logger.info(f"Replicat this error in the debug launcher and post the error in the nsmbw discord")
+                self.log_color(f"Dolphin connection failed", "red")
+                logger.info(f"replicat this error in the debug launcher and post the error in the nsmbw channel in the archipelago discord")
                 logger.info(f"game_id {game_id}, current game {self.current_game},  rev {self.game_rev}")
         except DolphinException as e:
             print(traceback.format_exc())
@@ -920,8 +920,10 @@ class NSMBWInterface(object):
                 else:
                     logger.info(f"Failed to connect but without error, prints last error that occurred")
                     logger.info(traceback.format_exc())
+                    self.dolphin_client.disconnect()
             except Exception as e:
                 logger.info(traceback.format_exc())
                 self.log_color(f"Failed to connect to dolphin with error {e}", "red")
+                self.dolphin_client.disconnect()
             await asyncio.sleep(1)
         self.log_color(f"Did not manage to force connect", "red")
