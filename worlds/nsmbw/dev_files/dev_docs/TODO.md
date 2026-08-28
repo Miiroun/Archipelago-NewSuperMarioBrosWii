@@ -1,17 +1,41 @@
 # TODO 
 # Super Short term
-- unlocks on unit test fails a lot, beacuse of pipe?
+- unlocks on unit test fails a lot, because of pipe?
 - 99 coin location
 - 1up location
 - wii-code-tools not MIT?? mandela effect
   - convince roadrunner to release or code it myself.
 - find dolphin registry key 
+- update credit with lots of links
+- email roadrunner about wii-code-tools-license
+  - give them 48 hours to answer
+- test new error message
+
 
 ## Playtest
 - boss key : all versions
+- world 9 collect immediately was broken, 
+- oneups_sanity
+- preach castle buy hint movie
+- /goal
+- hint movies with level shuffle
 
 
 ## Bugs to fix
+- something logic broken
+  - hard logic,
+  - star coins,
+  - etc is broken
+  - 3-4 logic is not correct?
+  - bc the check is still the star coin of the pre-shuffled level
+- buying hint movie errors
+- Sending hint movie errors?
+  - how can error on location_name_to_id
+- Watching hint movies errors out
+- Spam tower clear : should only show once
+- Typo in error message
+- Watching hint movies errors out
+- still problems send immedietly
 
 
 ## Short term
@@ -97,7 +121,9 @@
 - make switches progressive with new patch?
 - yoshi req spin to get free from
 - 6-5 swim does not work on moving water
-
+- fix wall slide patch, make it smarter
+- improve peach castle starcoin patch
+- Make name fuzzing for commands in common client: PR.
 
 ## Broken versions
 # EU 1
@@ -225,6 +251,9 @@
 - exit course sometimes send death
 - Skip into cutsceen does work sometimes? : skips if spam click intro
 - riivolution patch sometimes random crashes on startup
+- when i loaded the save file it took some time to recollect the items (worlds) it had been sent
+- Collect immediately sometimes broken, restart fixes it.
+- Peach castle is weird when hint movies appear / not
 
 
 Summery poll
