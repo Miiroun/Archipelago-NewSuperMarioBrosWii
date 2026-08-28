@@ -1,13 +1,13 @@
 from .bases import *
 
 
-class LevelOff(NSMBWTestBase):
+class TestLevelOff(NSMBWTestBase):
     options = {
         "level_completion" : False,
         "include_inventory_powerups" : 40,
     }
 
-class StarCoinOff(NSMBWTestBase):
+class TestStarCoinOff(NSMBWTestBase):
     options = {
         "starcoin_sanity" : False,
         "include_inventory_powerups": 40,

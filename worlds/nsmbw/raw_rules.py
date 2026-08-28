@@ -218,8 +218,9 @@ class Level(NamedTuple):
     clear : Rule
     starcoins : Tuple[Rule, Rule, Rule]
     secret_exit : Optional[Rule]  = None
-    #oneups : Optional[Rule]  = None
-    #nintynine_coins : Optional[Rule]  = None
+    oneups : Optional[Rule]  = None
+    nintynine_coins : Optional[Rule]  = None
+    amount_coins : int = 99
 
 
 LevelRules : Dict[str, Level]= { # normal compleation rules

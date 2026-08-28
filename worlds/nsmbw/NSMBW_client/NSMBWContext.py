@@ -22,6 +22,7 @@ from configparser import ConfigParser
 import Utils
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
 from settings import get_settings
+from ..raw_rules import LevelRules
 from ..settings import NSMBWSettings
 
 tracker_loaded = False
@@ -1186,14 +1187,13 @@ class NSMBWContext(SuperContext):
             if self.game_interface.is_in_level():
                 world_num, level_num = self.game_interface.get_world_level_num_in_level()
 
-                level_req = defaultdict(99)
 
                 current_coins = self.game_interface.get_coin_count()
-                if current_coins == self.coin_count_level_start - 1:
+                if current_coins == self.coin_count_level_start - 1: # this roll over is problematic if starts with 100 0r 0, or collect when should not
                     self.game_interface.set_coin_count(self.coin_count_level_start)
                     self.coin_overflow += 99
 
-                if level_req[(world_num, level_num)] <= self.coin_overflow + current_coins:
+                if LevelRules[name_base(world_num, level_num)].amount_coins <= self.coin_overflow + current_coins:
                     checked_locations.append(name_99coins(world_num, level_num))
 
             else:
