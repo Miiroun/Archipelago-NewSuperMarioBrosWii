@@ -6,13 +6,6 @@ from ..NSMBW_client import patcher
 from ..Common import *
 import bsdiff4
 
-def patch_details(_patcher : "Patcher"):
-    PatchDetails = [
-        ("star_coin", "Object", "Object"),
-        ("openingTitle", os.path.join(RegionNames[_patcher.region],"Layout","openingTitle" ), "Layout"),
-        ("key_boss_castle", "Object", "Object"),
-    ]
-    return PatchDetails
 
 
 def gen_diff_files():
@@ -25,7 +18,7 @@ def gen_diff_files():
     _from = apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
     _to = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch"/ "Riivolution_patch_data"
 
-    PatchDetails  = patch_details(_patcher)
+    PatchDetails  = _patcher.patch_details()
 
     for name, folder_source, folder_patch in PatchDetails:
         path_data_loc = _to / folder_patch / f"patch_{name}.bin"

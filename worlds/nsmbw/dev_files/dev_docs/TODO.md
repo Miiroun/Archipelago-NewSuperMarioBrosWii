@@ -100,6 +100,8 @@
 - fix wall slide patch, make it smarter
 - improve peach castle starcoin patch
 - Make name fuzzing for commands in common client: PR.
+- auto read dolphin settings for where games are stored
+
 
 ## Broken versions
 # EU 1

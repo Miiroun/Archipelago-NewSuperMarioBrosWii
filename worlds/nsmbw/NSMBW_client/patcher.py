@@ -102,10 +102,17 @@ class Patcher:
                         continue
                     zf.extract(member, self.output_path)
 
-    def patch_bsdiff(self):
-        from ..dev_files import generate_diff_files
+    def patch_details(self):
+        PatchDetails = [
+            ("star_coin", "Object", "Object"),
+            ("openingTitle", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
+            ("key_boss_castle", "Object", "Object"),
+        ]
+        return PatchDetails
 
-        patch_data = generate_diff_files.patch_details(self)
+    def patch_bsdiff(self):
+
+        patch_data = self.patch_details()
 
         if Utils.is_frozen():
             temp_dir = Path(tempfile.gettempdir()) / "nsmbw" / "patch_data"

@@ -1,7 +1,7 @@
 {
 	"game": "NSMBW",
 	"minimum_ap_version": "0.6.7",
-	"world_version": "0.3.1",
+	"world_version": "0.3.2",
 	"authors": ["Miiroun"],
 
 	"tracker" : "https://github.com/FarisTheAncient/Archipelago/releases?q=Tracker",

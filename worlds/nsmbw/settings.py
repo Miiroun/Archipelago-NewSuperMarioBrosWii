@@ -50,11 +50,21 @@ class NSMBWSettings(settings.Group):
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:
             _filetypes = [("Game dump", [".iso", ".wbfs"])]
             return super().browse(_filetypes, **kwargs)
+
     class DolphinFolder(settings.UserFolderPath):
         r"""
         Path to dolphin program directory, used only on windows
         Example: C:\Program Files\Dolphin-x64
         """
+
+        @classmethod
+        def validate(cls, path: str) -> None:
+            super().validate(path)
+
+            if not (Path(path) / "Dolphin.exe").exists():
+                ValueError("Dolphin.exe not in Dolphin path")
+            if not (Path(path) / "DolphinTool.exe").exists():
+                ValueError("DolphinTool.exe not in Dolphin path")
 
     class DolphinExe(settings.OptionalUserFilePath):
         r"""
