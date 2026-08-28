@@ -759,5 +759,5 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")
 
     if world.options.alternative_goal.value == AlternativeGoal.option_hintmovies:
-        if not world.options.hint_movie_sanity:
+        if not world.options.hint_movie_sanity.value:
             raise OptionError(f"(NSMBW generation error) hint_movie_sanity needs to be enabled for alternative goal hint_movies")

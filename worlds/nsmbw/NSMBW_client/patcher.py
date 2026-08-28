@@ -103,7 +103,7 @@ class Patcher:
                     zf.extract(member, self.output_path)
 
     def patch_bsdiff(self):
-        from worlds.nsmbw.dev_files import generate_diff_files
+        from ..dev_files import generate_diff_files
 
         patch_data = generate_diff_files.patch_details(self)
 

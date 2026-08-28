@@ -95,7 +95,7 @@ class NSMBWInterface(object):
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
         expected_amount_connect = 1 + Utils.is_linux
         if get_num_dolphin_instances() != expected_amount_connect:
-            logger.info(f"Detected num of dolphin instances = {get_num_dolphin_instances()}, should be {expected_amount_connect}.")
+            logger.info(f"Detected number of dolphin instances = {get_num_dolphin_instances()}, should be {expected_amount_connect}.")
             print(f"Presses: {list(psutil.process_iter())}")
             return False
 
@@ -152,6 +152,8 @@ class NSMBWInterface(object):
 
                 Utils.async_start(self.shuffle_sprites())
 
+                logger.info(f"Successfully connected to dolphin")
+
                 return True
             else:
                 self.log_color(f"Fail with dolphin connection somewhere", "red")
@@ -172,53 +174,73 @@ class NSMBWInterface(object):
             connected = self.dolphin_client.is_connected()
             if not connected or self.current_game is None or self.memory_addresses is None:
                 return ConnectionState.DISCONNECTED
-            elif self.is_in_menu():
+            elif self.raw_is_in_menu():
                 return ConnectionState.IN_MENU
-            elif self.is_in_worldmap():
+            elif self.raw_is_in_worldmap():
                 return ConnectionState.IN_WORLDMAP
-            elif self.is_in_level():
+            elif self.raw_is_in_level():
                 return ConnectionState.IN_GAME
             else:
                 print("Temporarily lost connection to dolphin")
+                return ConnectionState.IN_MENU
                 #raise ConnectionError("Faild to connect to server")
         except DolphinException:
             return ConnectionState.DISCONNECTED
 
     def not_in_savefile1(self) -> bool:
         savefile = self.get_savefile_num()
-        val = savefile == 1
-        if val:
-            logger.info(f"Please exit save file 1")
+        val = (savefile == 1)
+        #if val:
+        #    logger.info(f"Please exit save file 1")
         return not val
 
 
-    def raw_in_level(self) -> bool:
+    def raw_is_in_level(self) -> bool:
         player_status = self.get_record_state()[0]
         is_normal_record = player_status == 0
 
-        is_in_stage = self.get_in_stage_flag()[3] == 1
+        is_in_stage = (self.get_in_stage_flag()[3] == 1)
 
-        return is_in_stage and is_normal_record
+        return is_in_stage and is_normal_record and self.not_in_savefile1()
+
+    def raw_is_in_worldmap(self) -> bool:
+        return 1 == bytes_to_int(self.get_on_map())
+
+    def raw_is_in_menu(self):
+        level_num = bytes_to_int(self.get_level_level()) +1
+        world_num = bytes_to_int(self.get_world_level()) +1
+        #print(f"{world_num}-{level_num}")
+        #print(f"record state {self.get_record_state()}")
+
+        is_in_stage = (self.get_in_stage_flag()[3] == 1)
+        level_prevention = ((world_num,level_num) == (1,40)) # or ((world_num,level_num) == (1,1) and  (not is_in_stage) and (not self.raw_is_in_worldmap()))
+        main_flag = (self.get_in_main_menu() == b'\x01') # this is not reliable, trigges not untile title screen and in other levels
+        return level_prevention and main_flag# for some reason this triggers in 4-G
+        return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
 
 
     def is_in_level(self) -> bool:
         """Check if the player is in the actual game rather than the main menu"""
-        is_not_on_world_map = not self.is_in_worldmap()
-        is_not_on_main_menu = not self.is_in_menu()
-
+        is_not_on_world_map = not self.raw_is_in_worldmap()
+        is_not_on_main_menu = not self.raw_is_in_menu()
 
         #return worlmap_status == 0)
         #print(f"is_in_stage and is_not_on_world_map and is_not_on_main_menu and is_normal_record {is_in_stage} {is_not_on_world_map} {is_not_on_main_menu}  {is_normal_record}")
-        return self.raw_in_level() and is_not_on_world_map and is_not_on_main_menu and self.not_in_savefile1()
+        return self.raw_is_in_level() and is_not_on_world_map and is_not_on_main_menu
 
     def is_in_worldmap(self) -> bool:
-        return 1 == self.get_on_map()[0]
+        is_not_in_level = not self.raw_is_in_level()
+        is_not_on_main_menu = not self.raw_is_in_menu()
 
-    def is_in_menu(self):
-        problematic_levels_num = [3,7,21]
-        return (self.get_in_main_menu() == b'\x01') and not (bytes_to_int(self.get_level_level()) + 1  in problematic_levels_num) # for some reason this triggers in 4-G
-        #print(f"record state {self.get_record_state()}")
-        return (self.get_on_map()[0] == 1 and self.get_on_map()[0]==b'\x02') or (self.get_record_state() == b'\x02') or (self.get_level_world()[0] == 40)
+        return self.raw_is_in_worldmap() and is_not_in_level and is_not_on_main_menu
+
+    def is_in_menu(self) -> bool:
+        is_not_on_world_map = not self.raw_is_in_worldmap()
+        is_not_in_level = not self.raw_is_in_level()
+
+        return self.raw_is_in_worldmap() and is_not_on_world_map and is_not_in_level
+
+
 
     def is_screen_transition(self) -> bool:
         return self.get_in_stage_flag()[3] == 0
@@ -378,16 +400,22 @@ class NSMBWInterface(object):
         #logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
         #            " JIT cache manualy (JIT -> clear chache).")
 
-    def clear_cache_in_game(self, address: int) -> None:
+    def clear_cache_in_game(self, address: int) -> bool:
         clear_address = 0x80BBB000
+        i = 0
         while (self.dolphin_client.read_address(clear_address, 4) != val_0000 + val_0000):
             sleep(0.01)
+            i += 1
+            if i > 500:
+                logger.info("Clear cache timed out, manually clear it by saving and loading a savestate.")
+                return False
 
         sleep(0.01)
 
         self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
 
         sleep(0.01)
+        return True
 
     def write_instruction(self, address: int, data: bytes) -> bool:
         current_value = self.dolphin_client.read_address(address, len(data))
@@ -396,7 +424,11 @@ class NSMBWInterface(object):
 
             if self.slot_data["use_riivolution"] == True:
                 for i in range(math.ceil(len(data) / 4)):
-                    self.clear_cache_in_game(address + 4 * i)
+                    if self.clear_cache_in_game(address + 4 * i):
+                        pass
+                    else:
+                        pass
+                        #self.should_clear += 1
             else:
 
                 self.should_clear += 1
@@ -609,7 +641,7 @@ class NSMBWInterface(object):
         level_num = bytes_to_int(self.get_level_level()) + 1
 
         if world_num == 9:
-            return level_num, world_num
+            return world_num, level_num
 
         if (1 <= level_num <= 7 or level_num in [21, 22, 24, 25, 38]):  # becomes 0 if collected
             # https://horizon.miraheze.org/wiki/Level_Names_and_Features
@@ -715,7 +747,9 @@ class NSMBWInterface(object):
     def get_water_state(self) -> bytes:
         address = self.memory_addresses.water_speed_if_in
         return self.dolphin_client.read_address(address,4)
-
+    def get_coin_count(self) -> int:
+        address = self.memory_addresses.coins
+        return bytes_to_int(self.dolphin_client.read_address(address, 1))
     def get_dSaveMng_c_address(self) -> int:
         pointer_dSaveMng_c_pointer = self.memory_addresses.dSaveMng_c_pointer
         dSaveMng_c_address = bytes_to_int(self.dolphin_client.read_address(pointer_dSaveMng_c_pointer, 4)) +0x20
@@ -797,9 +831,9 @@ class NSMBWInterface(object):
     def set_question_switch_timer(self,data : bytes):
         address = self.memory_addresses.address_question_switch
         self.dolphin_client.write_pointer(address,0x0488, data)
-    def set_coin_count(self, data : bytes):
+    def set_coin_count(self, data : int):
         address = self.memory_addresses.coins
-        self.dolphin_client.write_address(address, data)
+        self.dolphin_client.write_address(address, int_to_bytes(data, 1))
     def set_toad_house(self, data : bytes, world_num : int):
         address = self.get_dMj2dGame_c_address()+ 0x10 +world_num -1
         #print(f"toad add1 {address : x}")

@@ -7,6 +7,12 @@ NSMBW: #
   hint_movie_sanity: true
   level_completion : true
   #starting_world: world4
+  level_elements_included:
+    - '!-Switch'
+    - Check Point
+    - Door
+    - P-Switch
+    - Pipe
 
 
 #empty:

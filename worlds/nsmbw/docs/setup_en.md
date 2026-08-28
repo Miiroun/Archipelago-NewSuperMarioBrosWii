@@ -2,7 +2,7 @@
 
 ## Required Software
 - [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest) 
-- [Dolphin emulator](https://dolphin-emu.org/download/)
+- [Dolphin emulator](https://dolphin-emu.org/download/) (minimum 2503)
 - [NSMBW AP-World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - A legally dumped copy of New Super Mario Bros Wii (US rev 2) (both .iso and .wbfs works but not .nikt.iso)
   - If this is not the edition of your copy, see [en_NSMBW.md](../docs/en_NSMBW.md) for list of features known to be broken on other versions.

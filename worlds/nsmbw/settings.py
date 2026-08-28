@@ -12,7 +12,7 @@ class NSMBWSettings(settings.Group):
     settings_key = "nsmbw_settings"
 
     class GameFilePath(settings.UserFilePath):
-        """A path to your game file, preferable that  it ends with either .iso or .wbfs"""
+        """A path to your game file, that ends with either .iso or .wbfs but NOT .nkit.iso"""
         required = True
 
 
@@ -21,7 +21,10 @@ class NSMBWSettings(settings.Group):
             _filetypes = [("Game dump", [".iso", ".wbfs"])]
             return super().browse(_filetypes, **kwargs)
     class DolphinFolder(settings.UserFolderPath):
-        """Path to dolphin program directory, used only on windows"""
+        r"""
+        Path to dolphin program directory, used only on windows
+        Example: C:\Program Files\Dolphin-x64
+        """
         # looked around, cannot find dolphin in registry keys
         #def __init__(self) -> None:
         #    REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\App Paths"
@@ -30,16 +33,23 @@ class NSMBWSettings(settings.Group):
         #    super().__init__(path)
 
     class DolphinExe(settings.OptionalUserFilePath):
-        """A path to your dolphin program"""
+        r"""
+        A path to your dolphin program
+        """
         is_exe = True
 
     class DolphinTool(settings.OptionalUserFilePath):
-        """A path to your dolphin tools program"""
+        r"""
+        A path to your dolphin tools program
+        """
         is_exe = True
         #description = ""
 
     class DolphinRiivolutionFolder(settings.UserFolderPath):
-        """A path to dolphins riivolution folder, on Windows found in %appdata%/Dolphin Emultator/Load/riivolution"""
+        """
+        A path to dolphins riivolution folder,
+        on Windows found in '%appdata%/Dolphin Emultator/Load/Riivolution'
+        """
 
     class AutoStartGame(settings.Bool):
         """Enable if you want to open the game automatically"""

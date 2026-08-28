@@ -5,37 +5,23 @@
 - 1up location
 - wii-code-tools not MIT?? mandela effect
   - convince roadrunner to release or code it myself.
+  - email roadrunner about wii-code-tools-license
+  - give them 48 hours to answer
 - find dolphin registry key 
 - update credit with lots of links
-- email roadrunner about wii-code-tools-license
-  - give them 48 hours to answer
-- test new error message
 
 
 ## Playtest
-- boss key : all versions
-- world 9 collect immediately was broken, 
-- oneups_sanity
-- preach castle buy hint movie
-- /goal
-- hint movies with level shuffle
+- 9-3 sends sc immiditly
+- 1ups
+- star coin
 
 
 ## Bugs to fix
 - something logic broken
-  - hard logic,
-  - star coins,
-  - etc is broken
-  - 3-4 logic is not correct?
-  - bc the check is still the star coin of the pre-shuffled level
-- buying hint movie errors
-- Sending hint movie errors?
-  - how can error on location_name_to_id
-- Watching hint movies errors out
-- Spam tower clear : should only show once
+  - hard logic?
+
 - Typo in error message
-- Watching hint movies errors out
-- still problems send immedietly
 
 
 ## Short term

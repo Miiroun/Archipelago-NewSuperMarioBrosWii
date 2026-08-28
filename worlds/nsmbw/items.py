@@ -82,7 +82,7 @@ for i, filler in enumerate(FILLER):
 ITEM_NAME_GROUPS.update({"Filler" : set(FILLER)})
 
 DEFAULT_ITEM_CLASSIFICATIONS.update({
-    ITEM.FILLER.SuperSpeed: ItemClassification.useful,
+    #ITEM.FILLER.SuperSpeed: ItemClassification.useful,
     #ITEM.FILLER.ToadHouse: ItemClassification.useful
 })
 

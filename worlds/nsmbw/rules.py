@@ -114,7 +114,7 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
 
     hm_req = specific_hintmovie_requierments()
     total_cost = 0
-    if world.options.hint_movie_sanity:
+    if world.options.hint_movie_sanity.value:
         for hm_num in range(1,HINTMOVIE_COUNT+1):
             if hm_num in DEPRIO_HM:
                 continue

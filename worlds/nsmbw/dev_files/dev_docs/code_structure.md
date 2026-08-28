@@ -29,3 +29,20 @@ the code for disabling moves and detecting if in level.
 # memoryAddresses.py
 This file hosts the database for all the memory addresses that needs to be accessed.
 Uses a library (found in /wii_code_tools/ by RoadrunnerWMC) to convert memory addresses between game versions.
+
+
+## Patcher
+The patcher is run when you press connect in client, this is because I need info from slot data to generate the patch. If you are on windows you can look at `%temp%/nsmbw` to see all files I extract to temp. We extract the game files with the help of `DolphinTool.exe`. We also generate a .json file which is a riivolution shortcut file, which if launched with dolphin will auto open the patch.
+
+ The riivolution file itself is created in `%appdata%\Roaming\Dolphin Emulator\Load\Riivolution`. and an xml file is generated in `%appdata%\Roaming\Dolphin Emulator\Load\Riivolution\riivolution`. 
+
+I create the Riivolution patch in 3 steps:
+1) Copy from local files
+2) Patch bsdiff from local files with game extract
+3) Copy game extract files
+
+The handling looks weird because support for Linux flatpak. Look at the `settings.py` to see how I handle the OSs differently.
+
+ I dont currently delete them automaticaly since it takes a few seconds to extract, so I "chache" the result, but alows for manul deletion with the command `/rm_tmp`.
+
+The bsdiff patch files I generate with `generate_diff_files.py`
