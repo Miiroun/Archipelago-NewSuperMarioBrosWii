@@ -2,16 +2,22 @@
 # Super Short term
 - unlocks on unit test fails a lot, because of pipe?
   - hard in world8 to find 2 levels that do not require pipe
-- wii-code-tools not MIT?? mandela effect
-  - convince roadrunner to release or code it myself.
-  - email roadrunner about wii-code-tools-license
-  - give them 48 hours to answer
+- Improve performance
+  - Log loop time
+  - Increase connection delay
+  - watch if clear cache more often than expected
+  - dont run patches / unlocks each frame
+- Starting inventory still added ?
+  - buttons etc ???
 
 
 ## Playtest
+- Door logic not working? : Or is this other issue
+- entering a mushroom house with doors unusable would send a deathlink
 
 
 ## Bugs to fix
+- p-switch
 
 
 ## Short term
@@ -101,6 +107,7 @@
 - improve peach castle starcoin patch
 - Make name fuzzing for commands in common client: PR.
 - auto read dolphin settings for where games are stored
+- get swim to be handled in game
 
 
 ## Broken versions

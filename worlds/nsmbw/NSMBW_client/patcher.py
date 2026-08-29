@@ -20,7 +20,8 @@ import bsdiff4
 
 # wiithon problematic to import
 #from .wiithon.src.wiithon.formats import Rarc
-
+from . import wiithon
+from io import BytesIO
 
 logger = logging.getLogger("Client")
 
@@ -55,6 +56,20 @@ def copy_rename_internal_arc(source : Path, destination : Path, source_name : st
         for data_ in data:
             f.write(data_)
 
+def copy_rename_wiithon_arcfile(source : Path, destination : Path, source_name : str, destination_name : str):
+    with open(source, "rb") as f:
+        u8 = wiithon.U8.read(f)
+
+    # Rename
+    for entry in u8.nodes:
+        if entry.is_dir:
+            continue
+
+        entry.name = entry.name.replace(source_name, destination_name)
+
+
+    with open(destination, "wb") as f:
+        u8.write(f)
 
 class Patcher:
     slot_data : dict
@@ -202,25 +217,25 @@ class Patcher:
     def create_riivolution_patch(self):
         if self.slot_data["level_shuffle_riivolution"]:
             self.patch_levels()
-        if True:
+        if self.slot_data["background_shuffle_riivolution"]:
             folder_name = "Object"
             #self.patch_subfolder(folder_name, "bgA", True)
             #self.patch_subfolder(folder_name, "bgB", True)
 
-        if True:
+        if self.slot_data["tile_sheet_shuffle_riivolution"]:
             folder_name = os.path.join("Stage", "Texture")
-            #self.patch_subfolder(folder_name, "Pa0", True)
-            #self.patch_subfolder(folder_name, "Pa1", True)
-            #self.patch_subfolder(folder_name, "Pa2", True)
-            #self.patch_subfolder(folder_name, "Pa3", True)
+            self.patch_subfolder(folder_name, "Pa0", True)
+            self.patch_subfolder(folder_name, "Pa1", True)
+            self.patch_subfolder(folder_name, "Pa2", True)
+            self.patch_subfolder(folder_name, "Pa3", True)
+
+        if self.slot_data["pallet_shuffle_riivolution"]:
+            pass
+            # read arc file, modify binary
 
         if self.slot_data["music_shuffle_riivolution"]:
-            #self.patch_entire_folder(os.path.join("Sound", "stream"))
-            folder_name = os.path.join("Sound", "stream")
-            temp_path = self.temp_dir / "files" / folder_name
-            file_names: List[str] = os.listdir(temp_path)
-            file_names.remove("switch_lr.n.32.brstm")
-            self.patch_files(file_names, folder_name, False)
+            self.patch_entire_folder(os.path.join("Sound", "stream"), removed = ["switch_lr.n.32.brstm"])
+
 
     def patch_files(self, file_names : List[str], folder_name : str, arc_rename : bool = False):
         temp_path = self.temp_dir / "files" / folder_name
@@ -232,7 +247,7 @@ class Patcher:
 
         for name1, name2 in zip(file_names, new_filenames):
             if arc_rename:
-                copy_rename_internal_arc(temp_path / name1, self.output_path / folder_name / name2, name1.split(".")[0], name2.split(".")[0])
+                copy_rename_wiithon_arcfile(temp_path / name1, self.output_path / folder_name / name2, name1.split(".")[0], name2.split(".")[0])
             else:
                 shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
 
@@ -272,15 +287,22 @@ class Patcher:
         for i in range(len(level_shuffle)):
             shutil.copy(self.temp_dir /"files" / "Stage" / level_name_converter(*level_shuffle[i]), self.output_path / "Stage" / level_name_converter(*levels[i]))
 
-    def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False):
+    def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False, removed : Optional[list] = None):
         temp_path = self.temp_dir / "files" / folder_name
         file_names: List[str] = os.listdir(temp_path)
         texture_n: List[str] = list(filter(lambda x: x.startswith(filter_str), file_names))
+        if removed is not None:
+            for item in removed:
+                texture_n.remove(item)
         self.patch_files(texture_n, folder_name, arc_rename)
 
-    def patch_entire_folder(self, folder_name : str, arc_rename = False):
+    def patch_entire_folder(self, folder_name : str, arc_rename = False, removed : Optional[list] = None):
         temp_path = self.temp_dir / "files" / folder_name
         file_names : List[str] = os.listdir(temp_path)
+        if removed is not None:
+            for item in removed:
+                file_names.remove(item)
+
         self.patch_files(file_names,folder_name, arc_rename)
 
 
@@ -420,24 +442,32 @@ class Patcher:
 
 if __name__ == "__main__":
     logger.info = print
-    _seed = "00000"
+    _name = "LUIGI"
+    _seed = "0123456789"
     level_order = list(range(sum(LEVELS_PER_WORLD)))
     random.shuffle(level_order)
     _slot_data = { "level_shuffle_riivolution" : 1,
                    "music_shuffle_riivolution" : 1,
-                   "shuffled_level_order" : level_order}
-    _patcher = Patcher(_seed, _slot_data)
+                   "shuffled_level_order" : level_order,
+                   "background_shuffle_riivolution" : 1,
+                   "pallet_shuffle_riivolution" : 1,
+                   "tile_sheet_shuffle_riivolution" : 1,
+                   }
+    _patcher = Patcher(_name, _seed, _slot_data)
 
     if _patcher.output_path.exists():
         shutil.rmtree(_patcher.output_path)
 
+    _patcher.random = Random()
+
     _patcher.patch()
 
     dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe)
-    short_cut_path = Path(Utils.get_settings()["nsmbw_settings"].save_file_path) / "riivolution_shortcuts" / f"seed{_patcher.seed}.json"
+    short_cut_path = _patcher.shortcut_path
 
     assert short_cut_path.exists(), ""
     if True:
+        pass
         subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
 
 

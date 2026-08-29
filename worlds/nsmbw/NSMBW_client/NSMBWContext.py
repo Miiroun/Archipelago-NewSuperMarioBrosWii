@@ -612,11 +612,13 @@ class NSMBWContext(SuperContext):
             return
 
         checked_locations : List[int] = []
-        checked_locations += await self.check_starcoins()
         checked_locations += await self.check_coins()
         checked_locations += await self.check_1ups()
         checked_locations += await self.check_hintmovies()
-        checked_locations += await self.check_level_completion(self.unlocked_worlds)
+        if self.game_interface.is_in_worldmap():
+            checked_locations += await self.check_level_completion(self.unlocked_worlds)
+            checked_locations += await self.check_starcoins()
+
 
         if self.game_interface.is_in_level():
             checked_locations += await self.check_inventory_powerups()
@@ -1254,6 +1256,10 @@ class NSMBWContext(SuperContext):
         self.filler = []
 
     async def handle_check_deathlink(self):
+        LEVEL = self.game_interface.get_world_level_num_in_level()
+        if LEVEL == (0,0):
+            return
+
         for player_num in range(PLAYER_COUNT):
             #this doesnt work since in_stage changes after playerstatus is set to 1
             #is_dead = (self.game_interface.get_player_status() == b'\x01') and (self.game_interface.get_in_stage_flag()[3] == 0)
