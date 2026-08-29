@@ -16,14 +16,14 @@ import tempfile
 from ..Common import *
 
 import bsdiff4
-from . import wiithon
+from .wiithon.formats.u8 import U8
 
 logger = logging.getLogger("Client")
 
 
 def copy_rename_wiithon_arcfile(source : Path, destination : Path, source_name : str, destination_name : str):
     with open(source, "rb") as f:
-        u8 = wiithon.U8.read(f)
+        u8 = U8.read(f)
 
     # Rename
     for entry in u8.nodes:

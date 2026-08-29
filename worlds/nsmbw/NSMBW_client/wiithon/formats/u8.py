@@ -3,10 +3,10 @@ from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO
 
-from wiithon.binary.align import align
-from wiithon.binary.reader import BinaryReader
-from wiithon.binary.writer import BinaryWriter
-from wiithon.exceptions import ArchiveFileNotFoundError, ArchiveIsADirectoryError, InvalidFormatError
+from ..binary.align import align
+from ..binary.reader import BinaryReader
+from ..binary.writer import BinaryWriter
+from ..exceptions import ArchiveFileNotFoundError, ArchiveIsADirectoryError, InvalidFormatError
 
 NODE_SIZE = 0xC
 ROOTNODE_OFFSET = 0x20

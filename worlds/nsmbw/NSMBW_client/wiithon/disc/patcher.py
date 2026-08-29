@@ -4,17 +4,17 @@ from io import BytesIO
 from pathlib import Path
 from typing import Concatenate, ParamSpec, TypeVar
 
-from wiithon.builder.copy_source import CopyPartitionSource
-from wiithon.builder.disc_builder import WiiDiscBuilder
-from wiithon.disc.enums import WiiPartType
-from wiithon.disc.reader import WiiIsoReader
-from wiithon.exceptions import NoDataPartitionError
-from wiithon.formats.archive import Archive, Container, flush_archive_cache, resolve_read, resolve_write
-from wiithon.formats.bnr import BNR
-from wiithon.formats.dol import DOL
-from wiithon.fst.node import FSTFile
-from wiithon.fst.operations import add_node, remove_node
-from wiithon.fst.tree import FST
+from ..builder.copy_source import CopyPartitionSource
+from ..builder.disc_builder import WiiDiscBuilder
+from ..disc.enums import WiiPartType
+from ..disc.reader import WiiIsoReader
+from ..exceptions import NoDataPartitionError
+from ..formats.archive import Archive, Container, flush_archive_cache, resolve_read, resolve_write
+from ..formats.bnr import BNR
+from ..formats.dol import DOL
+from ..fst.node import FSTFile
+from ..fst.operations import add_node, remove_node
+from ..fst.tree import FST
 
 T = TypeVar("T")
 P = ParamSpec("P")

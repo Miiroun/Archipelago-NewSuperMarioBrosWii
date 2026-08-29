@@ -2,8 +2,8 @@ import struct
 from io import BytesIO
 from typing import BinaryIO
 
-from wiithon.binary.common import STRING_FORMAT
-from wiithon.exceptions import BinaryError
+from ..binary.common import STRING_FORMAT
+from ..exceptions import BinaryError
 
 
 class BinaryReader:

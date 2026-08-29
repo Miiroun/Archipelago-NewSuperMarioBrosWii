@@ -14,6 +14,7 @@
 ## Playtest
 - Door logic not working? : Or is this other issue
 - entering a mushroom house with doors unusable would send a deathlink
+- test on frozen
 
 
 ## Bugs to fix
