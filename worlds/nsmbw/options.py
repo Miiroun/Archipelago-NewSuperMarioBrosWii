@@ -512,9 +512,10 @@ class PalletShuffleRiivolution(Toggle):
 
 class TileSheetShuffleRiivolution(Toggle):
     """
-
+    Shuffles the Pa0_jyotyu textures, changes the looks of ?-blocks and brick blocks
+    Requires use_riivolution to be enabled.
     """
-    visibility = Visibility.none
+    #visibility = Visibility.none
 
 
 class ImportantEarlyItems(Toggle):

@@ -13,48 +13,13 @@ from random import Random
 import shutil
 import tempfile
 
-import Utils
 from ..Common import *
 
 import bsdiff4
-
-# wiithon problematic to import
-#from .wiithon.src.wiithon.formats import Rarc
 from . import wiithon
-from io import BytesIO
 
 logger = logging.getLogger("Client")
 
-
-def copy_rename_internal_arc(source : Path, destination : Path, source_name : str, destination_name : str):
-    # TODO needs to modify header size
-    data : List[bytes]= []
-    buff_size = 8192
-    with open(source, 'rb') as f:
-        while True:
-            chunk = f.read(buff_size)
-            if chunk:
-                data.append(chunk) #buff_size
-            else:
-                break
-
-    #print(f"source : {source_name}, destination : {destination_name}")
-
-    for i, data_ in enumerate(data):
-        # issue if split name in middle of different sections
-        text = data[i].decode("utf-8", 'surrogateescape')
-        #print(f"Chunk {i}")
-        #print("-------------unmodifide")
-        #print(text.encode("utf-8", 'surrogateescape'))
-        text = text.replace(source_name, destination_name)
-        #print(f"----------modified")
-        #print(text.encode("utf-8", 'surrogateescape'))
-        #print("-------------")
-        data[i] = text.encode("utf-8", 'surrogateescape')
-
-    with open(destination, 'wb') as f:
-        for data_ in data:
-            f.write(data_)
 
 def copy_rename_wiithon_arcfile(source : Path, destination : Path, source_name : str, destination_name : str):
     with open(source, "rb") as f:
@@ -66,7 +31,6 @@ def copy_rename_wiithon_arcfile(source : Path, destination : Path, source_name :
             continue
 
         entry.name = entry.name.replace(source_name, destination_name)
-
 
     with open(destination, "wb") as f:
         u8.write(f)
@@ -219,19 +183,20 @@ class Patcher:
             self.patch_levels()
         if self.slot_data["background_shuffle_riivolution"]:
             folder_name = "Object"
+            # these does not work because they need brres handling, I would prefer not to write it
             #self.patch_subfolder(folder_name, "bgA", True)
             #self.patch_subfolder(folder_name, "bgB", True)
 
         if self.slot_data["tile_sheet_shuffle_riivolution"]:
             folder_name = os.path.join("Stage", "Texture")
             self.patch_subfolder(folder_name, "Pa0", True)
-            self.patch_subfolder(folder_name, "Pa1", True)
-            self.patch_subfolder(folder_name, "Pa2", True)
-            self.patch_subfolder(folder_name, "Pa3", True)
+            #self.patch_subfolder(folder_name, "Pa1", True) # one of these are broken, but looks to weird to keep
+            #self.patch_subfolder(folder_name, "Pa2", True)
+            #self.patch_subfolder(folder_name, "Pa3", True)
 
         if self.slot_data["pallet_shuffle_riivolution"]:
             pass
-            # read arc file, modify binary
+            # read arc file, modify binary image files
 
         if self.slot_data["music_shuffle_riivolution"]:
             self.patch_entire_folder(os.path.join("Sound", "stream"), removed = ["switch_lr.n.32.brstm"])
@@ -446,10 +411,10 @@ if __name__ == "__main__":
     _seed = "0123456789"
     level_order = list(range(sum(LEVELS_PER_WORLD)))
     random.shuffle(level_order)
-    _slot_data = { "level_shuffle_riivolution" : 1,
-                   "music_shuffle_riivolution" : 1,
+    _slot_data = { "level_shuffle_riivolution" : 0,
+                   "music_shuffle_riivolution" : 0,
                    "shuffled_level_order" : level_order,
-                   "background_shuffle_riivolution" : 1,
+                   "background_shuffle_riivolution" : 0,
                    "pallet_shuffle_riivolution" : 1,
                    "tile_sheet_shuffle_riivolution" : 1,
                    }
