@@ -477,103 +477,87 @@ class NSMBWInterface(object):
 
 
     async def handle_unlocked_moves(self, unlocked_moves, current_mod):
+        if self.slot_data["randomize_abilites"] == False:
+            return
+
         slot_data_ablities_included = self.slot_data["abilites_included"]
         def patch_ability(name : str, patch : CodePatch | Iterable, double_check=True):
             if name in slot_data_ablities_included:
                 self.apply_patch(patch, reverse=(name in unlocked_moves), double_check=double_check)
 
-        if self.slot_data["randomize_abilites"] == True:
-            # ground pound, should look at og memmory to renable ones unlocked
-            # _ZN10dAcPyKey_c14checkHipAttackEv
-            patch_ability(ITEM.ABILITIES.GroundPound, self.memory_addresses.patch_ground_pound)
 
-            patch_ability(ITEM.ABILITIES.WallJump, [
-                self.memory_addresses.patch_wall_slide,
-                self.memory_addresses.patch_wall_jump
-            ])
+        # ground pound, should look at og memmory to renable ones unlocked
+        # _ZN10dAcPyKey_c14checkHipAttackEv
+        patch_ability(ITEM.ABILITIES.GroundPound, self.memory_addresses.patch_ground_pound)
 
-            patch_ability(ITEM.ABILITIES.Crouch, self.memory_addresses.patch_crouch)
+        patch_ability(ITEM.ABILITIES.WallJump, [
+            self.memory_addresses.patch_wall_slide,
+            self.memory_addresses.patch_wall_jump
+        ])
 
-            patch_ability(ITEM.ABILITIES.Yoshi, self.memory_addresses.patch_yoshi, double_check=False)
+        patch_ability(ITEM.ABILITIES.Crouch, self.memory_addresses.patch_crouch)
 
-
-            if ITEM.ABILITIES.Swim in slot_data_ablities_included:
-                if not ITEM.ABILITIES.Swim in unlocked_moves:
-                    if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
-                        logger.info("You touched water without swim unlocked, so you died.")
-                        await self.kill_player()
-                        self.set_water_state(int_to_bytes(0,4))
-                    else:
-                        pass
-                        #print(bytes_to_int(self.get_water_state()))
-
-            # this is just for menu
-            #if ITEM.ABILITIES.Star in slot_data_ablities_included:
-            #    if not ITEM.ABILITIES.Star in unlocked_moves:
-            #        self.set_star_timer(int_to_bytes(0, 4))
-            patch_ability(ITEM.ABILITIES.Star, self.memory_addresses.patch_star)
+        patch_ability(ITEM.ABILITIES.Yoshi, self.memory_addresses.patch_yoshi, double_check=False)
 
 
-            patch_ability(ITEM.ABILITIES.Climb, [
-                self.memory_addresses.patch_climb_pole,
-                self.memory_addresses.patch_climb_tarzan_vine,
-            ])
+        if ITEM.ABILITIES.Swim in slot_data_ablities_included:
+            if not ITEM.ABILITIES.Swim in unlocked_moves:
+                if bytes_to_int(self.get_water_state()) in [3221291008,3221225472]:
+                    logger.info("You touched water without swim unlocked, so you died.")
+                    await self.kill_player()
+                    self.set_water_state(int_to_bytes(0,4))
+                else:
+                    pass
+                    #print(bytes_to_int(self.get_water_state()))
 
-            #if ITEM.ABILITIES.Climb in slot_data_ablities_included:
-                # climb pole
-                #self.apply_patch(self.memory_addresses.patch_climb_pole, reverse= ITEM.ABILITIES.Climb in unlocked_moves)
-
-
-                #climb_ladders
-                #self.apply_patch(self.memory_addresses.patch_climb_ladder, reverse= ITEM.MOVEMENT.Climb in unlocks)
-
-                # this causes game to crash / freez when climb fence
-                #climb_vine
-                #self.apply_patch(self.memory_addresses.patch_climb_vine_still, reverse=ITEM.MOVEMENT.Climb in unlocks)
-                #self.apply_patch(self.memory_addresses.patch_climb_vine_fall, reverse=ITEM.MOVEMENT.Climb in unlocks)
-
-                #swing_vine
-                #self.apply_patch(self.memory_addresses.patch_climb_tarzan_vine, reverse=ITEM.ABILITIES.Climb in unlocked_moves)
-
-                # sneak
-                # causes game to freez
-                #address_sneak_walk = self.memory_addresses.address_kani_walk
-                #address_sneak_hang = self.memory_addresses.address_kani_hang
-                #if not "climb" in unlocks:
-                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_blr)
-                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_blr)
-                #else:
-                #    self.write_instruction(address_sneak_walk, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffe0)
-                #    self.write_instruction(address_sneak_hang, PowerPCInstructions.instru_stwu + PowerPCInstructions.val_ffd0)
+        # this is just for menu
+        #if ITEM.ABILITIES.Star in slot_data_ablities_included:
+        #    if not ITEM.ABILITIES.Star in unlocked_moves:
+        #        self.set_star_timer(int_to_bytes(0, 4))
+        patch_ability(ITEM.ABILITIES.Star, self.memory_addresses.patch_star)
 
 
-                #swing
-                #if not "climb" in unlocks:
-                #    if bytes_to_int(self.dolphin_client.read_address(self.memory_addresses.address_vine, 1)) in [43]:
-                #        await self.kill_player()
-                #    else:
-                #        pass
+        patch_ability(ITEM.ABILITIES.Climb, [
+            self.memory_addresses.patch_climb_pole,
+            self.memory_addresses.patch_climb_tarzan_vine,
+            #self.memory_addresses.patch_climb_ladder,
+            #self.memory_addresses.patch_climb_vine_still,
+            #self.memory_addresses.patch_climb_vine_fall,
+            #sneak
+            #self.memory_addresses.address_kani_walk,
+            #self.memory_addresses.address_kani_hang,
+        ])
 
 
-            patch_ability(ITEM.ABILITIES.Carry, [#self.memory_addresses.patch_throw,
-                                                 self.memory_addresses.patch_carry_shell,
-                                                 self.memory_addresses.patch_carry_block,])
+        patch_ability(ITEM.ABILITIES.Carry, [
+            #self.memory_addresses.patch_throw,
+            self.memory_addresses.patch_carry_shell,
+            self.memory_addresses.patch_carry_block,
+        ])
 
 
-            patch_ability(ITEM.ABILITIES.Jump, self.memory_addresses.patch_jump)
+        patch_ability(ITEM.ABILITIES.Jump, self.memory_addresses.patch_jump)
 
-            patch_ability(ITEM.ABILITIES.Run, self.memory_addresses.patch_button_run)
+        patch_ability(ITEM.ABILITIES.Run, self.memory_addresses.patch_button_run)
 
-            if ITEM.TRAPS.MovementLockTrap != current_mod:
-                patch_ability(ITEM.ABILITIES.ButtonRight, self.memory_addresses.patch_button_right)
-            if ITEM.TRAPS.MovementLockTrap != current_mod:
-                patch_ability(ITEM.ABILITIES.ButtonLeft, self.memory_addresses.patch_button_left)
-            patch_ability(ITEM.ABILITIES.ButtonUp, self.memory_addresses.patch_button_up)
-            patch_ability(ITEM.ABILITIES.ButtonDown, self.memory_addresses.patch_button_down)
 
-            patch_ability(ITEM.ABILITIES.SpinJump, self.memory_addresses.patch_spin_jump)
+        if ITEM.TRAPS.MovementLockTrap != current_mod:
+            patch_ability(ITEM.ABILITIES.ButtonRight, self.memory_addresses.patch_button_right)
+
+        if ITEM.TRAPS.MovementLockTrap != current_mod:
+            patch_ability(ITEM.ABILITIES.ButtonLeft, self.memory_addresses.patch_button_left)
+
+        patch_ability(ITEM.ABILITIES.ButtonUp, self.memory_addresses.patch_button_up)
+
+        patch_ability(ITEM.ABILITIES.ButtonDown, self.memory_addresses.patch_button_down)
+
+        patch_ability(ITEM.ABILITIES.SpinJump, self.memory_addresses.patch_spin_jump)
+
 
     async def handle_level_gimick(self, unlocks : List[str]):
+        if self.slot_data["randomize_level_elements"] == False:
+            return
+
         slot_data_element_included = self.slot_data["level_elements_included"]
         def patch_element(name : str, patch : CodePatch | Iterable, double_check : bool = True):
             if name in slot_data_element_included:
@@ -596,14 +580,16 @@ class NSMBWInterface(object):
 
 
     async def handle_enemy_look(self, unlocks : List[str]):
+        if self.slot_data["randomize_enemies"] != RandomizeEnemies.option_off:
+            return
+
         slot_data_enemy_included  = self.slot_data["enemies_included"]
         def patch_enemy(name : str, patch : CodePatch | Iterable):
             if name in slot_data_enemy_included:
                 self.apply_patch(patch, (name in unlocks) ^ (self.slot_data["randomize_enemies"] == RandomizeEnemies.option_add))
 
-        if self.slot_data["randomize_enemies"] != RandomizeEnemies.option_off:
-            patch_enemy(ITEM.ENEMIES.Goomba, self.memory_addresses.patch_goomba)
 
+        patch_enemy(ITEM.ENEMIES.Goomba, self.memory_addresses.patch_goomba)
 
 
     async def handle_unlocks(self, unlocks : List[str], current_mod):
