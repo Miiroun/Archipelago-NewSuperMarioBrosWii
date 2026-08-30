@@ -68,19 +68,23 @@ public:
         CUTSCENE_CMD_NONE = -1,
         CUTSCENE_CMD_COURSE_UNLOCK = 2,
         CUTSCENE_CMD_4 = 4,
+        CUTSCENE_CMD_17 = 17,
+        CUTSCENE_CMD_19 = 19,
+        CUTSCENE_CMD_20 = 20,
         CUTSCENE_CMD_27 = 27,
         CUTSCENE_CMD_28 = 28,
         CUTSCENE_CMD_29 = 29,
         CUTSCENE_CMD_56 = 56,
+        CUTSCENE_CMD_78 = 78,
         CUTSCENE_CMD_86 = 86,
         CUTSCENE_CMD_87 = 87,
         CUTSCENE_CMD_89 = 89,
         CUTSCENE_CMD_91 = 91,
         CUTSCENE_CMD_136 = 136,
     };
-    
+
     int GetCutName();
-    void FUN_801017c0(int, dWmEnemy_c *, int, int); ///< @unofficial
+    void FUN_801017c0(CUTSCENE_e cutscene, dWmDemoActor_c *, void *, int priority); ///< @unofficial
     bool FUN_80915600(); ///< @unofficial
 
     u8 mPad1[0x164];

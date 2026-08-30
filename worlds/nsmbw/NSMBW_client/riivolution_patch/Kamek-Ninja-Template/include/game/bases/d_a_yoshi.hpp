@@ -11,8 +11,6 @@ public:
     u8 mPad3[0x30];
     int mFruitCount;
 
-    virtual bool setDamage(dActor_c *, DamageType_e);
-
     dYoshiMdl_c *getModel() { return (dYoshiMdl_c *) daPlBase_c::getModel(); }
 
     int getFruitCount() const { return mFruitCount; }

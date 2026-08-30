@@ -1,11 +1,10 @@
 #pragma once
 
 #include <types.h>
-#include <game_versions_nsmbw.h>
 
-namespace fProfile {
+namespace fProf {
 
-    /// @brief A name of a profile. Can be used to index into fProfile::sProfileList.
+    /// @brief A name of a profile. Can be used to index into fProfListMg_c::m_data_p.
     /// @ingroup profile
     enum PROFILE_NAME_e {
         PROFILE_NULL = (u16) -1,
@@ -629,14 +628,7 @@ namespace fProfile {
         AC_HOUSE_LIGHT,
         AC_LIGHT_WATER,
         AC_COPYRIGHT,
-#if GAME_REVISION < GAME_REVISION_C
         WII_STRAP,
-#endif
-#if GAME_REVISION >= GAME_REVISION_C
-        LOGO_SCREEN,
-        NV_SCREEN,
-        ANTI_ADDICTION_SCREEN,
-#endif
         WM_CS_SEQ_MNG,
         WORLD_CAMERA,
         WM_MAP,
@@ -718,10 +710,6 @@ namespace fProfile {
         EVENT_OPENING_TITLE,
         SELECT_PLAYER,
         MULTI_COURSE_SELECT,
-#if GAME_REVISION >= GAME_REVISION_K
-        MULTI_COURSE_SELECT_TOURNAMENT,
-        MULTI_COURSE_SELECT_TOURNAMENT_BUTTON,
-#endif
         TIME_UP,
         COURSE_TIME_UP,
         YES_NO_WINDOW, ///< The profile for dYesNoWindow_c.
@@ -776,50 +764,9 @@ namespace fProfile {
         /// @details This value varies across New Super Mario Bros. Wii versions due to profiles added
         /// later in development.
         PROFILE_COUNT,
-        INVALID = PROFILE_COUNT,
-
-        // Start of custom entries
-        AC_SPAWNER,
-        AC_MULTI_SPAWNER,
-        AC_SPAWNER_PAIRED,
-        EN_HEIHO,
-        EN_BLOCK_ROTATE,
-        EN_BLOCK_FLAG,
-        EN_PUCHI_PAKKUN,
-        AC_PAKKUN_PUCHI_FIRE,
-        MSGBOX_WINDOW,
-        EN_BLOCK_MESSAGE,
-        EN_BOMBBROS,
-        BROS_BOMB,
-        AC_FLAG_DANCE,
-        AC_FLAG_INVERT,
-        EN_KABOCHAN,
-        EN_LARGE_KABOCHAN,
-        EN_KAKIBO,
-        EN_KURIBON,
-        EN_PATA_KURIBON,
-        EN_KAKIBON,
-        EN_HEIHO_BUBBLE,
-        EN_HEIHO_BALLOON,
-        EN_HEIHO_NET,
-        EN_HEIHO_LARGE,
-        EN_HEIHO_GIANT,
-        EN_HEIHO_MEGA,
-        AC_LIFT_BG_RAIL,
-        AC_LIFT_BG_ROTATION,
-        AC_LIFT_BG_PAIR_OBJ,
-        AC_EFFECT_SPAWNER,
-        EN_STAR_COIN_FAKE,
-        DEBUG_MENU,
-        AC_MODEL_LOADER,
-        EN_BLOCK_SWITCH,
-        EN_PALACE_SWITCH,
-
-        // End of custom entries, do NOT remove
-        TOTAL_ACTOR_COUNT
+        INVALID = PROFILE_COUNT
     };
-    
-    // TODO see how DRAW_ORDER was shifted in KR/TW and C
+
     namespace DRAW_ORDER {
         /// @brief The draw order for the profiles.
         /// @ingroup profile
@@ -830,8 +777,8 @@ namespace fProfile {
             YOSHI,
             WM_TEST,
             WM_TEST2,
-            // [No profile with draw order 6, possibly removed later in development]
-            AUTO_SELECT = 7,
+            BOOT,
+            AUTO_SELECT,
             SELECT,
             WORLD_MAP,
             WORLD_9_DEMO,

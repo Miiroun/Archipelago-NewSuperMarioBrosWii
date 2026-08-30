@@ -1,10 +1,9 @@
 #pragma once
 
 #include <types.h>
-#include <game/mLib/m_vec.hpp>
 #include <lib/egg/core/eggHeap.h>
 
-class dGameKeyCore_c {
+class Remocon {
 public:
     /// @unofficial
     enum EXTENSION_TYPE_e {
@@ -13,26 +12,21 @@ public:
         EXTENSION_UNKNOWN = 3, ///< It has not been checked yet whether an extension is connected.
     };
 
-    u32 getAccVerticalAngleX();
+    virtual ~Remocon();
 
-    void *m_00; // vtable
     int mIndex;
     EXTENSION_TYPE_e mAttachedExtension;
-    u32 mHoldButtons, mPrevHoldButtons; ///< The buttons currently held down.
-    u32 mDownButtons, mPrevDownButtons; ///< The buttons currently pressed down.
-    u32 mTriggeredButtons; ///< The buttons newly pressed down.
-    u8 mPad[0x14];
-    mVec3_c mAcc, mPrevAcc;
-    mVec2_c mAccVertX, mPrevAccVertX;
-    mVec2_c mAccVertY, mPrevAccVertY;
-    mVec2_c mAccVertZ;
-    mVec2_c mAngle, mPrevAngle;
-    float mMoveDist, mPrevMoveDist;
+    char mPad1[8];
+    int mDownButtons; ///< The buttons currently pressed down.
+    char mPad2[4];
+    int mTriggeredButtons; ///< The buttons newly pressed down.
+    char mPad3[0x6c];
     bool mIsShaking;
-    u8 m_8d;
-    u16 mTiltAmount;
-    s8 mShakeTimers[3];
-    u8 m_93;
+};
+
+class dGameKeyCore_c : public Remocon {
+public:
+    u32 getAccVerticalAngleX();
 };
 
 class dGameKey_c {

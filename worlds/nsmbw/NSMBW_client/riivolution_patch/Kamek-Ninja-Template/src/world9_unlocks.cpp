@@ -1,11 +1,13 @@
 #include <kamek.h>
 #include <types.h>
-//#include <game/bases/d_wm_lib.hpp>
+#include <game/bases/d_wm_lib.hpp>
+
 
 // it happens at 0x808CE56C, the game checks if its world 9, then calls setSpecialWorldAnm() (0x808CED00)
 // dWmLib::isSpecialWorldCourseOpen() just calls dWmLib::isRemainderCollectionCoin(), which returns if the collected number of star coins (for that world) is greater than or equal to the max number of coins
 
-/*
+extern u8 isSpecialWorldCourseOpen(u8 courseIdx);
+extern void FUN_808ce8e0(int param_1, int param_2, f32 param_3, f32 param_4);
 
 // how to edit to easily change with dme?
 kmBranchDefCpp(0x808ce57c, 0x808ce5b0, void, int param_1)
@@ -14,13 +16,12 @@ kmBranchDefCpp(0x808ce57c, 0x808ce5b0, void, int param_1)
     u8 courseIdx;
 
     courseIdx = *(u8 *)(param_1 + 4) & 0xff;
-    //if ((courseIdx < 10) && (bVar1 = isSpecialWorldCourseOpen(courseIdx), !bVar1)) {
-    //    FUN_808ce8e0(param_1, 0, 0.0, 0.0);
-    //}
+    if ((courseIdx < 10) && (bVar1 = isSpecialWorldCourseOpen(courseIdx), !bVar1)) {
+        FUN_808ce8e0(param_1, 0, 0.0, 0.0);
+    }
     return;
 }
 
-*/
 
 /*
 // maybe easier to just consider it in asm

@@ -8,20 +8,21 @@ class dAcPy_c;
 
 class dPyMdlBase_c {
 public:
-    enum TexAnmType_e {};
+    enum RndType_e {
+        RND_TYPE_0,
+        RND_TYPE_1
+    };
 
-    dPyMdlBase_c(u8 index);
     virtual ~dPyMdlBase_c();
-
-    virtual int getFaceJointIdx() const;
+    virtual int getFaceJointIdx();
     virtual void createModel();
     virtual void initialize();
     virtual void play();
     virtual void _calc();
     virtual void calc2();
     virtual void draw();
-    virtual m3d::mdl_c *getBodyMdl();
-    virtual const void *getAnmResFile() const;
+    virtual void getBodyMdl();
+    virtual void getAnmResFile();
     virtual void setPlayerMode(int);
     virtual void setColorType(u8);
     virtual void setDark(int);
@@ -31,10 +32,10 @@ public:
     virtual void onStarEffect();
     virtual void offStarEffect();
     virtual void getJointMtx(mMtx_c *, int);
-    virtual bool getHeadPropelJointMtx(mMtx_c *);
+    virtual void getHeadPropelJointMtx(mMtx_c *);
     virtual void vf58(); ///< @unofficial
     virtual void setAnm(int, float, float, float);
-    virtual bool setPersonalAnm(int, nw4r::g3d::ResAnmChr *, int);
+    virtual void setPersonalAnm(int, nw4r::g3d::ResAnmChr *, int);
     virtual void setBodyAnm(int, float, float, float);
     virtual void releaseBodyAnm(float);
     virtual void copyAnm();
@@ -42,13 +43,13 @@ public:
     virtual void _setBodyAnm(nw4r::g3d::ResAnmChr &, m3d::playMode_e, float, float, float);
     virtual void setAnmBind();
     virtual void setPersonalRideAnm(int, nw4r::g3d::ResAnmChr *);
-    virtual void setTexAnmType(TexAnmType_e);
+    virtual void setTexAnmType();
     virtual void setFrame(float);
-    virtual void setBodyFrame(float);
+    virtual void setBodyFrame();
     virtual void setRate(float);
-    virtual void setBodyRate(float);
-    virtual void setPropelRollSpeed(s16);
-    virtual s16 getPropelRollSpeed() const;
+    virtual void setBodyRate();
+    virtual void setPropelRollSpeed(s16) const;
+    virtual s16 getPropelRollSpeed();
     virtual void setPropelRollAngle(s16);
     virtual s16 getPropelRollAngle() const;
     virtual void setPropelScale(float);
@@ -57,7 +58,7 @@ public:
 
     bool isFootStepTiming();
     void getJointPos(mVec3_c *, int);
-    void fn_800d5e00(int);
+    void setJumpAnmRand(RndType_e type);
     void copyLinkAnm(float f);
 
     float getFrameMax() { return mAnm.mFrameMax; }
@@ -71,7 +72,7 @@ public:
 
     u32 get151CheckVal() { return 2; }
 
-    mAllocator_c mAllocator;
+    u8 mPad1[0x1c];
     dAcPy_c *mpOwner;
     dPyMdlBase_c *mpSpinLiftParentMdl;
     m3d::anmChr_c mAnm;
@@ -81,16 +82,14 @@ public:
     mMtx_c mMtx;
     u8 mPad5[0xc];
     mVec3_c mScale;
-    u8 mPlayerNo;
-    u8 mCharaID;
-    u8 mPowerupID;
-    u8 mCurColorType;
+    u8 mPad6[0x1];
+    u8 m_151;
+    u8 m_152;
     int mCurrAnmID;
     u8 mPad7[8];
     u32 mFlags;
-    u32 mFlags2;
-    u8 mPad8[0x14];
-    u32 mVisibilityFlags;
+    u8 mPad8[0x18];
+    u32 m_17c;
     u8 mPad9[0x7c];
     s16 m_1fc;
     s16 m_1fe;

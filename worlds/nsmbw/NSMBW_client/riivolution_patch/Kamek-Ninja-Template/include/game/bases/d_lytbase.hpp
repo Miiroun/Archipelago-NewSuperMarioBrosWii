@@ -74,8 +74,6 @@ public:
     /// @param count The number of text boxes in textboxNames.
     void TPaneNameRegister(const char **textboxNames, const int *messageIDs, int messageGroup, int count);
 
-    void TPaneNameRegister2(const char **textboxNames, const int *messageIDs, int messageGroup, int count); ///< @unofficial
-
     /// @brief Loads animation resources given by their names.
     /// @param animeNames The names of the animation resources to load.
     /// @param count The number of animations in animeNames.

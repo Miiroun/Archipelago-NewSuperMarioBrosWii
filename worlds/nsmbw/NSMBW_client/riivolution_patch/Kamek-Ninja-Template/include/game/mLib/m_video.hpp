@@ -7,6 +7,7 @@ public:
 
     float getWidth() const { return mRenderModeObj.fbWidth; }
     float getHeight() const { return mRenderModeObj.efbHeight; }
+
     static float getSmth(float offs) { return (m_video->mRenderModeObj.efbHeight - offs) * 0.5f; }
 
     GXRenderModeObj &mRenderModeObj;

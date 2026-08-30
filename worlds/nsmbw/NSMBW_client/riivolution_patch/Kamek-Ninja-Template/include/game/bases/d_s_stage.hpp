@@ -50,6 +50,8 @@ public:
     static u32 m_exeFrame;
     static int m_loopType;
     static PLAYER_TYPE_e mCollectionCoin[STAR_COIN_COUNT];
+    static int m_titleCount;
+    static u8 m_titleRandomTable[];
 
     static const char mCdArcName[];
 
@@ -60,14 +62,9 @@ public:
 
     static int m_miniGame;
     static bool m_isStaffCredit;
-
-    static void *m_replayPlay_p[4];
-
     static changePosFunc changePos;
     static dScStage_c *m_instance;
 
     ACTOR_PARAM_CONFIG(File, 8, 4);
     ACTOR_PARAM_CONFIG(NextGotoID, 0, 8);
-
-    void mainLevelSetup();
 };

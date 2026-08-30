@@ -8,11 +8,6 @@ public:
     void fn_8019be60(int); ///< @unofficial
     void fn_8019bd90(int); ///< @unofficial
 
-    void enterHBM();
-    void exitHBM();
-
-    void stopBgm(u32);
-
     u8 mPad1[0x10];
     int m_10;
     int m_14;

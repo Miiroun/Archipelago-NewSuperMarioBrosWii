@@ -5,7 +5,7 @@
 class dWmViewClip_c {
 public:
     void set( float, float, float, float, const mMtx_c& );
-    bool intersectSphere(const mSphere_c *); ///< @unofficial
+    bool CheckClipSphere(const mSphere_c *);
 };
 
 class dWCamera_c {

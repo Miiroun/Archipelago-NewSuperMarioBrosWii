@@ -1,5 +1,5 @@
 #pragma once
-#include <lib/nw4r/math.h>
+#include <nw4r/math.h>
 #include <game/mLib/m_angle.hpp>
 #include <lib/egg/math/eggVector.h>
 #include <game/cLib/c_math.hpp>
@@ -16,7 +16,7 @@ struct mVec2_POD_c {
     }
     void setX(float fx) { x = fx; }
     void setY(float fy) { y = fy; }
-    
+
     float x;
     float y;
 };
@@ -223,7 +223,7 @@ public:
     bool isSmallerThan1() const {
         return PSVECMag(*this) <= 1.0f;
     }
-    
+
     /// @brief Normalizes the vector.
     /// @return The vector's magnitude.
     float normalize();

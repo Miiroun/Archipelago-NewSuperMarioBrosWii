@@ -13,7 +13,7 @@ private:
     class resCallback_c : public dRes_c::callback_c {
     public:
         virtual void init(const char *name);
-        virtual void *execute(void *data, u32 folderSig, const char* path);
+        virtual void *execute(void *data, ulong folderSig, const char* path);
     };
 
 public:
@@ -52,8 +52,6 @@ public:
     bool syncAllRes() {
         return mRes.syncAllRes();
     }
-
-    inline dRes_c *getResP() { return &mRes; }
 
 private:
     dRes_c mRes; ///< The resource manager.

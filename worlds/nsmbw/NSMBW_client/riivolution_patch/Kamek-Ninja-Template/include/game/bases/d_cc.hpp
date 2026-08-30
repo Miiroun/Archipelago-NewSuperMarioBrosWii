@@ -77,7 +77,7 @@ enum CC_ATTACK_e {
 
 class dCc_c;
 
-/// @brief  @unofficial
+/// @unofficial
 struct sCcDatNew {
     mVec2_POD_c mOffset; ///< The offset of the collider.
 
@@ -96,7 +96,7 @@ struct sCcDatNew {
 * @unofficial
 */
 struct sCcDatNewF {
-    sCcDatNew mBase;
+    sCcDatNew mBase; ///< Base collider data.
 
     u8 mKind; ///< The type of this collider. See CC_KIND_e.
     u8 mAttack; ///< The attack type of this collider. See CC_ATTACK_e.
@@ -350,7 +350,6 @@ private:
      */
     static hitCheck _hitCheck[4][4];
 
-public:
     static dCc_c *mEntryN; ///< The first collider in the list.
     static dCc_c *mEntryB; ///< The last collider in the list.
 };

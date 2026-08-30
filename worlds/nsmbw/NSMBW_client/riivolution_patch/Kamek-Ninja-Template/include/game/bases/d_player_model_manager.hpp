@@ -240,16 +240,7 @@ enum AnmID_e {
 
 class dPyMdlMng_c {
 public:
-    enum ModelType_e {
-        MODEL_NONE = -1,
-        MODEL_MARIO = 0,
-        MODEL_LUIGI = 1,
-        MODEL_TOAD_BLUE = 2,
-        MODEL_TOAD_YELLOW = 3,
-        MODEL_TOAD_RED = 4,
-        MODEL_YOSHI = 5,
-    };
-    
+    enum ModelType_e {};
     enum SceneType_e {
         SCENE_TYPE_0
     };
@@ -323,17 +314,17 @@ public:
     }
 
     u32 getFlags2() const {
-        return mpMdl->mVisibilityFlags;
+        return mpMdl->m_17c;
     }
 
     mVec3_c &getHatPos() const { return mpMdl->mHatPosMaybe; }
 
     float getSomeScale() {
-        return m_hio.get_08((dPyMdlBase_HIO_c::ScaleIndex_e) mpMdl->mPowerupID);
+        return m_hio.get_08((dPyMdlBase_HIO_c::ScaleIndex_e) mpMdl->m_152);
     }
 
     float getSomeScale2() {
-        return m_hio.m_08[mpMdl->mPowerupID];
+        return m_hio.m_08[mpMdl->m_152];
     }
 
     dPyMdlBase_c *mpMdl;

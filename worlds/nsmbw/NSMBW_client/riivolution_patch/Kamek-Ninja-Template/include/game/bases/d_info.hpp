@@ -50,7 +50,8 @@ public:
     void GetMapEnemyInfo(int, int, enemy_s &);
     void SetMapEnemyInfo(int, int, int, int);
     void FUN_800bbc40(int, int, int);
-    void startGame(const StartGameInfo_s&);
+
+    void startGame(const dInfo_c::StartGameInfo_s &);
 
     u8 getCourse() const { return m_startGameInfo.mLevel1; }
     u8 getWorld() const { return m_startGameInfo.mWorld1; }
@@ -65,30 +66,29 @@ public:
     int mCurrentCourseNode;
     char pad2[0xc];
     int m_54;
-    u8 pad3[0x14];
+    u8 pad3[0x8];
+    int m_60;
+    u8 pad4[0x8];
     bool m_6c;
-    u8 pad4[0x2c];
+    u8 pad5[0x2c];
     int m_9c;
-    u8 pad5[0x2e0];
-    u8 mWmSwitch;
+    u8 pad6[0x2e4];
     int mCharIDs[4];
     bool mIsWorldSelect; ///< Whether the World Select Menu is being displayed.
-    u8 pad6[30];
+    u8 pad7[0x1e];
     bool mClearCyuukan; ///< Clear the checkpoint data if this is @p true. [Used for the backdoor entrance of 7-C]
     int mDisplayCourseWorld;
     int mDisplayCourseNum;
-    u8 pad7[0x14];
+    u8 pad8[0x14];
     int mTextBoxMessageGroup;
     int mTextBoxMessageID;
-    u8 pad8[0x1];
+    u8 pad9[0x1];
     bool mExtensionAttached;
     u8 m_3da;
-    u8 pad9[0x7];
+    u8 pad10[0x7];
     int mCourseSelectPageNum;
     int mCourseSelectIndexInPage;
-    u8 pad10[0x708];
-    int mChukanPointNum;
-    u8 pad11[6];
+    u8 pad11[0x712];
     bool mFukidashiActionPerformed[4][0x16];
     u32 pad12;
 

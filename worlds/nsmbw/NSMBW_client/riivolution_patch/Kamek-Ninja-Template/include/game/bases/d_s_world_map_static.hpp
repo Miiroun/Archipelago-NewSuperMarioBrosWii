@@ -15,8 +15,6 @@ public:
     static bool IsCourseType(int, int, CourseType_e);
     static void setNextWorldScene(u8 world, u8 sceneNo, u8);
 
-    static void SetCourseTypeForce(int world, int level, CourseType_e type);
-
     static u8 m_WorldNo;
     static u8 m_PrevWorldNo;
     static u8 m_SceneNo;

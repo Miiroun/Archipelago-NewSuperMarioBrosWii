@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef __cplusplus
-#include <lib/MSL/cstdarg>
-#include <lib/MSL/cstddef>
-#include <lib/MSL/new>
+#include <cstdarg>
+#include <cstddef>
+#include <new>
 #else
 #include <stdarg.h>
 #include <stddef.h>

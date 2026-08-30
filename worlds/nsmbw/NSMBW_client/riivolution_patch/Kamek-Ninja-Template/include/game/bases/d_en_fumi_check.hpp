@@ -18,6 +18,7 @@ public:
     virtual ~UniqueFumiCheckInf_c() {}
 };
 
+/// @unofficial
 class FumiCheckBase_c {
 public:
     FumiCheckBase_c() {}
@@ -41,30 +42,28 @@ public:
 
 class dEnFumiCheck_c {
 public:
-    dEnFumiCheck_c(dEn_c *owner) {
-        m_00 = 0;
-        mFumiCheck = nullptr;
-        mOwner = owner;
-    }
+    dEnFumiCheck_c(dEn_c *owner) : m_00(0), mpFumiCheck(nullptr), mpOwner(owner) {}
 
     virtual ~dEnFumiCheck_c() {
-        delete mFumiCheck;
+        delete mpFumiCheck;
     }
 
+    /// @unofficial
     void refresh(FumiCheckBase_c *newPtr) {
-        delete mFumiCheck;
-        mFumiCheck = newPtr;
+        delete mpFumiCheck;
+        mpFumiCheck = newPtr;
     }
 
     int m_00;
-    FumiCheckBase_c *mFumiCheck;
-    dEn_c *mOwner;
+    FumiCheckBase_c *mpFumiCheck;
+    dEn_c *mpOwner;
 };
 
 class dEnFumiProc_c {
 public:
     dEnFumiProc_c(dEn_c *owner) : mFumiCheck(owner) {}
 
+    /// @unofficial
     void refresh(FumiCheckBase_c *newPtr) {
         mFumiCheck.refresh(newPtr);
     }
