@@ -148,7 +148,7 @@ for world_num in range(1,9+1):
 
 
 def mod_level_name(worldnum : int, levelnum : int) -> str:
-    shift = 1 if worldnum in [7,8] else 0
+    shift = (worldnum in [7,8])
     new_level = levelnum - shift
     if (worldnum, levelnum) in [(3,6),(4,6),(5,6),(7,7)]:
         return "G"

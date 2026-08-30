@@ -16,24 +16,16 @@ import tempfile
 from ..Common import *
 
 import bsdiff4
-from .wiithon.formats.u8 import U8
+from .lib.wiithon.formats.u8 import U8
+
+from .lib.nlzss.lzss3 import decompress_bytes
+from .lib.nlzss.compress import compress_nlz11
+
+# why is this lib much slower
+
 
 logger = logging.getLogger("Client")
 
-
-def copy_rename_wiithon_arcfile(source : Path, destination : Path, source_name : str, destination_name : str):
-    with open(source, "rb") as f:
-        u8 = U8.read(f)
-
-    # Rename
-    for entry in u8.nodes:
-        if entry.is_dir:
-            continue
-
-        entry.name = entry.name.replace(source_name, destination_name)
-
-    with open(destination, "wb") as f:
-        u8.write(f)
 
 class Patcher:
     slot_data : dict
@@ -58,6 +50,112 @@ class Patcher:
 
         self.shortcut_path = Path(tempfile.gettempdir()) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
 
+    def recolor_tileset(self, source_bytes : bytes) -> bytes:
+
+
+        decomp: bytearray = decompress_bytes(source_bytes)
+
+        r_mult = 0.5 + self.random.random()
+        g_mult = 0.5 + self.random.random()
+        b_mult = 0.5 + self.random.random()
+
+        mod_decomp = bytearray(decomp)
+        for i in range(len(mod_decomp)):
+            _byte = mod_decomp[i]
+
+            # _byte = _byte << 2
+
+            val = i % 4
+            if val < 1:
+                # red
+                _byte *= r_mult
+                # _byte = _byte << 2
+                pass
+            elif val < 2:
+                # green
+                _byte *= g_mult
+                pass
+            elif val < 3:
+                # blue
+                pass
+                _byte *= b_mult
+            else:
+                # alpha
+                pass
+
+            _byte = int(round(_byte))
+            _byte = min(_byte, 255)
+            _byte = max(_byte, 0)
+
+            mod_decomp[i] = _byte
+
+        class WriteAble(object):
+            _byte_array: bytearray
+            times: int
+
+            def __init__(self):
+                self.times = 0
+                self._byte_array = bytearray()  # 2014 * 256  *4
+                # saving to predefined byte array : 11 -> 8 sec, but crash if file is to long
+
+            def write(self, data: bytes):
+                self._byte_array.extend(data)
+                # data_array = bytearray(data)
+
+                # for _dat in data_array:
+                # self._byte_array[self.times] = _dat
+                # self.times += len(data)
+
+            def get(self):
+                # print(self.times)
+                return self._byte_array
+
+        _writeable = WriteAble()
+
+        # this is really really slow ~ 10 seconds, because small window == 4 bytes, does ~ 10_000 times
+        compress_nlz11(mod_decomp, _writeable) # for some resson this wants to write to file, I create a class with write method to solve this
+
+        return bytes(_writeable.get())
+
+    def recolor_tileset_arcfile(self, source: Path, destination: Path):
+        with open(source, "rb") as f:
+            u8 = U8.read(f)
+
+        # Rename
+        for entry in u8.nodes:
+            if entry.is_dir:
+                continue
+
+            if entry.name.endswith("_tex.bin.LZ"):
+                entry.data = self.recolor_tileset(entry.data)
+
+
+        with open(destination, "wb") as f:
+            u8.write(f)
+
+        print(f"Patched : {os.path.basename(destination)}")
+
+
+    def recolor_tilest_folder(self, folder_name : str, filter_str : str):
+        temp_path = self.temp_dir / "files" / folder_name
+        file_names: List[str] = os.listdir(temp_path)
+        texture_n: List[str] = list(filter(lambda x: x.startswith(filter_str), file_names))
+        for name in texture_n:
+            self.recolor_tileset_arcfile(temp_path / name, self.output_path / folder_name / name)
+
+    def copy_rename_wiithon_arcfile(self, source: Path, destination: Path, source_name: str, destination_name: str):
+        with open(source, "rb") as f:
+            u8 = U8.read(f)
+
+        # Rename
+        for entry in u8.nodes:
+            if entry.is_dir:
+                continue
+
+            entry.name = entry.name.replace(source_name, destination_name)
+
+        with open(destination, "wb") as f:
+            u8.write(f)
 
 
     def copy_riivolution_skeleton(self):
@@ -196,7 +294,13 @@ class Patcher:
 
         if self.slot_data["pallet_shuffle_riivolution"]:
             pass
-            # read arc file, modify binary image files
+            folder_name = os.path.join("Stage", "Texture")
+            #self.recolor_tilest_folder(folder_name, "Pa0")
+            self.recolor_tilest_folder(folder_name, "Pa1")
+            self.recolor_tilest_folder(folder_name, "Pa2")
+            #self.recolor_tilest_folder(folder_name, "Pa3")
+
+
 
         if self.slot_data["music_shuffle_riivolution"]:
             self.patch_entire_folder(os.path.join("Sound", "stream"), removed = ["switch_lr.n.32.brstm"])
@@ -212,7 +316,7 @@ class Patcher:
 
         for name1, name2 in zip(file_names, new_filenames):
             if arc_rename:
-                copy_rename_wiithon_arcfile(temp_path / name1, self.output_path / folder_name / name2, name1.split(".")[0], name2.split(".")[0])
+                self.copy_rename_wiithon_arcfile(temp_path / name1, self.output_path / folder_name / name2, name1.split(".")[0], name2.split(".")[0])
             else:
                 shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
 

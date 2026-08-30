@@ -6,7 +6,7 @@ from pathlib import Path
 import Utils
 from . import PowerPCInstructions
 from .PowerPCInstructions import *
-from .wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
+from .lib.wii_code_tools.lib_wii_code_tools import address_maps as lib_address_maps
 from ..Common import *
 from ..Utils import int_to_bytes
 

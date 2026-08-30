@@ -12,15 +12,13 @@ from random import Random
 import Utils
 from ..options import RandomizeEnemies
 
-sys.set_int_max_str_digits(0)
-
 from ..Common import *
 
 
 logger = logging.getLogger("Client")
 if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library != 0):
     try:
-        from . import keyboard
+        from .lib import keyboard
     except ImportError as e:
         print(e)
         logger.info("for now you will need to give the client root access on linux or use the host.yaml settting for xdotool.")

@@ -3,23 +3,40 @@
 - unlocks on unit test fails a lot, because of pipe?
   - hard in world8 to find 2 levels that do not require pipe
 - Improve performance
-  - Log loop time
-  - Increase connection delay
-  - watch if clear cache more often than expected
-  - dont run patches / unlocks each frame
+  - Log loop time : nothing noticable
+  - watch if clear cache more often than expected : no
+  - dont run patches / unlocks each frame 
+  - is is loading star coin moddel?
 - Starting inventory still added ?
   - buttons etc ???
+- Ask for AI rating on sheet to be lowered
 
 
 ## Playtest
-- Door logic not working? : Or is this other issue
+- Door dissabled when should not
 - entering a mushroom house with doors unusable would send a deathlink
 - test on frozen
+- settings mod
+  - test on other comupter 
+- verbose error
+- if 8-A and 8-C are randoed correctly
+- items in starting inventory when should not
 
 
 ## Bugs to fix
 - p-switch
+- Game freezes often, why?
+- 3-4's Secret Exit seems to not send even after completing it several times.
+- Hint movies still crash
+  - For a lot of them
+  - Skipp loading them
+  - Make level shuffle and hint movie sanity incompatible options
+- Tittle screen crash
+  - Remove all patches
+  - Try removing Wii strap patch
 
+FUN_808ce8e0=0x808ce8e0
+isSpecialWorldCourseOpen=0x800fc510
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death

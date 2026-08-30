@@ -41,7 +41,7 @@ def get_dolphin_path_windows() -> str:
 class NSMBWSettings(settings.Group):
     settings_key = "nsmbw_settings"
 
-    class GameFilePath(settings.UserFilePath):
+    class GameFilePath(settings.FilePath):
         """A path to your game file, that ends with either .iso or .wbfs but NOT .nkit.iso"""
         required = True
 
@@ -51,10 +51,11 @@ class NSMBWSettings(settings.Group):
             _filetypes = [("Game dump", [".iso", ".wbfs"])]
             return super().browse(_filetypes, **kwargs)
 
-    class DolphinFolder(settings.UserFolderPath):
+    class DolphinFolder(settings.FolderPath):
         r"""
         Path to dolphin program directory, used only on windows
         Example: C:\Program Files\Dolphin-x64
+        Should include Dolphin.exe and DolphinTool.exe
         """
 
         @classmethod
@@ -66,20 +67,37 @@ class NSMBWSettings(settings.Group):
             if not (Path(path) / "DolphinTool.exe").exists():
                 ValueError("DolphinTool.exe not in Dolphin path")
 
-    class DolphinExe(settings.OptionalUserFilePath):
+
+        def browse(self: T, **kwargs: Any) -> T | None:
+            from Utils import open_directory
+            res = open_directory(f"Select {self.description or self.__class__.__name__}", self)
+            if res:
+                try:
+                    rel = os.path.relpath(res, self.__class__("").resolve())
+                    if not rel.startswith(".."):
+                        res = rel
+                except ValueError:
+                    pass
+                self.validate(res)
+                return self.__class__(res)
+            return None
+
+    class DolphinExe(settings.FilePath):
         r"""
         A path to your dolphin program
         """
         is_exe = True
+        required = False
 
-    class DolphinTool(settings.OptionalUserFilePath):
+    class DolphinTool(settings.FilePath):
         r"""
         A path to your dolphin tools program
         """
         is_exe = True
+        required = False
         #description = ""
 
-    class DolphinRiivolutionFolder(settings.UserFolderPath):
+    class DolphinRiivolutionFolder(settings.FolderPath):
         """
         A path to dolphins riivolution folder,
         on Windows found in '%appdata%/Dolphin Emultator/Load/Riivolution'
@@ -191,7 +209,7 @@ class NSMBWSettings(settings.Group):
     elif Utils.is_linux:
         keypress_library: KeypressLibrary  = KeypressLibrary(0)
 
-        #dolphin_exe : DolphinExe  = DolphinExe("dolphin-emu")
+        dolphin_exe : DolphinExe  = DolphinExe("dolphin-emu")
         #DolphinExe(subprocess.run(["whereis", "dolphin-emu"], capture_output=True, text=True).stdout)
         if is_flatpak_installed():
             dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(Path(os.environ['HOME']) / ".var" / "app"/ "org.DolphinEmu.dolphin-emu" / "data"/ "dolphin-emu" / "Load"/ "Riivolution")
