@@ -353,6 +353,7 @@ class NSMBWContext(SuperContext):
 
     async def game_loop(self):
         while not self.exit_event.is_set():
+            #self.loop_time = time.time()
             try:
                 if self.server:
                     self.last_error_message = None
@@ -367,6 +368,7 @@ class NSMBWContext(SuperContext):
 
                         if connection_state == ConnectionState.IN_GAME:
                             await self.handle_in_level()
+                            await asyncio.sleep(0.01)
                         elif connection_state == ConnectionState.IN_WORLDMAP:
                             await self.handle_in_worldmap()  # It will say the player is in menu sometimes
                             await asyncio.sleep(0.01)
@@ -379,6 +381,8 @@ class NSMBWContext(SuperContext):
                                 await asyncio.sleep(1)
                             else:
                                 await asyncio.sleep(3)
+
+                        #print(f"finished loop:   {self.loop_time - time.time()}")
                     except Exception as e:
                         logger.info(traceback.format_exc())
                         self.log_color(f"Failed with error {e}. When handling client logic", "red")
@@ -433,11 +437,13 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_in_level(self):
+        #print(f"before item loop:   {self.loop_time - time.time()}")
         await self.handle_receive_items()
+        #print(f"after item loop:   {self.loop_time - time.time()}")
 
         await self.handle_check_goal_complete()
         await self.handle_checked_location()
-
+        #print(f"after loaction loop:   {self.loop_time - time.time()}")
         await self.handle_check_deathlink()
         await self.handle_modifiers()
 
@@ -446,8 +452,8 @@ class NSMBWContext(SuperContext):
         await self.game_interface.alive_player()
         await self.ut_auto_tab()
         await self.handle_screen_transition()
-
-        await asyncio.sleep(0.1)
+        #print(f"after misc loop:   {self.loop_time - time.time()}")
+        await asyncio.sleep(0.03)
 
         if self.game_interface.get_savefile_num() != 2:
             text = f"Please select save file 2 to play on instead of save file {self.game_interface.get_savefile_num()}, others are not fully supported"
@@ -607,8 +613,9 @@ class NSMBWContext(SuperContext):
     async def handle_checked_location(self):
         if self.game_interface.get_savefile_num() == 1:
             text = f"You are playing on save file 1, to prevent errors, no locations will be sent."
-            #self.log_color(text, "red")
-            print(text)
+            self.log_color(text, "red")
+            #print(text)
+            await asyncio.sleep(3)
             return
 
         checked_locations : List[int] = []
@@ -1583,10 +1590,10 @@ class NSMBWContext(SuperContext):
                     if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
                         rii_path = _patcher.output_path.parent.parent.parent
                         save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
-                        subprocess.Popen(self.get_dolphin_run_command(_patcher, save_state_file) + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
+                        subprocess.Popen(self.get_dolphin_run_command(_patcher, str(save_state_file)) + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
                     else:
                         subprocess.Popen(self.get_dolphin_run_command(_patcher) + ["-e", str(_patcher.shortcut_path)])
-                    self.connection_pause = time.time() + 10
+                    self.connection_pause = time.time() + 15
             else:
                 logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
         except Exception as e:

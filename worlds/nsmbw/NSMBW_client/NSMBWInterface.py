@@ -404,17 +404,16 @@ class NSMBWInterface(object):
         clear_address = 0x80BBB000
         i = 0
         while (self.dolphin_client.read_address(clear_address, 4) != val_0000 + val_0000):
-            sleep(0.01)
+            sleep(0.001)
             i += 1
             if i > 500:
                 logger.info("Clear cache timed out, manually clear it by saving and loading a savestate.")
                 return False
 
-        sleep(0.01)
-
+        print("cleared cache")
         self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
+        sleep(0.0001)
 
-        sleep(0.01)
         return True
 
     def write_instruction(self, address: int, data: bytes) -> bool:

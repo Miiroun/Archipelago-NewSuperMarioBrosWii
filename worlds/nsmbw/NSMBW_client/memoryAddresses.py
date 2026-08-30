@@ -211,23 +211,26 @@ class MemoryAddresses(object):
         self.gravity_start = self.map_between("P1", 0x802f5938)
 
         # these patch values need to be diffrent for P1 at least, differ from decomp
-        self.patch_p_switch = [#self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch_block"),
-                               self.create_patch("P1", 0x80a197f8, 0x38000003, 0x38000001, "patch_p_switch"),
-                                #self.create_patch("P1", 0x8030a9a8, b'\x01\x91', b'\x00\x49', "patch_p_switch")
-                                #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch")
-                                #self.create_patch("P1", 0x80000000, instru_blr,0x38000001, "patch_p_switch")
-            ]
+        self.patch_p_switch = [
+            #self.create_patch("P1", 0x809c6154, instru_noop, instru_bne + val_0010, "patch_p_switch_block"),
+           #self.create_patch("P1", 0x80a197f8, 0x38000003, 0x38000001, "patch_p_switch"),
+            #self.create_patch("P1", 0x8030a9a8, b'\x01\x91', b'\x00\x49', "patch_p_switch"),
+            #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch"),
+            #self.create_patch("P1", 0x80000000, instru_blr,0x38000001, "patch_p_switch"),
+            self.create_patch("P1", 0x80036e20, instru_blr,0x9421fff0, "patch_p_switch"),
+        ]
         #self.patch_p_switch[0].addr = 0x80a19838
 
         # differences betwen P1 and E2 + ?swich seems to be default makes this patch hard to do
-        self.patch_q_switch = [#self.create_patch("P1", 0x809c6168, instru_b+ b'\x00'+ val_0000, instru_bne + val_000c, "patch_q_switch_block"),
-                               #self.create_patch("P1", 0x80a197e4, 0x38800004, 0x38800000, "patch_q_switch"),
-                                #self.create_patch("P1", 0x8030a9d0, b'\x01\x91', b'\x00\x4a', "patch_q_switch")
-                                #self.create_patch("P1", 0x80000000, instru_blr, 0x38000002, "patch_q_switch")
-                                #CodePatch(, 0x28000049, 0x2800004a,"patch_q_switch")
-                                #does not work, just p-switch
-                                #self.create_patch("P1", 0x800d88f0, instru_blr, instru_li_r0 + val_0001, "patch_both_switches"),
-                                #self.create_patch("P1", 0x800d891c, 0x7ca00078, instru_li_r0 + val_0001, "?-switch = p_switch?"),
+        self.patch_q_switch = [
+            #self.create_patch("P1", 0x809c6168, instru_b+ b'\x00'+ val_0000, instru_bne + val_000c, "patch_q_switch_block"),
+           #self.create_patch("P1", 0x80a197e4, 0x38800004, 0x38800000, "patch_q_switch"),
+            #self.create_patch("P1", 0x8030a9d0, b'\x01\x91', b'\x00\x4a', "patch_q_switch")
+            #self.create_patch("P1", 0x80000000, instru_blr, 0x38000002, "patch_q_switch")
+            #CodePatch(, 0x28000049, 0x2800004a,"patch_q_switch")
+            #does not work, just p-switch
+            #self.create_patch("P1", 0x800d88f0, instru_blr, instru_li_r0 + val_0001, "patch_both_switches"),
+            #self.create_patch("P1", 0x800d891c, 0x7ca00078, instru_li_r0 + val_0001, "?-switch = p_switch?"),
 
         ]
         #self.patch_q_switch[0].addr = 0x80a19898
@@ -322,7 +325,7 @@ class MemoryAddresses(object):
         exit_course_anytime = self.create_patch("P1", 0x800B4EA8, instru_li_r3 + b'\x03' + b'\x01', name="exit_course_anytime")
 
         #disable_game_over_item_clear = self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear") # not working, by Li
-        # fixed game_over_patch by miiroun
+        # fixed game_over_patch by miiroun (not completly fixed, still crash)
         #game_over_patch = [
         #    self.create_patch("P1",0x80789038, instru_noop , name="DisableGameOverItemClear"),
         #    self.create_patch("P1", 0x80789044, instru_noop, name="DisableGameOverItemClear"),
@@ -375,11 +378,21 @@ class MemoryAddresses(object):
         ]
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
-            patch_skipp_title_screen, patch_skipp_intro_cutscene, patch_show_all_world_sc_screen,
-            patch_skipp_move_next_world,patch_allways_save,exit_course_anytime,# disable_game_over_item_clear,
-            patch_skipp_wii_remote_strap_screen,  exception_handler, #lives_limit_change,
-            worldMapAfterFinalBoss, #dontToggleSuperGuideBit, fs_RemoveMultiSelect,
-            disable_world9_sc_req, #game_over_patch,
+            patch_skipp_title_screen,
+            patch_skipp_intro_cutscene,
+            patch_show_all_world_sc_screen,
+            patch_skipp_move_next_world,
+            patch_allways_save,
+            exit_course_anytime,
+            # disable_game_over_item_clear,
+            patch_skipp_wii_remote_strap_screen,
+            exception_handler,
+            #lives_limit_change,
+            worldMapAfterFinalBoss,
+            #dontToggleSuperGuideBit,
+            #fs_RemoveMultiSelect,
+            disable_world9_sc_req,
+            #game_over_patch,
         ]
 
         # address 0x80162fb8 might be good to create a branch from

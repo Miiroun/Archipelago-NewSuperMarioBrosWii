@@ -227,13 +227,13 @@ class Patcher:
 
             if level_num == 6 + (world_num in [7]) and (world_num in [3,4,5,7]): # ghosthouse
                 return f"0{world_num}-{21}.arc"
-            elif level_num == 7 + (world_num in [7,8]):
+            elif level_num == 7 + (world_num in [7,8]): #tower
                 return f"0{world_num}-{22}.arc"
-            elif level_num == (8 + (world_num in [7,8]) + (world_num in [8])):
+            elif level_num == (8 + (world_num in [7,8])): #castle
                 return f"0{world_num}-{24}.arc"
-            elif level_num == 9:
+            elif level_num == 9 + (world_num in [8]):
                 return f"0{world_num}-{38}.arc"
-            else:
+            else: #normal level
                 return f"0{world_num}-0{level_num}.arc"
 
 
