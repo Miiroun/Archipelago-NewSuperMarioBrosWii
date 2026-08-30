@@ -61,10 +61,10 @@ class MemoryAddresses(object):
                 with io.TextIOWrapper(zf.open(symbol_path), encoding="utf-8") as f:
                     self.symbol_reader = SymbolReader(f)
         else:
-            memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "wii_code_tools" / "address-map.txt"
+            memorymap_path = Path(__file__).parent.parent / "NSMBW_client" / "lib" / "wii_code_tools" / "address-map.txt"
             with Path(memorymap_path).open('r', encoding='utf-8') as f:
                 self.mappers = lib_address_maps.load_address_map(f)
-            symbol_path = Path(__file__).parent.parent / "NSMBW_client" / "SYMBOL_MAP_P1_SHORTENED.map"
+            symbol_path = Path(__file__).parent.parent / "NSMBW_client" / "lib" / "wii_code_tools"  / "SYMBOL_MAP_P1_SHORTENED.map"
             with Path(symbol_path).open('r', encoding='utf-8') as f:
                     self.symbol_reader = SymbolReader(f)
         self.this_version = this_version
@@ -217,7 +217,14 @@ class MemoryAddresses(object):
             #self.create_patch("P1", 0x8030a9a8, b'\x01\x91', b'\x00\x49', "patch_p_switch"),
             #self.create_patch("P1", 0x8031abf0, self.map_between("P1", 0x80428978), self.map_between("P1", 0x80428580), "patch_p_switch"),
             #self.create_patch("P1", 0x80000000, instru_blr,0x38000001, "patch_p_switch"),
-            self.create_patch("P1", 0x80036e20, instru_blr,0x9421fff0, "patch_p_switch"),
+            #self.create_patch("P1", 0x80036e20, instru_blr,0x9421fff0, "patch_p_switch"),
+            #self.create_patch("P1", 0x800d87a8, 0x4800009c, 0x4182009c, "patch_p_switch"),
+            #self.create_patch("P1", 0x800d8818, instru_noop, 0x4082001c, "patch_p_switch"),
+
+            self.create_patch("P1", 0x800d87a0, instru_li_r0 + val_0000, 0x48000101, "patch_p_switch_timer"),
+            self.create_patch("P1", 0x800d88f0, instru_blr, 0x38000001, "patch_p_switch_activation"),
+
+
         ]
         #self.patch_p_switch[0].addr = 0x80a19838
 
@@ -376,16 +383,45 @@ class MemoryAddresses(object):
 
             #self.create_patch("P1", 0x800fc534, 0x281e0000 )
         ]
+
+        patch_hint_movie_viewing = [
+            #self.create_patch("P1", 0x80916e04, instru_noop + instru_noop),
+            #self.create_patch("P1", 0x80916e18, instru_noop + instru_noop),
+            #self.create_patch("P1", 0x80916e24, instru_noop),
+
+            #self.create_patch("P1", 0x801645d4, instru_noop),
+
+            #self.create_patch("P1", 0x80916d50, instru_blr),
+
+            #self.create_patch("P1", 0x80916c40, instru_blr),
+
+            #self.create_patch("P1", 0x80916b70, instru_noop),
+
+            #self.create_patch("P1", 0x80916ad0, instru_noop),
+
+            #self.create_patch("P1", 0x809169b0, 0x4800),
+
+            #self.create_patch("P1", 0x80916330, 0x4800),
+
+            #self.create_patch("P1", 0x809163d0, instru_noop),
+
+            #self.create_patch("P1", 0x809164ec, instru_noop),
+
+            #self.create_patch("P1", 0x809165b0, instru_blr),
+
+            #self.create_patch("P1", 0x809165e4, instru_noop),
+        ]
+
         # this put all patches in a list that is called on connect
         self.patches : List[List[CodePatch] | CodePatch] = [
-            patch_skipp_title_screen,
+            #patch_skipp_title_screen,
             patch_skipp_intro_cutscene,
             patch_show_all_world_sc_screen,
             patch_skipp_move_next_world,
             patch_allways_save,
             exit_course_anytime,
             # disable_game_over_item_clear,
-            patch_skipp_wii_remote_strap_screen,
+            #patch_skipp_wii_remote_strap_screen,
             exception_handler,
             #lives_limit_change,
             worldMapAfterFinalBoss,
@@ -393,6 +429,7 @@ class MemoryAddresses(object):
             #fs_RemoveMultiSelect,
             disable_world9_sc_req,
             #game_over_patch,
+            patch_hint_movie_viewing,
         ]
 
         # address 0x80162fb8 might be good to create a branch from

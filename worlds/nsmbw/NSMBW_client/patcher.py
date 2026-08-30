@@ -303,7 +303,17 @@ class Patcher:
 
 
         if self.slot_data["music_shuffle_riivolution"]:
-            self.patch_entire_folder(os.path.join("Sound", "stream"), removed = ["switch_lr.n.32.brstm"])
+            folder_name = os.path.join("Sound", "stream")
+            temp_path = self.temp_dir / "files" / folder_name
+            file_names: List[str] = os.listdir(temp_path)
+
+            BGM = list(filter(lambda x: x.startswith("BGM_"), file_names)) + list(filter(lambda x: x.startswith("STRM_BGM_"), file_names))
+
+            SFX = list(set(file_names) - set(BGM) - {"switch_lr.n.32.brstm"})
+
+            self.patch_files(BGM, folder_name, False)
+            self.patch_files(SFX, folder_name, False)
+
 
 
     def patch_files(self, file_names : List[str], folder_name : str, arc_rename : bool = False):
@@ -516,10 +526,10 @@ if __name__ == "__main__":
     level_order = list(range(sum(LEVELS_PER_WORLD)))
     random.shuffle(level_order)
     _slot_data = { "level_shuffle_riivolution" : 0,
-                   "music_shuffle_riivolution" : 0,
+                   "music_shuffle_riivolution" : 1,
                    "shuffled_level_order" : level_order,
                    "background_shuffle_riivolution" : 0,
-                   "pallet_shuffle_riivolution" : 1,
+                   "pallet_shuffle_riivolution" : 0,
                    "tile_sheet_shuffle_riivolution" : 1,
                    }
     _patcher = Patcher(_name, _seed, _slot_data)

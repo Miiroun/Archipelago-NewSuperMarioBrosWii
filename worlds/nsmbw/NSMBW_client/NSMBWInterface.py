@@ -408,7 +408,7 @@ class NSMBWInterface(object):
                 logger.info("Clear cache timed out, manually clear it by saving and loading a savestate.")
                 return False
 
-        print("cleared cache")
+        #print("cleared cache")
         self.dolphin_client.write_address(clear_address, int_to_bytes(address, 4))
         sleep(0.0001)
 

@@ -762,3 +762,6 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if world.options.alternative_goal.value == AlternativeGoal.option_hintmovies:
         if not world.options.hint_movie_sanity.value:
             raise OptionError(f"(NSMBW generation error) hint_movie_sanity needs to be enabled for alternative goal hint_movies")
+
+    if world.options.hint_movie_sanity.value and world.options.level_shuffle_riivolution.value:
+        raise OptionError(f"(NSMBW generation error) Due to a bug hint_movie_sanity and level_shuffle_riivolution can not both be enabled")

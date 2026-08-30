@@ -365,6 +365,9 @@ class NSMBWContext(SuperContext):
                         connection_state = self.game_interface.get_connection_state()
                         self.update_connection_status(connection_state)
 
+                        if (self.game_interface.memory_addresses is not None) and self.game_interface.dolphin_client.is_connected():
+                            if self.game_interface.get_record_state() == b'\x04':
+                                await self.game_interface.kill_player()
 
                         if connection_state == ConnectionState.IN_GAME:
                             await self.handle_in_level()
@@ -471,7 +474,6 @@ class NSMBWContext(SuperContext):
         await self.handle_checked_location()
 
         await self.game_interface.alive_player()
-        await self.handle_check_deathlink()
 
         self.game_interface.update_check_sum()
         if time.time() >= self.save_time + 60 * 5 and Utils.get_settings()["nsmbw_settings"].auto_save:
@@ -998,6 +1000,9 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_unlocked_powerups(self):
+        if (not self.game_interface.is_in_level() ) or (self.game_interface.get_world_level_num_in_level() == (0,0)):
+            return
+
         unlocked_powerups = self.unlocked_powerups.copy()
         for player_num in range(PLAYER_COUNT):
             current_powerup_state = self.game_interface.get_powerupstate(player_num)

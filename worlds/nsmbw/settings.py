@@ -57,6 +57,7 @@ class NSMBWSettings(settings.Group):
         Example: C:\Program Files\Dolphin-x64
         Should include Dolphin.exe and DolphinTool.exe
         """
+        description = "Path to dolphin program directory, should include Dolphin.exe"
 
         @classmethod
         def validate(cls, path: str) -> None:

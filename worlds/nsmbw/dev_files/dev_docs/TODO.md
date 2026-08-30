@@ -1,42 +1,22 @@
 # TODO 
 # Super Short term
-- unlocks on unit test fails a lot, because of pipe?
-  - hard in world8 to find 2 levels that do not require pipe
 - Improve performance
-  - Log loop time : nothing noticable
+  - Log loop time : nothing noticeable
   - watch if clear cache more often than expected : no
   - dont run patches / unlocks each frame 
-  - is is loading star coin moddel?
-- Starting inventory still added ?
-  - buttons etc ???
-- Ask for AI rating on sheet to be lowered
+  - is it loading star coin model?
+  - test if happens with riivo patch without client
 
 
 ## Playtest
-- Door dissabled when should not
-- entering a mushroom house with doors unusable would send a deathlink
 - test on frozen
 - settings mod
   - test on other comupter 
-- verbose error
-- if 8-A and 8-C are randoed correctly
-- items in starting inventory when should not
 
 
 ## Bugs to fix
-- p-switch
-- Game freezes often, why?
-- 3-4's Secret Exit seems to not send even after completing it several times.
-- Hint movies still crash
-  - For a lot of them
-  - Skipp loading them
-  - Make level shuffle and hint movie sanity incompatible options
-- Tittle screen crash
-  - Remove all patches
-  - Try removing Wii strap patch
+- 3-4's randod to 1-3 Secret Exit seems to not send even after completing it several times.
 
-FUN_808ce8e0=0x808ce8e0
-isSpecialWorldCourseOpen=0x800fc510
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death
@@ -51,10 +31,6 @@ isSpecialWorldCourseOpen=0x800fc510
 - Make secret exit items to reunlock them
 - assert early items are actually early, write test?
 - Figure out how to change HM unlock condition?
-- Work on UT tracker pack
-  - After 0.3.0, other things are higher priority
-- request channel in ap-dc
-- change starting world 
 - AFTER JIT clear have proven to work : make post in AP-mod thread about it
 - To-do:  prompt to watch hint movie
 - Need spin to get off vine and yoshi
@@ -74,7 +50,6 @@ isSpecialWorldCourseOpen=0x800fc510
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
 - implement method to read arc files : needed to change names of subfolders
 - Another actual logic check is you can get 4-4 starcoin 1 with just penguin suit and swim, swimming at the pipe at the right angle and spamming swim allows you to bypass the the need to hit the p-switch
-- Thats good to know, i just found another check i can get with wall jump or propeller in 7-ghosthouse that isn't in logic because i don't have ?-switch
 - Can find value hardcoded for level timer? Add memwatch for func that changes it
   - Can make > vanilla?, would be nice
 - Sprite table start 	8030a340	8031ab4c
@@ -84,8 +59,6 @@ isSpecialWorldCourseOpen=0x800fc510
 - Separate auto start: auto save, auto close
 - detect if unsupported dolphin settings are used
 - Review option creator pr
-- Try manually renaming a tileset
-- Try opening vanilla tileset with puzzle
 - Edit data of pa0_jyotyu to change its color 
   - or download versions and create patch files
   - https://discord.com/channels/673369321522593794/1295786310694342691/1295786310694342691
@@ -126,6 +99,10 @@ isSpecialWorldCourseOpen=0x800fc510
 - Make name fuzzing for commands in common client: PR.
 - auto read dolphin settings for where games are stored
 - get swim to be handled in game
+- Level shuffle crashes hint movies
+  - it is due to starting locations not being registered
+- freez when clear toad house
+  - on some music shuffle seeds
 
 
 ## Broken versions
@@ -175,12 +152,6 @@ isSpecialWorldCourseOpen=0x800fc510
   - and search for info in dc
   - How/where is the games level / enemy info loaded : look at mod tools, figure out if can replace
   - decompile some level files, look at their structure, same with world map
-- Improve JIT cache situation
-  - Keyboard program causes issues with linux requiring root
-  - https://github.com/randovania/py-dolphin-memory-engine/issues/10
-  - create a gecko code that loads the instruction for me??
-  - or just really on people turning off keybinds require focus
-  - In theory I could write some PowerPC assembly that invalidates the cache internally but then I'd have to somehow make it detect external memory modifications and adapt to it. My problem with this method is to find a function to hook onto safely.
 - Reenable part of climb that dissabled due to freezes
 - Red coin sanity
 - Fix local_filler to not be early
@@ -212,7 +183,6 @@ isSpecialWorldCourseOpen=0x800fc510
 - brick rando: look at EN_OBJ_HATENA_BLOCK, daEnBlockMain_c
 - Make penguin progressive?
 - Hint movies does not work on other save files?
-- Dereference player  pointer
 - Add support for other savefile
 
 
