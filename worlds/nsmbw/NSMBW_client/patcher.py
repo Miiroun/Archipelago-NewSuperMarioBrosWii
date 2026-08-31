@@ -59,63 +59,108 @@ class Patcher:
         g_mult = 0.5 + self.random.random()
         b_mult = 0.5 + self.random.random()
 
-        mod_decomp = bytearray(decomp)
-        for i in range(len(mod_decomp)):
-            _byte = mod_decomp[i]
+        mod_decomp = decomp.copy()
+        for i in range(len(mod_decomp) // 2):
+            # rgb5a3
+            # https://mkwiiki.org/wiki/Image_Formats
+            # https://github.com/yoshakami/plt0/tree/9f19597ce49b3bf65761be54963206cc04546ebd
+            # https://github.com/NSMBW-Community/NSMBLib-Updated/blob/a7b636a3317b62635eca04025a9becdf6275abde/nsmblibmodule.c#L360
 
-            # _byte = _byte << 2
+            ar = mod_decomp[2 * i]
+            gb = mod_decomp[2 * i + 1]
+            argb = (ar << 8) | gb
+            if (argb & 0x8000) == 0:
+                # decode
+                a = ar >> 4
+                r = ar & 0x0F
+                g = gb >> 4
+                b = gb & 0x0F
 
-            val = i % 4
-            if val < 1:
-                # red
-                _byte *= r_mult
-                # _byte = _byte << 2
-                pass
-            elif val < 2:
-                # green
-                _byte *= g_mult
-                pass
-            elif val < 3:
-                # blue
-                pass
-                _byte *= b_mult
+                # modify
+                r = round(r*r_mult)
+                g = round(g*g_mult)
+                b = round(b*b_mult)
+
+                #r, g, b = g, b, r
+                #g,b = b,g
+                #r = 0
+
+                r = min(r, 2**4-1)
+                g = min(g, 2**4-1)
+                b = min(b, 2**4-1)
+
+                # encode
+                ar = (a << 4) | r
+                gb = (g << 4) | b
+
+                mod_decomp[2 * i] = ar
+                mod_decomp[2 * i + 1] = gb
+
             else:
-                # alpha
-                pass
+                # decode
+                rgb = argb - 0x8000
+                r = rgb >> 10
+                g = (rgb >> 5) & 0x001F #(0x03E0 & rgb) >> 5
+                b = rgb & 0x001F
 
-            _byte = int(round(_byte))
-            _byte = min(_byte, 255)
-            _byte = max(_byte, 0)
+                # modify
+                r = round(r*r_mult)
+                g = round(g*g_mult)
+                b = round(b*b_mult)
 
-            mod_decomp[i] = _byte
+                #r, g, b = g, b, r
+                #g,b = b,g
 
-        class WriteAble(object):
-            _byte_array: bytearray
-            times: int
+                r = min(r, 2**5-1)
+                g = min(g, 2**5-1)
+                b = min(b, 2**5-1)
 
-            def __init__(self):
-                self.times = 0
-                self._byte_array = bytearray()  # 2014 * 256  *4
-                # saving to predefined byte array : 11 -> 8 sec, but crash if file is to long
+                # encode
+                argb = 0x8000 | (r << 10) | (g << 5) | b
 
-            def write(self, data: bytes):
-                self._byte_array.extend(data)
-                # data_array = bytearray(data)
+                mod_decomp[2 * i] = argb >> 8
+                mod_decomp[2 * i +1] = argb & 0x00FF
+            #assert mod_decomp[2 * i] == decomp[2 * i], f"{mod_decomp[2 * i]:x} == {decomp[2 * i]:x}"
+            #assert mod_decomp[2 * i + 1] == decomp[2 * i+1], f"{mod_decomp[2 * i+1]:x} == {decomp[2 * i+1]:x}"
+            #mod_decomp[2 * i ] |= 1
 
-                # for _dat in data_array:
-                # self._byte_array[self.times] = _dat
-                # self.times += len(data)
+        try:
+            #import nsmblib # cannot use without GPL 2
+            #return nsmblib.compress11LZS(bytes(mod_decomp))
 
-            def get(self):
-                # print(self.times)
-                return self._byte_array
+            #import nlzss11 # also GPL 2
+            #return nlzss11.compress(bytes(mod_decomp), level=6)
+            raise ImportError
 
-        _writeable = WriteAble()
+        except ImportError:
+            print("Use nsmblib fallback")
+            class WriteAble(object):
+                _byte_array: bytearray
+                times: int
 
-        # this is really really slow ~ 10 seconds, because small window == 4 bytes, does ~ 10_000 times
-        compress_nlz11(mod_decomp, _writeable) # for some resson this wants to write to file, I create a class with write method to solve this
+                def __init__(self):
+                    self.times = 0
+                    self._byte_array = bytearray()  # 2014 * 256  *4
+                    # saving to predefined byte array : 11 -> 8 sec, but crash if file is to long
 
-        return bytes(_writeable.get())
+                def write(self, data: bytes):
+                    self._byte_array.extend(data)
+                    # data_array = bytearray(data)
+
+                    # for _dat in data_array:
+                    # self._byte_array[self.times] = _dat
+                    # self.times += len(data)
+
+                def get(self):
+                    # print(self.times)
+                    return self._byte_array
+
+            _writeable = WriteAble()
+
+            # this is really really slow ~ 10 seconds, because small window == 4 bytes, does ~ 10_000 times
+            compress_nlz11(mod_decomp, _writeable) # for some resson this wants to write to file, I create a class with write method to solve this
+
+            return bytes(_writeable.get())
 
     def recolor_tileset_arcfile(self, source: Path, destination: Path):
         with open(source, "rb") as f:
@@ -529,7 +574,7 @@ if __name__ == "__main__":
                    "music_shuffle_riivolution" : 1,
                    "shuffled_level_order" : level_order,
                    "background_shuffle_riivolution" : 0,
-                   "pallet_shuffle_riivolution" : 0,
+                   "pallet_shuffle_riivolution" : 1,
                    "tile_sheet_shuffle_riivolution" : 1,
                    }
     _patcher = Patcher(_name, _seed, _slot_data)
