@@ -61,12 +61,14 @@ class SlidingWindow:
         for _ in range(n):
             self.next()
 
-    def search(self):
+    def search(self, _benchmark):
+        import time
         match_max = self.match_max
         match_min = self.match_min
 
         counts = []
         indices = self.hash[self.data[self.index]]
+        start = time.time()
         for i in indices:
             matchlen = self.match(i, self.index)
             if matchlen >= match_min:
@@ -78,6 +80,7 @@ class SlidingWindow:
                     if matchlen >= match_max:
                         #assert matchlen == match_max
                         return counts[-1]
+        _benchmark["search_loop"] += time.time() - start
 
         if counts:
             match = max(counts, key=itemgetter(0))
@@ -115,27 +118,41 @@ class NLZ11Window(SlidingWindow):
 class NOverlayWindow(NLZ10Window):
     disp_min = 3
 
-def _compress(input, windowclass=NLZ10Window):
+def _compress(input, _benchmark, windowclass=NLZ10Window):
     """Generates a stream of tokens. Either a byte (int) or a tuple of (count,
     displacement)."""
+    import time
 
+    now = time.time()
     window = windowclass(input)
+    _benchmark["construct_window"] += time.time() - now
 
     i = 0
     while True:
+        loop_start = time.time()
         if len(input) <= i:
             break
-        match = window.search()
+        match = window.search(_benchmark)
+        after_match = time.time()
+        _benchmark["windows_search"] += time.time() - loop_start
         if match:
             yield match
             #if match[1] == -283:
             #    raise Exception(match, i)
             window.advance(match[0])
             i += match[0]
+            _benchmark["advance"] += time.time() - after_match
+            _benchmark["advance_count"] += 1
         else:
             yield input[i]
             window.next()
             i += 1
+            _benchmark["next"] += time.time() - after_match
+            _benchmark["next_count"] += 1
+        _benchmark["loopstart"] += time.time() - loop_start
+    _benchmark["compress"] += time.time() - now
+    _benchmark["compress_count"] += 1
+
 
 def packflags(flags):
     n = 0
@@ -188,16 +205,27 @@ def compress(input, out):
         out.write(b'\x00' * padding)
 
 def compress_nlz11(input, out):
+    import time
+    from collections import defaultdict
+
+    _benchmark = defaultdict(float)
+
     # header
+    start = time.time()
     out.write(pack("<L", (len(input) << 8) + 0x11))
+    _benchmark["header"] += time.time() - start
 
     # body
     length = 0
-    for tokens in chunkit(_compress(input, windowclass=NLZ11Window), 8):
+
+    start_all_tokens = time.time()
+    for tokens in chunkit(_compress(input, _benchmark, windowclass=NLZ11Window), 8):
+        start_tokens = time.time()
         flags = [type(t) == tuple for t in tokens]
         out.write(pack(">B", packflags(flags)))
         length += 1
         for t in tokens:
+            start_token = time.time()
             if type(t) == tuple:
                 count, disp = t
                 disp = (-disp) - 1
@@ -225,14 +253,19 @@ def compress_nlz11(input, out):
                     length += 4
                 else:
                     raise ValueError(count)
+                _benchmark["token"] += time.time() - start_token
             else:
                 out.write(pack(">B", t))
                 length += 1
+        _benchmark["tokens"] += time.time() - start_tokens
+    _benchmark["all_tokens"] = time.time() - start_all_tokens
 
     # padding
     padding = 4 - (length % 4 or 4)
     if padding:
         out.write(b'\x00' * padding)
+    _benchmark["total"] = time.time() - start
+    print(_benchmark)
 
 def dump_compress_nlz11(input, out):
     # body
