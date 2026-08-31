@@ -54,10 +54,10 @@ class MemoryAddresses(object):
         if Utils.is_frozen():
             with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
                 #memorymap_path = zipfile.Path(zf) / "NSMBW_client" / "wii_code_tools" /"address-map.txt"
-                memory_path = r"nsmbw/NSMBW_client/wii_code_tools/address-map.txt"
+                memory_path = r"nsmbw/NSMBW_client/lib/wii_code_tools/address-map.txt"
                 with io.TextIOWrapper(zf.open(memory_path), encoding="utf-8") as f:
                     self.mappers = lib_address_maps.load_address_map(f)
-                symbol_path = r"nsmbw/NSMBW_client/SYMBOL_MAP_P1_SHORTENED.map"
+                symbol_path = r"nsmbw/NSMBW_client/lib/wii_code_tools/SYMBOL_MAP_P1_SHORTENED.map"
                 with io.TextIOWrapper(zf.open(symbol_path), encoding="utf-8") as f:
                     self.symbol_reader = SymbolReader(f)
         else:

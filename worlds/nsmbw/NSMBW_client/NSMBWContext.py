@@ -593,24 +593,41 @@ class NSMBWContext(SuperContext):
         match self.slot_data["alternative_goal"]:
             case AlternativeGoal.option_bowser:
 
-                if self.moded_levelstats == ModifiedState.UNMODIFIED:
-                    level_bowcast_condit = self.game_interface.get_level_stats(8,9)
-                    #print(level_bowcast_condit)
-                    #stats_in_bytes = #level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
-                    #bowser_death = #(stats_in_bytes == b'\x10\x00\x00\x00'[0]) # the & remvoes starcoin amount from stats when check for compleation
+                if self.moded_levelstats != ModifiedState.UNMODIFIED:
+                    return
+                level_bowcast_condit = self.game_interface.get_level_stats(8,9)
+                #print(level_bowcast_condit)
+                #stats_in_bytes = #level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
+                #bowser_death = #(stats_in_bytes == b'\x10\x00\x00\x00'[0]) # the & remvoes starcoin amount from stats when check for compleation
 
-                    bowser_death = (level_bowcast_condit[0] & 0x10) == 0x10
-                    #print(f"boser castle {level_bowcast_condit}")
+                bowser_death = (level_bowcast_condit[0] & 0x10) == 0x10
+                #print(f"boser castle {level_bowcast_condit}")
 
-                    if bowser_death:
-                        await self.send_goal()
+                if bowser_death:
+                    await self.send_goal()
 
             case AlternativeGoal.option_starcoins:
                 if  self.starcoin_count >= self.slot_data["bowser_star_unlock"]:
                     await self.send_goal()
+
             case AlternativeGoal.option_hintmovies:
                 if len(set(name_hintmovie(hm_num) for hm_num in range(HINTMOVIE_COUNT)) - set(DEPRIO_HM) - self.checked_locations) == 0:
                     await self.send_goal()
+
+            case AlternativeGoal.option_all_levels:
+                if self.moded_levelstats != ModifiedState.UNMODIFIED:
+                    return
+
+                for world_num in range(1, 9 + 1):
+                    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+                        if (bytes_to_int(self.game_interface.get_level_stats(world_num, level_num)) & 0x10) != 0x10:
+                            return
+
+                await self.send_goal()
+
+
+            case _:
+                raise NotImplementedError
 
     async def handle_checked_location(self):
         if self.game_interface.get_savefile_num() == 1:

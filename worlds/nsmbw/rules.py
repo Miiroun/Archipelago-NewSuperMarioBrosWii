@@ -187,11 +187,16 @@ def set_completion_condition(world: "NSMBWworld") -> None:
             sc_rule = rules.Has(ITEM.StarCoin, world.options.bowser_star_unlock.value)
             world.set_rule(victory_loc, sc_rule)
         case AlternativeGoal.option_hintmovies:
-            sc_rule = True_()
+            hm_rule = True_()
             for hm_num in range(1, HINTMOVIE_COUNT + 1):
                 if hm_num in DEPRIO_HM:
                     continue
-                sc_rule &= CanReachLocation(name_hintmovie(hm_num))
-            world.set_rule(victory_loc, sc_rule)
+                hm_rule &= CanReachLocation(name_hintmovie(hm_num))
+            world.set_rule(victory_loc, hm_rule)
+        case AlternativeGoal.option_all_levels:
+            _rule = rules.HasAll(*list((name_base(*level)) for level in LEVELS))
+            world.set_rule(victory_loc, _rule)
+        case _:
+            raise NotImplementedError
 
     world.set_completion_rule(rules.Has("Victory"))

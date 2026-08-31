@@ -45,7 +45,7 @@ SECRET_EXIT : List[SecretExit] = [
     SecretExit(5, 6, 0, 2, False),
     SecretExit(6, 5, 8, 2, True),
     SecretExit(6, 6, 0, 2, False),
-    SecretExit(7, 5, 9, 1, True),
+    SecretExit(7, 6, 9, 1, True),
     SecretExit(7, 7, 5, 2, True),
     SecretExit(7, 8, 6, 2, True),
     SecretExit(8, 2, 7, 2, True),

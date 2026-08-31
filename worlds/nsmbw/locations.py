@@ -194,8 +194,10 @@ def create_events(world: NSMBWworld) -> None:
             _region = world.get_region("Menu")
         case AlternativeGoal.option_hintmovies:
             _region = world.get_region("Peach castle")
+        case AlternativeGoal.option_all_levels:
+            _region = world.get_region("Menu")
         case _:
-            raise ValueError
+            raise NotImplementedError
     _region.add_event("Victory", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
 # these are used in world.shuffled_level_order

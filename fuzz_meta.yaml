@@ -4,10 +4,10 @@ NSMBW: #
   progression_balancing: normal
   world_comp_priority: false
   use_riivolution : true
-  level_shuffle_riivolution: true
-  alternative_goal : bowser
+  level_shuffle_riivolution: false
+  #alternative_goal : bowser
 
-  hint_movie_sanity: false
+  hint_movie_sanity: true
   level_completion : true
   starting_world: world8
   randomize_level_elements : true

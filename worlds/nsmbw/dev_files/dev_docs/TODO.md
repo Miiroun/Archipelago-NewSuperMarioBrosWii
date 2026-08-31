@@ -9,9 +9,7 @@
 
 
 ## Playtest
-- test on frozen
-- settings mod
-  - test on other comupter 
+- Goal all levels
 
 
 ## Bugs to fix

@@ -199,7 +199,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         logger.info(
             f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['bowser_star_unlock']} for unlocking bowser")
 
-    def _cmd_world_unlocked(self):
+    def _cmd_worlds_unlocked(self):
         """
         Prints how many times you have recived each progresive world
         """
@@ -230,7 +230,10 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"Your goal is starcoins.")
             case AlternativeGoal.option_hintmovies:
                 logger.info(f"Your goal is hint movies.")
-
+            case AlternativeGoal.option_all_levels:
+                logger.info(f"Your goal is all levels.")
+            case _:
+                raise NotImplementedError
     def _cmd_kill(self):
         """
         A command that kills mario. Useful if you get soft-locked.

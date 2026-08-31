@@ -10,14 +10,16 @@ if TYPE_CHECKING:
 class AlternativeGoal(Choice):
     """
     Which goal to have
-    Bowser : beat 8-C
-    Starcoin : have starcoin = requirement
-    Hintmovie : have all hintmovie locations
+    Bowser      : Beat 8-C
+    Starcoin    : Have starcoin = requirement
+    Hintmovie   : Have all hintmovie locations
+    All_levels  : Beat all levels in the game
     """
     display_name = "Alternative Goal"
     option_bowser = 0
     option_starcoins = 1
     option_hintmovies = 2
+    option_all_levels = 3
 
     default = option_bowser
 
