@@ -9,6 +9,7 @@
 extern u8 isSpecialWorldCourseOpen(u8 courseIdx);
 extern void FUN_808ce8e0(int param_1, int param_2, f32 param_3, f32 param_4);
 
+/*
 // how to edit to easily change with dme?
 kmBranchDefCpp(0x808ce57c, 0x808ce5b0, void, int param_1)
 {
@@ -21,7 +22,7 @@ kmBranchDefCpp(0x808ce57c, 0x808ce5b0, void, int param_1)
     }
     return;
 }
-
+*/
 
 /*
 // maybe easier to just consider it in asm

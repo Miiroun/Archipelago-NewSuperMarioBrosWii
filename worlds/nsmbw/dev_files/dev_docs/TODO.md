@@ -9,7 +9,6 @@
 
 
 ## Playtest
-- Goal all levels
 
 
 ## Bugs to fix
