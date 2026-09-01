@@ -13,7 +13,7 @@ class AlternativeGoal(Choice):
     Bowser      : Beat 8-C
     Starcoin    : Have starcoin = requirement
     Hintmovie   : Have all hintmovie locations
-    All_levels  : Beat all levels in the game
+    All_levels  : Beat x amount of levels to goal, uses bowser_level_unlock
     """
     display_name = "Alternative Goal"
     option_bowser = 0
@@ -302,6 +302,26 @@ class StartingWorld(Choice):
     option_world8 = 8
     default = "random"
 
+class StarcoinRequirementWorldUnlock(OptionCounter):
+    """
+    How many starcoins should be required to unlock a world
+    """
+    min = 0
+    max = 231
+
+    default = {
+        1 : 0,
+        2 : 0,
+        3 : 0,
+        4 : 0,
+        5 : 0,
+        6 : 0,
+        7 : 0,
+        8 : 0,
+        9 : 0
+    }
+    valid_keys = default.keys()
+
 class World9UnlockCondition(Choice):
     """
     BETA
@@ -318,7 +338,6 @@ class World9UnlockCondition(Choice):
     #default = option_gaussian
     default = option_unlocked
     visibility = Visibility.none
-
 
 class IncludeNumberInventoryItems(Range):
     """
@@ -362,6 +381,17 @@ class BowserCastleWorldUnlock(Range):
     range_end = 7
 
     default = 2
+
+class BowserCastleLevelUnlock(Range):
+    """
+    Requirement of beating at least x of levels to unlock final level.
+    """
+
+    range_start = 0
+    range_end = 77
+
+    default = 0
+
 
 
 class DeathLinkGroup(FreeText):
@@ -556,6 +586,7 @@ class NSMBWOptions(PerGameCommonOptions):
     logic_difficulty: LogicDifficulty
     logic_outside_powerup : LogicOutsidePowerups
     starting_world: StartingWorld
+    starcoin_requirement_world_unlock: StarcoinRequirementWorldUnlock
     world9_unlock_condition : World9UnlockCondition
     hint_movie_shop_price_logic : HintMovieShopPriceLogic
     hint_hint_movies : HintHintMovies
@@ -572,6 +603,7 @@ class NSMBWOptions(PerGameCommonOptions):
 
     bowser_star_unlock : BowserCastleStarUnlock
     bowser_world_unlock : BowserCastleWorldUnlock
+    bowser_level_unlock : BowserCastleLevelUnlock
 
     death_link : DeathLink
     death_link_group : DeathLinkGroup
@@ -627,6 +659,7 @@ option_groups = [
             AlternativeGoal,
             BowserCastleStarUnlock,
             BowserCastleWorldUnlock,
+            BowserCastleLevelUnlock,
         ],
     ),
     OptionGroup(
@@ -634,8 +667,9 @@ option_groups = [
         [
             LogicDifficulty,
             LogicOutsidePowerups,
-            World9UnlockCondition,
             StartingWorld,
+            StarcoinRequirementWorldUnlock,
+            World9UnlockCondition,
             HintMovieShopPriceLogic,
         ]
     ),
@@ -767,3 +801,5 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
 
     if world.options.hint_movie_sanity.value and world.options.level_shuffle_riivolution.value:
         raise OptionError(f"(NSMBW generation error) Due to a bug hint_movie_sanity and level_shuffle_riivolution can not both be enabled")
+
+    world.options.starcoin_requirement_world_unlock.value[str(world.options.starting_world.value)] = 0

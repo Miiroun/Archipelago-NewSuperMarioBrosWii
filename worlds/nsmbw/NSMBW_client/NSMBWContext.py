@@ -196,7 +196,7 @@ class NSMBWContext(SuperContext):
                 # checks for new slot_data values to be compatible
 
                 if not Utils.is_frozen():
-                    backwards_compat : List[tuple] = []
+                    backwards_compat : List[tuple] = [("starcoin_requirement_world_unlock", defaultdict(int)), ("bowser_level_unlock", 0)]
                     # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffle_riivolution", 0)
                     for name, value in backwards_compat:
                         if name not in self.slot_data.keys():
@@ -618,12 +618,10 @@ class NSMBWContext(SuperContext):
                 if self.moded_levelstats != ModifiedState.UNMODIFIED:
                     return
 
-                for world_num in range(1, 9 + 1):
-                    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                        if (bytes_to_int(self.game_interface.get_level_stats(world_num, level_num)) & 0x10) != 0x10:
-                            return
+                level_req = (self.get_count_levels_cleared() >= self.slot_data["bowser_level_unlock"])
 
-                await self.send_goal()
+                if level_req:
+                    await self.send_goal()
 
 
             case _:
@@ -776,6 +774,14 @@ class NSMBWContext(SuperContext):
                 return checked_locations
         return []
 
+    def get_count_levels_cleared(self) -> int:
+        _sum = 0
+        for level in LEVELS:
+            if (bytes_to_int(self.game_interface.get_level_stats(*level)) & 0x10) == 0x10:
+                _sum += 1
+
+        return _sum
+
     def get_completed_worlds(self) -> int:
         return sum([(name_world_clear(world_num) in self.completed_levels) for world_num in range(1, 7 + 1)])
 
@@ -783,8 +789,9 @@ class NSMBWContext(SuperContext):
         completed_worlds = self.get_completed_worlds()
         world_req = (completed_worlds >= self.slot_data["bowser_world_unlock"])
         starcoin_req = (self.starcoin_count >= self.slot_data["bowser_star_unlock"])
+        level_req = (self.get_count_levels_cleared() >= self.slot_data["bowser_level_unlock"])
 
-        bowser_unlock = world_req and starcoin_req
+        bowser_unlock = world_req and starcoin_req and level_req
         return bowser_unlock
 
     async def check_level_completion(self, unlocked_worlds):
@@ -1072,7 +1079,7 @@ class NSMBWContext(SuperContext):
         # when leaving a level the game somtimes freezes when world1 is not unlocked
         use_world_one = self.game_interface.is_in_worldmap()#self.game_interface.is_in_level()#not (current_map_world in [7,8])
         for world_num in range(1 , 9 + 1):
-            if self.unlocked_worlds[world_num - 1] >= 1 or ((not use_world_one) and world_num == 1):
+            if ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][world_num])) or ((not use_world_one) and world_num == 1):
                 self.game_interface.set_worldstats(world_num, b'\x01')
             elif self.unlocked_worlds[world_num - 1] == 0:
                 self.game_interface.set_worldstats(world_num, b'\x00')

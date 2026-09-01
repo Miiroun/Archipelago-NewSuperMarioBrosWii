@@ -46,10 +46,15 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
                     _rule &= rules.Has(ITEM.StarCoin, count=world.star_coin_req_per_world_9_level[con_lev_num - 1])
 
                 if world_num == 8 and con_lev_num == 9:
-                    # want to change to CanReachRegion, but unshure how to put in a count for it
+                    # want to change to CanReachRegion, but unshure how to put in a count for it : with Any() but req ap 0.6.8
+                    bowser_starcoin_rules = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value)
+
                     bowser_world_clear_list = list([name_base(world_num, level_num) for world_num, level_num in[(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9)]])
-                    bowser_clear_rule = Has(ITEM.StarCoin,count=world.options.bowser_star_unlock.value) & HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
-                    _rule &= bowser_clear_rule
+                    bowser_world_clear_rule =  HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
+
+                    bowser_level_clear_rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS),count=world.options.bowser_level_unlock.value)
+
+                    _rule &= bowser_starcoin_rules & bowser_world_clear_rule & bowser_level_clear_rule
                 if i== 0:
                     world.set_rule(world.get_entrance(f"World{world_num}->{name_base(world_num, con_lev_num)}"),_rule)
                 else:
@@ -194,7 +199,7 @@ def set_completion_condition(world: "NSMBWworld") -> None:
                 hm_rule &= CanReachLocation(name_hintmovie(hm_num))
             world.set_rule(victory_loc, hm_rule)
         case AlternativeGoal.option_all_levels:
-            _rule = rules.HasAll(*list((name_base(*level)) for level in LEVELS))
+            _rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS), count=world.options.bowser_level_unlock.value)
             world.set_rule(victory_loc, _rule)
         case _:
             raise NotImplementedError

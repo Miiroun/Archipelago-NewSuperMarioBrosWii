@@ -6,9 +6,13 @@
   - dont run patches / unlocks each frame 
   - is it loading star coin model?
   - test if happens with riivo patch without client
+- Edit world map so all levels unlocked from start
 
 
 ## Playtest
+- backward combat for coin battle
+- bowser_level_unlock 
+- starcoin_requirement_world_unlock
 
 
 ## Bugs to fix
