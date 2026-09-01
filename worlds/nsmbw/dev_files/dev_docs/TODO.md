@@ -7,16 +7,39 @@
   - is it loading star coin model?
   - test if happens with riivo patch without client
 - Edit world map so all levels unlocked from start
+- make red coin rings into unlocks
+  - with set_red_coin_timer
+- create red_coin_ring locations
+  - create it only if we have the rule for it
+- test roulette patch with mem watch, need to translate it for none pal versions?
 
 
 ## Playtest
 - backward combat for coin battle
 - bowser_level_unlock 
 - starcoin_requirement_world_unlock
+- redcoinring
 
 
 ## Bugs to fix
 - 3-4's randod to 1-3 Secret Exit seems to not send even after completing it several times.
+
+0x429f10 	
+[32-bit BE] [NTSC] Red coins pointer
++0x114=[32-bit BE] Current Red Coins. Goes up to 0x7 then back to 0x0 when collecting the 8th one, so you need to also check that the timer at 0x42a078 did not run out
++0x118=[32-bit BE] Current Red Coins for some stages. 1-5 (second set) 4-1, 4-3, 4-5, 5-3, 5-Castle
+
+0x429f30 	
+[32-bit BE] [NTSC] Some pointer that can be used as a way to know you aren't in a stage for FFA/Coin Battle
+0x0=Menu
+>0x80000000=In game
+
+0x42a078 	
+[32-bit BE] [NTSC] Pointer to red coin timer
++0x50c=[32-bit BE] Red coin timer. At 0x0, coins disappear
+
+roulette blocks 
+daEnRouletBlock_c::finalizeState_Wait
 
 
 ## Short term

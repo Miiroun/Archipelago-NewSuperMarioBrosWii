@@ -192,7 +192,7 @@ outside_powerups = [OptionFilter(LogicOutsidePowerups, True)] | GlitchedRule() #
 # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
 logic_hard   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_hard)] | GlitchedRule()
 logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] | logic_hard # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
-logic_easy   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_easy)] | logic_normal
+#logic_easy   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_easy)] | logic_normal
 
 # more powerup stuff
 ice_peng = ice | peng
@@ -221,6 +221,7 @@ class Level(NamedTuple):
     oneups : Optional[Rule]  = None
     nintynine_coins : Optional[Rule]  = None
     amount_coins : int = 99
+    red_coin_ring : Optional[Rule] = None
 
 
 LevelRules : Dict[str, Level]= { # normal compleation rules
@@ -314,7 +315,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "9-7"  : Level(pipe & button_down & button_up & normal_move & (run | ((mini_o | wall_jump | propeller_o) & logic_hard)), (True_(), True_(), ((run | logic_hard) & (wall_jump | propeller_o)))),  # -7
     "9-8"  : Level(pipe & button_down & button_up & normal_move, (carry | propeller | mini, True_(), True_())),  # -8
 # world Coin
-    "C-1" : Level(normal_move & pipe, (True_(),True_(), logic_normal | carry_shell)),
+    "C-1" : Level(normal_move & pipe, (True_(),True_(), logic_hard | carry_shell | carry_block)),
     "C-2": Level(normal_move, (True_(), True_(), True_())),
     "C-3": Level(normal_move & door, (True_(), True_(), True_())),
     "C-4": Level(normal_move, (True_(), True_(), True_())),

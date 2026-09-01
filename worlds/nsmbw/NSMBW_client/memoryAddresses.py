@@ -150,6 +150,10 @@ class MemoryAddresses(object):
 
         self.main_menu_adress = self.map_between("E2", 0x81028e82)
 
+        self.red_coin_timer_pointer     = self.map_between("E2", 0x8042a078)
+        self.red_coin_amount_pointer    = self.map_between("E2", 0x80429f10)
+
+
         # retro archivments
         # Who can move the moving platform in 7-4 [8-Bit]  0x15e456a or 0x15e4569
 

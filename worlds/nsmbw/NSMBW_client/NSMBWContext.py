@@ -638,6 +638,7 @@ class NSMBWContext(SuperContext):
         checked_locations : List[int] = []
         checked_locations += await self.check_coins()
         checked_locations += await self.check_1ups()
+        checked_locations += await self.check_red_coin_ring()
         checked_locations += await self.check_hintmovies()
         if self.game_interface.is_in_worldmap():
             checked_locations += await self.check_level_completion(self.unlocked_worlds)
@@ -725,7 +726,7 @@ class NSMBWContext(SuperContext):
                     loc_id = NSMBWworld.location_name_to_id[location_name]
                     if loc_id not in self.locations_handled:
                         checked_locations.append(loc_id)
-                        print(f"Locaton: {location_name} compleated")
+                        print(f"Location: {location_name} completed")
 
             else:
                 self.coin_overflow = -self.game_interface.get_coin_count()
@@ -747,7 +748,31 @@ class NSMBWContext(SuperContext):
                         loc_id = NSMBWworld.location_name_to_id[location_name]
                         if loc_id not in self.locations_handled:
                             checked_locations.append(loc_id)
-                            print(f"Locaton: {location_name} compleated")
+                            print(f"Locaton: {location_name} completed")
+
+        self.locations_handled += checked_locations
+        return checked_locations
+
+    async def check_red_coin_ring(self):
+        checked_locations = []
+
+        if self.slot_data["red_coin_ring"] == True:
+            LEVEL = self.game_interface.get_world_level_num_in_level()
+            if LEVEL == (0,0):
+                return checked_locations
+
+            timer = bytes_to_int(self.game_interface.get_red_coin_timer())
+            amount1 = bytes_to_int(self.game_interface.get_red_coin_amount1())
+            amount2 = bytes_to_int(self.game_interface.get_red_coin_amount2())
+
+
+            if (timer != 0) and (amount1 == 0) and (amount2 == 0):
+                location_name = name_1ups(*LEVEL)
+                loc_id = NSMBWworld.location_name_to_id[location_name]
+                if loc_id not in self.locations_handled:
+                    checked_locations.append(loc_id)
+                    print(f"Location: {location_name} completed")
+                    breakpoint()
 
         self.locations_handled += checked_locations
         return checked_locations
