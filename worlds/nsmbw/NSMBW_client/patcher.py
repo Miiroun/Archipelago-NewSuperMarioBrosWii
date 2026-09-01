@@ -163,6 +163,8 @@ class Patcher:
             return bytes(_writeable.get())
 
     def recolor_tileset_arcfile(self, source: Path, destination: Path):
+        logger.info(f"Patching : {os.path.basename(destination)}")
+
         with open(source, "rb") as f:
             u8 = U8.read(f)
 
@@ -177,8 +179,6 @@ class Patcher:
 
         with open(destination, "wb") as f:
             u8.write(f)
-
-        print(f"Patched : {os.path.basename(destination)}")
 
 
     def recolor_tilest_folder(self, folder_name : str, filter_str : str):
@@ -383,6 +383,8 @@ class Patcher:
             # this conversion is not 100% correct
             if world_num == 9:
                 return f"0{world_num}-0{level_num}.arc"
+            elif world_num == 10:
+                return f"0{level_num}-20.arc" # yes this is weird, coin levels are 01-20 for Coin-1
 
             if level_num == 6 + (world_num in [7]) and (world_num in [3,4,5,7]): # ghosthouse
                 return f"0{world_num}-{21}.arc"
@@ -397,7 +399,7 @@ class Patcher:
 
 
         levels = []
-        for world_num in range(9):
+        for world_num in range(10):
             for level_num in range(LEVELS_PER_WORLD[world_num]):
                 levels.append((world_num+1, level_num+1))
 

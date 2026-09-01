@@ -10,7 +10,7 @@ import Utils
 
 game_name = "NSMBW"
 
-LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8]
+LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8, 5]
 
 HINTMOVIE_COUNT = 65
 LEVEL_COUNT = 77
@@ -147,27 +147,35 @@ for world_num in range(1,9+1):
         LEVELS.append((world_num, level_num))
 
 
-def mod_level_name(worldnum : int, levelnum : int) -> str:
-    shift = (worldnum in [7,8])
-    new_level = levelnum - shift
-    if (worldnum, levelnum) in [(3,6),(4,6),(5,6),(7,7)]:
+def mod_level_name(world_num : int, level_num : int) -> str:
+    shift = (world_num in [7, 8])
+    new_level = level_num - shift
+    if (world_num, level_num) in [(3, 6), (4, 6), (5, 6), (7, 7)]:
         return "G"
-    if worldnum !=9:
+    if world_num !=9:
         if new_level == 7:
             return "T"
         elif new_level == 8:
             return "C"
         elif new_level == 9:
             return "A"
-    return str(levelnum)
+    return str(level_num)
+
+def mod_world_name(world_num : int, level_num : int) -> str:
+    if world_num <= 9:
+        return f"{world_num}"
+    elif world_num == 10:
+        return "C"
+    else:
+        raise ValueError
 
 def name_base(world_num : int, level_num : int, assert_=True) -> str:
     if assert_:
         assert_valid_level(world_num, level_num)
-    return f"{world_num}-{mod_level_name(world_num,level_num)}"
+    return f"{mod_world_name(world_num,level_num)}-{mod_level_name(world_num,level_num)}"
 
 def assert_valid_level(world_num : int, level_num : int) -> None:
-    assert 1 <= world_num <= 9, f"world {world_num} is invalid"
+    assert 1 <= world_num <= 10, f"world {world_num} is invalid"
     assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"Level {level_num} is not valid for world {world_num}"
 
 def name_level(world_num : int, level_num : int) -> str:
@@ -217,21 +225,21 @@ def name_99coins(world_num : int, level_num : int) -> str:
 
 
 def base_bijection(name : str ) -> tuple[int, int]:
-    for world_num in range(1,9+1):
+    for world_num in range(1,10+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
             if name_base(world_num, level_num) == name:
                 return world_num, level_num
     raise ValueError(f"Level: {name} not found")
 
 def level_bijection(name : str ) -> tuple[int, int]:
-    for world_num in range(1,9+1):
+    for world_num in range(1,10+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
             if name_level(world_num, level_num) == name:
                 return world_num, level_num
     raise ValueError(f"Level: {name} not found")
 
 def sc_bijection(name : str ) -> tuple[int, int, int]:
-    for world_num in range(1,9+1):
+    for world_num in range(1,10+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
             for sc_num in range(1,3+1):
                 if name_starcoin(world_num,level_num,sc_num) == name:

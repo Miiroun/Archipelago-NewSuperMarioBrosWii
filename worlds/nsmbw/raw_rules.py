@@ -313,6 +313,12 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "9-6"  : Level(pipe & button_down & button_up & normal_move & (run | propeller_o | mini_o), (True_(), logic_hard | propeller_o | ((run | mini_o) & wall_jump), True_())),  # -6
     "9-7"  : Level(pipe & button_down & button_up & normal_move & (run | ((mini_o | wall_jump | propeller_o) & logic_hard)), (True_(), True_(), ((run | logic_hard) & (wall_jump | propeller_o)))),  # -7
     "9-8"  : Level(pipe & button_down & button_up & normal_move, (carry | propeller | mini, True_(), True_())),  # -8
+# world Coin
+    "C-1" : Level(normal_move & pipe, (True_(),True_(), logic_normal | carry_shell)),
+    "C-2": Level(normal_move, (True_(), True_(), True_())),
+    "C-3": Level(normal_move & door, (True_(), True_(), True_())),
+    "C-4": Level(normal_move, (True_(), True_(), True_())),
+    "C-5": Level(normal_move & pipe, (super_mario & ground_pound, True_(), True_())),
 }
 
 

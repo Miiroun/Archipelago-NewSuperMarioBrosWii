@@ -455,6 +455,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
         logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
 
+    def _cmd_get_level_rando_reversed(self, name):
+        """Prints where a location has been rando from"""
+        world_num, level_num = base_bijection(name)
+        _index = self.ctx.slot_data["shuffled_level_order"].index(locations.level_name_to_pos(world_num, level_num))
+        randod_level = locations.pos_to_level_name(_index)
+        logger.info(f"{name_base(*randod_level)}")
+
     def _cmd_print_slot_data(self):
         """Prints all slot data, useful for debuging"""
         logger.info(f"SLOT DATA")

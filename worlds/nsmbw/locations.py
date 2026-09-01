@@ -207,7 +207,7 @@ def level_name_to_pos(world_num : int, level_num : int) -> int:
         return pos
 def pos_to_level_name(pos : int) -> tuple[int, int]:
         world_sum = 0
-        for world_num in range(1, 9+1):
+        for world_num in range(1, 10+1):
             if pos >= world_sum + LEVELS_PER_WORLD[world_num - 1]:
                 world_sum += LEVELS_PER_WORLD[world_num - 1]
                 continue
@@ -270,7 +270,6 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             # does not matter which we remove, both should be removed since its an bijection
             assert _from in not_shuffled, f"_from: {_from}"
             not_shuffled.remove(_from)
-
 
         not_shuffled_shuffle = deepcopy(not_shuffled)
         world.random.shuffle(not_shuffled_shuffle)
