@@ -472,9 +472,9 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         logger.info(f"SETTINGS")
         set_obj = Utils.get_settings()["nsmbw_settings"]
         data = ""
-        # for attr in set_obj:
-        #    data += f"{attr}: {set_obj[attr]}"
-        data = dict(set_obj)
+        for attr in set_obj:
+            data += f"{attr}: {set_obj[attr]}"
+        #data = dict(set_obj)
         logger.info(data)
 
     def _cmd_print_item_prossess_data(self):
@@ -490,7 +490,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_print_other_data(self):
         if self.ctx.username is not None:
-            pass
+            logger.info(f"completed_levels: {self.ctx.completed_levels}")
         else:
             logger.info(f"Not conencted to dolphin")
 
@@ -537,11 +537,11 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_print_other_data()
 
         logger.info("---- Info regarding items ----")
-        # self._cmd_received()
-        # self._cmd_missing()
+        self._cmd_received()
+        self._cmd_missing()
         self._cmd_unlocks()
         self._cmd_starcoins()
-        self._cmd_world_unlocked()
+        self._cmd_worlds_unlocked()
         self._cmd_completed_worlds()
         self._cmd_get_time()
         self._cmd_print_item_prossess_data()

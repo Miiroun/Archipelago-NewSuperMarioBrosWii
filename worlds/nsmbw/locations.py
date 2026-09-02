@@ -7,6 +7,7 @@ from BaseClasses import  Location, LocationProgressType
 from . import items
 from .Common import *
 from .options import AlternativeGoal
+from .raw_rules import LevelRules
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -28,11 +29,23 @@ for world_num in range(1,9+1): # worlds
         for sc in range(1,3+1):
             LOCATION_NAME_TO_ID.update({name_starcoin(world_num, level_num, sc): 10000 + 1000 * world_num + 10 * level_num + sc})
         sc_set = set(name_starcoin(world_num, level_num, sc) for sc in range(1, 3 + 1))
-        LOCATION_NAME_GROUPS.update({f"Starcoins World{world_num} Level{level_num}": sc_set,})
+        LOCATION_NAME_GROUPS.update({
+            f"Starcoins World{world_num} Level{level_num}": sc_set,
+            f"{name_base(world_num, level_num)} Everyting" : sc_set | {
+                name_level(world_num, level_num),
+                name_1ups(world_num, level_num),
+                name_99coins(world_num, level_num),
+                name_red_coin_ring(world_num, level_num),
+                name_roulette(world_num, level_num),
+            },
+        })
         level_set |= sc_set
         LOCATION_NAME_TO_ID.update({
-            name_1ups(world_num, level_num)     : 10000 + 1000 * world_num + 10 * level_num + 4,
-            name_99coins(world_num, level_num)  : 10000 + 1000 * world_num + 10 * level_num + 5,
+            name_1ups(world_num, level_num)         : 10000 + 1000 * world_num + 10 * level_num + 4,
+            name_99coins(world_num, level_num)      : 10000 + 1000 * world_num + 10 * level_num + 5,
+            name_red_coin_ring(world_num, level_num): 10000 + 1000 * world_num + 10 * level_num + 6,
+            name_roulette(world_num, level_num)     : 10000 + 1000 * world_num + 10 * level_num + 7,
+
         })
 
     LOCATION_NAME_GROUPS.update({
@@ -40,8 +53,10 @@ for world_num in range(1,9+1): # worlds
     f"Starcoin 1 World{world_num}": set(name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Starcoin 2 World{world_num}": set(name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Starcoin 3 World{world_num}": set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
-    f"1ups World{world_num}" : set(name_1ups(world_num, level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
-    f"99 coins World{world_num}": set(name_1ups(world_num, level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
+    f"1ups World{world_num}"            : set(name_1ups(world_num, level_num)       for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
+    f"99 coins World{world_num}"        : set(name_99coins(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
+    f"Red coin rings World{world_num}"  : set(name_red_coin_ring(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
+    f"Roulettes World{world_num}"       : set(name_roulette(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     })
     world_set |= level_set
 
@@ -56,8 +71,10 @@ LOCATION_NAME_GROUPS.update({
     "Starcoin 3" : set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
     "Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)),
     "Towers" : set(name_tower_clear(world_num) for world_num in range(1,8+1)),
-    "1ups": set(name_1ups(world_num, level_num) for world_num, level_num in LEVELS),
-    "99 coins": set(name_99coins(world_num, level_num) for world_num, level_num in LEVELS),
+    "1ups"              : set(name_1ups(world_num, level_num)           for world_num, level_num in LEVELS),
+    "99 coins"          : set(name_99coins(world_num, level_num)        for world_num, level_num in LEVELS),
+    "Red coin rings"    : set(name_red_coin_ring(world_num, level_num)  for world_num, level_num in LEVELS),
+    "Roulettes"         : set(name_roulette(world_num, level_num)       for world_num, level_num in LEVELS),
 })
 
 
@@ -165,15 +182,24 @@ def create_regular_locations(world: NSMBWworld) -> None:
             flagpole = get_location_names_with_ids([name_level(world_num, level_num)])
             world.get_region(name_base(world_num, level_num)).add_locations(flagpole, NSMBWLocation)
 
-    if world.options.nintynine_coin_sanity.value == True:
-        for level in LEVELS:
+    for level in LEVELS:
+        if world.options.nintynine_coin_sanity.value == True:
             loc = get_location_names_with_ids([name_99coins(*level)])
             world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
-    if world.options.oneups_sanity.value == True:
-        for level in LEVELS:
+        if world.options.oneups_sanity.value == True:
             loc = get_location_names_with_ids([name_1ups(*level)])
             world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
+
+        if world.options.red_coin_ring.value == True:
+            if LevelRules[name_base(*level)].red_coin_ring is not None:
+                loc = get_location_names_with_ids([name_red_coin_ring(*level)])
+                world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
+
+        if world.options.roulet_block.value == True:
+            if LevelRules[name_base(*level)].roulette is not None:
+                loc = get_location_names_with_ids([name_roulette(*level)])
+                world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
 
     for i in range(1, world.options.include_inventory_powerups + 1):

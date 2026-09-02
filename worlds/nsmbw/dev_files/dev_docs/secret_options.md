@@ -12,6 +12,15 @@ WARNING, NO LOGIC.
 Sends a location when you collect a one up in a a level.
 WARNING, NO LOGIC.
 
+
+## `red_coin_ring`
+WARNING, NO LOGIC.
+
+
+## `roulet_block`
+WARNING, NO LOGIC.
+
+
 ## `pallet_shuffle_riivolution : true`
 Shuffles the color pallet of the game.
 Looks good but takes about 15 minutes to actually patch the game.

@@ -399,7 +399,7 @@ class NSMBWInterface(object):
         #            " JIT cache manualy (JIT -> clear chache).")
 
     def clear_cache_in_game(self, address: int) -> bool:
-        clear_address = 0x80BBB000
+        clear_address = self.memory_addresses.custom_clear_cache
         i = 0
         while (self.dolphin_client.read_address(clear_address, 4) != val_0000 + val_0000):
             sleep(0.001)
@@ -570,7 +570,9 @@ class NSMBWInterface(object):
 
         if ITEM.LEVELELEMENTS.RedSwitch in slot_data_element_included:
             if ITEM.LEVELELEMENTS.RedSwitch in unlocks:
-                self.set_red_switch(b'\x01')
+                pass
+                #self.set_red_switch(b'\x01')
+                #think this breaks 3-4 Secret exit for some reason, do not understand why since noraml clear works for red block version of stage
             else:
                 self.set_red_switch(b'\x00')
 
@@ -771,6 +773,9 @@ class NSMBWInterface(object):
         address = self.memory_addresses.red_coin_amount_pointer
         return self.dolphin_client.read_pointer(address, 0x118, 4)
 
+    def get_roulette(self) -> bytes:
+        address = self.memory_addresses.custom_roulette
+        return self.dolphin_client.read_address(address, 4)
 
     def set_worldstats(self,world_num : int, status : bytes):
         assert 1 <= world_num <= 9
@@ -861,9 +866,13 @@ class NSMBWInterface(object):
         self.write_instruction(address2, int_to_bytes(0x3880, 2) + int_to_bytes(time, 2))
 
 
-    def set_red_coin_timer(self, amount) -> bytes:
+    def set_red_coin_timer(self, amount : int):
         address = self.memory_addresses.red_coin_timer_pointer
-        return self.dolphin_client.read_pointer(address, 0x50c, 4)
+        self.dolphin_client.write_pointer(address, 0x50c, bytes_to_int(amount, 4))
+
+    def set_roulette(self, num : int):
+        address = self.memory_addresses.custom_roulette
+        self.dolphin_client.write_address(address, int_to_bytes(num, 4))
 
     def update_check_sum(self):
         # didnt manage to make this one work

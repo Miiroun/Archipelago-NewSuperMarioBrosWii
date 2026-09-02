@@ -38,4 +38,5 @@ kmBranchDefAsm(0x800B0B40, 0x800B0B44)
 }
 
 // moves the blr instruction one adress lower
+//kmWriteDefAsm(0x800B0B44){blr}
 kmWrite32(0x800B0B44, 0x4e800020);

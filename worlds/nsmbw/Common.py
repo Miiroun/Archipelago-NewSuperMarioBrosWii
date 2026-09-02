@@ -225,7 +225,12 @@ def name_99coins(world_num : int, level_num : int) -> str:
 
 def name_red_coin_ring(world_num : int, level_num : int) -> str:
     assert_valid_level(world_num,level_num)
-    return f"{name_base(world_num,level_num)} Red coin ring"
+    return f"{name_base(world_num,level_num)} Red coin Ring"
+
+def name_roulette(world_num : int, level_num : int) -> str:
+    assert_valid_level(world_num,level_num)
+    return f"{name_base(world_num,level_num)} Roulette Block"
+
 
 def base_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,10+1):

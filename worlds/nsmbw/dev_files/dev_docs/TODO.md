@@ -7,22 +7,23 @@
   - is it loading star coin model?
   - test if happens with riivo patch without client
 - Edit world map so all levels unlocked from start
-- make red coin rings into unlocks
-  - with set_red_coin_timer
-- create red_coin_ring locations
-  - create it only if we have the rule for it
-- test roulette patch with mem watch, need to translate it for none pal versions?
-
+- Ask how difficult adding UI elements is.
+- try editing world 1 path info manually and test it out
+  - test modified pointW1
 
 ## Playtest
 - backward combat for coin battle
 - bowser_level_unlock 
 - starcoin_requirement_world_unlock
-- redcoinring
+- /print_settings
+- /debug
+- 3-4 fix and cause
 
 
 ## Bugs to fix
 - 3-4's randod to 1-3 Secret Exit seems to not send even after completing it several times.
+- 3-4 secret exit is weird, maybe because it is switched with the red block?
+
 
 0x429f10 	
 [32-bit BE] [NTSC] Red coins pointer

@@ -28,16 +28,23 @@ from ..settings import NSMBWSettings
 
 tracker_loaded = False
 
+error = None
 try:
-    #raise ModuleNotFoundError("")
     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext, get_base_parser, handle_url_arg, logging, CommonContext, asyncio, server_loop, updateTracker, UT_VERSION
-
     tracker_loaded = True
     print("Tracker is loaded")
-except ModuleNotFoundError:
+
+except ModuleNotFoundError as e:
     from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, CommonContext, asyncio, server_loop
-    print("Tracker was not found so is not loaded")
+    print("Universal Tracker was not found so is not loaded")
+except ImportError as e:
+    from CommonClient import CommonContext as SuperContext, get_base_parser, handle_url_arg, logging, CommonContext, asyncio, server_loop
+    error = "Import error when importing universal tracker, might be an old version, consider updating it"
+    print(error)
+
 logger = logging.getLogger("Client")
+if error is not None:
+    logger.info(error)
 
 
 class ModifiedState(IntEnum):
@@ -639,6 +646,7 @@ class NSMBWContext(SuperContext):
         checked_locations += await self.check_coins()
         checked_locations += await self.check_1ups()
         checked_locations += await self.check_red_coin_ring()
+        checked_locations += await self.check_roulette_block()
         checked_locations += await self.check_hintmovies()
         if self.game_interface.is_in_worldmap():
             checked_locations += await self.check_level_completion(self.unlocked_worlds)
@@ -767,7 +775,29 @@ class NSMBWContext(SuperContext):
 
 
             if (timer != 0) and (amount1 == 0) and (amount2 == 0):
-                location_name = name_1ups(*LEVEL)
+                location_name = name_red_coin_ring(*LEVEL)
+                loc_id = NSMBWworld.location_name_to_id[location_name]
+                if loc_id not in self.locations_handled:
+                    checked_locations.append(loc_id)
+                    print(f"Location: {location_name} completed")
+                    breakpoint()
+
+        self.locations_handled += checked_locations
+        return checked_locations
+
+
+    async def check_roulette_block(self):
+        checked_locations = []
+
+        if self.slot_data["roulet_block"] == True:
+            LEVEL = self.game_interface.get_world_level_num_in_level()
+            if LEVEL == (0,0):
+                return checked_locations
+
+            _value = self.game_interface.get_roulette()
+            if (_value == b'\x00\x00\x00\x01'):
+                self.game_interface.set_roulette(0)
+                location_name = name_roulette(*LEVEL)
                 loc_id = NSMBWworld.location_name_to_id[location_name]
                 if loc_id not in self.locations_handled:
                     checked_locations.append(loc_id)
@@ -878,7 +908,7 @@ class NSMBWContext(SuperContext):
                 level_num = 7
                 level_num += 1 if world_num in  [7,8] else 0
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
-                if level_stats & 0x30 > 0:
+                if level_stats & 0x10 > 0:
                     if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
                         checked_locations.append(NSMBWworld.location_name_to_id[level_name])
                     if unlocked_worlds[world_num-1] <= 1:
@@ -889,7 +919,7 @@ class NSMBWContext(SuperContext):
                 else:
                     if unlocked_worlds[world_num-1] >= 2:
                         if level_name in self.completed_levels:
-                            self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + 0x30,1))
+                            self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + 0x10,1))
                             self.completed_levels.remove(level_name)
                             logger.info(f"Second half of world {world_num} is unlocked")
                             # if reset this value then maybe will not move to next world
@@ -1104,7 +1134,7 @@ class NSMBWContext(SuperContext):
         # when leaving a level the game somtimes freezes when world1 is not unlocked
         use_world_one = self.game_interface.is_in_worldmap()#self.game_interface.is_in_level()#not (current_map_world in [7,8])
         for world_num in range(1 , 9 + 1):
-            if ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][world_num])) or ((not use_world_one) and world_num == 1):
+            if ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])) or ((not use_world_one) and world_num == 1):
                 self.game_interface.set_worldstats(world_num, b'\x01')
             elif self.unlocked_worlds[world_num - 1] == 0:
                 self.game_interface.set_worldstats(world_num, b'\x00')

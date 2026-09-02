@@ -167,19 +167,26 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
 
         world.set_rule(invent_pow, invent_rule_no_toad | invent_rule_general | GlitchedRule())
 
-    if world.options.oneups_sanity.value == True:
-        for level in LEVELS:
+    for level in LEVELS:
+        if world.options.oneups_sanity.value == True:
             loc = world.get_location(name_1ups(*level))
-
             if LevelRules[name_base(*level)].oneups is not None:
                 world.set_rule(loc, LevelRules[name_base(*level)].oneups)
 
-    if world.options.nintynine_coin_sanity.value == True:
-        for level in LEVELS:
+        if world.options.nintynine_coin_sanity.value == True:
             loc = world.get_location(name_99coins(*level))
-
             if LevelRules[name_base(*level)].nintynine_coins is not None:
                 world.set_rule(loc, LevelRules[name_base(*level)].nintynine_coins)
+
+        if world.options.red_coin_ring.value == True:
+            if LevelRules[name_base(*level)].red_coin_ring is not None:
+                loc = world.get_location(name_red_coin_ring(*level))
+                world.set_rule(loc, LevelRules[name_base(*level)].red_coin_ring)
+
+        if world.options.roulet_block.value == True:
+            if LevelRules[name_base(*level)].roulette is not None:
+                loc = world.get_location(name_roulette(*level))
+                world.set_rule(loc, LevelRules[name_base(*level)].roulette)
 
 
 def set_completion_condition(world: "NSMBWworld") -> None:

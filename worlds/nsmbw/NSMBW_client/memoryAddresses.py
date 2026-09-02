@@ -165,6 +165,9 @@ class MemoryAddresses(object):
         # +0x114=[32-bit BE] Current Red Coins. Goes up to 0x7 then back to 0x0 when collecting the 8th one, so you need to also check that the timer at 0x42a078 did not run out
         # +0x118=[32-bit BE] Current Red Coins for some stages. 1-5 (second set) 4-1, 4-3, 4-5, 5-3, 5-Castle
 
+        custom_base = 0x80BBB000
+        self.custom_clear_cache = custom_base
+        self.custom_roulette     = custom_base + 4
 
         # movement etc patches
         self.patch_check_point = self.create_patch("P1",0x807E215C, instru_6000, origin=instru_beq + val_0014, name="check point")

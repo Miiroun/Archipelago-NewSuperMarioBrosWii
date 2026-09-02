@@ -222,6 +222,7 @@ class Level(NamedTuple):
     nintynine_coins : Optional[Rule]  = None
     amount_coins : int = 99
     red_coin_ring : Optional[Rule] = None
+    roulette : Optional[Rule] = None
 
 
 LevelRules : Dict[str, Level]= { # normal compleation rules
@@ -308,7 +309,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
 # world 9
     "9-1"  : Level(pipe & button_down & button_up & normal_move, (logic_normal | propeller | mini_o, True_(), True_())),  # -1
     "9-2"  : Level(pipe & button_down & button_up & normal_move & (mini_o | (run & climb) | swim | (peng_o & crouch & run)) & (run | logic_hard), (True_(), swim, (carry & ((mini_o & ground_pound) | (run & climb) | swim)) | (peng_o & crouch & run))),  # -2
-    "9-3"  : Level(pipe & button_down & button_up & normal_move, (p_switch, (run | (propeller_o & logic_hard)) & p_switch, logic_hard | run | propeller_o | mini_o)),  # -3
+    "9-3"  : Level(pipe  & normal_move & (run | logic_normal), (p_switch & button_down & button_up, (run | (propeller_o & logic_hard)) & p_switch & button_up, logic_hard | run | propeller_o | mini_o)),  # -3
     "9-4"  : Level(pipe & button_down & button_up & normal_move & (run | propeller_o | mini_o | ice | peng_o), (wall_jump | propeller_o, carry | propeller_o, ice | peng_o)),  # -4
     "9-5"  : Level(pipe & button_down & button_up & normal_move & (question_switch | wall_jump | propeller_o | logic_hard), (True_(), True_(), (ice_o | peng | propeller_o))),  # -5
     "9-6"  : Level(pipe & button_down & button_up & normal_move & (run | propeller_o | mini_o), (True_(), logic_hard | propeller_o | ((run | mini_o) & wall_jump), True_())),  # -6
