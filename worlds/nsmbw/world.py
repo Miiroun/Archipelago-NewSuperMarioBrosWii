@@ -1,4 +1,4 @@
-from BaseClasses import CollectionState, ItemClassification, MultiWorld
+from BaseClasses import CollectionState, ItemClassification, MultiWorld, Item, Location, Region
 from NetUtils import JSONMessagePart
 from rule_builder.cached_world import CachedRuleBuilderWorld
 from worlds.AutoWorld import World
@@ -12,6 +12,7 @@ from . import settings as nsbmw_settings
 from .Common import *
 from .Utils import cast_object_to_type
 from .items import NSMBWItem
+from .locations import NSMBWLocation
 
 collection_map_no_toad : Dict [str, int] = {}
 collection_map_general : Dict [str, int] = {}
@@ -77,6 +78,14 @@ class NSMBWworld(World):
             state.update_reachable_regions(self.player)
             visualize_regions(self.get_region("Menu"), "my_world.puml", show_entrance_names=True,regions_to_highlight=state.reachable_regions[self.player],detail_other_regions=True)
 
+    @classmethod
+    def stage_assert_generate(cls, multiworld: "MultiWorld") -> None:
+        """
+        Checks that a game is capable of generating, such as checking for some base file like a ROM.
+        This gets called once per present world type. Not run for unittests since they don't produce output.
+        """
+        pass
+
     def generate_early(self) -> None:
         if hasattr(self.multiworld, "re_gen_passthrough"):
             if self.game in self.multiworld.re_gen_passthrough:
@@ -87,6 +96,83 @@ class NSMBWworld(World):
                 #    raise ValueError(err_string)
                 self.overwrite_options(self.multiworld.re_gen_passthrough[self.game])
         nsmbw_option.adjust_options(self)
+
+    def connect_entrances(self) -> None:
+        """Method to finalize the source and target regions of the World's entrances"""
+        pass
+
+    def generate_basic(self) -> None:
+        """
+        Useful for randomizing things that don't affect logic but are better to be determined before the output stage.
+        i.e. checking what the player has marked as priority or randomizing enemies
+        """
+        pass
+
+    def pre_fill(self) -> None:
+        """Optional method that is supposed to be used for special fill stages. This is run *after* plando."""
+        if  self.multiworld.players == 1:
+            return
+        if (self.options.percentage_filler_forced_local.value == 0):
+            return
+
+        # code inspired by tunic implementation
+        sphere_one_locs = self.multiworld.get_reachable_locations(CollectionState(self.multiworld), self.player)
+        local_locations : List[NSMBWLocation]= [loc for loc in self.multiworld.get_unfilled_locations(self.player)
+                            if loc not in sphere_one_locs
+                            and loc.name not in self.options.priority_locations.value]
+
+        local_fillers : List[NSMBWItem]  = [itm for itm in self.multiworld.itempool
+                                            if (itm.name in (FILLER + TRAPS))
+                                            and type(itm) == NSMBWItem]
+
+        amount = min(len(local_fillers), len(local_fillers))
+        self.random.shuffle(local_fillers)
+        self.random.shuffle(local_locations)
+        for _ in range(round(amount * self.options.percentage_filler_forced_local / 100)):
+            _item = local_fillers.pop()
+            _location = local_locations.pop()
+
+            _location.place_locked_item(_item)
+
+
+    def fill_hook(self,
+                  progitempool: List["Item"],
+                  usefulitempool: List["Item"],
+                  filleritempool: List["Item"],
+                  fill_locations: List["Location"]) -> None:
+        """Special method that gets called as part of distribute_items_restrictive (main fill)."""
+        pass
+
+    def post_fill(self) -> None:
+        """
+        Optional Method that is called after regular fill. Can be used to do adjustments before output generation.
+        This happens before progression balancing, so the items may not be in their final locations yet.
+        """
+
+    def finalize_multiworld(self) -> None:
+        """
+        Optional Method that is called after fill and progression balancing.
+        This is the last stage of generation where worlds may change logically relevant data,
+        such as item placements and connections. To not break assumptions,
+        only ever increase accessibility, never decrease it.
+        """
+        pass
+
+    def pre_output(self):
+        """
+        Optional method that is called before output generation.
+        Items and connections are not meant to be moved anymore,
+        anything that would affect logical spheres is forbidden at this point.
+        """
+        pass
+
+    def generate_output(self, output_directory: str) -> None:
+        """
+        This method gets called from a threadpool, do not use multiworld.random here.
+        If you need any last-second randomization, use self.random instead.
+        """
+        pass
+
 
     def set_rules(self) -> None:
         rules.set_all_rules(self)

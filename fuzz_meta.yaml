@@ -21,6 +21,8 @@ NSMBW: #
   nintynine_coin_sanity: true
   oneups_sanity: true
 
+  percentage_filler_forced_local : 0
+
 
 #empty:
 #  accessibility: full

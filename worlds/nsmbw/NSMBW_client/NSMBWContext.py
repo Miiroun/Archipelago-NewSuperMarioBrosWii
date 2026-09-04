@@ -780,7 +780,6 @@ class NSMBWContext(SuperContext):
                 if loc_id not in self.locations_handled:
                     checked_locations.append(loc_id)
                     print(f"Location: {location_name} completed")
-                    breakpoint()
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -802,7 +801,6 @@ class NSMBWContext(SuperContext):
                 if loc_id not in self.locations_handled:
                     checked_locations.append(loc_id)
                     print(f"Location: {location_name} completed")
-                    breakpoint()
 
         self.locations_handled += checked_locations
         return checked_locations

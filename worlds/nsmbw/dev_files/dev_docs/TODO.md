@@ -10,6 +10,9 @@
 - Ask how difficult adding UI elements is.
 - try editing world 1 path info manually and test it out
   - test modified pointW1
+- Mention which files needs to be selected for riivolution
+- matrix test for local filler
+
 
 ## Playtest
 - backward combat for coin battle
@@ -18,26 +21,20 @@
 - /print_settings
 - /debug
 - 3-4 fix and cause
+- roulette and red coin : more
+- PercentageFillerForcedLocal
 
 
 ## Bugs to fix
 - 3-4's randod to 1-3 Secret Exit seems to not send even after completing it several times.
 - 3-4 secret exit is weird, maybe because it is switched with the red block?
+- FYI, in the new update if you somehow gain a power up without having mushroom unlocked (i.e. you have ice flower on you via the menu) and you take damage, you just go back to ice flower infinitely
 
-
-0x429f10 	
-[32-bit BE] [NTSC] Red coins pointer
-+0x114=[32-bit BE] Current Red Coins. Goes up to 0x7 then back to 0x0 when collecting the 8th one, so you need to also check that the timer at 0x42a078 did not run out
-+0x118=[32-bit BE] Current Red Coins for some stages. 1-5 (second set) 4-1, 4-3, 4-5, 5-3, 5-Castle
 
 0x429f30 	
 [32-bit BE] [NTSC] Some pointer that can be used as a way to know you aren't in a stage for FFA/Coin Battle
 0x0=Menu
 >0x80000000=In game
-
-0x42a078 	
-[32-bit BE] [NTSC] Pointer to red coin timer
-+0x50c=[32-bit BE] Red coin timer. At 0x0, coins disappear
 
 roulette blocks 
 daEnRouletBlock_c::finalizeState_Wait
@@ -128,6 +125,15 @@ daEnRouletBlock_c::finalizeState_Wait
   - it is due to starting locations not being registered
 - freez when clear toad house
   - on some music shuffle seeds
+- Level clear = unlockable item??
+  - each level would need to be unlocked separately  
+
+
+## Logic
+- oneups_sanity (and amount)
+- nintynine_coin_sanity
+- red_coin_ring (and which levels)
+- roulet_block (and which levels)
 
 
 ## Broken versions

@@ -223,28 +223,29 @@ class ShortcutSanity(Choice):
 
 class OneupsSanity(Toggle):
     """
-
+    Implemented without logic.
     """
     visibility = Visibility.none
 
 
 class NintyNineCoins(Toggle):
     """
-
+    Implemented without logic.
     """
     visibility = Visibility.none
 
 
 class RedCoinRing(Toggle):
     """
-
+    Implemented without logic.
     """
     visibility = Visibility.none
 
 
 class RouletBlock(Toggle):
     """
-
+    Implemented without logic.
+    Requires riivolution
     """
     visibility = Visibility.none
 
@@ -457,14 +458,14 @@ class TrapItems(OptionCounter):
 
 class PercentageFillerForcedLocal(Range):
     """
-    Forces approximately x% of filler to be (early) local items
+    Forces approximately x% of filler to be (early) local items.
     """
-    display_name = " (in dev, doesnt work) Percentage Filler Forced Local Only"
+    display_name = "Percentage Filler Forced Local Only"
     range_start = 0
     range_end = 100
 
     default = 0
-    visibility = Visibility.none
+    #visibility = Visibility.none
 
 class SaveStateSlot(Range):
     """
@@ -791,9 +792,11 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         world.options.hint_movie_shop_price_logic.value = HintMovieShopPriceLogic.default
 
 
-    if (world.options.level_shuffle_riivolution.value + world.options.music_shuffle_riivolution.value
-            > 0 and world.options.use_riivolution.value == False):
-        raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")
+    if (world.options.use_riivolution.value == False):
+        if (world.options.level_shuffle_riivolution.value or world.options.music_shuffle_riivolution.value or
+            world.options.background_shuffle_riivolution.value or world.options.pallet_shuffle_riivolution.value or
+            world.options.tile_sheet_shuffle_riivolution.value or world.options.roulet_block.value):
+            raise OptionError(f"(NSMBW generation error) Cannot use an option that require riivolution patch without it being enabled")
 
     if world.options.alternative_goal.value == AlternativeGoal.option_hintmovies:
         if not world.options.hint_movie_sanity.value:
