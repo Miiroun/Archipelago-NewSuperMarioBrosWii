@@ -514,7 +514,7 @@ class NSMBWInterface(object):
         #if ITEM.ABILITIES.Star in slot_data_ablities_included:
         #    if not ITEM.ABILITIES.Star in unlocked_moves:
         #        self.set_star_timer(int_to_bytes(0, 4))
-        patch_ability(ITEM.ABILITIES.Star, self.memory_addresses.patch_star)
+        patch_ability(ITEM.ABILITIES.Star, self.memory_addresses.patch_star, double_check=False)
 
 
         patch_ability(ITEM.ABILITIES.Climb, [

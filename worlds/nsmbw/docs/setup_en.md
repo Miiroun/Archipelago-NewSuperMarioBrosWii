@@ -21,43 +21,44 @@
    - See [en_NSMBW.md](../docs/en_NSMBW.md) for all options, etc.
 4) Note that the ap client is bundled with launcher.
 5) Open dolphin, change the following settings:
-   - Options → Configuration → Advanced → Memory Override → Off
-   - Options → Configuration → Interface → Hotkeys Require Window Focus → Off
-   - Options → Hotkey Settings → Save and Load State. Make sure saving (e.g. shift + F8 or @(Shift+F8)) and loading (e.g. F8) save states from slot 7 and 8 are their default values.
+   - `Options → Configuration → Advanced → Memory Override` to `Off`
+   - `Options → Configuration → Interface → Hotkeys Require Window Focus` to `Off`
+   - `Options → Hotkey Settings → Save and Load State`. Make sure saving (e.g. shift + F8 or @(Shift+F8)) and loading (e.g. F8) save states from slot 7 and 8 are their default values.
    - If you care about your dolphin savefiles then back them up.
-6) Inside the client press CONNECT and then enter your player name (from the yaml).
-   - If you do NOT have the use_riivolution option (0.3.0) enabled:wait to CONNECT until you are at the level select menu in world 1.
-   - If you do have it enabled make sure 
+6) Inside the client press `CONNECT` and then enter your player name (from the yaml).
+   - If you do NOT have the `use_riivolution` option enabled, then wait to CONNECT until you are at the level select menu in world 1.
+   - If you do have it enabled make sure you do NOT have the game open when you press CONNECT.
 
 
-## How to play (use_riivolution disabled)
+## How to play (`use_riivolution` disabled)
 1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
 2) This should prompt you for your game file. (You can repromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
    - If you want the game to auto start
 3) Clear save file 2 (you can make a copy of it if you care about it). Then select the now empty savefile 2 to play on.
-4) After you have entered the world map press CONNECT in the client, and enter your slot name and password.
+4) After you have entered the world map press `CONNECT` in the client, and enter your slot name and password.
 5) Open the in game world-select menu and move to the world you have unlocked.
 6) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
-7) Make save-states to save the game and run /save often.
-   - Do NOT save when you are in world 9, it can delete your save.
+7) Make save-states to save the game and run `/save` often.
    - Don't use the in game save feature and make a new save state after every level clear.
-   - To close the game run /exit
+   - To close the game run `/exit`
 
 
-## How to play (use_riivolution enabled)
-0) In `host.yaml`, under the section `nsmbw_settings`. assert `auto_open` is `false` and `auto_open_riivolution` is `true`.
+## How to play (`use_riivolution` enabled)
+0) In `host.yaml`, under the section `nsmbw_settings`. Make sure they are their default values `auto_open` : `false` and `auto_open_riivolution` : `true`. 
 1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
 2) You will be promoted for the location of your dolphin install if they are not located automatically. You can change their values later on in `host.yaml`.
- - Linux only: On Desbian distros like Fedora and Arch users (including SteamOS) you have to install `dolphin-emu-tool` separate from dolphin. It is included in the ´flat-pak´ version.
-3) Enter your connection details and press CONNECT in the client.
-4) The game will now open automatically. If it does not, you can right-click your game in dolphin → start with riivolution patch. Enable just the patch for this async and start the game.
-5) Select SAVEFILE 2 to play on.
-6) Play the game: Beat levels and collect star coins.
+   - Linux only: On Desbian distros like Fedora and Arch users (including SteamOS) you have to install `dolphin-emu-tool` separate from dolphin. It is included in the ´flat-pak´ version.
+3) Enter your connection details and press `CONNECT` in the client.
+4) The game will now open automatically.
+   - If it does not, you can right-click your game in dolphin → `start with riivolution patch`. Enable just the patch for this multiworld and start the game.
+5) Select `SAVEFILE 2` to play on.
+6) Play the game: Beat levels and collect star coins. Prepare to take down bowser.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
-
+8) Make save-states to save the game and run `/save` often.
+   - To close the client run `/exit` to make sure everything is saved correctly.
 
 ## Tracker 
 - You can optionally use the built-in universal tracker extension to track available locations.
 - Simply download [universal tracker](https://github.com/FarisTheAncient/Archipelago/releases?q=Tracker) and put it into your custom worlds folder (or double click it).
-- It is automatically integrated into the client if you have it in your custom worlds folder and is integrated into the client.
+- UT is integrated into the NSMBW client if you have it in your custom worlds folder.
 

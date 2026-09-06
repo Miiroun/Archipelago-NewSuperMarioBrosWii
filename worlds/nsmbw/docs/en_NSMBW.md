@@ -3,6 +3,10 @@
 ## What is goal
 - To beat bowsers castle at world 8
 - Bowsers castle is looked behind having a number of star coin items and beaten the last level in a number of worlds. (Configurable in player yaml)
+- There also exist alternative goals:
+  - Collect all hint movies.
+  - Collect X star coins.
+  - Beat X levels.
 
 
 ## Items
@@ -96,7 +100,7 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 - Please run this and send a [screenshot](https://screenshot.help/) of it before asking for help.
 
 `/match_server_state`
-- if your save file was somehow messed up will this fix it
+- If your save file was somehow messed up, this command will fix it.
 
 
 ## Known quirks / bugs / help with debug
@@ -118,6 +122,7 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 - Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files
 - Music shuffle can cause crashes when you reach some parts of the game. To fix this deleate the `Sounds` directory from `Dolphin Emulator\Load\Riivolution\nsmbw_ap_<seedname>\Sounds` 
 - If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
+- Multiple things can mess with the nsmbw cache stored in the temp folder. To fix them run `/rm_tmp` to clear the temp folder and all riivolution patches. (This will NOT remove your savefiles) .
 
 
 ## FAQ
