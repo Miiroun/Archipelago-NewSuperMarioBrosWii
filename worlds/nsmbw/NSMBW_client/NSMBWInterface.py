@@ -21,7 +21,8 @@ if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and
         from .lib import keyboard
     except ImportError as e:
         print(e)
-        logger.info("for now you will need to give the client root access on linux or use the host.yaml settting for xdotool.")
+        logger.info("for now you will need to give the client root access on linux or use the host.yaml settting for xdotool. "
+                    "You can safely ignore this if you are using riivolution instead.")
 else:
     logger.info(f"is not importing keyboard, instead tries to use xdotool.")
 
@@ -54,6 +55,8 @@ GAME_VERSIONS = {
 
 }
 
+class InvalidPointerError(Exception):
+    pass
 
 class NSMBWInterface(object):
     """Interface sitting in front of the DolphinClient to provide higher level functions for interacting with game"""
@@ -568,6 +571,13 @@ class NSMBWInterface(object):
         patch_element(ITEM.LEVELELEMENTS.PSwitch, self.memory_addresses.patch_p_switch)
         patch_element(ITEM.LEVELELEMENTS.QuestSwitch, self.memory_addresses.patch_q_switch)
 
+        #if ITEM.LEVELELEMENTS.RedCoinRing in slot_data_element_included:
+        #    if not ITEM.LEVELELEMENTS.RedCoinRing in unlocks:
+        #        timer = self.get_red_coin_timer()
+        #        if (timer is not None) and timer not in [b'\x00\x00\x00\x00',b'\x00\x00\x00\x01']:
+        #            self.set_red_coin_timer(1)
+
+
         if ITEM.LEVELELEMENTS.RedSwitch in slot_data_element_included:
             if ITEM.LEVELELEMENTS.RedSwitch in unlocks:
                 pass
@@ -578,14 +588,14 @@ class NSMBWInterface(object):
 
 
 
-    async def handle_enemy_look(self, unlocks : List[str]):
-        if self.slot_data["randomize_enemies"] != RandomizeEnemies.option_off:
+    async def handle_enemy_lock(self, unlocks : List[str]):
+        if self.slot_data["randomize_enemies"] == RandomizeEnemies.option_off:
             return
 
         slot_data_enemy_included  = self.slot_data["enemies_included"]
         def patch_enemy(name : str, patch : CodePatch | Iterable):
             if name in slot_data_enemy_included:
-                self.apply_patch(patch, (name in unlocks) ^ (self.slot_data["randomize_enemies"] == RandomizeEnemies.option_add))
+                self.apply_patch(patch, (name in unlocks) ^ (self.slot_data["randomize_enemies"] == RandomizeEnemies.option_remove))
 
 
         patch_enemy(ITEM.ENEMIES.Goomba, self.memory_addresses.patch_goomba)
@@ -594,7 +604,7 @@ class NSMBWInterface(object):
     async def handle_unlocks(self, unlocks : List[str], current_mod):
         await self.handle_unlocked_moves(unlocks, current_mod)
         await self.handle_level_gimick(unlocks)
-        await self.handle_enemy_look(unlocks)
+        await self.handle_enemy_lock(unlocks)
 
 
 
@@ -763,15 +773,25 @@ class NSMBWInterface(object):
 
     def get_red_coin_timer(self) -> bytes:
         address = self.memory_addresses.red_coin_timer_pointer
-        return self.dolphin_client.read_pointer(address, 0x50c, 4)
+        _val =  self.dolphin_client.read_pointer(address, 0x50c, 4)
+        if _val is None:
+            raise InvalidPointerError
+        return _val
 
     def get_red_coin_amount1(self) -> bytes:
         address = self.memory_addresses.red_coin_amount_pointer
-        return self.dolphin_client.read_pointer(address, 0x114, 4)
+        _val =  self.dolphin_client.read_pointer(address, 0x114, 4)
+        if _val is None:
+            raise InvalidPointerError
+        return _val
+
 
     def get_red_coin_amount2(self) -> bytes:
         address = self.memory_addresses.red_coin_amount_pointer
-        return self.dolphin_client.read_pointer(address, 0x118, 4)
+        _val =  self.dolphin_client.read_pointer(address, 0x118, 4)
+        if _val is None:
+            raise InvalidPointerError
+        return _val
 
     def get_roulette(self) -> bytes:
         address = self.memory_addresses.custom_roulette

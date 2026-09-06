@@ -63,8 +63,8 @@ class RandomizeAbilities(Toggle):
     """
 
 class AbilitiesIncluded(ItemSet):
-    """
-    Which abilities are shuffled into the item pool.
+    __doc__ = f"""
+    Which abilities: {ABILITIES} are shuffled into the item pool.
     Requires Randomize Abilities to be enabled.
     Consider not enabling run on your first attempt since it slows you down significantly.
     More abilities exists as secret options as they have smaller issues.
@@ -86,8 +86,8 @@ class RandomizeLevelElements(Toggle):
     """
 
 class LevelElementsIncluded(ItemSet):
-    """
-    Which level elements are shuffled into the item pool.
+    __doc__ = f"""
+    Which level elements: {LEVEL_ELEMENTS} are shuffled into the item pool.
     Requires Randomize Level Elements to be enabled.
     The only valid none default option is pipe, which still is required for most world starts.
     """
@@ -107,8 +107,8 @@ class RandomizeEnemies(Choice):
 
 
 class EnemiesIncluded(ItemSet):
-    """
-
+    __doc__ = f"""
+    Enemies: {ENEMIES} are shuffled into the item pool.
     """
     valid_keys = set(ENEMIES)
     default = valid_keys
@@ -310,18 +310,19 @@ class StarcoinRequirementWorldUnlock(OptionCounter):
     min = 0
     max = 231
 
-    default = {
-        1 : 0,
-        2 : 0,
-        3 : 0,
-        4 : 0,
-        5 : 0,
-        6 : 0,
-        7 : 0,
-        8 : 0,
-        9 : 0
+    _default = {
+        "1" : 0,
+        "2" : 0,
+        "3" : 0,
+        "4" : 0,
+        "5" : 0,
+        "6" : 0,
+        "7" : 0,
+        "8" : 0,
+        "9" : 0
     }
-    valid_keys = default.keys()
+    valid_keys = _default.keys()
+    value = _default
 
 class World9UnlockCondition(Choice):
     """
@@ -783,9 +784,6 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
             print("(NSMBW generation error) You need to have at least one trap item.")
             world.options.trap_items.value = world.options.trap_items.default
 
-    if world.options.percentage_filler_forced_local.value != 0:
-        world.options.percentage_filler_forced_local.value = 0
-        print("percentage_filler_forced_local is in dev and doesnt work")
 
     if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_progressive:
         print(f"(NSMBW generation error) Option progressive for hint_movie_shop_price_logic is not implemented, setting to default instead.") # raise OptionError
@@ -806,3 +804,10 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         raise OptionError(f"(NSMBW generation error) Due to a bug hint_movie_sanity and level_shuffle_riivolution can not both be enabled")
 
     world.options.starcoin_requirement_world_unlock.value[str(world.options.starting_world.value)] = 0
+    for world_num in range(1,9+1):
+        if str(world_num) not in world.options.starcoin_requirement_world_unlock.value.keys():
+            world.options.starcoin_requirement_world_unlock.value[str(world_num)] = 0
+
+    if world.options.bowser_level_unlock.value > 70:
+        world.options.bowser_level_unlock.value = 70
+        print(f"(NSMBW generation error) generation fails if bowser_level_unlock > 70.")

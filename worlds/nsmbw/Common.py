@@ -78,12 +78,13 @@ class ITEM:
         ButtonDown      = "Button Down"
 
     class LEVELELEMENTS(StrEnum):
-        Pipe = "Pipe"
-        Door = "Door"
-        PSwitch = "P-Switch"
-        QuestSwitch = "?-Switch"
-        RedSwitch = "!-Switch"
+        Pipe            = "Pipe"
+        Door            = "Door"
+        PSwitch         = "P-Switch"
+        QuestSwitch     = "?-Switch"
+        RedSwitch       = "!-Switch"
         CheckPoint      = "Check Point"
+        #RedCoinRing     = "Red Coin Ring"
 
 
     class ENEMIES(StrEnum):

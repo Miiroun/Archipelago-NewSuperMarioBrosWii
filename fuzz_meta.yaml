@@ -4,24 +4,21 @@ NSMBW: #
   progression_balancing: normal
   world_comp_priority: false
   use_riivolution : true
-  level_shuffle_riivolution: false
-  #alternative_goal : bowser
+  #level_shuffle_riivolution: false
+  alternative_goal : bowser
 
-  hint_movie_sanity: true
+  hint_movie_sanity: false
   level_completion : true
-  starting_world: world8
-  randomize_level_elements : true
-  level_elements_included:
-    - '!-Switch'
-    - Check Point
-    - Door
-    - P-Switch
-    - Pipe
-
-  nintynine_coin_sanity: true
-  oneups_sanity: true
-
-  percentage_filler_forced_local : 0
+  #starting_world: world8
+  #randomize_level_elements : true
+  #level_elements_included:
+  #  - '!-Switch'
+  #  - Check Point
+  #  - Door
+  # - P-Switch
+  #  - Pipe
+  starcoin_requirement_world_unlock:
+    "1" : 0
 
 
 #empty:

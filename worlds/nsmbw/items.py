@@ -60,7 +60,7 @@ for i, movement_unlock in enumerate(UNLOCKS):
     else:
         DEFAULT_ITEM_CLASSIFICATIONS.update({movement_unlock : ItemClassification.progression})
 ITEM_NAME_GROUPS.update({
-    "Abilites" : set(ABILITIES),
+    "Abilities" : set(ABILITIES),
     "Level elements" : set(LEVEL_ELEMENTS),
     "Enemies" : set(ENEMIES),
     "Unlocks" : set(UNLOCKS)
@@ -114,22 +114,9 @@ def get_random_filler_item_name(world: NSMBWworld) -> str:
     _list : List[Tuple[str,int]] # converts the dict to a sorted string for determinism
     if world.random.randint(1, 100) <= world.options.trap_chance.value:
         _list = sorted(list(world.options.trap_items.value.items()))
-        item_name = str(world.random.choices(*zip(*_list), k=1)[0])
     else:
         _list = sorted(list(world.options.filler_items.value.items()))
-        item_name = str(world.random.choices(*zip(*_list), k=1)[0])
-
-        # local_item is a set, so you cannot set amount, pokepelago implements this correctly but have to mimic logic in lots of weird ways I rather avoid
-        #https://github.com/dowlle/AppieArchipelago/blob/aa3bb80a0c6ade301769ce0e5034b53bd8303c28/worlds/pokepelago/__init__.py#L742
-        #https://github.com/spineraks-org/ArchipelagoJigsaw/blob/01afea6b840db720a829947119610d0e138fabcd/worlds/jigsaw/__init__.py#L498
-        #https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/9d80d213a674d0b18865a0510cd68c06632f14ce/worlds/tunic/__init__.py#L561
-        if world.random.randint(1, 100) <= world.options.percentage_filler_forced_local.value:
-            if item_name in world.multiworld.local_early_items[world.player].keys():
-                world.multiworld.local_early_items[world.player][item_name] += 1
-            else:
-                world.multiworld.local_early_items[world.player][item_name] = 1
-                #world.multiworld.local_items
-
+    item_name = str(world.random.choices(*zip(*_list), k=1)[0])
 
     return item_name
 
@@ -151,16 +138,17 @@ extra_start_items : Dict[int,set]= {
     8 : {ITEM.ABILITIES.Run.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value} | pip_essen
 }
 
+def precollect_items(world: NSMBWworld) -> None:
+    excluded_items : set = set()
+    excluded_items.add(name_world_unlock(world.options.starting_world.value))
+
+    for _item in sorted(list(excluded_items)):
+        world.push_precollected(world.create_item(_item))
+
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
 def create_all_items(world: NSMBWworld) -> None:
     starting_world_num : int = world.options.starting_world.value
     excluded_items : set = set()
-    excluded_items.update({name_world_unlock(starting_world_num)})
-
-    if world.options.randomize_powerups.value == world.options.randomize_powerups.option_on_except_mushroom:
-        excluded_items.update({ITEM.POWERUP.Super_Mushroom})
-
-    world.options.abilites_included.value -= {ITEM.ABILITIES.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value}
 
     if len({ITEM.ABILITIES.SpinJump.value, ITEM.ABILITIES.Jump.value} - world.options.abilites_included.value) == 0:
         if world.random.randint(0,1) == 0:
@@ -200,7 +188,7 @@ def create_all_items(world: NSMBWworld) -> None:
 
     if world.options.randomize_powerups.value in [RandomizePowerups.option_on, RandomizePowerups.option_on_except_mushroom, RandomizePowerups.option_on_progressive]:
         for p_up in POWERUP_UNLOCK:
-            if not p_up in excluded_items:
+            if not ((world.options.randomize_powerups.value == RandomizePowerups.option_on_except_mushroom) and (p_up == ITEM.POWERUP.Super_Mushroom)):
                 itempool.append(world.create_item(p_up))
 
 

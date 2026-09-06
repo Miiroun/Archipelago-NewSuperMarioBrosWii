@@ -11,6 +11,7 @@ RegionNames = {
 
 
 def bytes_to_int(byte : bytes, signed=False) -> int:
+    assert byte is not None
     return int.from_bytes(byte, byteorder='big', signed=signed)
 
 def int_to_bytes(num : int, width, signed=False) -> bytes:

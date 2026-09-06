@@ -76,30 +76,6 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
 def set_all_entrance_rules(world: "NSMBWworld") -> None:
     #rules are set when connecting regions
-    is_ut = getattr(world.multiworld, "generation_is_fake", False)
-    if not is_ut:
-        shuffle_level_order(world)
-
-        if world.options.level_shuffle_riivolution.value == True:
-            i = 0
-
-            beatable = False
-            while not beatable:
-                status = shuffle_level_order(world)
-
-                # this makes sure the first 2 levels are beatable
-                randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
-                randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
-                #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
-                _rule1 = (LevelRules[name_base(randod_world_num1, randod_level_num1)].clear).resolve(world)
-                _rule2 = (LevelRules[name_base(randod_world_num2, randod_level_num2)].clear).resolve(world)
-
-
-                beatable = _rule1(world.multiworld.state) and _rule2(world.multiworld.state) and status
-
-                i += 1
-                if i > 10_000:
-                    raise Exception(f"Faild to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
 
     set_level_entrance_rules(world)
 
@@ -169,14 +145,13 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
 
     for level in LEVELS:
         if world.options.oneups_sanity.value == True:
-            loc = world.get_location(name_1ups(*level))
             if LevelRules[name_base(*level)].oneups is not None:
+                loc = world.get_location(name_1ups(*level))
                 world.set_rule(loc, LevelRules[name_base(*level)].oneups)
 
         if world.options.nintynine_coin_sanity.value == True:
             loc = world.get_location(name_99coins(*level))
-            if LevelRules[name_base(*level)].nintynine_coins is not None:
-                world.set_rule(loc, LevelRules[name_base(*level)].nintynine_coins)
+            world.set_rule(loc, LevelRules[name_base(*level)].nintynine_coins)
 
         if world.options.red_coin_ring.value == True:
             if LevelRules[name_base(*level)].red_coin_ring is not None:

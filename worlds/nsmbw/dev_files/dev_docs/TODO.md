@@ -13,22 +13,41 @@
 - Mention which files needs to be selected for riivolution
 - matrix test for local filler
 
+- Change error messages import keyboard to mention riivolution
+
+Setup
+- Change the tracking 3(
+- 4) async -> multiworld 
+- 4) Riivolution: assert: mention default 
+- Edit 6) in setup guide
+
 
 ## Playtest
 - backward combat for coin battle
 - bowser_level_unlock 
 - starcoin_requirement_world_unlock
-- /print_settings
-- /debug
 - 3-4 fix and cause
 - roulette and red coin : more
 - PercentageFillerForcedLocal
+- powerups : a lot, get help
+
+
+I have a problem: need to conditionally add locations depending on level rando: however they are not set until the rules set
+- I cannot move level rando earlier
+- Nor can I move location creation later
 
 
 ## Bugs to fix
 - 3-4's randod to 1-3 Secret Exit seems to not send even after completing it several times.
 - 3-4 secret exit is weird, maybe because it is switched with the red block?
 - FYI, in the new update if you somehow gain a power up without having mushroom unlocked (i.e. you have ice flower on you via the menu) and you take damage, you just go back to ice flower infinitely
+  - powerup broken on non default powerup setting
+- and there other issues, with the deathlink, sometimes it send it just by entering in a level and when I exit course in the pause menu it send it ofen too
+  - deathlink sends when exit course
+- hello everyone, there's an issue on the toad house, when you make the mini game for get the inventory power up it crash when I get wrong ^^"
+  - toad house still crash
+- bytes b'<``\x80C' at addr  80a28464 not in code b'H\x00\x00(' or origin b'A\x82\x00\x1c' for patch <worlds.nsmbw.NSMBW_client.memoryAddresses.CodePatch object at 0x00000280039622E0> with name patch_star_level
+- I understand for the ones that are just jingles, but a lot of others like the world map themes wouldn't loop if they were put in a level
 
 
 0x429f30 	
@@ -127,6 +146,8 @@ daEnRouletBlock_c::finalizeState_Wait
   - on some music shuffle seeds
 - Level clear = unlockable item??
   - each level would need to be unlocked separately  
+- music shuffle feels weird and unintuitive : not looping etc, some jingles still included?
+- Make yoshi level element : breaking change
 
 
 ## Logic

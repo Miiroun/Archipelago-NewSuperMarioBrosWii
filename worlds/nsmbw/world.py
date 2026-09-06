@@ -12,7 +12,7 @@ from . import settings as nsbmw_settings
 from .Common import *
 from .Utils import cast_object_to_type
 from .items import NSMBWItem
-from .locations import NSMBWLocation
+from .locations import NSMBWLocation, shuffle_level_order, pos_to_level_name, level_name_to_pos
 
 collection_map_no_toad : Dict [str, int] = {}
 collection_map_general : Dict [str, int] = {}
@@ -96,6 +96,10 @@ class NSMBWworld(World):
                 #    raise ValueError(err_string)
                 self.overwrite_options(self.multiworld.re_gen_passthrough[self.game])
         nsmbw_option.adjust_options(self)
+
+        # this needs to be done before create locations, here is fine, maybe better in connect regions
+        items.precollect_items(self)
+        self.set_level_rando()
 
     def connect_entrances(self) -> None:
         """Method to finalize the source and target regions of the World's entrances"""
@@ -220,6 +224,34 @@ class NSMBWworld(World):
                 state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] -= amount
 
         return change
+
+
+    def set_level_rando(world):
+        is_ut = getattr(world.multiworld, "generation_is_fake", False)
+        if not is_ut:
+            shuffle_level_order(world)
+
+            if world.options.level_shuffle_riivolution.value == True:
+                i = 0
+
+                beatable = False
+                while not beatable:
+                    status = shuffle_level_order(world)
+
+                    # this makes sure the first 2 levels are beatable
+                    randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
+                    randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
+                    #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
+                    _rule1 = (raw_rules.LevelRules[name_base(randod_world_num1, randod_level_num1)].clear).resolve(world)
+                    _rule2 = (raw_rules.LevelRules[name_base(randod_world_num2, randod_level_num2)].clear).resolve(world)
+
+
+                    beatable = _rule1(world.multiworld.state) and _rule2(world.multiworld.state) and status
+
+                    i += 1
+                    if i > 10_000:
+                        raise Exception(f"Faild to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
+
 
 
     # "do NOT copy this option handling code, it is really not god and causes issues"

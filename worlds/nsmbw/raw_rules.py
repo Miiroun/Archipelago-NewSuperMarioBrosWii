@@ -169,6 +169,9 @@ star = has_ability(ITEM.ABILITIES.Star)
 door = has_element(ITEM.LEVELELEMENTS.Door) & button_up
 pipe = has_element(ITEM.LEVELELEMENTS.Pipe)
 
+oneups = True_()
+roulette = True_()
+red_coin_ring = True_()#has_element(ITEM.LEVELELEMENTS.RedCoinRing)
 
 
 # powerups
@@ -219,7 +222,7 @@ class Level(NamedTuple):
     starcoins : Tuple[Rule, Rule, Rule]
     secret_exit : Optional[Rule]  = None
     oneups : Optional[Rule]  = None
-    nintynine_coins : Optional[Rule]  = None
+    nintynine_coins : Rule  = True_()
     amount_coins : int = 99
     red_coin_ring : Optional[Rule] = None
     roulette : Optional[Rule] = None
@@ -227,13 +230,13 @@ class Level(NamedTuple):
 
 LevelRules : Dict[str, Level]= { # normal compleation rules
     #world 1
-    "1-1"  : Level(normal_move & TimeRule(90), (propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o)))),  # -1
+    "1-1"  : Level(normal_move & TimeRule(90), (propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))),oneups=oneups&run, red_coin_ring=red_coin_ring & (propeller | (logic_hard & (run | mini_o | ice_peng_o)))),  # -1
     "1-2"  : Level(normal_move & pipe & button_down , (button_up, p_switch | propeller_o, super_mario & ground_pound) ),  # -2
     "1-3"  : Level(normal_move, (yoshi | propeller_o | (logic_hard & ((mini_o & (ground_pound | run)) | (run & (super_mario | ground_pound)) | carry_block)),pipe & button_down &  (yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario))), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry_shell))), (yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry_shell & (super_mario | run)))) ) & pipe),  # -3
     "1-4"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), ice | peng_o | propeller_o | mini_o | logic_hard, ice | peng_o | logic_hard)),  # -4
     "1-5"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (climb, True_(), True_())),  # -5
     "1-6"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), run | (mini_o | (star_o & logic_hard)) | (propeller & (climb | outside_powerups)))),  # -6
-    "1-T"  : Level(pipe & button_down & button_up & normal_move &tower_rules, (True_(), wall_jump | propeller_o, True_())),  # -7 1-T
+    "1-T"  : Level(pipe & button_down & button_up & normal_move &tower_rules, (True_(), wall_jump | propeller_o, True_()), red_coin_ring=red_coin_ring, roulette=roulette),  # -7 1-T
     "1-C"  : Level(pipe & button_down & button_up & normal_move & door & TimeRule(200), (True_(), True_(), propeller_o | (wall_jump & p_switch))),  # -8 1-C
 
     # World 2
@@ -241,7 +244,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "2-2"  : Level(normal_move & pipe & button_down & button_up & jump, (p_switch | (ground_pound & super_mario), climb & (carry | propeller_o | logic_hard), mini & wall_jump & (carry | ground_pound))),  # -2
     "2-3"  : Level(normal_move & pipe& button_down & button_up, (True_(), True_(), (run | propeller_o | mini_o | (star & logic_hard)) )),  # -3
     "2-4"  : Level(normal_move  & pipe & button_down & button_up& (climb | (propeller_o | (mini_o & wall_jump)) | (logic_hard & wall_jump & run & super_mario))  , (climb , propeller , (propeller | (mini_o & wall_jump)) ), propeller & (wall_jump | run) ),  # -4 # this was orignaly propeller_o for sc2, sc3 and secret exit, but locations must be accessible independent of setting, so changed it to just propeller_o
-    "2-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), yoshi | carry | propeller_o | (wall_jump & (mini_o | run | super_mario)) | (logic_hard & ice_peng_o), True_())),  # -5
+    "2-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), yoshi | carry | propeller_o | (wall_jump & (mini_o | run | super_mario)) | (logic_hard & ice_peng_o), True_()), oneups=oneups),  # -5
     "2-6"  : Level(pipe & button_down & button_up & normal_move, (True_(), carry | propeller | mini_o, True_()), propeller | (mini_o & logic_hard)),  # -6
     "2-T"  : Level(pipe & button_down & button_up & normal_move & tower_rules, (True_(), True_(), True_())),  # -7 2-T
     "2-C"  : Level(pipe & button_down & button_up & normal_move & door & ((p_switch) | ((ice | peng_o) & carry) | (peng_o & crouch)), (True_(), (super_mario & wall_jump) | propeller_o, p_switch | ((ice | peng_o) & carry))),  # -8 2-C

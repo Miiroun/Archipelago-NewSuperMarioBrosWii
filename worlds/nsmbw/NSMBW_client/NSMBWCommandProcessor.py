@@ -473,7 +473,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         set_obj = Utils.get_settings()["nsmbw_settings"]
         data = ""
         for attr in set_obj:
-            data += f"{attr}: {set_obj[attr]}"
+            data += f"{attr}: {set_obj[attr]} \n"
         #data = dict(set_obj)
         logger.info(data)
 

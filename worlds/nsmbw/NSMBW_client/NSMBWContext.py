@@ -214,6 +214,10 @@ class NSMBWContext(SuperContext):
                 Utils.async_start(self.update_death_link_group(self.slot_data["death_link_group"]))
                 self.death_link_amnesty_cap = self.slot_data["death_link_amnesty"]
 
+                for world_num in range(1, 9 + 1):
+                    if str(world_num) not in self.slot_data["starcoin_requirement_world_unlock"].keys():
+                        self.slot_data["starcoin_requirement_world_unlock"][str(world_num)] = 0
+
                 try:
                     gen_ver = self.slot_data["NSMBW_Version"]
                     gen_ver_formated = f"{gen_ver[0]}.{gen_ver[1]}.{gen_ver[2]}"
@@ -637,8 +641,10 @@ class NSMBWContext(SuperContext):
     async def handle_checked_location(self):
         if self.game_interface.get_savefile_num() == 1:
             text = f"You are playing on save file 1, to prevent errors, no locations will be sent."
-            self.log_color(text, "red")
-            #print(text)
+            if time.time() > self.connection_pause + 90:
+                self.log_color(text, "red")
+            else:
+                print(text)
             await asyncio.sleep(3)
             return
 
@@ -769,9 +775,12 @@ class NSMBWContext(SuperContext):
             if LEVEL == (0,0):
                 return checked_locations
 
-            timer = bytes_to_int(self.game_interface.get_red_coin_timer())
-            amount1 = bytes_to_int(self.game_interface.get_red_coin_amount1())
-            amount2 = bytes_to_int(self.game_interface.get_red_coin_amount2())
+            try:
+                timer = bytes_to_int(self.game_interface.get_red_coin_timer())
+                amount1 = bytes_to_int(self.game_interface.get_red_coin_amount1())
+                amount2 = bytes_to_int(self.game_interface.get_red_coin_amount2())
+            except InvalidPointerError:
+                return checked_locations
 
 
             if (timer != 0) and (amount1 == 0) and (amount2 == 0):
@@ -1096,24 +1105,31 @@ class NSMBWContext(SuperContext):
                 if bytes_to_int(current_powerup_state) > POWERUP_COUNT:
                     continue
 
-                if current_powerup_state != b'\x00': # check if small mario
-                    current_pow_index = bytes_to_int(current_powerup_state) - 1
+                if current_powerup_state == b'\x00': # check if small mario
+                    continue
 
-                    if 0 <= current_pow_index < len(POWERUP_UNLOCK): #, "Something is wrong with reading powerup state"
-                        if unlocked_powerups[current_pow_index] == 0:
-                            logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
-                            # this runs if not powerup unlocked
+                current_pow_index = bytes_to_int(current_powerup_state) - 1
+                if  not (0 <= current_pow_index < len(POWERUP_UNLOCK)):
+                    print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
+                    continue
 
-                            if self.prev_powerup[player_num] != b'\x00': #check if wasnt  mario
-                                self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)  # currently makes you small mario, maybe better make
-                            else:
-                                # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
-                                if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
-                                    self.game_interface.set_powerupstate(b'\x00', player_num)
-                                else:
-                                    self.game_interface.set_powerupstate(b'\x01', player_num)
+                if unlocked_powerups[current_pow_index] != 0: # check if current powerup isnt unlocked
+                    continue
+
+                # this runs if not powerup unlocked
+                logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
+                if self.prev_powerup[player_num] == b'\x00': # need to handle this case seperatlly to not crash the next
+                    self.game_interface.set_powerupstate(b'\x00', player_num)
+                elif unlocked_powerups[bytes_to_int(self.prev_powerup[player_num]) - 1] == 0: #check if previous powerup is unlocked
+                    self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)  # set mario to previous sate, if unlocked
+                else:
+                    # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
+                    if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
+                        self.game_interface.set_powerupstate(b'\x00', player_num) # set mario to small
                     else:
-                        print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
+                        self.game_interface.set_powerupstate(b'\x01', player_num) # set mario to super mario
+
+        for player_num in range(PLAYER_COUNT):
             # handle powerup grace
             current_powerup_state = self.game_interface.get_powerupstate(player_num)
             current_pow_int = bytes_to_int(current_powerup_state)
@@ -1273,7 +1289,7 @@ class NSMBWContext(SuperContext):
                     self.modifiers.append(Modifier(ITEM.TRAPS.ReverseControlTrap, 30))
 
                 case ITEM.TRAPS.MovementLockTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.MovementLockTrap, 10))
+                    self.modifiers.append(Modifier(ITEM.TRAPS.MovementLockTrap, 5))
 
                 case ITEM.TRAPS.SlowTrap:
                     self.modifiers.append(Modifier(ITEM.TRAPS.SlowTrap, 60))

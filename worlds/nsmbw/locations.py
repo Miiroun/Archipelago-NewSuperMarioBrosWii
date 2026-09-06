@@ -183,21 +183,25 @@ def create_regular_locations(world: NSMBWworld) -> None:
             world.get_region(name_base(world_num, level_num)).add_locations(flagpole, NSMBWLocation)
 
     for level in LEVELS:
+        rando_level = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(*level)]) # should maybe use the bijection here
+        rando_level_bijection = pos_to_level_name(world.shuffled_level_order[world.shuffled_level_order.index(level_name_to_pos(*level))])
+
         if world.options.nintynine_coin_sanity.value == True:
             loc = get_location_names_with_ids([name_99coins(*level)])
             world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
         if world.options.oneups_sanity.value == True:
-            loc = get_location_names_with_ids([name_1ups(*level)])
-            world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
+            if LevelRules[name_base(*rando_level)].oneups is not None:
+                loc = get_location_names_with_ids([name_1ups(*level)])
+                world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
         if world.options.red_coin_ring.value == True:
-            if LevelRules[name_base(*level)].red_coin_ring is not None:
+            if LevelRules[name_base(*rando_level)].red_coin_ring is not None:
                 loc = get_location_names_with_ids([name_red_coin_ring(*level)])
                 world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
         if world.options.roulet_block.value == True:
-            if LevelRules[name_base(*level)].roulette is not None:
+            if LevelRules[name_base(*rando_level)].roulette is not None:
                 loc = get_location_names_with_ids([name_roulette(*level)])
                 world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 

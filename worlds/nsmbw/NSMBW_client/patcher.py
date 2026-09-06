@@ -352,11 +352,21 @@ class Patcher:
             temp_path = self.temp_dir / "files" / folder_name
             file_names: List[str] = os.listdir(temp_path)
 
-            BGM = list(filter(lambda x: x.startswith("BGM_"), file_names)) + list(filter(lambda x: x.startswith("STRM_BGM_"), file_names))
+            file_names.remove("BGM_MINIGAME_FANFARE_BAD.32.brstm")
+            file_names.remove("BGM_MINIGAME_FANFARE_GOOD.32.brstm")
+            file_names.remove("BGM_MINIGAME_FANFARE_KOOPA.32.brstm")
+            file_names.remove("STRM_BGM_MINIGAME.brstm")
+            file_names.remove("switch_lr.n.32.brstm")
 
-            SFX = list(set(file_names) - set(BGM) - {"switch_lr.n.32.brstm"})
+            BGM = list(filter(lambda x: x.startswith("BGM_"), file_names))
+            STRM_BGM = list(filter(lambda x: x.startswith("STRM_BGM_"), file_names))
+            select_map = list(filter(lambda x: x.startswith("select_map"), file_names))
+
+            SFX = list(set(file_names) - set(BGM) - set(STRM_BGM)- set(select_map))
 
             self.patch_files(BGM, folder_name, False)
+            self.patch_files(STRM_BGM, folder_name, False)
+            self.patch_files(select_map, folder_name, False)
             self.patch_files(SFX, folder_name, False)
 
 
