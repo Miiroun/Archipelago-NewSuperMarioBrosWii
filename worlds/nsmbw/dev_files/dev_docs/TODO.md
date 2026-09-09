@@ -12,9 +12,11 @@
   - test modified pointW1
 - Mention which files needs to be selected for riivolution
 - matrix test for local filler
-
 - Change error messages import keyboard to mention riivolution
+- change #amount dolphin instance for debian?
+- Nsmbw: checkpoint item unique for each level
 
+WHY DOES ARCHLINUX FAIL??
 
 ## Playtest
 - backward combat for coin battle
@@ -24,6 +26,7 @@
 - roulette and red coin : more
 - PercentageFillerForcedLocal
 - powerups : a lot, get help
+- Having more powerups than loc should send hints
 
 
 ## Bugs to fix
@@ -38,9 +41,6 @@
 [32-bit BE] [NTSC] Some pointer that can be used as a way to know you aren't in a stage for FFA/Coin Battle
 0x0=Menu
 >0x80000000=In game
-
-roulette blocks 
-daEnRouletBlock_c::finalizeState_Wait
 
 
 ## Short term

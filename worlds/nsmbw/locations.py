@@ -31,7 +31,7 @@ for world_num in range(1,9+1): # worlds
         sc_set = set(name_starcoin(world_num, level_num, sc) for sc in range(1, 3 + 1))
         LOCATION_NAME_GROUPS.update({
             f"Starcoins World{world_num} Level{level_num}": sc_set,
-            f"{name_base(world_num, level_num)} Everyting" : sc_set | {
+            f"{name_base(world_num, level_num)} Everything" : sc_set | {
                 name_level(world_num, level_num),
                 name_1ups(world_num, level_num),
                 name_99coins(world_num, level_num),

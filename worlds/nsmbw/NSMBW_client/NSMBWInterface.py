@@ -94,7 +94,8 @@ class NSMBWInterface(object):
 
     def connect_to_game(self) -> bool:
         """Initializes the connection to dolphin and verifies it is connected to NSMBW"""
-        expected_amount_connect = 1 + Utils.is_linux
+        # this expected amount might be incorrect for Debian OSs
+        expected_amount_connect = 1 + (Utils.is_linux & is_flatpak_installed())
         if get_num_dolphin_instances() != expected_amount_connect:
             logger.info(f"Detected number of dolphin instances = {get_num_dolphin_instances()}, should be {expected_amount_connect}.")
             print(f"Presses: {list(psutil.process_iter())}")

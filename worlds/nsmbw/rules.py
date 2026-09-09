@@ -144,24 +144,27 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
         world.set_rule(invent_pow, invent_rule_no_toad | invent_rule_general | GlitchedRule())
 
     for level in LEVELS:
+        rando_level = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(*level)]) # should maybe use the bijection here
+        rando_level_bijection = pos_to_level_name(world.shuffled_level_order[world.shuffled_level_order.index(level_name_to_pos(*level))])
+
         if world.options.oneups_sanity.value == True:
-            if LevelRules[name_base(*level)].oneups is not None:
+            if LevelRules[name_base(*rando_level)].oneups is not None:
                 loc = world.get_location(name_1ups(*level))
-                world.set_rule(loc, LevelRules[name_base(*level)].oneups)
+                world.set_rule(loc, LevelRules[name_base(*rando_level)].oneups)
 
         if world.options.nintynine_coin_sanity.value == True:
             loc = world.get_location(name_99coins(*level))
-            world.set_rule(loc, LevelRules[name_base(*level)].nintynine_coins)
+            world.set_rule(loc, LevelRules[name_base(*rando_level)].nintynine_coins)
 
         if world.options.red_coin_ring.value == True:
-            if LevelRules[name_base(*level)].red_coin_ring is not None:
+            if LevelRules[name_base(*rando_level)].red_coin_ring is not None:
                 loc = world.get_location(name_red_coin_ring(*level))
-                world.set_rule(loc, LevelRules[name_base(*level)].red_coin_ring)
+                world.set_rule(loc, LevelRules[name_base(*rando_level)].red_coin_ring)
 
         if world.options.roulet_block.value == True:
-            if LevelRules[name_base(*level)].roulette is not None:
+            if LevelRules[name_base(*rando_level)].roulette is not None:
                 loc = world.get_location(name_roulette(*level))
-                world.set_rule(loc, LevelRules[name_base(*level)].roulette)
+                world.set_rule(loc, LevelRules[name_base(*rando_level)].roulette)
 
 
 def set_completion_condition(world: "NSMBWworld") -> None:

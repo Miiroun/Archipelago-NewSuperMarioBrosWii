@@ -282,6 +282,7 @@ class Patcher:
         path_to.mkdir(exist_ok=True, parents=True)
 
         if is_linux:
+            dolphin_tool_cmd = None
             if is_flatpak_installed():
                 dolphin_tool_cmd = [
                     "flatpak",
@@ -290,19 +291,29 @@ class Patcher:
                     f"--filesystem={str(path_to)}",
                     f"--filesystem={str(self.input_path)}:ro",
                     "org.DolphinEmu.dolphin-emu"]
-            else:
+
+            elif shutil.which("dolphin-tool"):
                 dolphin_tool_cmd = ["dolphin-tool"]
 
-            result = subprocess.run(
-                dolphin_tool_cmd + [
-                "extract",
-                "--input", str(self.input_path),
-                "--output", str(path_to)
-            ])
-            if result.returncode == 0:
-                return
             else:
-                logger.info(f"Problem with extracting game files, fall back to manully locating dolphin-tool")
+                logger.info(f"`dolphin-emu-tool` needs to be installed separately for Debian based operating systems")
+
+            if dolphin_tool_cmd:
+                #print(f"input \"{str(self.input_path)}\"")
+                #print(f"output \"{str(path_to)}\"")
+                result = subprocess.run(
+                    dolphin_tool_cmd + [
+                    "extract",
+                    "--input", str(self.input_path),    #f"\"{str(self.input_path)}\"",
+                    "--output", str(path_to),   #f"\"{str(path_to)}\"",
+                ])
+                if result.returncode == 0:
+                    return
+                else:
+                    logger.info(f"Exited with return code {result.returncode}")
+                    logger.info(f"result {result.stdout}")
+            logger.info(f"Problem with extracting game files, fall back to manually locating dolphin-tool")
+
 
         dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool)
         assert dolp_tool.exists() , f"the path {dolp_tool} to DolphinTool is invaild"

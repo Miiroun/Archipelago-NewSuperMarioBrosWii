@@ -996,6 +996,9 @@ class NSMBWContext(SuperContext):
                 location_name = name_inventory(self.prossesed_inventory_powerup_locations)
                 checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                 print(f"Location {location_name} checked")
+            else:
+                await self.send_random_hint()
+                logger.info(f"Hinted one of your location because you got an inventory powerup")
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -1743,6 +1746,11 @@ class NSMBWContext(SuperContext):
 
         except Exception as e:
             logger.info(e)
+
+    async def send_random_hint(self):
+        loc_id = {self.random.choice(list(self.missing_locations- self.locations_info.keys() - self.locations_scouted - self.checked_locations))}
+        Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": list(loc_id), "create_as_hint": 2}]))
+        self.locations_scouted |= loc_id
 
     async def send_hints_hm(self):
         # hints for all hint movies

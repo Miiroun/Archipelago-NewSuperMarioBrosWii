@@ -727,25 +727,25 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     req_start_loc = -10
     req_start_loc_max = 10
     if (world.options.hint_movie_sanity.value == False):
-        #print(f"(NSMBW generation error) Turning off hint_movie_sanity can cause fill errors with a low amount of num_starting_locations.")
+        #print(f"(NSMBW generation warning) Turning off hint_movie_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if (world.options.level_completion.value == False):
-            #print(f"(NSMBW generation error) Turning off level_completion can cause fill errors with a low amount of num_starting_locations.")
+            #print(f"(NSMBW generation warning) Turning off level_completion can cause fill errors with a low amount of num_starting_locations.")
             req_start_loc += 30
             req_start_loc_max += 15
     if (world.options.starcoin_sanity.value == False):
-        #print(f"(NSMBW generation error) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
+        #print(f"(NSMBW generation warning) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 15
     if (world.options.shortcuts_sanity.value == ShortcutSanity.option_disabled):
-        #print(f"(NSMBW generation error) Turning off shortcuts_sanity can cause fill errors with a low amount of num_starting_locations.")
+        #print(f"(NSMBW generation warning) Turning off shortcuts_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if 0 <= req_start_loc:
-        print(f"(NSMBW generation error) Low amount of locations detected in nsmbw, this can cause fill errors if generate alone")
-        #print(f"(NSMBW generation error) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
+        print(f"(NSMBW generation warning) Low amount of locations detected in nsmbw, this can cause fill errors if generate alone")
+        #print(f"(NSMBW generation warning) Generation determined that you have to low num_starting_locations, requires at least {req_start_loc} for a stable generation.")
         #world.options.include_starting_locations.value = min(req_start_loc, req_start_loc_max)
 
     if world.options.include_inventory_powerups.value >= 200:
-        print(f"(NSMBW generation error) You have include_inventory_powerups set to {world.options.include_inventory_powerups.value} which is >= 200"
+        print(f"(NSMBW generation warning) You have include_inventory_powerups set to {world.options.include_inventory_powerups.value} which is >= 200"
               f"consider lowering this to get a more enjoyable experience.")
 
     # this tries to prevent num loc > num items
@@ -770,23 +770,23 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
         world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
-        print(f"(NSMBW generation error) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}, amount forcefully lowered")
+        print(f"(NSMBW generation warning) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}, amount forcefully lowered")
 
 
     if world.options.trap_chance.value != 100:
         if len(list(Counter(world.options.filler_items.value).elements())) == 0:
-            print("(NSMBW generation error) You need to have at least one filler item.")
+            print("(NSMBW generation warning) You need to have at least one filler item.")
             world.options.filler_items.value = world.options.filler_items.default
 
 
     if world.options.trap_chance.value != 0:
         if len(list(Counter(world.options.trap_items.value).elements())) == 0:
-            print("(NSMBW generation error) You need to have at least one trap item.")
+            print("(NSMBW generation warning) You need to have at least one trap item.")
             world.options.trap_items.value = world.options.trap_items.default
 
 
     if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_progressive:
-        print(f"(NSMBW generation error) Option progressive for hint_movie_shop_price_logic is not implemented, setting to default instead.") # raise OptionError
+        print(f"(NSMBW generation warning) Option progressive for hint_movie_shop_price_logic is not implemented, setting to default instead.") # raise OptionError
         world.options.hint_movie_shop_price_logic.value = HintMovieShopPriceLogic.default
 
 
@@ -810,4 +810,4 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
 
     if world.options.bowser_level_unlock.value > 70:
         world.options.bowser_level_unlock.value = 70
-        print(f"(NSMBW generation error) generation fails if bowser_level_unlock > 70.")
+        print(f"(NSMBW generation warning) generation fails if bowser_level_unlock > 70.")

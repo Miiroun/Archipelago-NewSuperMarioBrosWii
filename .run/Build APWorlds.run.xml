@@ -16,7 +16,7 @@
     <option name="DEBUG_JUST_MY_CODE" value="true" />
     <option name="RUN_TOOL" value="" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Launcher.py" />
-    <option name="PARAMETERS" value="&quot;Build APWorlds&quot;" />
+    <option name="PARAMETERS" value="&quot;Build APWorlds&quot; &quot;NSMBW&quot;" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
