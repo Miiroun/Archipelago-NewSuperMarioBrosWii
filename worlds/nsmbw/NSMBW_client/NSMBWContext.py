@@ -1691,9 +1691,18 @@ class NSMBWContext(SuperContext):
                     if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
                         rii_path = _patcher.output_path.parent.parent.parent
                         save_state_file = rii_path / "StateSaves" / f"{_patcher.region}.s0{self.save_slot}"
-                        subprocess.Popen(self.get_dolphin_run_command(_patcher, str(save_state_file)) + [ "-e", str(_patcher.shortcut_path), "-s", str(save_state_file) ])
+                        subprocess.Popen(self.get_dolphin_run_command(_patcher, str(save_state_file)) + [
+                            "-e", str(_patcher.shortcut_path),
+                            "-s", str(save_state_file),
+                            ],
+                            env=Utils.env_cleared_lib_path()
+                        )
                     else:
-                        subprocess.Popen(self.get_dolphin_run_command(_patcher) + ["-e", str(_patcher.shortcut_path)])
+                        subprocess.Popen(self.get_dolphin_run_command(_patcher) + [
+                            "-e", str(_patcher.shortcut_path),
+                            ],
+                            env=Utils.env_cleared_lib_path()
+                        )
                     self.connection_pause = time.time() + 15
             else:
                 logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")

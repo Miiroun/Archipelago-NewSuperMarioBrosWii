@@ -16,7 +16,6 @@
 - change #amount dolphin instance for debian?
 - Nsmbw: checkpoint item unique for each level
 
-WHY DOES ARCHLINUX FAIL??
 
 ## Playtest
 - backward combat for coin battle

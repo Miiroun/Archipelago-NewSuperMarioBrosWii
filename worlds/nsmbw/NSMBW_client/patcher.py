@@ -306,7 +306,9 @@ class Patcher:
                     "extract",
                     "--input", str(self.input_path),    #f"\"{str(self.input_path)}\"",
                     "--output", str(path_to),   #f"\"{str(path_to)}\"",
-                ])
+                    ],
+                    env=Utils.env_cleared_lib_path(),
+                )
                 if result.returncode == 0:
                     return
                 else:
@@ -319,13 +321,21 @@ class Patcher:
         assert dolp_tool.exists() , f"the path {dolp_tool} to DolphinTool is invaild"
 
         if not (path_to.exists()  and (path_to / "Data" / "files").exists()):
-            subprocess.run([
+            result = subprocess.run([
                 str(dolp_tool),
                 "extract",
                 "--input", str(self.input_path),
-                "--output", str(path_to)
-            ])
-            print(f"Game extract successful")
+                "--output", str(path_to),
+                ],
+                env=Utils.env_cleared_lib_path(),
+            )
+            if result.returncode == 0:
+                print(f"Game extract successful")
+                return
+            else:
+                logger.info(f"Exited with return code {result.returncode}")
+                logger.info(f"result {result.stdout}")
+                raise Exception(f"Dolphin-tool game extraction failed")
         else:
             print(f"Game extract already exists")
 
@@ -519,7 +529,7 @@ class Patcher:
 
     def create_desktop_shortcut(self):
         data = {
-            "base-file": str(self.input_path),
+            "base-file": str(self.input_path.resolve()),
             "display-name": f"{self.name}",
             "riivolution" : {
                 "patches" : [
@@ -548,7 +558,7 @@ class Patcher:
             #json.dump(data, file_name, indent=4)
             file_name.write(json.dumps(data, indent=2).replace("\\\\", r"\/"))
         assert (self.shortcut_path).exists(), "need to have created shortcut successfully"
-        print(self.shortcut_path)
+        print(f"shortcut path:{self.shortcut_path}")
 
     def get_region(self):
         with open(self.temp_dir / 'disc' / 'header.bin', "rb") as f:
