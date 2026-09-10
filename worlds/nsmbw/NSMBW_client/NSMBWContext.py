@@ -423,8 +423,8 @@ class NSMBWContext(SuperContext):
             return
         else:
             #logger.info(status_messages[status])
-            if dolphin_interface_client.get_num_dolphin_instances() > 1:
-                logger.info(status_messages[ConnectionState.MULTIPLE_DOLPHIN_INSTANCES])
+            #if dolphin_interface_client.get_num_dolphin_instances() > 1:
+            #    logger.info(status_messages[ConnectionState.MULTIPLE_DOLPHIN_INSTANCES])
             self.connection_state = status
 
 

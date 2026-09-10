@@ -179,6 +179,8 @@ class NSMBWSettings(settings.Group):
         """Change this if you want multiple dolphin games open at the same time, warning difficult"""
         required = True
 
+    class DolphinInstanceOverride(settings.Bool):
+        """Change this to true if you want to remove the checks the client does for amount of dolphin instances"""
 
     game_file_path: GameFilePath  = GameFilePath(r"New SUPER MARIO BROS. Wii.iso")
 
@@ -196,6 +198,7 @@ class NSMBWSettings(settings.Group):
     allow_gen_impactful_settings : AllowGenDiffSettings | bool = False
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
     clear_cache_save_slot : ClearCacheSaveSLot = ClearCacheSaveSLot.Slot7
+    dolphin_instance_override : DolphinInstanceOverride | bool= False
 
 
     if Utils.is_windows:

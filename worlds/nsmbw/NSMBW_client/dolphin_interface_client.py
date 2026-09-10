@@ -8,6 +8,8 @@ import subprocess
 import psutil
 
 import Utils
+
+from ..Common import *
 import logging
 logger = logging.getLogger("Client")
 
@@ -131,6 +133,9 @@ Dolphin Connection error, verify the following in this order:
 
 def assert_no_running_dolphin() -> bool:
     """verifies no existing instances of dolphin are running."""
+    if get_settings()['nsmbw_settings'].dolphin_instance_override:
+        return True
+
     if get_num_dolphin_instances() > 0:
         return False
     return True

@@ -68,7 +68,10 @@ def is_flatpak_installed():
         result = subprocess.run([
             "flatpak",
             "info",
-            "org.DolphinEmu.dolphin-emu"])
+            "org.DolphinEmu.dolphin-emu",
+            ],
+            env=Utils.env_cleared_lib_path(),
+        )
         if result.returncode == 0:
             print(f"Flatpak Dolphin Tool Installation detected")
             return True
