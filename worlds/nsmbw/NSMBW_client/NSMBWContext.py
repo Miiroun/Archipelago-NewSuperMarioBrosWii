@@ -23,7 +23,7 @@ from configparser import ConfigParser
 import Utils
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
 from settings import get_settings
-from ..raw_rules import LevelRules
+from ..raw_rules import LevelRules, get_block_id, Block
 from ..settings import NSMBWSettings
 
 tracker_loaded = False
@@ -824,11 +824,25 @@ class NSMBWContext(SuperContext):
                 return checked_locations
 
             posCoinBlock = self.game_interface.get_blocksanity_coinblock_pos()
-            posBrickBlock = self.game_interface.get_blocksanity_brickblock_pos()
+            posBrickBlock = (0,0,0)#self.game_interface.get_blocksanity_brickblock_pos()
 
-            for blockPos in [posCoinBlock, posBrickBlock]:
-                if blockPos != (0, 0, 0):
-                    self.log_color(f"blockPos: {blockPos[0] : x} {blockPos[1] : x} {blockPos[2] : x}","green")
+            for pos in [posCoinBlock, posBrickBlock]:
+                if pos == (0, 0, 0):
+                    break
+                blockPos = Block("", *pos)
+                blocks = get_block_id(*LEVEL)
+                if blockPos in blocks:
+                    location_name = name_block_sanity(*LEVEL, blocks.index(blockPos)+1)
+                    loc_id = NSMBWworld.location_name_to_id[location_name]
+                    if loc_id not in self.locations_handled:
+                        checked_locations.append(loc_id)
+                        print(f"Location: {location_name} completed")
+                    break
+                else:
+                    print(f"blockPos {pos} not {blocks}")
+
+                logger.info(f"The following block is unacounted for in block rando, please report it")
+                self.log_color(f"Block(\"\", {hex(blockPos.pos_x)}, {hex(blockPos.pos_y)}, {hex(blockPos.pos_z)}), ","green")
 
 
         self.locations_handled += checked_locations
@@ -1652,6 +1666,7 @@ class NSMBWContext(SuperContext):
         text_msg: JSONMessagePart = {"type": "color",
                                  "text":text,
                                  "color": color}
+        print(text)
         self.ui.print_json([text_msg])
 
     def get_dolphin_run_command(self, _patcher, save_state_file = "") -> List[str]:

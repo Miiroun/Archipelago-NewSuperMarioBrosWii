@@ -806,9 +806,9 @@ class NSMBWInterface(object):
         address_y = self.memory_addresses.custom_coinblock_y
         address_z = self.memory_addresses.custom_coinblock_z
 
-        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 4))
-        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 4))
-        val_z = bytes_to_int(self.dolphin_client.read_address(address_z, 4))
+        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 2))
+        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 2))
+        val_z = bytes_to_int(self.dolphin_client.read_address(address_z, 2))
 
         if val_x+val_y+val_z != 0:
             self.dolphin_client.write_address(address_x, val_00000000)
@@ -820,8 +820,8 @@ class NSMBWInterface(object):
         address_x = self.memory_addresses.custom_brickblock_x
         address_y = self.memory_addresses.custom_brickblock_y
 
-        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 4))
-        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 4))
+        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 2))
+        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 2))
         val_z = 0
 
         if val_x+val_y+val_z != 0:

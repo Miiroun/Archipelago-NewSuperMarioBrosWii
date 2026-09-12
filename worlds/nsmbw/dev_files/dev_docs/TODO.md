@@ -11,6 +11,8 @@
 - Randomized ?-blocks
 - Coin sanity
   - is probably too extreme
+- Rename raw rules to data / raw_data / rule_data?
+- Work on FINAL MOVMENETS : so REACT can start on block logic
 
 
 ## Playtest
@@ -137,13 +139,17 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
   - each level would need to be unlocked separately  
 - music shuffle feels weird and unintuitive : not looping etc, some jingles still included?
 - Make yoshi level element : breaking change
+- Problem with name being static for level rando : cannot shuffle names ? !
+- option to turn off anoying block sanity level (5-G, 7-3, 8-1, C-1)
+- make some / most of block sanity excluded
 
 
 ## Logic
-- oneups_sanity (and amount)
-- nintynine_coin_sanity
+- oneups_sanity (and which levels)
+- nintynine_coin_sanity (and amount)
 - red_coin_ring (and which levels)
 - roulet_block (and which levels)
+- blocks_sanity (and id for each block in each level)
 
 
 ## Broken versions

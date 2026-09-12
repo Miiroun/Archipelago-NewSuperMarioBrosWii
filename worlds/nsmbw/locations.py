@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+from markdown_it.rules_core import block
+
 from BaseClasses import  Location, LocationProgressType
 
 from . import items
 from .Common import *
 from .options import AlternativeGoal, BlockSanity
-from .raw_rules import LevelRules, get_block_id
+from .raw_rules import LevelRules, get_block_id, MAX_BLOCKS
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -22,24 +24,26 @@ LOCATION_NAME_GROUPS = {}
 
 
 # Starcoins and level clear
-world_set = set()
+sc_world_set = set()
+block_world_set = set()
 for world_num in range(1,9+1): # worlds
-    level_set = set()
+    sc_level_set = set()
+    block_level_set = set()
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
         for sc in range(1,3+1):
             LOCATION_NAME_TO_ID.update({name_starcoin(world_num, level_num, sc): 10000 + 1000 * world_num + 10 * level_num + sc})
         sc_set = set(name_starcoin(world_num, level_num, sc) for sc in range(1, 3 + 1))
 
         blocks = get_block_id(world_num,level_num)
-        brick_set = set()
+        block_set = set()
         for i in range(1,len(blocks)+1):
             LOCATION_NAME_TO_ID.update({name_block_sanity(world_num,level_num, i) : 2_000_000 + 100_000 * world_num + 1_000 * level_num + i})
-            brick_set |= {name_block_sanity(world_num,level_num, i)}
+            block_set |= {name_block_sanity(world_num, level_num, i)}
 
         LOCATION_NAME_GROUPS.update({
             f"Starcoins World{world_num} Level{level_num}": sc_set,
             f"{name_base(world_num,level_num)} brick Everything"
-            f"{name_base(world_num, level_num)} Everything" : sc_set | brick_set | {
+            f"{name_base(world_num, level_num)} Everything" : sc_set | block_set | {
                 name_level(world_num, level_num),
                 name_1ups(world_num, level_num),
                 name_99coins(world_num, level_num),
@@ -47,7 +51,8 @@ for world_num in range(1,9+1): # worlds
                 name_roulette(world_num, level_num),
             },
         })
-        level_set |= sc_set | brick_set
+        sc_level_set |= sc_set
+        block_level_set |= block_set
         LOCATION_NAME_TO_ID.update({
             name_1ups(world_num, level_num)         : 10000 + 1000 * world_num + 10 * level_num + 4,
             name_99coins(world_num, level_num)      : 10000 + 1000 * world_num + 10 * level_num + 5,
@@ -57,7 +62,8 @@ for world_num in range(1,9+1): # worlds
         })
 
     LOCATION_NAME_GROUPS.update({
-    f"Starcoins World{world_num}": level_set,
+    f"Starcoins World{world_num}": sc_level_set,
+    f"Blocks World{world_num}" : block_level_set,
     f"Starcoin 1 World{world_num}": set(name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Starcoin 2 World{world_num}": set(name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Starcoin 3 World{world_num}": set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
@@ -66,14 +72,16 @@ for world_num in range(1,9+1): # worlds
     f"Red coin rings World{world_num}"  : set(name_red_coin_ring(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Roulettes World{world_num}"       : set(name_roulette(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     })
-    world_set |= level_set
+    sc_world_set |= sc_level_set
+    block_world_set |= block_level_set
 
     # add location for beating castles and towers
     if world_num != 9:
         LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 2000+100*world_num + 1})
         LOCATION_NAME_TO_ID.update({name_tower_clear(world_num) : 2000+100*world_num + 2})
 LOCATION_NAME_GROUPS.update({
-    "Starcoins" : world_set,
+    "Starcoins" : sc_world_set,
+    "Blocks"    : block_world_set,
     "Starcoin 1" : set(name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1,9+1)),
     "Starcoin 2" : set(name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
     "Starcoin 3" : set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
@@ -99,15 +107,15 @@ for i in range(1,HINTMOVIE_COUNT +1):
 LOCATION_NAME_GROUPS.update({"Hintmovies" : set(name_hintmovie(i) for  i in range(1,HINTMOVIE_COUNT +1)) })
 
 
-world_set = set()
+sc_world_set = set()
 for world_num in range(1, 9 + 1):  # worlds
     for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
         flagpole = name_level(world_num, level_num)
         LOCATION_NAME_TO_ID.update({flagpole : 5000 + world_num*100 + level_num})
-    level_set = set(name_level(world_num, level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
-    world_set |= level_set
-    LOCATION_NAME_GROUPS.update({f"Level completion world{world_num}": level_set})
-LOCATION_NAME_GROUPS.update({"Level completion" : world_set })
+    sc_level_set = set(name_level(world_num, level_num) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
+    sc_world_set |= sc_level_set
+    LOCATION_NAME_GROUPS.update({f"Level completion world{world_num}": sc_level_set})
+LOCATION_NAME_GROUPS.update({"Level completion" : sc_world_set})
 
 for i in range(1,1000):
     LOCATION_NAME_TO_ID.update({name_inventory(i) : 6000+i})

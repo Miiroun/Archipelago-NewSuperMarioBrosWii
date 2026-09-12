@@ -442,21 +442,76 @@ def get_level_connections() -> List[List[List[int]]]:
 
 
 class Block(NamedTuple):
-    pos_x : float
-    pos_y : float
-    pos_z : float= 0
+    name  : str
+    #have a field for rule / area ??
+    pos_x : int
+    pos_y : int
+    pos_z : int= 0
+
+
+    def __eq__(self, other : "Block") -> bool:
+        if type(other) != type(self):
+            raise TypeError(f"Invalid type {type(other)} of {other}")
+
+        return (self.pos_x, self.pos_y, self.pos_z) == (other.pos_x, other.pos_y, other.pos_z)
 
 def get_block_id(world_num : int, level_num : int) -> List[Block]:
     block_ids : Dict[str, List[Block]] = defaultdict(list)
     block_ids.update({
         "1-1" : [
-            Block(0, 0, 0),
-            Block(1, 0, 0),
-        ],
+            Block("At Start", 0x446a, 0xc40c, 0xc2c8),
+            Block("At Start", 0x4485, 0xc40c, 0xc2c8),
+            Block("At Start", 0x4485, 0xc3f8, 0xc2c8),
+
+            Block("Before pipes",  0x450a, 0xc3e8, 0x43f2),
+
+            Block("Multicoin brick before checkpoint", 0x4529, 0xc3f8, 0xc2c8),
+    ],
 
         "1-2" : [
-            Block(0,0,0),
+            Block("", 0,0,0),
         ],
+
+        "2-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "3-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "4-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "5-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "6-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "7-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "8-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "9-1": [
+            Block("", 0, 0, 0),
+        ],
+
+        "C-1": [
+            Block("", 0, 0, 0),
+        ],
+
     })
 
     return block_ids[name_base(world_num,level_num)]
+
+MAX_BLOCKS = 0
+for level in LEVELS:
+    MAX_BLOCKS = max(MAX_BLOCKS, len(get_block_id(*level)))

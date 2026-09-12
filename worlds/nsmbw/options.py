@@ -260,6 +260,7 @@ class BlockSanity(Choice):
     option_coin_blocks = 5
     option_brick_blocks = 7
 
+    default = option_disabled
     visibility = Visibility.none
 
 

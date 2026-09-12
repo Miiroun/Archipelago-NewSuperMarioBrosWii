@@ -234,7 +234,9 @@ def name_roulette(world_num : int, level_num : int) -> str:
 
 def name_block_sanity(world_num : int, level_num : int, id : int) -> str:
     assert_valid_level(world_num,level_num)
-    return f"{name_base(world_num,level_num)} Brickblock {id : 02}"
+    from .raw_rules import get_block_id
+    blocks  = get_block_id(world_num, level_num)
+    return f"{name_base(world_num,level_num)} Brickblock {id : 03} {blocks[id-1].name}"
 
 
 def base_bijection(name : str ) -> tuple[int, int]:
