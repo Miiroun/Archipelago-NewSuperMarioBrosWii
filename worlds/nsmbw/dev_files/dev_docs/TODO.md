@@ -1,20 +1,15 @@
 # TODO 
 # Super Short term
-- Improve performance
-  - Log loop time : nothing noticeable
-  - watch if clear cache more often than expected : no
-  - dont run patches / unlocks each frame 
-  - is it loading star coin model?
-  - test if happens with riivo patch without client
 - Edit world map so all levels unlocked from start
 - Ask how difficult adding UI elements is.
 - try editing world 1 path info manually and test it out
   - test modified pointW1
-- Mention which files needs to be selected for riivolution
-- matrix test for local filler
+- Mention which files needs to be selected for settings:
 - Change error messages import keyboard to mention riivolution
-- change #amount dolphin instance for debian?
-- Nsmbw: checkpoint item unique for each level
+- Nsmbw: checkpoint item unique for each level?
+- remove MODWOLD1_8
+- add fail to reading region -> rm_tmp
+- work on coin / block rando
 
 
 ## Playtest
@@ -26,17 +21,14 @@
 - PercentageFillerForcedLocal
 - powerups : a lot, get help
 - Having more powerups than loc should send hints
+- performance from just the riivo patch : no client
 
 
 ## Bugs to fix
-- 3-4's randod to 1-3 Secret Exit seems to not send even after completing it several times.
-- 3-4 secret exit is weird, maybe because it is switched with the red block?
-- FYI, in the new update if you somehow gain a power up without having mushroom unlocked (i.e. you have ice flower on you via the menu) and you take damage, you just go back to ice flower infinitely
-  - powerup broken on non default powerup setting
 - I understand for the ones that are just jingles, but a lot of others like the world map themes wouldn't loop if they were put in a level
+- 8-7 exit is unlocked without normal exit item being recived
 
-
-0x429f30 	
+0x80429f30 	
 [32-bit BE] [NTSC] Some pointer that can be used as a way to know you aren't in a stage for FFA/Coin Battle
 0x0=Menu
 >0x80000000=In game

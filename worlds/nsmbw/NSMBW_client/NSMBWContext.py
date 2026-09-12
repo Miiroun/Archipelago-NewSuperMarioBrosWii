@@ -1629,7 +1629,7 @@ class NSMBWContext(SuperContext):
 
                 self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes,1))
 
-    def log_color(self, text: str, color: str ) -> None:
+    def log_color(self, text: str, color: str = "red") -> None:
         text_msg: JSONMessagePart = {"type": "color",
                                  "text":text,
                                  "color": color}
@@ -1705,7 +1705,7 @@ class NSMBWContext(SuperContext):
                         )
                     self.connection_pause = time.time() + 15
             else:
-                logger.error("Failed to auto start dolphin, make sure you don't have any dolphin windows open")
+                self.log_color("Failed to auto start dolphin, make sure you don't have any dolphin windows open","red")
         except Exception as e:
             logger.info(traceback.format_exc())
             self.log_color(f"Patching error: {e}", "red")

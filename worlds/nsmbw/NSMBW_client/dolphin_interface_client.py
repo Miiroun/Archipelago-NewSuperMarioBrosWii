@@ -55,11 +55,11 @@ Dolphin Connection error, verify the following in this order:
       1) The game is running in the dolphin emulator.
       2) You dont have multiple instances of dolphin open (except your ONE game library).
       3) Assert Memory Override (MEM1 and MEM2) is disabled. Dolphin -> Settings -> Advanced -> Emulated Memory Size Override.
-      4) Test running the client in administer mode.
-      5) You have not renamed the dolphin exe and are not running on a fork.
-      6) Your dolphin emulator is recent (newer than 2026.1)
-      7) Enable MMU in Dolphin -> Settings -> Advanced -> Enable MMU.
-      8) Reset you dolphin settings Dolphin -> Settings -> Advanced -> Reset All Settings.
+      4) You have not renamed the dolphin exe and are not running on a fork.
+      5) Your dolphin emulator is recent (newer than 2026.1)
+      6) Enable MMU in Dolphin -> Settings -> Advanced -> Enable MMU.
+      7) Reset you dolphin settings Dolphin -> Settings -> Advanced -> Reset All Settings.
+      8) Test running the client in administrator mode. (By right-clicking your archipelago launcher -> run as administrator.)
       9) Post your error in the NSMBW discord, with a screenshot and your log file.
                           """)
             logger.info(error_mess)

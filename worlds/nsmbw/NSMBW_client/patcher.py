@@ -607,7 +607,7 @@ if __name__ == "__main__":
                    "music_shuffle_riivolution" : 1,
                    "shuffled_level_order" : level_order,
                    "background_shuffle_riivolution" : 0,
-                   "pallet_shuffle_riivolution" : 1,
+                   "pallet_shuffle_riivolution" : 0,
                    "tile_sheet_shuffle_riivolution" : 1,
                    }
     _patcher = Patcher(_name, _seed, _slot_data)
