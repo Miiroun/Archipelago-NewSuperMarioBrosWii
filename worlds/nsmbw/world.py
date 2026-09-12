@@ -133,10 +133,11 @@ class NSMBWworld(World):
         self.random.shuffle(local_fillers)
         self.random.shuffle(local_locations)
         for _ in range(round(amount * self.options.percentage_filler_forced_local / 100)):
-            _item = local_fillers.pop()
-            _location = local_locations.pop()
+            if (len(local_locations) > 1) and (len(local_fillers) > 1):
+                _item = local_fillers.pop()
+                _location = local_locations.pop()
 
-            _location.place_locked_item(_item)
+                _location.place_locked_item(_item)
 
 
     def fill_hook(self,

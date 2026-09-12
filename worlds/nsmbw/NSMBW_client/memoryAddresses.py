@@ -168,6 +168,12 @@ class MemoryAddresses(object):
         custom_base = 0x80BBB000
         self.custom_clear_cache = custom_base
         self.custom_roulette     = custom_base + 4
+        self.custom_coinblock_x = custom_base + 8
+        self.custom_coinblock_y = custom_base + 12
+        self.custom_coinblock_z = custom_base + 16
+        self.custom_brickblock_x = custom_base + 20
+        self.custom_brickblock_y = custom_base + 24
+
 
         # movement etc patches
         self.patch_check_point = self.create_patch("P1",0x807E215C, instru_6000, origin=instru_beq + val_0014, name="check point")

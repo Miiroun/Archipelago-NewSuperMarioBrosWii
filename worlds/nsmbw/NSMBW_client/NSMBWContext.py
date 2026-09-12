@@ -6,7 +6,7 @@ from . import dolphin_interface_client
 from .NSMBWCommandProcessor import NSMBWCommandProcessor
 from .NSMBWInterface import *
 from .patcher import Patcher
-from ..options import HintMovieShopPriceLogic, AlternativeGoal
+from ..options import HintMovieShopPriceLogic, AlternativeGoal, BlockSanity
 from ..Common import *
 from .. import NSMBWworld, locations
 
@@ -203,7 +203,7 @@ class NSMBWContext(SuperContext):
                 # checks for new slot_data values to be compatible
 
                 if not Utils.is_frozen():
-                    backwards_compat : List[tuple] = [("starcoin_requirement_world_unlock", defaultdict(int)), ("bowser_level_unlock", 0)]
+                    backwards_compat : List[tuple] = [("starcoin_requirement_world_unlock", defaultdict(int)), ("bowser_level_unlock", 0), ("block_sanity", False)]
                     # ("death_link_amnesty", 1), ("hint_movie_shop_price_logic",HintMovieShopPriceLogic.option_ordered), ("use_riivolution", 0), ("level_shuffle_riivolution", 0)
                     for name, value in backwards_compat:
                         if name not in self.slot_data.keys():
@@ -653,6 +653,7 @@ class NSMBWContext(SuperContext):
         checked_locations += await self.check_1ups()
         checked_locations += await self.check_red_coin_ring()
         checked_locations += await self.check_roulette_block()
+        checked_locations += await self.check_blocksanity()
         checked_locations += await self.check_hintmovies()
         if self.game_interface.is_in_worldmap():
             checked_locations += await self.check_level_completion(self.unlocked_worlds)
@@ -814,6 +815,24 @@ class NSMBWContext(SuperContext):
         self.locations_handled += checked_locations
         return checked_locations
 
+    async def check_blocksanity(self):
+        checked_locations = []
+
+        if self.slot_data["block_sanity"] == BlockSanity.option_coin_blocks:
+            LEVEL = self.game_interface.get_world_level_num_in_level()
+            if LEVEL == (0, 0):
+                return checked_locations
+
+            posCoinBlock = self.game_interface.get_blocksanity_coinblock_pos()
+            posBrickBlock = self.game_interface.get_blocksanity_brickblock_pos()
+
+            for blockPos in [posCoinBlock, posBrickBlock]:
+                if blockPos != (0, 0, 0):
+                    self.log_color(f"blockPos: {blockPos[0] : x} {blockPos[1] : x} {blockPos[2] : x}","green")
+
+
+        self.locations_handled += checked_locations
+        return checked_locations
 
     async def check_hintmovies(self):
         if self.slot_data['hint_movie_sanity'] == True:

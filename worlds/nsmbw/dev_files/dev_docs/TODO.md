@@ -8,8 +8,9 @@
 - Change error messages import keyboard to mention riivolution
 - Nsmbw: checkpoint item unique for each level?
 - remove MODWOLD1_8
-- add fail to reading region -> rm_tmp
-- work on coin / block rando
+- Randomized ?-blocks
+- Coin sanity
+  - is probably too extreme
 
 
 ## Playtest
@@ -22,16 +23,29 @@
 - powerups : a lot, get help
 - Having more powerups than loc should send hints
 - performance from just the riivo patch : no client
+- add fail to reading region -> rm_tmp
 
 
 ## Bugs to fix
 - I understand for the ones that are just jingles, but a lot of others like the world map themes wouldn't loop if they were put in a level
 - 8-7 exit is unlocked without normal exit item being recived
+- multiplayer : second player dont collect starcoin immediately
+- UT fuzzer errors 
+
 
 0x80429f30 	
 [32-bit BE] [NTSC] Some pointer that can be used as a way to know you aren't in a stage for FFA/Coin Battle
 0x0=Menu
 >0x80000000=In game
+
+
+0x15e566c 	
+[NTSC/PAL] Peach's Castle Star Coins Pointer [32-Bit BE]
++0x2248=[32-Bit BE] Spendable Stars Coins
+- might need to edit with code patch
+
+0x153e514 	
+Spendables Star Coins in Peach's Castle [32-Bit BE]
 
 
 ## Short term
@@ -254,6 +268,7 @@
 - when i loaded the save file it took some time to recollect the items (worlds) it had been sent
 - Collect immediately sometimes broken, restart fixes it.
 - Peach castle is weird when hint movies appear / not
+- Slot.lock does not work
 
 
 Summery poll
@@ -344,5 +359,3 @@ Summery poll
 
 ## Features I (Miiroun) will not implement
 - Native wii support
-- Randomized ?-blocks
-- Coin sanity

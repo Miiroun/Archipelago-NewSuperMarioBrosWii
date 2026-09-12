@@ -561,8 +561,12 @@ class Patcher:
         print(f"shortcut path:{self.shortcut_path}")
 
     def get_region(self):
-        with open(self.temp_dir / 'disc' / 'header.bin', "rb") as f:
-            self.region = f.read(6).decode('ascii')
+        try:
+            with open(self.temp_dir / 'disc' / 'header.bin', "rb") as f:
+                self.region = f.read(6).decode('ascii')
+        except Exception as e:
+            raise Exception(f"Failed to get region: {e}. \n"
+                            f"most likely is this a cache clear error. Run `/rm_tm` in the client and try to connect again.")
 
     def patch(self):
         logger.info(f"Begin patching name: {self.name}")

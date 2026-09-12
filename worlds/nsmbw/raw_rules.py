@@ -439,3 +439,24 @@ def get_level_connections() -> List[List[List[int]]]:
 
 
     return connections
+
+
+class Block(NamedTuple):
+    pos_x : float
+    pos_y : float
+    pos_z : float= 0
+
+def get_block_id(world_num : int, level_num : int) -> List[Block]:
+    block_ids : Dict[str, List[Block]] = defaultdict(list)
+    block_ids.update({
+        "1-1" : [
+            Block(0, 0, 0),
+            Block(1, 0, 0),
+        ],
+
+        "1-2" : [
+            Block(0,0,0),
+        ],
+    })
+
+    return block_ids[name_base(world_num,level_num)]

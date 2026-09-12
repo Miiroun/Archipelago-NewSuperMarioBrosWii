@@ -6,8 +6,8 @@ from BaseClasses import  Location, LocationProgressType
 
 from . import items
 from .Common import *
-from .options import AlternativeGoal
-from .raw_rules import LevelRules
+from .options import AlternativeGoal, BlockSanity
+from .raw_rules import LevelRules, get_block_id
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -29,9 +29,17 @@ for world_num in range(1,9+1): # worlds
         for sc in range(1,3+1):
             LOCATION_NAME_TO_ID.update({name_starcoin(world_num, level_num, sc): 10000 + 1000 * world_num + 10 * level_num + sc})
         sc_set = set(name_starcoin(world_num, level_num, sc) for sc in range(1, 3 + 1))
+
+        blocks = get_block_id(world_num,level_num)
+        brick_set = set()
+        for i in range(1,len(blocks)+1):
+            LOCATION_NAME_TO_ID.update({name_block_sanity(world_num,level_num, i) : 2_000_000 + 100_000 * world_num + 1_000 * level_num + i})
+            brick_set |= {name_block_sanity(world_num,level_num, i)}
+
         LOCATION_NAME_GROUPS.update({
             f"Starcoins World{world_num} Level{level_num}": sc_set,
-            f"{name_base(world_num, level_num)} Everything" : sc_set | {
+            f"{name_base(world_num,level_num)} brick Everything"
+            f"{name_base(world_num, level_num)} Everything" : sc_set | brick_set | {
                 name_level(world_num, level_num),
                 name_1ups(world_num, level_num),
                 name_99coins(world_num, level_num),
@@ -39,7 +47,7 @@ for world_num in range(1,9+1): # worlds
                 name_roulette(world_num, level_num),
             },
         })
-        level_set |= sc_set
+        level_set |= sc_set | brick_set
         LOCATION_NAME_TO_ID.update({
             name_1ups(world_num, level_num)         : 10000 + 1000 * world_num + 10 * level_num + 4,
             name_99coins(world_num, level_num)      : 10000 + 1000 * world_num + 10 * level_num + 5,
@@ -203,6 +211,12 @@ def create_regular_locations(world: NSMBWworld) -> None:
         if world.options.roulet_block.value == True:
             if LevelRules[name_base(*rando_level)].roulette is not None:
                 loc = get_location_names_with_ids([name_roulette(*level)])
+                world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
+
+        if world.options.block_sanity.value == BlockSanity.option_coin_blocks:
+            blocks = get_block_id(*level)
+            for i in range(1, len(blocks) + 1):
+                loc = get_location_names_with_ids([name_block_sanity(*level, i)])
                 world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
 

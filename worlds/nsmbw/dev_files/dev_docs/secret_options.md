@@ -24,3 +24,8 @@ WARNING, NO LOGIC.
 ## `pallet_shuffle_riivolution : true`
 Shuffles the color pallet of the game.
 Looks good but takes about 15 minutes to actually patch the game.
+
+
+## `block_sanity : `
+Creates turn all coin blocks and powerup blocks into locations: ~ 1000
+They have yet to be mapped, if you encounter any not map please report them

@@ -106,7 +106,6 @@ kmBranchDefAsm(0x80a26d48, 0x80a26d4c)
 
     blr
 }
-//kmWrite32(0x80a27428, 0x4e800020);
 
 
 /*
@@ -117,3 +116,22 @@ WORKS!!
 - 80a26c30 daEnItem_c::create
 
 */
+
+
+// this triggers when breaks a brick block
+kmBranchDefAsm(0x80087fd0, 0x80087fd4)
+{
+    //do byte replaced
+    stfs f0,0x8(r1)
+
+    // loads address into r12
+    lis r12, 0x80BB
+    ori r12, r12, 0xB000
+
+    // load x and y pos into our memory
+    stfs f2, 20(r12)
+
+    stfs f1, 24(r12)
+
+}
+//kmWrite32(0x80088024, 0x4e800020);

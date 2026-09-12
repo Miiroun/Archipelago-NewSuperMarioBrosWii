@@ -232,6 +232,10 @@ def name_roulette(world_num : int, level_num : int) -> str:
     assert_valid_level(world_num,level_num)
     return f"{name_base(world_num,level_num)} Roulette Block"
 
+def name_block_sanity(world_num : int, level_num : int, id : int) -> str:
+    assert_valid_level(world_num,level_num)
+    return f"{name_base(world_num,level_num)} Brickblock {id : 02}"
+
 
 def base_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,10+1):

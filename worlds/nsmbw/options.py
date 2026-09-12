@@ -250,6 +250,19 @@ class RouletBlock(Toggle):
     visibility = Visibility.none
 
 
+class BlockSanity(Choice):
+    """
+    Implemented without logic.
+    Requires riivolution
+    """
+    option_disabled = 0
+    option_powerup_blocks = 3
+    option_coin_blocks = 5
+    option_brick_blocks = 7
+
+    visibility = Visibility.none
+
+
 class TopOffFlagpole(Toggle):
     """
 
@@ -570,6 +583,7 @@ class NSMBWOptions(PerGameCommonOptions):
     nintynine_coin_sanity : NintyNineCoins
     red_coin_ring : RedCoinRing
     roulet_block : RouletBlock
+    block_sanity : BlockSanity
     kill_enemies : KillEnemies
     top_off_flagpole : TopOffFlagpole
 
@@ -764,8 +778,11 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_ordered:
             raise OptionError("(NSMBW generation error) Option ordered for HintMovieShopPriceLogic can rarely create unbeatable seeds and therefor needs to enable allow_gen_impactful_settings in your host.yaml ")
 
-        if world.options.logic_difficulty == LogicDifficulty.option_hard:
+        if world.options.logic_difficulty.value == LogicDifficulty.option_hard:
             raise OptionError("(NSMBW generation error) Logic difficulty set to hard without enabling allow_gen_impactful_settings in host.yaml")
+
+        if world.options.red_coin_ring.value or world.options.oneups_sanity.value or world.options.nintynine_coin_sanity.value or world.options.roulet_block.value or world.options.block_sanity.value:
+            raise OptionError("(NSMBW generation error) You have enabled a secret setting (that doesnt have logic) without allow_gen_impactful_settings in host.yaml, turn them of or enable it")
 
     MAX_ALLOWED_BOWSER_SC = 231-7
     if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
@@ -811,3 +828,6 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if world.options.bowser_level_unlock.value > 70:
         world.options.bowser_level_unlock.value = 70
         print(f"(NSMBW generation warning) generation fails if bowser_level_unlock > 70.")
+
+    if world.options.block_sanity.value in [BlockSanity.option_powerup_blocks or BlockSanity.option_brick_blocks]:
+        raise OptionError("(NSMBW generation error) block_sanity does not currently support your enabled mode")
