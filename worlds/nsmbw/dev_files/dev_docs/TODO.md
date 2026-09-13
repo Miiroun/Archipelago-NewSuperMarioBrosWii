@@ -4,6 +4,7 @@
 - Ask how difficult adding UI elements is.
 - try editing world 1 path info manually and test it out
   - test modified pointW1
+  - use other program for csv editing
 - Mention which files needs to be selected for settings:
 - Change error messages import keyboard to mention riivolution
 - Nsmbw: checkpoint item unique for each level?
@@ -13,6 +14,7 @@
   - is probably too extreme
 - Rename raw rules to data / raw_data / rule_data?
 - Work on FINAL MOVMENETS : so REACT can start on block logic
+- Decide on way to store brick rules
 
 
 ## Playtest
@@ -25,7 +27,7 @@
 - powerups : a lot, get help
 - Having more powerups than loc should send hints
 - performance from just the riivo patch : no client
-- add fail to reading region -> rm_tmp
+- fail to reading region -> rm_tmp
 
 
 ## Bugs to fix
@@ -33,6 +35,10 @@
 - 8-7 exit is unlocked without normal exit item being recived
 - multiplayer : second player dont collect starcoin immediately
 - UT fuzzer errors 
+- Np! Also any idea on how to get 6-4 first star coin without Yoshi or any power up? It’s say it is in logic (it’s the 6-2 level in my seed). I'm curious
+  - logic changed, test out
+- Yo, just so you know, but despite having the 2 progressives W6, W6-5 and 6-6 aren't considered in logic but 6-C is.
+  - I think secret exits do not respect normal exit clear conditions
 
 
 0x80429f30 	

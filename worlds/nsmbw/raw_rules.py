@@ -282,7 +282,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "6-1"  : Level(normal_move, (True_(), True_(), logic_hard | ice | peng_o | propeller_o)),  # -1
     "6-2"  : Level(normal_move & pipe& button_down & button_up & (swim | run | logic_normal), (carry_shell | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_())),  # -2
     "6-3"  : Level(normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),(True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry))), # 6-3
-    "6-4"  : Level(pipe & button_down & button_up & normal_move, ((carry | yoshi | propeller), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
+    "6-4"  : Level(pipe & button_down & button_up & normal_move, (yoshi | propeller| (logic_hard & carry_shell), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
     "6-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), climb & (carry | propeller_o)), climb),  # -5
     "6-6"  : Level(pipe & button_down & button_up & normal_move & (question_switch | logic_hard), (True_(), True_(), True_()),True_()),  # -6
     "6-T"  : Level(pipe & button_down & button_up & normal_move&tower_rules, (True_(), wall_jump | propeller_o, wall_jump | propeller_o)),  # -7 6-T

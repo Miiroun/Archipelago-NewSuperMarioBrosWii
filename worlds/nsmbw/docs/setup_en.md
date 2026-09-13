@@ -46,7 +46,8 @@
 ## How to play (`use_riivolution` enabled)
 0) In `host.yaml`, under the section `nsmbw_settings`. Make sure they are their default values `auto_open` : `false` and `auto_open_riivolution` : `true`. 
 1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
-2) You will be promoted for the location of your dolphin install if they are not located automatically. You can change their values later on in `host.yaml`.
+2) You will be promoted for the location of your dolphin install if they are not located automatically. 
+   - You can change their values later on in `host.yaml`. BE CAREFUL use `/` or `\\` NOT `\` as path separators.
    - Linux only: On Desbian distros like Fedora and Arch users (including SteamOS) you have to install `dolphin-emu-tool` separate from dolphin. It is included in the ´flat-pak´ version.
 3) Enter your connection details and press `CONNECT` in the client.
 4) The game will now open automatically.

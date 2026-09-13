@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from markdown_it.rules_core import block
-
 from BaseClasses import  Location, LocationProgressType
 
 from . import items

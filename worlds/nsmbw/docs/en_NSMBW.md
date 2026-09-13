@@ -124,6 +124,18 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 - If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
 - Multiple things can mess with the nsmbw cache stored in the temp folder. To fix them run `/rm_tmp` to clear the temp folder and all riivolution patches. (This will NOT remove your savefiles) .
 
+## Multiplayer
+You can play NSMBW multiplay 2 ways:
+Same-slot co-op:
+- Both connect to the same archipelago slot separately.
+- This entails you play seperate levels but a level completed for you get marked for your friend.
+- Run `/change_collection_level 2` for a better experience to make castle level progression also match.
+
+Local play:
+- Works out of the box, just connect your controllers and it should function. 
+- Might have small issues with deathlink and some movements.
+- If you want to play over the internet it is strongly recommended to use PARSEC over dolphin net-play since net-play doesn't work well with the client mod.
+
 
 ## FAQ
 What is different from vanilla?  
@@ -131,11 +143,6 @@ What is different from vanilla?
 - The unlocks from world 9 requires starcoin items
 - Peach's castle hint movie shop requires starcoin items
 - You need world items to unlock both half of worlds
-
-Multiplayer? <br>
-&emsp; You can play NSMBW multiplay 2 ways:
-  1) Same-slot co-op: Both connect to the same archipelago slot separately. This entails you play seperate levels but a level completed for you get marked for your friend. Run /change_collection_level 2 for a better experience
-  2) Local/Dolphin net-play: Works, just connect your controllers and it should function. Might have small issues with deathlink and some movements.\
 
 Tracker? <br>
 &emsp; A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
