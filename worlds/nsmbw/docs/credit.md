@@ -12,6 +12,7 @@
 - [IndyGibb](https://github.com/IndyGibb) : PRed some light code changes using Claude
 - Techmuse : helped with locating addresses
 - LuigiXRules : Fixed typos in documentation, provided helpful insight and playtested Us rev1
+- Flo : Playtester
 
 
 ## Communities that helped

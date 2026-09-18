@@ -69,6 +69,7 @@ for world_num in range(1,9+1): # worlds
     f"99 coins World{world_num}"        : set(name_99coins(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Red coin rings World{world_num}"  : set(name_red_coin_ring(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
     f"Roulettes World{world_num}"       : set(name_roulette(world_num, level_num)    for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1)),
+    f"World{world_num} Everything" : sc_level_set | block_level_set | set(item for item in (name_1ups(world_num, level_num), name_99coins(world_num, level_num), name_red_coin_ring(world_num, level_num),name_roulette(world_num, level_num) ) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1))
     })
     sc_world_set |= sc_level_set
     block_world_set |= block_level_set

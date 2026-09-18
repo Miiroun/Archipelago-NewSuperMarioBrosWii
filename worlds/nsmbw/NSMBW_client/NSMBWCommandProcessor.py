@@ -139,6 +139,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             for player_num in range(PLAYER_COUNT):
                 self.ctx.game_interface.set_powerupstate(int_to_bytes(pow, 1), player_num)
 
+        def _cmd_get_block_list(self):
+            """Print list of blocks not acounted for"""
+            print(self.ctx.block_list)
+            self.ctx.log_color(self.ctx.block_list, "green")
+            self.ctx.block_list = ""
+
+
         def _cmd_add_mod(self, type_, time_):
             """ Adds type, """
             from .NSMBWContext import Modifier, modifier_type_litteral
@@ -448,14 +455,14 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         logger.info(f"You have collected {coins} out of {req}")
 
     # if Utils.get_settings()["nsmbw_settings"].debug_mode:
-    def _cmd_get_level_rando(self, name):
+    def _cmd_WhatIs(self, name):
         """Prints where a location has been rando to"""
         world_num, level_num = base_bijection(name)
         randod_world_num1, randod_level_num1 = locations.pos_to_level_name(
             self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
         logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
 
-    def _cmd_get_level_rando_reversed(self, name):
+    def _cmd_WhereIs(self, name):
         """Prints where a location has been rando from"""
         world_num, level_num = base_bijection(name)
         _index = self.ctx.slot_data["shuffled_level_order"].index(locations.level_name_to_pos(world_num, level_num))

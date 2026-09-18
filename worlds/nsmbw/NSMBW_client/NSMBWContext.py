@@ -136,6 +136,8 @@ class NSMBWContext(SuperContext):
     coin_overflow : int = 0
     coin_prev_overflow : int = 0
 
+    block_list : str  = ""
+
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
             super().__init__(server_address, password)
@@ -842,7 +844,9 @@ class NSMBWContext(SuperContext):
                     print(f"blockPos {pos} not {blocks}")
 
                 logger.info(f"The following block is unacounted for in block rando, please report it")
-                self.log_color(f"Block(\"\", {hex(blockPos.pos_x)}, {hex(blockPos.pos_y)}, {hex(blockPos.pos_z)}), ","green")
+                txt = f"Block(\"\", {hex(blockPos.pos_x)}, {hex(blockPos.pos_y)}, {hex(blockPos.pos_z)}), "
+                self.block_list += "\n" + txt
+                self.log_color(txt,"green")
 
 
         self.locations_handled += checked_locations
@@ -948,13 +952,13 @@ class NSMBWContext(SuperContext):
                 level_num = 7
                 level_num += 1 if world_num in  [7,8] else 0
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
-                if level_stats & 0x10 > 0:
+                if level_stats & 0x10 == 0x10:
                     if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
                         checked_locations.append(NSMBWworld.location_name_to_id[level_name])
                     if unlocked_worlds[world_num-1] <= 1:
                         if not (level_name in self.completed_levels):
                             self.completed_levels.append(level_name)
-                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x07,1))
+                        self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x27,1))
                         logger.info(f"You collected a check for completing {level_name}, to unlock the rest of this world, receive its AP-item.")
                 else:
                     if unlocked_worlds[world_num-1] >= 2:
@@ -972,7 +976,7 @@ class NSMBWContext(SuperContext):
                     level_num = 8 # should make dynamic
                     level_num += 1 if world_num in  [4,6,7,8] else 0
                     level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
-                    if level_stats & 0x30 > 0:
+                    if level_stats & 0x10 == 0x10:
                         if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
                             checked_locations.append(NSMBWworld.location_name_to_id[level_name])
                             logger.info(f"You collected a check for {level_name}, to unlock the next world, receive its AP-item.")
@@ -992,14 +996,14 @@ class NSMBWContext(SuperContext):
             if  level_stats & 16 == 16 and (not bowser_unlock):
                 if not (level_name in self.completed_levels):
                     self.completed_levels.append(level_name)
-                self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x07, 1))
+                self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x27, 1))
                 logger.info(f"Completed 8-Airship but does not meet requirements for unlocking bowser (Require {self.slot_data['bowser_star_unlock']} star coins and you have {self.starcoin_count}, Require {self.slot_data['bowser_world_unlock']} worlds completed and you have {completed_worlds}).")
             # if previously completed 8-arship and now unlocked bowser
             if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
                 if level_name in self.completed_levels:
                     self.completed_levels.remove(level_name)
                     logger.info("Bowsers castle is now unlocked")
-                    self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 0x30, 1))
+                    self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 0x10, 1))
         self.locations_handled += checked_locations
         return checked_locations
 
@@ -1167,6 +1171,10 @@ class NSMBWContext(SuperContext):
 
         for player_num in range(PLAYER_COUNT):
             # handle powerup grace
+
+            if self.game_interface.get_world_level_num_in_level() == (0,0):
+                break
+
             current_powerup_state = self.game_interface.get_powerupstate(player_num)
             current_pow_int = bytes_to_int(current_powerup_state)
             prev_pow_int = bytes_to_int(self.prev_powerup[player_num])
@@ -1178,6 +1186,7 @@ class NSMBWContext(SuperContext):
                     logger.info("Used a power-up grace")
 
 
+        for player_num in range(PLAYER_COUNT):
             self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
 
     async def handle_unlocked_worlds(self):
@@ -1336,7 +1345,7 @@ class NSMBWContext(SuperContext):
                 case _:
                     logger.info(f"Trap {trap} is not implemented")
                     raise Exception(f"Trap {trap} is not implemented")
-        self.traps = []
+            self.traps.remove(trap)
 
     async def handle_filler(self):
         for item_name in self.filler:
@@ -1353,6 +1362,8 @@ class NSMBWContext(SuperContext):
                             self.previous_inventory[i] = bytes_to_int(self.game_interface.get_inventory_items(i))
 
                 case ITEM.FILLER.OneUps:
+                    #if self.game_interface.get_world_level_num_in_level() == (0,0):
+                    #    break
                     logger.info(f"1ups x{amount} was received ")
                     for player_num in range(PLAYER_COUNT):
                         self.game_interface.add_number(self.game_interface.memory_addresses.mario_lifecount[player_num]+3,amount, 99)
@@ -1394,7 +1405,7 @@ class NSMBWContext(SuperContext):
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
                     raise Exception(f"Filler {item_name} is not implemented")
-        self.filler = []
+            self.filler.remove(item_name)
 
     async def handle_check_deathlink(self):
         LEVEL = self.game_interface.get_world_level_num_in_level()

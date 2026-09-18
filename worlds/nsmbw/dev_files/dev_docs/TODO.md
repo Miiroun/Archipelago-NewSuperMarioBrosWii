@@ -6,15 +6,21 @@
   - test modified pointW1
   - use other program for csv editing
 - Mention which files needs to be selected for settings:
-- Change error messages import keyboard to mention riivolution
 - Nsmbw: checkpoint item unique for each level?
-- remove MODWOLD1_8
-- Randomized ?-blocks
 - Coin sanity
   - is probably too extreme
 - Rename raw rules to data / raw_data / rule_data?
 - Work on FINAL MOVMENETS : so REACT can start on block logic
 - Decide on way to store brick rules
+- Look into copying pipe rando
+- Format list of all blocks
+  - create command to extract all bricks
+  - extract all in 1-1
+- Spend time on ap-map pack : download images from wiki with python
+- Option to exlude specific worlds
+- MGroundType
+- Paranoia trap : something changed
+- I can probably make it an host.yaml option to specify the temp directory, so others who encounter this can change it as a workaround.
 
 
 ## Playtest
@@ -28,6 +34,8 @@
 - Having more powerups than loc should send hints
 - performance from just the riivo patch : no client
 - fail to reading region -> rm_tmp
+- /Where_is /what_is
+- 7-6 unlock
 
 
 ## Bugs to fix
@@ -39,6 +47,8 @@
   - logic changed, test out
 - Yo, just so you know, but despite having the 2 progressives W6, W6-5 and 6-6 aren't considered in logic but 6-C is.
   - I think secret exits do not respect normal exit clear conditions
+- The extra lives filler does NOT work properly with multiple people; I was player 2, and my lives were set to 94 and 88 at two separate points when the filler was only supposed to give 5 extra lives. I do wonder if this is only visual, though, cause a couple levels later, my lives would always revert down to a smaller number
+- rule for 1-3 sc1
 
 
 0x80429f30 	
@@ -237,6 +247,7 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Make penguin progressive?
 - Hint movies does not work on other save files?
 - Add support for other savefile
+- transition movments to riivolution
 
 
 ## ER
@@ -366,6 +377,12 @@ Summery poll
 - Difficullty patch levels : make levels harder, similar to other mods, if settings enabled for this
 - Have character be randomized and unlockable
 - Chance for level to be replaced by backwards version
+ think about abstracting apworld so can support mods?
+  - create my own build system?
+    - run build all diffrent mod versions
+    - also run kamek
+  - ask mods if newer would be ok?
+  - what to have diffrent worlds with diffrent game names : that just changes game name + file name + common and raw_rules + maybe modifiy client
 
 
 

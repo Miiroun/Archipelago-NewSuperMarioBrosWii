@@ -232,7 +232,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     #world 1
     "1-1"  : Level(normal_move & TimeRule(90), (propeller | (mini_o & (run | logic_hard)) | (run & (carry_shell | star_o | ice_peng_o) & logic_hard), wall_jump | propeller, propeller | (logic_hard & (run | mini_o | ice_peng_o))),oneups=oneups&run, red_coin_ring=red_coin_ring & (propeller | (logic_hard & (run | mini_o | ice_peng_o)))),  # -1
     "1-2"  : Level(normal_move & pipe & button_down , (button_up, p_switch | propeller_o, super_mario & ground_pound) ),  # -2
-    "1-3"  : Level(normal_move, (yoshi | propeller_o | (logic_hard & ((mini_o & (ground_pound | run)) | (run & (super_mario | ground_pound)) | carry_block)),pipe & button_down &  (yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario))), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry_shell))), (yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry_shell & (super_mario | run)))) ) & pipe),  # -3
+    "1-3"  : Level(normal_move, (yoshi | propeller_o | (logic_hard & ((mini_o & ground_pound) | run | carry)), pipe & button_down &  (yoshi | propeller_o | (logic_hard & run & (ground_pound | super_mario))), yoshi | propeller_o | wall_jump | (logic_hard & ((mini_o & ground_pound) | carry_shell))), (yoshi | propeller_o | (logic_hard & ((oswj & outside_powerups) | (carry_shell & (super_mario | run)))) ) & pipe),  # -3
     "1-4"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), ice | peng_o | propeller_o | mini_o | logic_hard, ice | peng_o | logic_hard)),  # -4
     "1-5"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (climb, True_(), True_())),  # -5
     "1-6"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), run | (mini_o | (star_o & logic_hard)) | (propeller & (climb | outside_powerups)))),  # -6
@@ -447,6 +447,7 @@ class Block(NamedTuple):
     pos_x : int
     pos_y : int
     pos_z : int= 0
+    rule : Rule = True_()
 
 
     def __eq__(self, other : "Block") -> bool:
@@ -459,9 +460,9 @@ def get_block_id(world_num : int, level_num : int) -> List[Block]:
     block_ids : Dict[str, List[Block]] = defaultdict(list)
     block_ids.update({
         "1-1" : [
-            Block("At Start", 0x446a, 0xc40c, 0xc2c8),
-            Block("At Start", 0x4485, 0xc40c, 0xc2c8),
-            Block("At Start", 0x4485, 0xc3f8, 0xc2c8),
+            Block("At Start 1", 0x446a, 0xc40c, 0xc2c8),
+            Block("At Start 2", 0x4485, 0xc40c, 0xc2c8),
+            Block("At Start 3", 0x4485, 0xc3f8, 0xc2c8),
 
             Block("Before pipes",  0x450a, 0xc3e8, 0x43f2),
 

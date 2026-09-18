@@ -455,7 +455,7 @@ class AmountSupportReceived(Range):
 
 class FillerItems(OptionCounter):
     """
-    elect which filler items and in which ration to be generated.
+    Select which filler items and in which ration to be generated.
     """
     display_name = "Filler Items"
     valid_keys = set(FILLER)
