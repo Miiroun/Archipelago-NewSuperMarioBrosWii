@@ -1,57 +1,17 @@
 from __future__ import annotations
 
-import collections
-import hashlib
-import json
-import random
-import shutil
-import statistics
-import threading
-from collections.abc import Mapping
-import concurrent.futures
-import logging
-import os
-import tempfile
-import time
-from concurrent.futures import thread
-from dataclasses import dataclass
-from typing import Any, List, Dict, NamedTuple
-import zipfile
-import zlib
-
-import pandas
-import requests
-
-import Options
-import worlds
-from BaseClasses import CollectionState, Item, Location, LocationProgressType, MultiWorld
-from Fill import FillError, balance_multiworld_progression, distribute_items_restrictive, flood_items, \
-    parse_planned_blocks, distribute_planned_blocks, resolve_early_locations_for_planned
-from NetUtils import convert_to_base_types
+from BaseClasses import CollectionState, MultiWorld
 from Options import StartInventoryPool
-from Utils import __version__, output_path, restricted_dumps, version_tuple
-from settings import get_settings
+from Utils import __version__, output_path
 from worlds import AutoWorld
-from worlds.generic.Rules import exclusion_rules, locality_rules
-
-
+from worlds.AutoWorld import AutoWorldRegister
 
 import argparse
-import copy
 import logging
 import os
 import random
-import string
-import sys
-import urllib.parse
-import urllib.request
 from collections import Counter
-from itertools import chain
 from typing import Any
-
-import ModuleUpdate
-
-ModuleUpdate.update()
 
 import Utils
 import Options
@@ -59,10 +19,25 @@ from BaseClasses import PlandoOptions
 from Utils import parse_yamls
 
 from Generate import get_seed, get_seed_name, roll_settings, get_choice,handle_name, roll_meta_option
+from settings import get_settings
+
+from fuzz import generate_random_yaml
+from Options import dump_player_options
+from worlds.apworld_manager.world_manager import install_world, refresh_apworld_table, repositories
+
+
+import threading
+import traceback
+from multiprocessing import Process, Queue
+import gc
+from copy import deepcopy
+
+import statistics
+import time
+import pandas
 
 
 def mystery_argparse(argv: list[str] | None = None) -> argparse.Namespace:
-    from settings import get_settings
     settings = get_settings()
     defaults = settings.generator
 
@@ -123,8 +98,6 @@ def mystery_argparse(argv: list[str] | None = None) -> argparse.Namespace:
 def main_generate(world_name : str, fuzz = False, *varg, **kwargs):
     yaml_func = None
     if fuzz:
-        from fuzz import generate_random_yaml
-
         yaml = generate_random_yaml(world_name, {})
         # print(yaml)
         yaml_func = parse_yamls(yaml)
@@ -215,7 +188,6 @@ def main_base_generate(yaml_func, *varg, **kwargs):
                         f"Provide a general weights file ({args.weights_file_path}) or individual player files. "
                         f"A mix is also permitted.")
 
-    from worlds.AutoWorld import AutoWorldRegister
     args.outputname = seed_name
     args.sprite = dict.fromkeys(range(1, args.multi+1), None)
     args.sprite_pool = dict.fromkeys(range(1, args.multi+1), None)
@@ -350,7 +322,6 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
 
     multiworld.set_options(args)
     if args.csv_output:
-        from Options import dump_player_options
         dump_player_options(multiworld)
     multiworld.set_item_links()
     multiworld.state = CollectionState(multiworld)
@@ -419,84 +390,6 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
     logger.info('Creating Items.')
     AutoWorld.call_all(multiworld, "create_items")
 
-    logger.info('Calculating Access Rules.')
-    AutoWorld.call_all(multiworld, "set_rules")
-
-    for player in multiworld.player_ids:
-        exclusion_rules(multiworld, player, multiworld.worlds[player].options.exclude_locations.value)
-        multiworld.worlds[player].options.priority_locations.value -= multiworld.worlds[player].options.exclude_locations.value
-        world_excluded_locations = set()
-        for location_name in multiworld.worlds[player].options.priority_locations.value:
-            try:
-                location = multiworld.get_location(location_name, player)
-            except KeyError:
-                continue
-
-            if location.progress_type != LocationProgressType.EXCLUDED:
-                location.progress_type = LocationProgressType.PRIORITY
-            else:
-                logger.warning(f"Unable to prioritize location \"{location_name}\" in player {player}'s world because the world excluded it.")
-                world_excluded_locations.add(location_name)
-        multiworld.worlds[player].options.priority_locations.value -= world_excluded_locations
-
-    # Set local and non-local item rules.
-    # This function is called so late because worlds might otherwise overwrite item_rules which are how locality works
-    if multiworld.players > 1:
-        locality_rules(multiworld)
-
-    multiworld.plando_item_blocks = parse_planned_blocks(multiworld)
-
-    AutoWorld.call_all(multiworld, "connect_entrances")
-    AutoWorld.call_all(multiworld, "generate_basic")
-
-    # remove starting inventory from pool items.
-    # Because some worlds don't actually create items during create_items this has to be as late as possible.
-    fallback_inventory = StartInventoryPool({})
-    depletion_pool: dict[int, dict[str, int]] = {
-        player: getattr(multiworld.worlds[player].options, "start_inventory_from_pool", fallback_inventory).value.copy()
-        for player in multiworld.player_ids
-    }
-    target_per_player = {
-        player: sum(target_items.values()) for player, target_items in depletion_pool.items() if target_items
-    }
-
-    if target_per_player:
-        new_itempool: list[Item] = []
-
-        # Make new itempool with start_inventory_from_pool items removed
-        for item in multiworld.itempool:
-            if depletion_pool[item.player].get(item.name, 0):
-                depletion_pool[item.player][item.name] -= 1
-            else:
-                new_itempool.append(item)
-
-        # Create filler in place of the removed items, warn if any items couldn't be found in the multiworld itempool
-        for player, target in target_per_player.items():
-            unfound_items = {item: count for item, count in depletion_pool[player].items() if count}
-
-            if unfound_items:
-                player_name = multiworld.get_player_name(player)
-                logger.warning(f"{player_name} tried to remove items from their pool that don't exist: {unfound_items}")
-
-            needed_items = target_per_player[player] - sum(unfound_items.values())
-            new_itempool += [multiworld.worlds[player].create_filler() for _ in range(needed_items)]
-
-        assert len(multiworld.itempool) == len(new_itempool), "Item Pool amounts should not change."
-        multiworld.itempool[:] = new_itempool
-
-    multiworld.link_items()
-
-    if any(world.options.item_links for world in multiworld.worlds.values()):
-        multiworld._all_state = None
-
-    logger.info("Running Item Plando.")
-    resolve_early_locations_for_planned(multiworld)
-    distribute_planned_blocks(multiworld, [x for player in multiworld.plando_item_blocks
-                                           for x in multiworld.plando_item_blocks[player]])
-
-    logger.info('Running Pre Main Fill.')
-
-    AutoWorld.call_all(multiworld, "pre_fill")
 
     return multiworld
 
@@ -505,7 +398,6 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
 def download_all_apworlds():
     # code copied from apworld manager
     print("Dowloading apworlds")
-    from worlds.apworld_manager.world_manager import install_world, refresh_apworld_table, repositories
     repositories.load_repos_from_settings()
     repositories.refresh()
 
@@ -519,45 +411,74 @@ def download_all_apworlds():
 
 
 # needs a nogui arg and ability to time out
-def get_stats_one_world(world_name : str, count=10, timeout=999, *varg, **kwargs) -> list[int]:
+def get_stats_one_world(world_name : str, stat : list,  count=10, timeout=999, *varg, **kwargs) -> None:
     print(f"Collecting stats for {world_name}")
     start = time.time()
     loc_count = []
     for _ in range(count):
         if time.time() - start > timeout:
-            raise TimeoutError(f"World {world_name} timed out after {time.time() - start} seconds")
+            print(f"World {world_name} timed out after {time.time() - start} seconds")
+            stat += deepcopy(loc_count)
+            return
+            #return loc_count
 
         try:
             multiworld = main_fill(*main_generate(world_name, *varg, **kwargs))
             loc_count.append(len(multiworld.itempool))
-            #loc_count.append(1)
 
             del multiworld
         except Exception as e:
             print(e)
-    return loc_count
-
+        multiworld = None
+        gc.collect(0)
+    stat += deepcopy(loc_count)
+    #return deepcopy(loc_count)
 
 def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
     print(f"Getting stats for all worlds")
     data_colum = list(f"Data{i}" for i in range(1, count+ 1))
-    stats = pandas.DataFrame(columns=["World", "Mean", "Median", "Min", "Max"] + data_colum)
+    stats = pandas.DataFrame(columns=["World", "Mean", "Median", "Min", "Max"] )#+ data_colum)
 
-    for world_name in AutoWorld.AutoWorldRegister.world_types :
-        if world_name in ["Archipelago"]:
+
+    for world_name in AutoWorld.AutoWorldRegister.world_types.__reversed__() :
+        if world_name in ["Archipelago", "shapez", "TUNIC", "Zillion"]:
             continue
 
         try:
-            stat = get_stats_one_world(world_name,count=count, *varg, **kwargs)
-            cloumns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)]+ stat
-            if len(cloumns) < 5 + count:
-                cloumns += [None for _ in range(count+5 - len(cloumns))]
-            stats.loc[len(stats)] =  cloumns
+            # threading does not isolate and multiprocessing requires reimporting entire project for each process, fixed with lasy-loading
+            stat = []
+            #thread= multiprocessing.Process(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
+            thread= threading.Thread(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
+
+
+            thread.start()
+
+            thread.join()
+
+            #stat = get_stats_one_world(world_name, count=count, * varg, ** kwargs)
+
+            #print(f"stat {stat}")
+
+            if len(stat) == 0:
+                del stat
+                continue
+
+            columns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #+ stat
+            #if len(columns) < 5 + count:
+            #    columns += [None for _ in range(count + 5 - len(columns))]
+            stats.loc[len(stats)] =  deepcopy(columns)
+            del stat
+            del columns
+
+            gc.collect(2)
+            gc.collect(1)
+            gc.collect(0)
+
+
         except Exception as e:
             if e == Options.OptionError:
                 continue
-            #import traceback
-            #traceback.print_exc()
+            traceback.print_exc()
             print(f"World {world_name} failed with exception {e}")
 
     return stats
@@ -598,4 +519,15 @@ def main():
 
 
 if __name__ == '__main__':
+    #tracemalloc.start()
+    #gc.set_debug(gc.DEBUG_LEAK)
+
     main()
+
+    #print(tracemalloc.get_traced_memory())
+    #snapshot = tracemalloc.take_snapshot()
+    #top_stats = snapshot.statistics('lineno')
+    #for frame in top_stats:
+    #    print(frame)
+
+    #print(gc.get_objects())
