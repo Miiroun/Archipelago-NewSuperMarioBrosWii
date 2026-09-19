@@ -1,3 +1,28 @@
+# using location stats command
+This is a program that aims to compute the average location count of all default yamls.
+You need to set it up in a virtual machine because it is unsafe.
+
+to run it first clone this repo with git
+`git clone https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii.git`
+`git switch stats`
+
+then run the python script, you may have to install python and other dependencies.
+`python generate_stats.py --nogui --download` to download all apworlds in the apmanger repository
+
+then run
+`python generate_stats.py` to generate the data
+it should be collected in `output/stats.csv`
+
+
+## Comment about code
+This code is not meant to be maintained, I did it once and that is good enough for me.
+To get it to function I had to modify some stuff in `utils.py` to support nogui, so it is not compatible with a normal archipelago install.
+Most of the code is copy-pasted from either `Generate.py` or `Main.py`.
+
+
+Future plans?
+Might add yaml-fuzzing to the stats
+
 # [Archipelago](https://archipelago.gg) ![Discord Shield](https://discordapp.com/api/guilds/731205301247803413/widget.png?style=shield) | [Install](https://github.com/ArchipelagoMW/Archipelago/releases)
 
 Archipelago provides a generic framework for developing multiworld capability for game randomizers. In all cases,

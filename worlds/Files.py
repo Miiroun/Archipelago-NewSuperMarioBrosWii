@@ -204,7 +204,10 @@ class APWorldContainer(APContainer):
         self.game = manifest["game"]
         for version_key in ("world_version", "minimum_ap_version", "maximum_ap_version"):
             if version_key in manifest:
-                setattr(self, version_key, tuplize_version(manifest[version_key]))
+                try:
+                    setattr(self, version_key, tuplize_version(manifest[version_key]))
+                except Exception as e:
+                    print(e)
         return manifest
 
     def get_manifest(self) -> Dict[str, Any]:
