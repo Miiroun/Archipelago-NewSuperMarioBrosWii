@@ -442,7 +442,7 @@ Stats = collections.namedtuple("Stats", ["mean", "meadian", "min", "max"])
 def get_stats_one_world(world_name : str) -> Stats:
     print(f"Collecting stats for {world_name}")
     loc_count = []
-    for _ in range(10):
+    for _ in range(25):
 
         multiworld = main_fill(*main_generate(world_name))
         loc_count.append(len(multiworld.itempool))

@@ -2,7 +2,8 @@
 
 name: run_stats
 
-on: {}
+on:
+  workflow_dispatch:
 
 
 permissions:
