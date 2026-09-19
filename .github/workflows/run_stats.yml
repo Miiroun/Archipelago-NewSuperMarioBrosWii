@@ -42,5 +42,5 @@ jobs:
           python Launcher.py --update_settings  # make sure host.yaml exists for tests
       - name: Unittests
         run: |
-          python generate_stats.py
+          python generate_stats.py --download --nogui
 

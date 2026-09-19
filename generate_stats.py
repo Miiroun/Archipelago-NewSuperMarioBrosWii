@@ -433,7 +433,9 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
 def download_all_apworlds():
     # code copied from apworld manager
     print("Dowloading apworlds")
-    from worlds.apworld_manager.world_manager import install_world, refresh_apworld_table, populate_available_worlds
+    from worlds.apworld_manager.world_manager import install_world, refresh_apworld_table, repositories
+    repositories.load_repos_from_settings()
+    repositories.refresh()
 
     apworlds = refresh_apworld_table()
     for apworld in apworlds:
@@ -445,7 +447,7 @@ def download_all_apworlds():
 def get_stats_one_world(world_name : str) -> list[int]:
     print(f"Collecting stats for {world_name}")
     loc_count = []
-    for _ in range(5):
+    for _ in range(10):
 
         multiworld = main_fill(*main_generate(world_name))
         loc_count.append(len(multiworld.itempool))
@@ -478,8 +480,16 @@ def export_stats(stats : pandas.DataFrame) -> None:
     stats.to_csv(os.path.join("output", "stats.csv"), index = False)
 
 
-def main(*argv, **kwargs):
-    download_all_apworlds()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--download", default=False, action="store_true", help="download all apworlds")
+    parser.add_argument("--nogui", default=False, action="store_true", help="Turns off Client GUI.")
+
+    args = parser.parse_args()
+
+    if args.download:
+        download_all_apworlds()
+
     stats = get_stats_all_worlds()
 
     export_stats(stats)
