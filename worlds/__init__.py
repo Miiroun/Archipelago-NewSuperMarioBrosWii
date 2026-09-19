@@ -122,7 +122,8 @@ for folder in (folder for folder in (user_folder, local_folder) if folder):
                 elif os.path.isfile(os.path.join(entry.path, '__init__.pyc')):
                     world_sources.append(WorldSource(file_name, relative=relative))
                 else:
-                    logging.warning(f"excluding {entry.name} from world sources because it has no __init__.py")
+                    pass
+                    #logging.warning(f"excluding {entry.name} from world sources because it has no __init__.py")
             elif entry.is_file() and entry.name.endswith(".apworld"):
                 world_sources.append(WorldSource(file_name, is_zip=True, relative=relative))
 

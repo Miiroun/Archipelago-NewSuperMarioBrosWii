@@ -7,7 +7,6 @@ from worlds import AutoWorld
 from worlds.AutoWorld import AutoWorldRegister
 
 import argparse
-import logging
 import os
 import random
 from collections import Counter
@@ -28,9 +27,10 @@ from worlds.apworld_manager.world_manager import install_world, refresh_apworld_
 
 import threading
 import traceback
-from multiprocessing import Process, Queue
+import multiprocessing
 import gc
 from copy import deepcopy
+import tracemalloc
 
 import statistics
 import time
@@ -140,7 +140,7 @@ def main_base_generate(yaml_func, *varg, **kwargs):
     weights_for_file = []
     for doc_idx, yaml in enumerate(tuple(yaml_func)):
         if yaml is None:
-            logging.warning(f"Ignoring empty yaml document #{doc_idx + 1} in ...")
+            print(f"Ignoring empty yaml document #{doc_idx + 1} in ...")
         else:
             quantity = yaml.get("quantity", 1)
             if quantity <= 0:
@@ -159,25 +159,26 @@ def main_base_generate(yaml_func, *varg, **kwargs):
     for filename, yaml_data in weights_cache.items():
         if filename not in {args.meta_file_path, args.weights_file_path}:
             for yaml in yaml_data:
-                logging.info(f"P{player_id} Weights: {filename} >> "
-                             f"{get_choice('description', yaml, 'No description specified')}")
+                #print(f"P{player_id} Weights: {filename} >> "
+                #             f"{get_choice('description', yaml, 'No description specified')}")
                 player_files[player_id] = filename
                 player_id += 1
 
     args.multi = max(player_id - 1, args.multi)
 
     if args.multi == 0:
-        if player_errors:
-            errors = "\n\n".join(player_errors)
-            raise ValueError(f"Encountered {len(player_errors)} error(s) in player files. "
-                             f"See logs for full tracebacks.\n\n{errors}")
-        raise ValueError(
-            "No individual player files found and number of players is 0. "
-            "Provide individual player files or specify the number of players via host.yaml or --multi."
-        )
+        raise Options.OptionError
+        #if player_errors:
+        #    errors = "\n\n".join(player_errors)
+        #    raise ValueError(f"Encountered {len(player_errors)} error(s) in player files. "
+        #                     f"See logs for full tracebacks.\n\n{errors}")
+        #raise ValueError(
+        #    "No individual player files found and number of players is 0. "
+        #    "Provide individual player files or specify the number of players via host.yaml or --multi."
+        #)
 
-    logging.info(f"Generating for {args.multi} player{'s' if args.multi > 1 else ''}, "
-                 f"{seed_name} Seed {seed} with plando: {args.plando}")
+    #print(f"Generating for {args.multi} player{'s' if args.multi > 1 else ''}, "
+    #             f"{seed_name} Seed {seed} with plando: {args.plando}")
 
     if not weights_cache:
         if player_errors:
@@ -206,7 +207,7 @@ def main_base_generate(yaml_func, *varg, **kwargs):
                                             key in Options.CommonOptions.type_hints:
                                         yaml[category][key] = option
                             elif category_name not in yaml:
-                                logging.warning(f"Meta: Category {category_name} is not present in {path}.")
+                                print(f"Meta: Category {category_name} is not present in {path}.")
                             elif key == "triggers":
                                 if "triggers" not in yaml[category_name]:
                                     yaml[category_name][key] = []
@@ -221,16 +222,17 @@ def main_base_generate(yaml_func, *varg, **kwargs):
             try:
                 settings_cache[fname] = tuple(roll_settings(yaml, args.plando) for yaml in yamls)
             except Exception as e:
-                logging.exception(f"Exception reading settings in file {fname}")
+                #print(f"Exception reading settings in file {fname}")
                 player_errors.append(
                     f"{len(player_errors) + 1}. "
                     f"File {fname} is invalid. Please fix your yaml.\n{Utils.get_all_causes(e)}"
                 )
         # Exit early here to avoid throwing the same errors again later
         if player_errors:
-            errors = "\n\n".join(player_errors)
-            raise ValueError(f"Encountered {len(player_errors)} error(s) in player files. "
-                             f"See logs for full tracebacks.\n\n{errors}")
+            raise Options.OptionError
+            #errors = "\n\n".join(player_errors)
+            #raise ValueError(f"Encountered {len(player_errors)} error(s) in player files. "
+            #                 f"See logs for full tracebacks.\n\n{errors}")
 
     player_path_cache: dict[int, str] = {}
     for player in range(1, args.multi + 1):
@@ -274,7 +276,7 @@ def main_base_generate(yaml_func, *varg, **kwargs):
                 args.name[player] = handle_name(args.name[player], player, name_counter)
 
             except Exception as e:
-                logging.exception(f"Exception reading settings in file {path} document #{doc_index + 1} "
+                print(f"Exception reading settings in file {path} document #{doc_index + 1} "
                                   f"(name: {args.name.get(player, name)})")
                 player_errors.append(
                     f"{len(player_errors) + 1}. "
@@ -312,7 +314,6 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
     # initialize the multiworld
     multiworld = MultiWorld(args.multi)
 
-    logger = logging.getLogger()
     multiworld.set_seed(seed, args.race, str(args.outputname) if args.outputname else None)
     multiworld.plando_options = args.plando
     multiworld.game = args.game.copy()
@@ -325,25 +326,26 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
         dump_player_options(multiworld)
     multiworld.set_item_links()
     multiworld.state = CollectionState(multiworld)
-    logger.info('Archipelago Version %s  -  Seed: %s\n', __version__, multiworld.seed)
 
-    logger.info(f"Found {len(AutoWorld.AutoWorldRegister.world_types)} World Types:")
-    longest_name = max(len(text) for text in AutoWorld.AutoWorldRegister.world_types)
+    #print('Archipelago Version %s  -  Seed: %s\n', __version__, multiworld.seed)
 
-    world_classes = AutoWorld.AutoWorldRegister.world_types.values()
+    #print(f"Found {len(AutoWorld.AutoWorldRegister.world_types)} World Types:")
+    #longest_name = max(len(text) for text in AutoWorld.AutoWorldRegister.world_types)
 
-    version_count = max(len(cls.world_version.as_simple_string()) for cls in world_classes)
-    item_count = len(str(max(len(cls.item_names) for cls in world_classes)))
-    location_count = len(str(max(len(cls.location_names) for cls in world_classes)))
+    #world_classes = AutoWorld.AutoWorldRegister.world_types.values()
 
-    for name, cls in AutoWorld.AutoWorldRegister.world_types.items():
-        if not cls.hidden and len(cls.item_names) > 0:
-            logger.info(f" {name:{longest_name}}: "
-                        f"v{cls.world_version.as_simple_string():{version_count}} | "
-                        f"Items: {len(cls.item_names):{item_count}} | "
-                        f"Locations: {len(cls.location_names):{location_count}}")
+    #version_count = max(len(cls.world_version.as_simple_string()) for cls in world_classes)
+    #item_count = len(str(max(len(cls.item_names) for cls in world_classes)))
+    #location_count = len(str(max(len(cls.location_names) for cls in world_classes)))
 
-    del item_count, location_count
+    #for name, cls in AutoWorld.AutoWorldRegister.world_types.items():
+    #    if not cls.hidden and len(cls.item_names) > 0:
+    #        print(f" {name:{longest_name}}: "
+    #                    f"v{cls.world_version.as_simple_string():{version_count}} | "
+    #                    f"Items: {len(cls.item_names):{item_count}} | "
+    #                    f"Locations: {len(cls.location_names):{location_count}}")
+
+    #del item_count, location_count
 
     # This assertion method should not be necessary to run if we are not outputting any multidata.
     if not args.skip_output and not args.spoiler_only:
@@ -351,7 +353,7 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
 
     AutoWorld.call_all(multiworld, "generate_early")
 
-    logger.info('')
+    #print('')
 
     for player in multiworld.player_ids:
         for item_name, count in multiworld.worlds[player].options.start_inventory.value.items():
@@ -384,10 +386,10 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
         multiworld.worlds[1].options.non_local_items.value = set()
         multiworld.worlds[1].options.local_items.value = set()
 
-    logger.info('Creating MultiWorld.')
+    #print('Creating MultiWorld.')
     AutoWorld.call_all(multiworld, "create_regions")
 
-    logger.info('Creating Items.')
+    #print('Creating Items.')
     AutoWorld.call_all(multiworld, "create_items")
 
 
@@ -397,7 +399,7 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
 
 def download_all_apworlds():
     # code copied from apworld manager
-    print("Dowloading apworlds")
+    print("Downloading apworlds")
     repositories.load_repos_from_settings()
     repositories.refresh()
 
@@ -415,15 +417,16 @@ def get_stats_one_world(world_name : str, stat : list,  count=10, timeout=999, *
     print(f"Collecting stats for {world_name}")
     start = time.time()
     loc_count = []
-    for _ in range(count):
+    for i in range(count):
         if time.time() - start > timeout:
-            print(f"World {world_name} timed out after {time.time() - start} seconds")
+            print(f"World {world_name} timed out after {time.time() - start} seconds, after {i}/{count} successes")
             stat += deepcopy(loc_count)
             return
             #return loc_count
 
         try:
-            multiworld = main_fill(*main_generate(world_name, *varg, **kwargs))
+            args, seed = main_generate(world_name, *varg, **kwargs)
+            multiworld = main_fill(args, seed)
             loc_count.append(len(multiworld.itempool))
 
             del multiworld
@@ -437,18 +440,20 @@ def get_stats_one_world(world_name : str, stat : list,  count=10, timeout=999, *
 def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
     print(f"Getting stats for all worlds")
     data_colum = list(f"Data{i}" for i in range(1, count+ 1))
-    stats = pandas.DataFrame(columns=["World", "Mean", "Median", "Min", "Max"] )#+ data_colum)
+    stats = []#+ data_colum)
 
 
-    for world_name in AutoWorld.AutoWorldRegister.world_types.__reversed__() :
+    for i, world_name in enumerate(AutoWorld.AutoWorldRegister.world_types):
         if world_name in ["Archipelago", "shapez", "TUNIC", "Zillion"]:
             continue
 
         try:
+            if i % 10 == 0:
+                print(f"Currently completed {i}/{len(AutoWorld.AutoWorldRegister.world_types)} worlds ------------------------------")
             # threading does not isolate and multiprocessing requires reimporting entire project for each process, fixed with lasy-loading
             stat = []
-            #thread= multiprocessing.Process(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
-            thread= threading.Thread(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
+            thread= multiprocessing.Process(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
+            #thread= threading.Thread(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
 
 
             thread.start()
@@ -466,7 +471,7 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
             columns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #+ stat
             #if len(columns) < 5 + count:
             #    columns += [None for _ in range(count + 5 - len(columns))]
-            stats.loc[len(stats)] =  deepcopy(columns)
+            stats.append(deepcopy(columns))
             del stat
             del columns
 
@@ -481,7 +486,8 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
             traceback.print_exc()
             print(f"World {world_name} failed with exception {e}")
 
-    return stats
+    df  = pandas.DataFrame(stats, columns=["World", "Mean", "Median", "Min", "Max"]) #, dtype=["float16", "int8"]
+    return df
 
 def export_stats(stats : pandas.DataFrame) -> None:
     print(f"Exporting stats")
@@ -519,15 +525,26 @@ def main():
 
 
 if __name__ == '__main__':
-    #tracemalloc.start()
     #gc.set_debug(gc.DEBUG_LEAK)
+    debug_mem = True
+    if debug_mem:
+        tracemalloc.start()
+
+
+    start = time.time()
 
     main()
 
-    #print(tracemalloc.get_traced_memory())
-    #snapshot = tracemalloc.take_snapshot()
-    #top_stats = snapshot.statistics('lineno')
-    #for frame in top_stats:
-    #    print(frame)
+    print(f"Duration {time.time() - start} seconds")
+    time.sleep(3)
 
-    #print(gc.get_objects())
+
+
+    if debug_mem:
+        print(tracemalloc.get_traced_memory())
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics('lineno')
+        for frame in top_stats[:10]:
+            print(frame)
+
+        #print(gc.get_objects())
