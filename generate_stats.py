@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import collections
+import hashlib
+import json
 import random
+import shutil
 import statistics
 import threading
 from collections.abc import Mapping
@@ -17,6 +20,7 @@ import zipfile
 import zlib
 
 import pandas
+import requests
 
 import Options
 import worlds
@@ -53,7 +57,6 @@ import Utils
 import Options
 from BaseClasses import seeddigits, get_seed, PlandoOptions
 from Utils import parse_yamls, version_tuple, __version__, tuplize_version
-
 
 from Generate import main as generate_main, get_seed, mystery_argparse, get_seed_name, roll_settings, get_choice, \
     read_weights_yamls, handle_name, roll_meta_option
@@ -425,38 +428,31 @@ def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = 
 
     return multiworld
 
+
+
 def download_all_apworlds():
+    # code copied from apworld manager
     print("Dowloading apworlds")
+    from worlds.apworld_manager.world_manager import install_world, refresh_apworld_table, populate_available_worlds
 
-#@dataclass
-#class Stats(NamedTuple):
-#    mean : float
-#    median : float
-#    min : float
-#    max : float
-
-Stats = collections.namedtuple("Stats", ["mean", "meadian", "min", "max"])
+    apworlds = refresh_apworld_table()
+    for apworld in apworlds:
+        print(f"Downloading apworld {apworld}")
+        install_world(apworld)
 
 
 # needs a nogui arg and ability to time out
-def get_stats_one_world(world_name : str) -> Stats:
+def get_stats_one_world(world_name : str) -> list[int]:
     print(f"Collecting stats for {world_name}")
     loc_count = []
-    for _ in range(25):
+    for _ in range(5):
 
         multiworld = main_fill(*main_generate(world_name))
         loc_count.append(len(multiworld.itempool))
         #loc_count.append(1)
 
         del multiworld
-
-    mean = statistics.mean(loc_count)
-    median = statistics.median(loc_count)
-    _min = min(loc_count)
-    _max = max(loc_count)
-    stats = Stats(mean, median, _min, _max)
-
-    return stats
+    return loc_count
 
 
 def get_stats_all_worlds() -> pandas.DataFrame:
@@ -469,7 +465,7 @@ def get_stats_all_worlds() -> pandas.DataFrame:
 
         try:
             stat = get_stats_one_world( world_name)
-            stats.loc[len(stats)] = [world_name, stat.mean, stat.meadian, stat.min, stat.max]
+            stats.loc[len(stats)] = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #, *statistics.quantiles(stat, n=4)
         except Exception as e:
             print(f"World {world_name} failed with exception {e}")
 
@@ -478,7 +474,7 @@ def get_stats_all_worlds() -> pandas.DataFrame:
 def export_stats(stats : pandas.DataFrame) -> None:
     print(f"Exporting stats")
 
-    print(stats)
+    print(stats.to_markdown())
     stats.to_csv(os.path.join("output", "stats.csv"), index = False)
 
 
