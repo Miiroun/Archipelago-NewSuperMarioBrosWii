@@ -2,6 +2,9 @@
 This is a program that aims to compute the average location count of all default yamls.
 You need to set it up in a virtual machine because it is unsafe.
 
+If you just want the data, you can look [here](https://docs.google.com/spreadsheets/d/1ipAcpv8GMq0ssxIfq8lCZ1mQ6WDNJ9Qeyrmb1W83JlI/edit?usp=sharing),
+where I've already run the program (2026-09-19)
+
 to run it first clone this repo with git
 `git clone https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii.git`
 `git switch stats`
