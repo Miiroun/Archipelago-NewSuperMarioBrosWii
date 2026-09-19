@@ -101,6 +101,9 @@ def mystery_argparse(argv: list[str] | None = None) -> argparse.Namespace:
     #added to remove error
     parser.add_argument("--download", default=False, action="store_true", help="download all apworlds")
     parser.add_argument("--nogui", default=False, action="store_true", help="Turns off Client GUI.")
+    parser.add_argument("--fuzz", default=False, action="store_true", help="Whether to fuzz yamls.")
+    parser.add_argument("-n", "--count", default="10", type=str, help="How many times each apworld should run")
+    parser.add_argument("-t", "--timeout", default=999, type=float, help="A timeout after which ")
 
     args = parser.parse_args(argv)
 
@@ -117,7 +120,27 @@ def mystery_argparse(argv: list[str] | None = None) -> argparse.Namespace:
 
     return args
 
-def main_generate(world_name : str):
+def main_generate(world_name : str, fuzz = False, *varg, **kwargs):
+    yaml_func = None
+    if fuzz:
+        from fuzz import generate_random_yaml
+
+        yaml = generate_random_yaml(world_name, {})
+        # print(yaml)
+        yaml_func = parse_yamls(yaml)
+    else:
+        yaml_func = parse_yamls(f"""
+        name : Player
+        game : {world_name}
+        {world_name}:
+          progression_balancing: 50
+            """)
+
+    return main_base_generate(yaml_func, *varg, **kwargs)
+
+
+
+def main_base_generate(yaml_func, *varg, **kwargs):
     args = mystery_argparse()
 
     seed = get_seed(args.seed)
@@ -142,12 +165,7 @@ def main_generate(world_name : str):
     allow_quantity = args.allow_quantity
 
     weights_for_file = []
-    for doc_idx, yaml in enumerate(tuple(parse_yamls(f"""
-name : Player
-game : {world_name}
-{world_name}:
-  progression_balancing: 50
-    """))):
+    for doc_idx, yaml in enumerate(tuple(yaml_func)):
         if yaml is None:
             logging.warning(f"Ignoring empty yaml document #{doc_idx + 1} in ...")
         else:
@@ -307,7 +325,6 @@ game : {world_name}
 
     return args, seed
 
-    return args, seed
 
 
 def main_fill(args, seed=None, baked_server_options: dict[str, object] | None = None):
@@ -502,31 +519,45 @@ def download_all_apworlds():
 
 
 # needs a nogui arg and ability to time out
-def get_stats_one_world(world_name : str) -> list[int]:
+def get_stats_one_world(world_name : str, count=10, timeout=999, *varg, **kwargs) -> list[int]:
     print(f"Collecting stats for {world_name}")
+    start = time.time()
     loc_count = []
-    for _ in range(10):
+    for _ in range(count):
+        if time.time() - start > timeout:
+            raise TimeoutError(f"World {world_name} timed out after {time.time() - start} seconds")
 
-        multiworld = main_fill(*main_generate(world_name))
-        loc_count.append(len(multiworld.itempool))
-        #loc_count.append(1)
+        try:
+            multiworld = main_fill(*main_generate(world_name, *varg, **kwargs))
+            loc_count.append(len(multiworld.itempool))
+            #loc_count.append(1)
 
-        del multiworld
+            del multiworld
+        except Exception as e:
+            print(e)
     return loc_count
 
 
-def get_stats_all_worlds() -> pandas.DataFrame:
+def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
     print(f"Getting stats for all worlds")
-    stats = pandas.DataFrame(columns=["World", "Mean", "Median", "Min", "Max"])
+    data_colum = list(f"Data{i}" for i in range(1, count+ 1))
+    stats = pandas.DataFrame(columns=["World", "Mean", "Median", "Min", "Max"] + data_colum)
 
     for world_name in AutoWorld.AutoWorldRegister.world_types :
         if world_name in ["Archipelago"]:
             continue
 
         try:
-            stat = get_stats_one_world( world_name)
-            stats.loc[len(stats)] = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #, *statistics.quantiles(stat, n=4)
+            stat = get_stats_one_world(world_name,count=count, *varg, **kwargs)
+            cloumns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)]+ stat
+            if len(cloumns) < 5 + count:
+                cloumns += [None for _ in range(count+5 - len(cloumns))]
+            stats.loc[len(stats)] =  cloumns
         except Exception as e:
+            if e == Options.OptionError:
+                continue
+            #import traceback
+            #traceback.print_exc()
             print(f"World {world_name} failed with exception {e}")
 
     return stats
@@ -542,13 +573,25 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--download", default=False, action="store_true", help="download all apworlds")
     parser.add_argument("--nogui", default=False, action="store_true", help="Turns off Client GUI.")
+    parser.add_argument("--fuzz", default=False, action="store_true", help="Whether to fuzz yamls.")
+    parser.add_argument("-n", "--count", default=10, type=int, help="How many times each apworld should run")
+    parser.add_argument("-t", "--timeout", default=999, type=float, help="A timeout after which ")
+    #should probably addd a timeout if a function has taken to long to run
 
     args = parser.parse_args()
 
     if args.download:
         download_all_apworlds()
 
-    stats = get_stats_all_worlds()
+    count : int = 10
+    try:
+        count = int(args.count)
+    except Exception as e:
+        print(e)
+
+    print(f"Generating with count {count}")
+
+    stats = get_stats_all_worlds(count=count, fuzz=args.fuzz, timout=args.timeout)
 
     export_stats(stats)
 

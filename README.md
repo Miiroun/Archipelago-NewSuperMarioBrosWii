@@ -13,6 +13,13 @@ then run
 `python generate_stats.py` to generate the data
 it should be collected in `output/stats.csv`
 
+You can add the following arguments ass needed
+- `-n` Specify how many times should generate for each game
+- `--fuzz` To fuzz the yaml instead of using default.
+- `-t` A timeout in seconds, how much time will spend in generating each ap-world.
+- `--download` Will download all ap-worlds in the ap-world manager.
+-  `--nogui` Normal ap-command, will disable most popups.
+
 
 ## Comment about code
 This code is not meant to be maintained, I did it once and that is good enough for me.

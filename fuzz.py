@@ -170,7 +170,7 @@ def exception_in_causes(e, ty):
 
 def world_from_apworld_name(apworld_name):
     for name, world in AutoWorldRegister.world_types.items():
-        if world.__module__.startswith(f"worlds.{apworld_name}"):
+        if name == apworld_name:
             return name, world
 
     raise Exception(f"Couldn't find loaded world with world: {apworld_name}")
