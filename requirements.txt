@@ -21,3 +21,4 @@ kivymd>=2.0.1.dev0
 Pymem==1.14.0
 
 pandas
+tabulate
