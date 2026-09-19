@@ -439,8 +439,11 @@ def download_all_apworlds():
 
     apworlds = refresh_apworld_table()
     for apworld in apworlds:
-        print(f"Downloading apworld {apworld}")
-        install_world(apworld)
+        try:
+            print(f"Downloading apworld {apworld["title"]}")
+            install_world(apworld)
+        except Exception as e:
+            print(f"Failed to install {apworld} with exception: {e}")
 
 
 # needs a nogui arg and ability to time out
