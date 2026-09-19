@@ -591,7 +591,7 @@ def main():
 
     print(f"Generating with count {count}")
 
-    stats = get_stats_all_worlds(count=count, fuzz=args.fuzz, timout=args.timeout)
+    stats = get_stats_all_worlds(count=count, fuzz=args.fuzz, timeout=args.timeout)
 
     export_stats(stats)
 
