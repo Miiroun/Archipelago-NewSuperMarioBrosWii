@@ -230,6 +230,7 @@ def output_path(*path: str) -> str:
 
 
 def open_file(filename: typing.Union[str, "pathlib.Path"]) -> None:
+    raise Exception(f"Error on file browsing")
     if is_windows:
         os.startfile(filename)  # type: ignore
     else:
@@ -761,6 +762,7 @@ def env_cleared_lib_path() -> Mapping[str, str]:
 
 
 def _mp_open_filename(res: "multiprocessing.Queue[typing.Optional[str]]", *args: Any) -> None:
+    raise Exception(f"Error on file browsing")
     if is_kivy_running():
         raise RuntimeError("kivy should not be running in multiprocess")
     res.put(open_filename(*args))
@@ -778,6 +780,7 @@ def _run_for_stdout(*args: str):
 
 def open_filename(title: str, filetypes: typing.Iterable[typing.Tuple[str, typing.Iterable[str]]], suggest: str = "") \
         -> typing.Optional[str]:
+    raise Exception(f"Error on file browsing")
     logging.info(f"Opening file input dialog for {title}.")
 
     if is_linux:
@@ -873,12 +876,14 @@ def save_filename(title: str, filetypes: typing.Iterable[typing.Tuple[str, typin
 
 
 def _mp_open_directory(res: "multiprocessing.Queue[typing.Optional[str]]", *args: Any) -> None:
+    raise Exception(f"Error on file browsing")
     if is_kivy_running():
         raise RuntimeError("kivy should not be running in multiprocess")
     res.put(open_directory(*args))
 
 
 def open_directory(title: str, suggest: str = "") -> typing.Optional[str]:
+    raise Exception(f"Error on file browsing")
     if is_linux:
         # prefer native dialog
         from shutil import which
