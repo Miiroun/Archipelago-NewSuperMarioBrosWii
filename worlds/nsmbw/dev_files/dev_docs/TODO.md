@@ -21,6 +21,8 @@
 - MGroundType
 - Paranoia trap : something changed
 - I can probably make it an host.yaml option to specify the temp directory, so others who encounter this can change it as a workaround.
+- Try generation with 5 yaml
+- do archipelago nameing of blocks
 
 
 ## Playtest
@@ -49,6 +51,9 @@
   - I think secret exits do not respect normal exit clear conditions
 - The extra lives filler does NOT work properly with multiple people; I was player 2, and my lives were set to 94 and 88 at two separate points when the filler was only supposed to give 5 extra lives. I do wonder if this is only visual, though, cause a couple levels later, my lives would always revert down to a smaller number
 - rule for 1-3 sc1
+- 7-6 secret exit does not account for world unlock?
+  - Should it be unlocked without 2 world 7 unlocks
+  - I have some problems with the current secret exit systems: figure it out and write unit tests
 
 
 0x80429f30 	
@@ -173,20 +178,15 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Movement
 
 # EU 2
-- Skipp intro
 - Filler on other save files, in level check failing?
 
 # US 1
 - Movement broken
-  - Star
   - Water
   - Spin
   - p-switch
   - Crouch
   - Walljump (slide)
-  - ?-switch
-- Movement works
-  - Checkpoint
 
 
 ## Mid term
