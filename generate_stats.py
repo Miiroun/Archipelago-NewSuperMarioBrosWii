@@ -416,7 +416,7 @@ def download_all_apworlds():
 def get_stats_one_world(world_name : str, queue,  count=10, timeout=999, *varg, **kwargs) -> None:
     print(f"Collecting stats for {world_name}")
     start = time.time()
-    loc_count = []
+    loc_count : list = [world_name,]
     for i in range(count):
         if time.time() - start > timeout:
             print(f"World {world_name} timed out after {time.time() - start} seconds, after {i}/{count} successes")
@@ -439,63 +439,82 @@ def get_stats_one_world(world_name : str, queue,  count=10, timeout=999, *varg, 
     queue.put(deepcopy(loc_count))
     #return deepcopy(loc_count)
 
+def add_semaphore(semaphore, func, *varg, **kwargs):
+    with semaphore:
+        func(*varg, **kwargs)
+
+def chunks(l, n):
+    """Yield n number of striped chunks from l."""
+    for i in range(0, n):
+        yield l[i::n]
+
 def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
     print(f"Getting stats for all worlds")
-    data_colum = list(f"Data{i}" for i in range(1, count+ 1))
-    stats = []#+ data_colum)
 
 
-    for i, world_name in enumerate(AutoWorld.AutoWorldRegister.world_types):
-        if world_name in ["Archipelago", "shapez", "TUNIC", "Zillion"]:
+    queue = multiprocessing.Queue()
+    max_processes = multiprocessing.cpu_count() - 1
+    print(f"max_processes : {max_processes}")
+    semaphore = multiprocessing.Semaphore(max_processes)
+    threads = []
+
+    print(f"Starting setup of threads")
+    for world_name in AutoWorld.AutoWorldRegister.world_types:
+        if world_name in ["Archipelago"]:
             continue
+        # threading does not isolate and multiprocessing requires reimporting entire project for each process, fixed with lasy-loading
+        #stat = []
+        thread= multiprocessing.Process(target=add_semaphore, args=(semaphore, get_stats_one_world,world_name, queue, * varg,), kwargs={"count":count, **kwargs})
+        threads.append(thread)
+        #thread= threading.Thread(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
 
-        try:
+    print("Set up all threads")
+    i = 0
+    for sub_threads in chunks(threads, max_processes * 4):
+        for thread in sub_threads:
             if i % 10 == 0:
                 print(f"""
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-                Currently completed {i}/{len(AutoWorld.AutoWorldRegister.world_types)} worlds 
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                """)
-            # threading does not isolate and multiprocessing requires reimporting entire project for each process, fixed with lasy-loading
-            #stat = []
-            queue = multiprocessing.Queue()
-            thread= multiprocessing.Process(target=get_stats_one_world, args=(world_name, queue, * varg,), kwargs={"count":count, **kwargs})
-
-            #thread= threading.Thread(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
-
-
+            ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    
+                            Currently started {i}/{len(AutoWorld.AutoWorldRegister.world_types)} worlds 
+    
+            ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                            """)
             thread.start()
+            i += 1
 
+        for thread in sub_threads:
             thread.join()
 
-            stat = queue.get()
-            #stat = get_stats_one_world(world_name, count=count, * varg, ** kwargs)
+    #print(f"All {len(threads)} threads started")
+    #for thread in threads:
 
-            #print(f"stat {stat}")
+    print(f"All {len(threads)} threads ended")
+    print(f"Starting compilation of data")
 
-            if len(stat) == 0:
-                del stat
-                continue
+    data_colum = list(f"Data{i}" for i in range(1, count+ 1))
+    stats = []#+ data_colum)
+    for i in range(len(threads)):
+        print(i)
+        stat =  queue.get()
+        world_name = stat.pop(0)
+        #stat = get_stats_one_world(world_name, count=count, * varg, ** kwargs)
 
-            columns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #+ stat
-            #if len(columns) < 5 + count:
-            #    columns += [None for _ in range(count + 5 - len(columns))]
-            stats.append(deepcopy(columns))
+        #print(f"stat {stat}")
+
+        if len(stat) == 0:
             del stat
-            del columns
+            continue
 
-            gc.collect(2)
-            gc.collect(1)
-            gc.collect(0)
+        columns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #+ stat
+        #if len(columns) < 5 + count:
+        #    columns += [None for _ in range(count + 5 - len(columns))]
+        stats.append(deepcopy(columns))
+        del stat
+        del columns
 
-
-        except Exception as e:
-            if e == Options.OptionError:
-                continue
-            traceback.print_exc()
-            print(f"World {world_name} failed with exception {e}")
+        gc.collect()
+    print(f"Ordered data")
 
     df  = pandas.DataFrame(stats, columns=["World", "Mean", "Median", "Min", "Max"]) #, dtype=["float16", "int8"]
     return df
@@ -537,7 +556,7 @@ def main():
 
 if __name__ == '__main__':
     #gc.set_debug(gc.DEBUG_LEAK)
-    debug_mem = True
+    debug_mem = False
     if debug_mem:
         tracemalloc.start()
 
