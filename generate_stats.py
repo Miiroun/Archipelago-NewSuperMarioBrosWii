@@ -453,7 +453,7 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
 
 
     queue = multiprocessing.Queue()
-    max_processes = multiprocessing.cpu_count() - 1
+    max_processes = multiprocessing.cpu_count() - 2
     print(f"max_processes : {max_processes}")
     semaphore = multiprocessing.Semaphore(max_processes)
     threads = []
@@ -470,7 +470,7 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
 
     print("Set up all threads")
     i = 0
-    for sub_threads in chunks(threads, max_processes * 4):
+    for sub_threads in chunks(threads, max_processes * 3):
         for thread in sub_threads:
             if i % 10 == 0:
                 print(f"""
