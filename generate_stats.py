@@ -413,14 +413,15 @@ def download_all_apworlds():
 
 
 # needs a nogui arg and ability to time out
-def get_stats_one_world(world_name : str, stat : list,  count=10, timeout=999, *varg, **kwargs) -> None:
+def get_stats_one_world(world_name : str, queue,  count=10, timeout=999, *varg, **kwargs) -> None:
     print(f"Collecting stats for {world_name}")
     start = time.time()
     loc_count = []
     for i in range(count):
         if time.time() - start > timeout:
             print(f"World {world_name} timed out after {time.time() - start} seconds, after {i}/{count} successes")
-            stat += deepcopy(loc_count)
+            #stat += deepcopy(loc_count)
+            queue.put(deepcopy(loc_count))
             return
             #return loc_count
 
@@ -434,7 +435,8 @@ def get_stats_one_world(world_name : str, stat : list,  count=10, timeout=999, *
             print(e)
         multiworld = None
         gc.collect(0)
-    stat += deepcopy(loc_count)
+    #stat += deepcopy(loc_count)
+    queue.put(deepcopy(loc_count))
     #return deepcopy(loc_count)
 
 def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
@@ -449,10 +451,18 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
 
         try:
             if i % 10 == 0:
-                print(f"Currently completed {i}/{len(AutoWorld.AutoWorldRegister.world_types)} worlds ------------------------------")
+                print(f"""
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                Currently completed {i}/{len(AutoWorld.AutoWorldRegister.world_types)} worlds 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                """)
             # threading does not isolate and multiprocessing requires reimporting entire project for each process, fixed with lasy-loading
-            stat = []
-            thread= multiprocessing.Process(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
+            #stat = []
+            queue = multiprocessing.Queue()
+            thread= multiprocessing.Process(target=get_stats_one_world, args=(world_name, queue, * varg,), kwargs={"count":count, **kwargs})
+
             #thread= threading.Thread(target=get_stats_one_world, args=(world_name, stat, * varg,), kwargs={"count":count, **kwargs})
 
 
@@ -460,6 +470,7 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
 
             thread.join()
 
+            stat = queue.get()
             #stat = get_stats_one_world(world_name, count=count, * varg, ** kwargs)
 
             #print(f"stat {stat}")
