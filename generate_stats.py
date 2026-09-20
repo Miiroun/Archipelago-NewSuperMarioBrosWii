@@ -494,8 +494,7 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
 
     data_colum = list(f"Data{i}" for i in range(1, count+ 1))
     stats = []#+ data_colum)
-    for i in range(len(threads)):
-        print(i)
+    for _ in range(len(threads)):
         stat =  queue.get()
         world_name = stat.pop(0)
         #stat = get_stats_one_world(world_name, count=count, * varg, ** kwargs)
@@ -506,9 +505,9 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
             del stat
             continue
 
-        columns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat)] #+ stat
-        #if len(columns) < 5 + count:
-        #    columns += [None for _ in range(count + 5 - len(columns))]
+        columns = [world_name, statistics.mean(stat), statistics.median(stat), min(stat), max(stat), len(stat)] + stat
+        if len(columns) < 6 + count:
+            columns += [None for _ in range(count + 6 - len(columns))]
         stats.append(deepcopy(columns))
         del stat
         del columns
@@ -516,7 +515,7 @@ def get_stats_all_worlds(count=10, *varg, **kwargs) -> pandas.DataFrame:
         gc.collect()
     print(f"Ordered data")
 
-    df  = pandas.DataFrame(stats, columns=["World", "Mean", "Median", "Min", "Max"]) #, dtype=["float16", "int8"]
+    df  = pandas.DataFrame(stats, columns=["World", "Mean", "Median", "Min", "Max", "Successful"]+data_colum) #, dtype=["float16", "int8"]
     return df
 
 def export_stats(stats : pandas.DataFrame) -> None:
