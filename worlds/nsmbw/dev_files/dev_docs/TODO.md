@@ -23,6 +23,7 @@
 - I can probably make it an host.yaml option to specify the temp directory, so others who encounter this can change it as a workaround.
 - Try generation with 5 yaml
 - do archipelago nameing of blocks
+- temp dir selectable in settings
 
 
 ## Playtest
