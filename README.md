@@ -30,8 +30,10 @@ To get it to function I had to modify some stuff in `utils.py` to support nogui,
 Most of the code is copy-pasted from either `Generate.py` or `Main.py`.
 
 
-Future plans?
-Might add yaml-fuzzing to the stats
+## Debug
+If you encounter to many files open error, consider increasing the soft limit with `ulimit -nS <amount>`. 
+Going from 1024 to 8196 worked for me.
+
 
 # [Archipelago](https://archipelago.gg) ![Discord Shield](https://discordapp.com/api/guilds/731205301247803413/widget.png?style=shield) | [Install](https://github.com/ArchipelagoMW/Archipelago/releases)
 
