@@ -13,7 +13,6 @@ from .. import NSMBWworld, locations
 import json
 import os
 import pathlib
-import tempfile
 import time
 import traceback
 from enum import IntEnum
@@ -301,7 +300,7 @@ class NSMBWContext(SuperContext):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 if is_frozen():
-                    _path = Path(tempfile.gettempdir()) / "nsmbw" / "nsmbw_icon.png"
+                    _path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "nsmbw_icon.png"
                     if not _path.exists():
                         _path.parent.mkdir(parents=True, exist_ok=True)
                         with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
@@ -1740,13 +1739,13 @@ class NSMBWContext(SuperContext):
                             "-e", str(_patcher.shortcut_path),
                             "-s", str(save_state_file),
                             ],
-                            env=Utils.env_cleared_lib_path()
+                        env=Utils.env_cleared_lib_path(),
                         )
                     else:
                         subprocess.Popen(self.get_dolphin_run_command(_patcher) + [
                             "-e", str(_patcher.shortcut_path),
                             ],
-                            env=Utils.env_cleared_lib_path()
+                            env=Utils.env_cleared_lib_path(),
                         )
                     self.connection_pause = time.time() + 15
             else:

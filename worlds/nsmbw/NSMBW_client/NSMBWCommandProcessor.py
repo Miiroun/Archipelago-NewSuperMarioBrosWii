@@ -4,7 +4,6 @@ from ..Common import *
 from .. import locations
 
 import os
-import tempfile
 import time
 import traceback
 
@@ -399,7 +398,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_rm_tmp(self):
         """Delete all files used for creating the patch files (including all created patches, but not save data) and other temporary files."""
 
-        nsmbw_dir = Path(tempfile.gettempdir()) / "nsmbw"
+        nsmbw_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw"
         if nsmbw_dir.exists():
             shutil.rmtree(nsmbw_dir)
 

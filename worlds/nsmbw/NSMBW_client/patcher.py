@@ -11,7 +11,6 @@ import logging
 from random import Random
 
 import shutil
-import tempfile
 
 from ..Common import *
 
@@ -44,11 +43,11 @@ class Patcher:
         self.output_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder) / self.name
 
         file_name = os.path.basename(Path(Utils.get_settings()["nsmbw_settings"].game_file_path))
-        self.temp_dir = Path(tempfile.gettempdir()) / "nsmbw" /  file_name / "DATA"
+        self.temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" /  file_name / "DATA"
 
         self.random = Random(seed)
 
-        self.shortcut_path = Path(tempfile.gettempdir()) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
+        self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
 
     def recolor_tileset(self, source_bytes : bytes) -> bytes:
 
@@ -237,7 +236,7 @@ class Patcher:
         patch_data = self.patch_details()
 
         if Utils.is_frozen():
-            temp_dir = Path(tempfile.gettempdir()) / "nsmbw" / "patch_data"
+            temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "patch_data"
             temp_dir.mkdir(exist_ok=True, parents=True)
 
             with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
@@ -257,7 +256,7 @@ class Patcher:
             destination_path.parent.mkdir(exist_ok=True, parents=True)
 
             if Utils.is_frozen():
-                temp_dir = Path(tempfile.gettempdir()) / "nsmbw" / "patch_data"
+                temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "patch_data"
 
                 path_data_loc = temp_dir / f"patch_{name}.bin"
 
@@ -308,12 +307,15 @@ class Patcher:
                     "--output", str(path_to),   #f"\"{str(path_to)}\"",
                     ],
                     env=Utils.env_cleared_lib_path(),
+                    stderr=subprocess.STDOUT,
+                    capture_output=True,
+                    text=True,
                 )
+                logger.info(result.stdout)
                 if result.returncode == 0:
                     return
                 else:
                     logger.info(f"Exited with return code {result.returncode}")
-                    logger.info(f"result {result.stdout}")
             logger.info(f"Problem with extracting game files, fall back to manually locating dolphin-tool")
 
 
@@ -328,7 +330,11 @@ class Patcher:
                 "--output", str(path_to),
                 ],
                 env=Utils.env_cleared_lib_path(),
+                stderr=subprocess.STDOUT,
+                capture_output=True,
+                text=True,
             )
+            logger.info(result.stdout)
             if result.returncode == 0:
                 print(f"Game extract successful")
                 return

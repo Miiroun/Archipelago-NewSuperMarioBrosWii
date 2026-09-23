@@ -6,6 +6,8 @@ from pathlib import Path
 import Utils
 from .Common import *
 import settings
+import tempfile
+
 
 if Utils.is_windows:
     import winreg
@@ -182,6 +184,11 @@ class NSMBWSettings(settings.Group):
     class DolphinInstanceOverride(settings.Bool):
         """Change this to true if you want to remove the checks the client does for amount of dolphin instances"""
 
+    class TempDir(settings.FolderPath):
+        """Which path to use as temp folder. If your temp directories permission is weirdly configured you may have to change it, otherwise do not touch it."""
+        required = True
+
+
     game_file_path: GameFilePath  = GameFilePath(r"New SUPER MARIO BROS. Wii.iso")
 
     auto_start: AutoStartGame | bool = False
@@ -200,6 +207,7 @@ class NSMBWSettings(settings.Group):
     clear_cache_save_slot : ClearCacheSaveSLot = ClearCacheSaveSLot.Slot7
     dolphin_instance_override : DolphinInstanceOverride | bool= False
 
+    temporary_directory : TempDir = TempDir(tempfile.gettempdir())
 
     if Utils.is_windows:
         dolphin_folder : DolphinFolder = DolphinFolder(get_dolphin_path_windows())
@@ -226,4 +234,5 @@ class NSMBWSettings(settings.Group):
         #DolphinTool(subprocess.run(["whereis", "dolphin-emu-tools"], capture_output=True, text=True).stdout)
 
     else:
-        raise Exception("Unsupported OS")
+        print(f"Unsupported OS {sys.platform}")
+        #raise Exception(f"Unsupported OS {sys.platform}")
