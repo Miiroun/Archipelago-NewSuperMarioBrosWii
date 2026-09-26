@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from BaseClasses import Item, ItemClassification
+from BaseClasses import Item, ItemClassification, CollectionState
 from .Common import *
 from .options import RandomizePowerups, ShortcutSanity
 
@@ -258,11 +258,54 @@ def create_all_items(world: NSMBWworld) -> None:
     assert needed_number_of_filler_items >= 0, f"More items ({number_of_items}) than locations ({number_of_unfilled_locations})"
     itempool += [world.create_filler() for _ in range(needed_number_of_filler_items)]
     assert len(itempool) == number_of_unfilled_locations, f"Failed in filling itempool ({len(itempool)}) with filler items with unfilled locations ({number_of_unfilled_locations})"
+
+    #fill_filler(world, itempool)
+
     world.multiworld.itempool += itempool
 
 
     for _item in sorted(list(excluded_items)):
         world.push_precollected(world.create_item(_item))
 
+def fill_filler(world : "NSMBWworld", local_itempool):
+    from .locations import NSMBWLocation
+    if world.multiworld.players == 1:
+        return
+
+    if world.options.percentage_filler_forced_local.value == 0:
+        return
+
+    # code inspired by tunic implementation
+    sphere_one_locs = world.multiworld.get_reachable_locations(CollectionState(world.multiworld), world.player)
+    local_locations: List[NSMBWLocation] = [
+        loc for loc in world.multiworld.get_unfilled_locations(world.player)
+        if loc not in sphere_one_locs
+           and loc.name not in world.options.priority_locations.value
+    ]
+
+    local_fillers: List[NSMBWItem] = [
+        itm for itm in local_itempool
+        if (itm.name in (FILLER + TRAPS))
+           and itm.player == world.player
+           and itm.location is None
+    ]
+
+    amount = min(len(local_fillers), len(local_fillers))
+    world.random.shuffle(local_fillers)
+    world.random.shuffle(local_locations)
+    for _ in range(round(amount * world.options.percentage_filler_forced_local / 100)):
+        if not (len(local_locations) > 1) and (len(local_fillers) > 1):
+            break
+        _item = local_fillers.pop()
+        _location = local_locations.pop()
+
+        _location.place_locked_item(_item)
+
+    for i in reversed(range(len(local_itempool))):
+        if local_itempool[i].location is None:
+            continue
+        if local_itempool[i].player != world.player:
+            continue
+        local_itempool.pop(i)
 
 

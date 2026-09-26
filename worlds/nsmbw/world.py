@@ -65,6 +65,8 @@ class NSMBWworld(World):
 
     star_coin_req_per_world_9_level : List[int]
 
+    percentage_filler_forced_local : int
+
     def __init__(self, multiworld: "MultiWorld", player: int):
         super().__init__(multiworld, player)
         self.star_coin_req_per_world_9_level = []
@@ -114,30 +116,12 @@ class NSMBWworld(World):
 
     def pre_fill(self) -> None:
         """Optional method that is supposed to be used for special fill stages. This is run *after* plando."""
-        if  self.multiworld.players == 1:
-            return
-        if (self.options.percentage_filler_forced_local.value == 0):
-            return
+        items.fill_filler(self,self.multiworld.itempool)
 
-        # code inspired by tunic implementation
-        sphere_one_locs = self.multiworld.get_reachable_locations(CollectionState(self.multiworld), self.player)
-        local_locations : List[NSMBWLocation]= [loc for loc in self.multiworld.get_unfilled_locations(self.player)
-                            if loc not in sphere_one_locs
-                            and loc.name not in self.options.priority_locations.value]
 
-        local_fillers : List[NSMBWItem]  = [itm for itm in self.multiworld.itempool
-                                            if (itm.name in (FILLER + TRAPS))
-                                            and type(itm) == NSMBWItem]
-
-        amount = min(len(local_fillers), len(local_fillers))
-        self.random.shuffle(local_fillers)
-        self.random.shuffle(local_locations)
-        for _ in range(round(amount * self.options.percentage_filler_forced_local / 100)):
-            if (len(local_locations) > 1) and (len(local_fillers) > 1):
-                _item = local_fillers.pop()
-                _location = local_locations.pop()
-
-                _location.place_locked_item(_item)
+    @classmethod
+    def stage_pre_fill(cls, multiworld: MultiWorld) -> None:
+        """Like pre_fill but called once for all instances"""
 
 
     def fill_hook(self,
