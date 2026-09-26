@@ -1,3 +1,4 @@
+import copy
 import math
 import shutil
 from collections import defaultdict
@@ -142,7 +143,6 @@ class NSMBWContext(SuperContext):
             super().__init__(server_address, password)
         self.game_interface = NSMBWInterface(logger, self.log_color)
         self.locations_handled = []
-        self.command_processor.ctx = self
 
         self.completed_levels = []
         self.previous_inventory = list([99 for _ in range(POWERUP_COUNT+1+1)])
@@ -242,6 +242,9 @@ class NSMBWContext(SuperContext):
 
                 self.game_interface.slot_data = self.slot_data
                 self.game_interface.auto_clear_cache = not self.slot_data["use_riivolution"]
+
+                commandprocessor = self.command_processor(self)
+                commandprocessor._cmd_versions()
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
@@ -1673,11 +1676,33 @@ class NSMBWContext(SuperContext):
                 self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes,1))
 
     def log_color(self, text: str, color: str = "red") -> None:
-        text_msg: JSONMessagePart = {"type": "color",
+        text_msg : JSONMessagePart= {"type": "color",
                                  "text":text,
                                  "color": color}
-        print(text)
-        self.ui.print_json([text_msg])
+
+
+        color_map : Dict[str, str]  = {
+            "black" : "\x1b[30m",
+            "red" : "\x1b[31m",
+            "green" : "\x1b[32m",
+            "yellow" : "\x1b[33m",
+            "blue" : "\x1b[34m",
+            "magenta" : "\x1b[35m",
+            "cyan" : "\x1b[36m",
+            "white" : "\x1b[97m",
+        }
+
+        print(color_map[color] + text + '\033[0m')
+
+        if self.ui:
+            #self.ui.print_json([text_msg])
+            # couldnot get this to work
+             self.on_print_json({
+                "data" : [text_msg],
+            })
+        else:
+            logger.info(text)
+
 
     def get_dolphin_run_command(self, _patcher, save_state_file = "") -> List[str]:
         if Utils.is_windows:

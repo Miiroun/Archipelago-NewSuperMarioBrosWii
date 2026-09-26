@@ -166,13 +166,14 @@ class MemoryAddresses(object):
         # +0x118=[32-bit BE] Current Red Coins for some stages. 1-5 (second set) 4-1, 4-3, 4-5, 5-3, 5-Castle
 
         custom_base = 0x80BBB000
-        self.custom_clear_cache = custom_base
-        self.custom_roulette     = custom_base + 4
-        self.custom_coinblock_x = custom_base + 8
-        self.custom_coinblock_y = custom_base + 12
-        self.custom_coinblock_z = custom_base + 16
-        self.custom_brickblock_x = custom_base + 20
-        self.custom_brickblock_y = custom_base + 24
+        self.custom_clear_cache     = custom_base  + 4 * 0
+        self.custom_roulette        = custom_base  + 4 * 1
+        self.custom_coinblock_x     = custom_base  + 4 * 2
+        self.custom_coinblock_y     = custom_base  + 4 * 3
+        self.custom_coinblock_z     = custom_base  + 4 * 4
+        self.custom_brickblock_x    = custom_base  + 4 * 5
+        self.custom_brickblock_y    = custom_base  + 4 * 6
+        self.custom_use_riivolution = custom_base  + 4 * 7
 
 
         # movement etc patches

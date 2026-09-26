@@ -518,16 +518,17 @@ class UseRiivolution(Toggle):
      - Use other riivolution based options.
      - Not having the client autoload save states.
      - See custom randomizer graphics (log and starcoin model)
-
+     WARNING : strongly recommended to have enabled, ONLY change if this causes issues
     """
     display_name = "Use Riivolution"
     default = True
+    visibility = Visibility.complex_ui
 
 
 class LevelShuffleRiivolution(Toggle):
     """
     Shuffles the level order.
-    Requires use_riivolution to be enabled.
+    Requires use_riivolution to be enabled. (default)
     """
     display_name = "Level Shuffle Riivolution"
     default = False
@@ -537,7 +538,7 @@ class MusicShuffleRiivolution(Toggle):
     """
     WARNING: Causes caches on some seeds, may need manual removal.
     Shuffles the background music and sound effects.
-    Requires use_riivolution to be enabled.
+    Requires use_riivolution to be enabled. (default)
     """
     display_name = "Music Shuffle Riivolution"
     default = False
@@ -546,7 +547,7 @@ class MusicShuffleRiivolution(Toggle):
 class BackgroundShuffleRiivolution(Toggle):
     """
     Shuffles the level backgrounds.
-    Requires use_riivolution to be enabled.
+    Requires use_riivolution to be enabled. (default)
     """
     visibility = Visibility.none
 
@@ -561,7 +562,7 @@ class PalletShuffleRiivolution(Toggle):
 class TileSheetShuffleRiivolution(Toggle):
     """
     Shuffles the Pa0_jyotyu textures, changes the looks of ?-blocks and brick blocks
-    Requires use_riivolution to be enabled.
+    Requires use_riivolution to be enabled. (default)
     """
     #visibility = Visibility.none
 

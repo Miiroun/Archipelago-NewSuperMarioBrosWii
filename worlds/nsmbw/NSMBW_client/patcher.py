@@ -307,15 +307,16 @@ class Patcher:
                     "--output", str(path_to),   #f"\"{str(path_to)}\"",
                     ],
                     env=Utils.env_cleared_lib_path(),
-                    stderr=subprocess.STDOUT,
+                    #stderr=subprocess.STDOUT,
                     capture_output=True,
                     text=True,
                 )
-                logger.info(result.stdout)
+
                 if result.returncode == 0:
                     return
                 else:
                     logger.info(f"Exited with return code {result.returncode}")
+                    logger.info(f"Error from dolphin_tool: {result.stderr}")
             logger.info(f"Problem with extracting game files, fall back to manually locating dolphin-tool")
 
 
@@ -330,17 +331,17 @@ class Patcher:
                 "--output", str(path_to),
                 ],
                 env=Utils.env_cleared_lib_path(),
-                stderr=subprocess.STDOUT,
+                #stderr=subprocess.STDOUT,
                 capture_output=True,
                 text=True,
             )
-            logger.info(result.stdout)
             if result.returncode == 0:
                 print(f"Game extract successful")
                 return
             else:
                 logger.info(f"Exited with return code {result.returncode}")
-                logger.info(f"result {result.stdout}")
+                logger.info(f"Error {result.stderr}")
+                #printing stderr on success prints to much text for kivy to handle
                 raise Exception(f"Dolphin-tool game extraction failed")
         else:
             print(f"Game extract already exists")
@@ -518,6 +519,9 @@ class Patcher:
         ET.SubElement(_patch, "memory", {"offset": "0x800E4CF0", "value": "38600000", "original": "38632E2C"})
         ET.SubElement(_patch, "memory", {"offset": "0x800E4E80", "value": "38600000", "original": "3863364C"})
         ET.SubElement(_patch, "memory", {"offset": "0x800E54B0", "value": "38600000", "original": "38637AAC"})
+
+        # custom for archipelago
+        ET.SubElement(_patch, "memory", {"offset": "0x80BBB01C", "value": "FFFFFFFF"})
 
 
         #print("-------XML-----------------")

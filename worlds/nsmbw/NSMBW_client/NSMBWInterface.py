@@ -146,6 +146,13 @@ class NSMBWInterface(object):
                 self.log_color(f"Connected to the wrong game ({game_id}, rev {self.game_rev}), please connect to right game version","red")
                 return False
 
+            if self.slot_data["use_riivolution"]:
+                if self.get_using_riivolution_patch():
+                    print(f"Riivolution patch detected")
+                else:
+                    return False
+            else:
+                self.log_color("Riivolution patch is not enabled in your option yaml, consider enabling this for a smother experience", "blue")
 
             if self.current_game:
                 if not self.is_in_worldmap():
@@ -828,6 +835,11 @@ class NSMBWInterface(object):
             self.dolphin_client.write_address(address_x, val_00000000)
             self.dolphin_client.write_address(address_y, val_00000000)
         return val_x, val_y, val_z
+
+    def get_using_riivolution_patch(self) -> bool:
+        address = self.memory_addresses.custom_use_riivolution
+        val = self.dolphin_client.read_address(address, 4)
+        return val == val_ffffffff
 
 
     def set_worldstats(self,world_num : int, status : bytes):

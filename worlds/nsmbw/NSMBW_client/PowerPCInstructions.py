@@ -40,6 +40,6 @@ val_fff0   : bytes = b'\xff\xf0'
 val_ffff   : bytes = b'\xff\xff'
 
 val_00000000   : bytes = val_0000 + val_0000
-
+val_ffffffff   : bytes = val_ffff + val_ffff
 
 
