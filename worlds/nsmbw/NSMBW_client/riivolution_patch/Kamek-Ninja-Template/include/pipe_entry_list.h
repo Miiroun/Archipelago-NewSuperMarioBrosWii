@@ -1,3 +1,5 @@
+#include "types.h"
+
 #define ENT(_WLD, _LVL, _AREA, _ENT)                                           \
     (((_WLD - 1) << 24) | ((_LVL - 1) << 16) | ((_AREA - 1) << 8) | (_ENT))
 

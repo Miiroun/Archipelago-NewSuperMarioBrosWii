@@ -427,13 +427,24 @@ shared_flags = $
   -i include/lib/MSL $
   -i include/lib/MSL/internal $
   -i include/lib/nw4r $
+  -i include/lib/revolution $
+  -i include/lib/revolution/DVD $
   -i include/lib/revolution/BTE/include $
   -i include/lib/revolution/BTE/stack/include $
   -i include/lib/revolution/BTE/stack/btm $
   -i include/lib/revolution/BTE/bta/include $
   -i include/lib/revolution/BTE/bta/sys $
   -i include/lib/revolution/BTE/gki/common $
-  -i include/lib/revolution/BTE/gki/platform
+  -i include/lib/revolution/BTE/gki/platform $
+  -i include/constants $
+  -i include/game $
+  -i include/game/bases $
+  -i include/game/cLib $
+  -i include/game/framework $
+  -i include/game/mLib $
+  -i include/game/sLib $
+  -i include/game/snd $
+  -i include/runtime
 
 cflags = $
   $shared_flags $
