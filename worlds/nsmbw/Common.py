@@ -103,7 +103,7 @@ class ITEM:
         MovementLockTrap    = "Movement lock trap"
         SlowTrap            = "Slow Trap"
         GravityTrap         = "Gravity Trap"
-        ParanoiaTrap = "Paranoia Trap"
+        ParanoiaTrap        = "Paranoia Trap"
 
     class FILLER(StrEnum):
         FillInventory   = "Fill Inventory"

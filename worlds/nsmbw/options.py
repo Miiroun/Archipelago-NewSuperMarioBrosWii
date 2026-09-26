@@ -567,6 +567,19 @@ class TileSheetShuffleRiivolution(Toggle):
     #visibility = Visibility.none
 
 
+class EntranceRandomizer(Choice):
+    """
+    Where to enable pipe (and door) randomizer
+    currently no logic
+    Requires riivolution
+    """
+    option_off = 0
+    option_on = 3
+    
+    default = option_off
+    visibility = Visibility.none
+
+
 class ImportantEarlyItems(Toggle):
     """
     Marks some important items as early, resulting in a more fun playthrough.
@@ -639,6 +652,7 @@ class NSMBWOptions(PerGameCommonOptions):
     background_shuffle_riivolution : BackgroundShuffleRiivolution
     pallet_shuffle_riivolution : PalletShuffleRiivolution
     tile_sheet_shuffle_riivolution : TileSheetShuffleRiivolution
+    entrance_randomizer : EntranceRandomizer
 
     # default, needed to add
     start_inventory_from_pool : StartInventoryPool
@@ -711,6 +725,7 @@ option_groups = [
             BackgroundShuffleRiivolution,
             PalletShuffleRiivolution,
             TileSheetShuffleRiivolution,
+            EntranceRandomizer,
         ],
     ),
     OptionGroup(

@@ -144,6 +144,13 @@ What is different from vanilla?
 - Peach's castle hint movie shop requires starcoin items
 - You need world items to unlock both half of worlds
 
+What does the different names mean? <br>
+&emsp; 1-T is the Tower in world 1, 1-🏯
+&emsp; 2-C is the Castle in world 2, 2-🏰
+&emsp; 3-G is the Ghost house in world 3, 3-🏚️
+&emsp; 4-A is the Airship in world 4, 4-🚢, 4-⚓
+&emsp; C-1 is the fist coin level, Coin-1, 🪙-1
+
 Tracker? <br>
 &emsp; A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
 

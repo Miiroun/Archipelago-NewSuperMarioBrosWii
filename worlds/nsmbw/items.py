@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from BaseClasses import Item, ItemClassification, CollectionState
 from .Common import *
-from .options import RandomizePowerups, ShortcutSanity
+from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -140,7 +140,13 @@ extra_start_items : Dict[int,set]= {
 
 def precollect_items(world: NSMBWworld) -> None:
     excluded_items : set = set()
-    excluded_items.add(name_world_unlock(world.options.starting_world.value))
+    if world.options.entrance_randomizer.value == EntranceRandomizer.option_on:
+        for i in range(1, 9 + 1):
+            excluded_items.add(name_world_unlock(i))
+            if i != 9:
+                excluded_items.add(name_world_unlock(i))
+    else:
+        excluded_items.add(name_world_unlock(world.options.starting_world.value))
 
     for _item in sorted(list(excluded_items)):
         world.push_precollected(world.create_item(_item))
@@ -166,11 +172,13 @@ def create_all_items(world: NSMBWworld) -> None:
     if world.options.starcoin_sanity.value == True:
         for _ in range(77*3):
             itempool.append(world.create_item(ITEM.StarCoin))
-    for i in range(1, 9+1):
-        if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
-            itempool.append(world.create_item(name_world_unlock(i)))
-        if i != 9:
-            itempool.append(world.create_item(name_world_unlock(i)))
+
+    if world.options.entrance_randomizer.value == EntranceRandomizer.option_off:
+        for i in range(1, 9+1):
+            if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
+                itempool.append(world.create_item(name_world_unlock(i)))
+            if i != 9:
+                itempool.append(world.create_item(name_world_unlock(i)))
 
 
     if world.options.randomize_abilites.value:

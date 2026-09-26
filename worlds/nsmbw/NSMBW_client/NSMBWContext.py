@@ -443,7 +443,7 @@ class NSMBWContext(SuperContext):
                     self.update_memory_to_server_on_load()
             else:
                 self.log_color(f"Dolphin connection faild", "red")
-                await asyncio.sleep(15)
+                await asyncio.sleep(10)
 
 
         elif self.connection_state == ConnectionState.IN_MENU:
@@ -1344,6 +1344,9 @@ class NSMBWContext(SuperContext):
                 case ITEM.TRAPS.GravityTrap:
                     self.modifiers.append(Modifier(ITEM.TRAPS.GravityTrap, 15))
 
+                case ITEM.TRAPS.ParanoiaTrap:
+                    logger.info(f"Paranoia trap: Modified something ...")
+
                 case _:
                     logger.info(f"Trap {trap} is not implemented")
                     raise Exception(f"Trap {trap} is not implemented")
@@ -1692,7 +1695,7 @@ class NSMBWContext(SuperContext):
             "white" : "\x1b[97m",
         }
 
-        print(color_map[color] + text + '\033[0m')
+        #print(color_map[color] + text + '\033[0m')
 
         if self.ui:
             #self.ui.print_json([text_msg])
@@ -1803,27 +1806,33 @@ class NSMBWContext(SuperContext):
             config = ConfigParser()
             config.read(Dolphin)
 
-            HotkeysRequireFocus = config.getboolean("General", "HotkeysRequireFocus")
-            if HotkeysRequireFocus != False:
-                self.log_color("Please turn of HotkeysRequireFocus in dolphin", "red")
+            if self.slot_data["use_riivolution"] == False:
+                HotkeysRequireFocus = config.getboolean("General", "HotkeysRequireFocus")
+                if HotkeysRequireFocus != False:
+                    self.log_color("Please turn of HotkeysRequireFocus in dolphin", "red")
 
 
-            Hotkeys = settings_path / "Hotkeys.ini"
-            config = ConfigParser()
-            config.read(Hotkeys)
-            load1 = config.get("Hotkeys", f"Load State/Load State Slot {1}")
-            load2 = config.get("Hotkeys", f"Load State/Load State Slot {1}")
-            save1 = config.get("Hotkeys", f"Save State/Save State Slot {1}")
-            save2 = config.get("Hotkeys", f"Save State/Save State Slot {1}")
+                Hotkeys = settings_path / "Hotkeys.ini"
+                config = ConfigParser()
+                config.read(Hotkeys)
+                load1 = config.get("Hotkeys", f"Load State/Load State Slot {1}")
+                load2 = config.get("Hotkeys", f"Load State/Load State Slot {1}")
+                save1 = config.get("Hotkeys", f"Save State/Save State Slot {1}")
+                save2 = config.get("Hotkeys", f"Save State/Save State Slot {1}")
 
-            if load1 != f"F{1}" or load2 != f"F{1}" or save1 != f"@(Shift+F{1})" or save2 != f"@(Shift+F{1})":
-                self.log_color("Please turn your hotkeys for loading/saving states in dolphin to default", "red")
+                if load1 != f"F{1}" or load2 != f"F{1}" or save1 != f"@(Shift+F{1})" or save2 != f"@(Shift+F{1})":
+                    self.log_color("Please turn your hotkeys for loading/saving states in dolphin to default", "red")
+
+            RAMOverrideEnable = config.getboolean("Core", "RAMOverrideEnable")
+            if RAMOverrideEnable == True:
+                self.log_color(f"Dissable RAMOverrideEnable (mem1 and mem2) in your advanced dolphin settings for the client too hook properly")
 
             #with open(settings_path, 'w') as configfile:
             #    config.write(configfile)
 
         except Exception as e:
-            logger.info(e)
+            logger.info(traceback.format_exc())
+            self.log_color(e)
 
     async def send_random_hint(self):
         loc_id = {self.random.choice(list(self.missing_locations- self.locations_info.keys() - self.locations_scouted - self.checked_locations))}

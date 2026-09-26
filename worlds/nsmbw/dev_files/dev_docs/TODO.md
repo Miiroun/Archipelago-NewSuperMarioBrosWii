@@ -19,12 +19,17 @@
 - Spend time on ap-map pack : download images from wiki with python
 - Option to exlude specific worlds
 - MGroundType
-- Paranoia trap : something changed
 - I can probably make it an host.yaml option to specify the temp directory, so others who encounter this can change it as a workaround.
-- Try generation with 5 yaml
 - do archipelago nameing of blocks
 - At the start of distribute_items_restrictive, there are items in the multiworld itempool that are already placed on locations:
-- 
+- fix header licence
+- Have nsmbw version be part of file name?
+- Breaking changes
+  - option rename
+- Ap: write my slot data and seed to meme with riivolution: verify in client
+- Castles req second level half
+- Mention Mac issue in setup
+- color / flip scrren : as trap?
 
 
 ## Playtest
@@ -40,6 +45,7 @@
 - fail to reading region -> rm_tmp
 - /Where_is /what_is
 - 7-6 unlock
+- Print big red message if dolphin valuation finds incorrect settings
 
 
 ## Bugs to fix

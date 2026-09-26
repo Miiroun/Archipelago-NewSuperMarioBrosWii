@@ -467,7 +467,20 @@ def get_block_id(world_num : int, level_num : int) -> List[Block]:
             Block("Before pipes",  0x450a, 0xc3e8, 0x43f2),
 
             Block("Multicoin brick before checkpoint", 0x4529, 0xc3f8, 0xc2c8),
-    ],
+
+            Block("Propeller After checkpoint", 0x4557, 0xc402, 0xc2c8),
+            Block("Propeller under orange walk", 0x458c, 0xc3f8, 0xc2c8),
+
+            Block("Multicoin 1 under orange walk", 0x4592, 0xc40c, 0xc2c8),
+            Block("Multicoin 2 under orange walk", 0x4599, 0xc40c, 0xc2c8),
+
+            Block("1up above pipe", 0x45a9, 0xc400, 0xc2c8),
+
+            Block("Secret 1up 1", 0x4558, 0xc400, 0xc2c8),
+            Block("Secret 1up 2", 0x45b9, 0xc410, 0xc2c8), #why are they the same, do we need the extra precision?
+            Block("Secret 1up 3", 0x45b9, 0xc410, 0xc2c8),
+
+        ],
 
         "1-2" : [
             Block("", 0,0,0),

@@ -150,6 +150,7 @@ class NSMBWInterface(object):
                 if self.get_using_riivolution_patch():
                     print(f"Riivolution patch detected")
                 else:
+                    self.log_color(f"Riivolution patch not detected, make sure you auto launch dolphin from the client, do NOT open it manually.")
                     return False
             else:
                 self.log_color("Riivolution patch is not enabled in your option yaml, consider enabling this for a smother experience", "blue")

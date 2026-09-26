@@ -12,6 +12,7 @@ from random import Random
 
 import shutil
 
+from worlds.nsmbw.options import EntranceRandomizer
 from ..Common import *
 
 import bsdiff4
@@ -520,8 +521,14 @@ class Patcher:
         ET.SubElement(_patch, "memory", {"offset": "0x800E4E80", "value": "38600000", "original": "3863364C"})
         ET.SubElement(_patch, "memory", {"offset": "0x800E54B0", "value": "38600000", "original": "38637AAC"})
 
-        # custom for archipelago
+
         ET.SubElement(_patch, "memory", {"offset": "0x80BBB01C", "value": "FFFFFFFF"})
+
+        #pipe randomizer
+        if self.slot_data["entrance_randomizer"] == EntranceRandomizer.option_on:
+            ET.SubElement(_patch, "memory", {"offset": "0x80004028", "value": "00000003"})
+        else:
+            ET.SubElement(_patch, "memory", {"offset": "0x80004028", "value": "00000004"})
 
 
         #print("-------XML-----------------")
