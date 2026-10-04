@@ -263,7 +263,9 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
     if world.options.level_shuffle_riivolution.value == True:
-        not_shuffled = deepcopy(world.shuffled_level_order)
+        not_shuffled_locations = deepcopy(world.shuffled_level_order)
+        not_shuffled_levels    = deepcopy(world.shuffled_level_order)
+
 
         secret_exits : List[Tuple[int,int]] = list()
         for secret_exit_ in SECRET_EXIT:
@@ -297,6 +299,18 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
 
         shuffle_specific_list : List[Tuple[int,int]] = add_to_list(secret_exits) + add_to_list(castle_group) + add_to_list(tower_secret_group) + add_to_list(tower_group) + add_to_list(airship_group)
 
+        for _from_str in sorted(list(world.options.level_shuffle_plando.value.keys())):
+            _to = level_name_to_pos(*base_bijection(world.options.level_shuffle_plando.value[_from_str]))
+            _from = level_name_to_pos(*base_bijection(_from_str))
+            world.shuffled_level_order[_from] = _to
+
+            assert _from in not_shuffled_levels, f"_from: {_from}"
+            not_shuffled_levels.remove(_from)
+
+            assert _to in not_shuffled_locations, f"_from: {_to}"
+            not_shuffled_locations.remove(_to)
+
+
         for item in dont_shuffle:
             shuffle_specific_list += add_to_list([item])
 
@@ -304,17 +318,27 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             world.shuffled_level_order[_from] = _to
 
             # does not matter which we remove, both should be removed since its an bijection
-            assert _from in not_shuffled, f"_from: {_from}"
-            not_shuffled.remove(_from)
+            assert _from in not_shuffled_levels, f"_from: {_from}"
+            not_shuffled_levels.remove(_from)
 
-        not_shuffled_shuffle = deepcopy(not_shuffled)
-        world.random.shuffle(not_shuffled_shuffle)
+            assert _to in not_shuffled_locations, f"_from: {_to}"
+            not_shuffled_locations.remove(_to)
 
-        for pos1, pos2 in zip(not_shuffled,not_shuffled_shuffle):
-            world.shuffled_level_order[pos1] = pos2
+
+        world.random.shuffle(not_shuffled_locations)
+        world.random.shuffle(not_shuffled_levels)
+
+        for _from, _to in zip(not_shuffled_levels, not_shuffled_locations):
+            world.shuffled_level_order[_from] = _to
+
+            #assert _from in not_shuffled_levels, f"_from: {_from}"
+            #not_shuffled_levels.remove(_from)
+
+            #assert _to in not_shuffled_locations, f"_from: {_to}"
+            #not_shuffled_locations.remove(_to)
 
         assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
-        assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder {world.shuffled_level_order}, counter {Counter(world.shuffled_level_order)} must have unique elements"
+        assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder counter {Counter(world.shuffled_level_order).most_common(5)} must have unique elements"
         assert pos_to_level_name(level_name_to_pos(2,8)) == (2,8), "test rando still works"
         assert Counter(world.shuffled_level_order)[0] == 1, "no duplicates"
 

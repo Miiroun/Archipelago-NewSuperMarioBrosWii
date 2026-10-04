@@ -525,7 +525,7 @@ class UseRiivolution(Toggle):
     visibility = Visibility.complex_ui
 
 
-class LevelShuffleRiivolution(Choice):
+class LevelShuffle(Choice):
     """
     Shuffles the level order.
     Requires use_riivolution to be enabled. (default)
@@ -538,8 +538,25 @@ class LevelShuffleRiivolution(Choice):
 
     default = option_off
 
+class LevelShufflePlando(OptionDict):
+    """
+    Allows you to plando level shuffle
+    syntax:
+        1-1 : 1-2
+        C-1 : 9-7
+    This will replace 1-1 with 1-2 and C-1 with 9-7, effectively removing it from the randomizer
+    Be mindful, some levels cannot be moved and some require specific conditions.
+    E.g. 3-4 cannot replace 3-5 due to inability to reach button,
+    Levels with secret exits must replace each-other,
+    see a full lists of limitations in the docs.
+    """
+    display_name = "Level Shuffle Plando"
 
-class MusicShuffleRiivolution(Toggle):
+    value : Dict[str, str]
+    default  =  {}
+
+
+class MusicShuffle(Toggle):
     """
     WARNING: Causes caches on some seeds, may need manual removal.
     Shuffles the background music and sound effects.
@@ -549,7 +566,7 @@ class MusicShuffleRiivolution(Toggle):
     default = False
 
 
-class BackgroundShuffleRiivolution(Toggle):
+class BackgroundShuffle(Toggle):
     """
     Shuffles the level backgrounds.
     Requires use_riivolution to be enabled. (default)
@@ -557,14 +574,14 @@ class BackgroundShuffleRiivolution(Toggle):
     visibility = Visibility.none
 
 
-class PalletShuffleRiivolution(Toggle):
+class PalletShuffle(Toggle):
     """
 
     """
     visibility = Visibility.none
 
 
-class TileSheetShuffleRiivolution(Toggle):
+class TileSheetShuffle(Toggle):
     """
     Shuffles the Pa0_jyotyu textures, changes the looks of ?-blocks and brick blocks
     Requires use_riivolution to be enabled. (default)
@@ -683,11 +700,15 @@ class NSMBWOptions(PerGameCommonOptions):
 
     enemy_shuffle : EnemyShuffle
     use_riivolution : UseRiivolution
-    level_shuffle_riivolution : LevelShuffleRiivolution
-    music_shuffle_riivolution : MusicShuffleRiivolution
-    background_shuffle_riivolution : BackgroundShuffleRiivolution
-    pallet_shuffle_riivolution : PalletShuffleRiivolution
-    tile_sheet_shuffle_riivolution : TileSheetShuffleRiivolution
+    music_shuffle_riivolution : MusicShuffle
+    background_shuffle_riivolution : BackgroundShuffle
+    pallet_shuffle_riivolution : PalletShuffle
+    tile_sheet_shuffle_riivolution : TileSheetShuffle
+
+    level_shuffle_riivolution : LevelShuffle
+    level_shuffle_plando : LevelShufflePlando
+
+
     entrance_randomizer : EntranceRandomizer
 
     # default, needed to add
@@ -756,12 +777,18 @@ option_groups = [
         "Riivolution",
         [
             UseRiivolution,
-            LevelShuffleRiivolution,
-            MusicShuffleRiivolution,
-            BackgroundShuffleRiivolution,
-            PalletShuffleRiivolution,
-            TileSheetShuffleRiivolution,
+            MusicShuffle,
+            BackgroundShuffle,
+            PalletShuffle,
+            TileSheetShuffle,
             EntranceRandomizer,
+        ],
+    ),
+    OptionGroup(
+        "LevelShuffle",
+        [
+            LevelShuffle,
+            LevelShufflePlando,
         ],
     ),
     OptionGroup(

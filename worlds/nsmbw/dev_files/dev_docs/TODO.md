@@ -38,7 +38,6 @@
 - clarify dolphin folder when selecting : not rom folder, should include dolphin.exe
 - what about shuffling the enemy ambush stages
 - Level shuffle options
-- Go to next world after beating airship
 - I've looked at the rest of the castles in the editor and if I am correct in what I think Is happening 1-C, 3-C, and 6-C should all be fine and the only ones that won't work are 4-C and 5-C (obviously 2-C & 8-C arent randoed for other reasons)
 - Test remaining 7-C rando
 - uhhh wtf i just entered 7-C from the back entrance and i just come out of this pipe in 3-C?
@@ -74,6 +73,7 @@
 - /Where_is /what_is
 - 7-6 unlock
 - Print big red message if dolphin valuation finds incorrect settings
+- level shuffle plando
 
 
 ## Bugs to fix
@@ -91,6 +91,7 @@
   - Should it be unlocked without 2 world 7 unlocks
   - I have some problems with the current secret exit systems: figure it out and write unit tests
 - Inventory star broken
+- Go to next world after beating airship
 
 
 0x80429f30 	

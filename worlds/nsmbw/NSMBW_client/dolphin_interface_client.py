@@ -54,7 +54,7 @@ class DolphinClient:
 Dolphin Connection error, following these debug tips, in this order:
       1) New Super Mario Bros Wii is running in the dolphin emulator.
       2) You dont have multiple instances of dolphin open (except your ONE game library).
-      3) If you are on macos you will need re-sign dolphin. The procedure is described here: 
+      3) If you are on macOS you will need re-sign dolphin. The procedure is described here: https://github.com/aldelaro5/dolphin-memory-engine#macos-code-signing
       4) Assert Memory Override (MEM1 and MEM2) is disabled. Dolphin -> Settings -> Advanced -> Emulated Memory Size Override.
       5) Restart your PC.
       6) Assert your dolphin emulator is recent (newer than 2026.1)
