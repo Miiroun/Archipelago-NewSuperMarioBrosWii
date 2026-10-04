@@ -14,8 +14,6 @@
 - Decide on way to store brick rules
 - Look into copying pipe rando
 - Format list of all blocks
-  - create command to extract all bricks
-  - extract all in 1-1
 - Spend time on ap-map pack : download images from wiki with python
 - Option to exlude specific worlds
 - MGroundType
@@ -24,12 +22,42 @@
 - At the start of distribute_items_restrictive, there are items in the multiworld itempool that are already placed on locations:
 - fix header licence
 - Have nsmbw version be part of file name?
-- Breaking changes
-  - option rename
 - Ap: write my slot data and seed to meme with riivolution: verify in client
 - Castles req second level half
 - Mention Mac issue in setup
 - color / flip scrren : as trap?
+- change display name of riivolution options?
+- make level completion an impactful setting?
+- other use fuzzer hook
+- look into sunshine sort : https://github.com/Joshark/archipelago-sms/blob/20cc30b58613ee28a7fe3dd4143f96c33fdadf72/worlds/sms/__init__.py#L245
+- only give unlocked powerups
+- improve description of RandomizePowerups
+- After i beat the mushroom house it just freezes me there
+- I think it could be a good idea to have a list somewhere telling which stages aren't rando'd
+- setup guide: do not have dolphin open
+- clarify dolphin folder when selecting : not rom folder, should include dolphin.exe
+- what about shuffling the enemy ambush stages
+- Level shuffle options
+- Go to next world after beating airship
+- I've looked at the rest of the castles in the editor and if I am correct in what I think Is happening 1-C, 3-C, and 6-C should all be fine and the only ones that won't work are 4-C and 5-C (obviously 2-C & 8-C arent randoed for other reasons)
+- Test remaining 7-C rando
+- uhhh wtf i just entered 7-C from the back entrance and i just come out of this pipe in 3-C?
+- Pop-up in game after beating 8-A
+- also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
+- Advertise rm_tmp
+- Auto run /rm_tmp if some files been removed from temp folder
+- Stricter error for having dolphin open when connect
+- Try included dolphin version in /versions
+- Docs: progressive world
+- Descriptive folder browsing
+- Is enemies unlocked correct
+- Docs: level shuffle limitation, trap explain
+- option exclude some levels
+- I think just a setting that can remove up to 5 levels is fine
+- Allow manual placements of levels
+- Have 2 lists during enterence rando creation: 1 for placement pool and 1 for level pool, so can seperate them
+- Right. I should probably make a list of levels which we allows to be randoed to 7-C instead of a disallowed list like I implement.
+- fall damage trap
 
 
 ## Playtest
@@ -62,6 +90,7 @@
 - 7-6 secret exit does not account for world unlock?
   - Should it be unlocked without 2 world 7 unlocks
   - I have some problems with the current secret exit systems: figure it out and write unit tests
+- Inventory star broken
 
 
 0x80429f30 	
@@ -167,10 +196,19 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Level clear = unlockable item??
   - each level would need to be unlocked separately  
 - music shuffle feels weird and unintuitive : not looping etc, some jingles still included?
-- Make yoshi level element : breaking change
 - Problem with name being static for level rando : cannot shuffle names ? !
 - option to turn off anoying block sanity level (5-G, 7-3, 8-1, C-1)
 - make some / most of block sanity excluded
+
+
+
+## Breaking changes
+- remove the 7-6 and 8-7 normal exits
+- i think the both health item should be changed to something like decrease boss health
+- Make yoshi level element
+- option rename
+  - mostly riivolution but others too
+
 
 
 ## Logic
@@ -256,6 +294,14 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Hint movies does not work on other save files?
 - Add support for other savefile
 - transition movments to riivolution
+- "progresive world"
+  - this is kind of a completely unrelated thought, but i was thinking what if there was a version of the ap where instead of unlocking worlds randomly you always unlocked them in order? idk how interesting it would be, but the idea essentially is that you would have to beat every castle / airship stage and beat each world type of thing
+  - yeah, like youd always start in world 1, then go to 2 and maybe you also have to  beat the castle before moving on
+  - i think the idea is alot more interesting in the context of level rando
+  - "difficult scale level rando"
+- control level rando:
+  - keep levels in same world
+  - scale by difficulty
 
 
 ## ER
@@ -300,6 +346,7 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Collect immediately sometimes broken, restart fixes it.
 - Peach castle is weird when hint movies appear / not
 - Slot.lock does not work
+- Hint movies and level shuffle cannot coexist
 
 
 Summery poll
@@ -325,6 +372,7 @@ Summery poll
   - "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), red coins - ring, stopmping on enemeies
   - "pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)
   - spring
+  - item that removes the world map vines in world 5
 - TRAPS
   - Sandstorm
   - Darkness
