@@ -425,7 +425,11 @@ void GoToNewStage(u32 index, dNext_c* next)
         break;
 
     case RAND_BASE_NEVER:
-        entry = index;
+        if (index % 2 == 0) {
+            entry = index+1;
+        } else {
+            entry = index-1;
+        }
         break;
     }
 

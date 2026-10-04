@@ -444,11 +444,15 @@ shared_flags = $
   -i include/game/mLib $
   -i include/game/sLib $
   -i include/game/snd $
-  -i include/runtime
+  -i include/runtime $
+  -i include/mkwcats $
+  -i include/mkwcats/d_system $
+  -i include/mkwcats/framework
+
 
 cflags = $
   $shared_flags $
-  -Cpp_exceptions off $
+  -Cpp_exceptions on $
   -enum int $
   -O4,s $
   -use_lmw_stmw on $
@@ -456,6 +460,13 @@ cflags = $
   -rostr $
   -sdata 0 $
   -sdata2 0 $
+  -Os $
+  -nostdlib $
+  -DWII=1 $
+  -DNSMBW=1 $
+  -DRVL_WBC=1 $
+  -DHAS_EGG=1 $
+  -DCLANGD=1  $
   -RTTI off{(dumb_constant + ' '.join(config.extra_cflags)) if config.extra_cflags else ''}
 
 asflags = $shared_flags
