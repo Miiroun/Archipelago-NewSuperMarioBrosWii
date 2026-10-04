@@ -1367,8 +1367,8 @@ class NSMBWContext(SuperContext):
                             self.previous_inventory[i] = bytes_to_int(self.game_interface.get_inventory_items(i))
 
                 case ITEM.FILLER.OneUps:
-                    #if self.game_interface.get_world_level_num_in_level() == (0,0):
-                    #    break
+                    if self.game_interface.get_world_level_num_in_level() == (0,0):
+                        continue
                     logger.info(f"1ups x{amount} was received ")
                     for player_num in range(PLAYER_COUNT):
                         self.game_interface.add_number(self.game_interface.memory_addresses.mario_lifecount[player_num]+3,amount, 99)
@@ -1389,7 +1389,16 @@ class NSMBWContext(SuperContext):
                     self.game_interface.add_number(self.game_interface.memory_addresses.coins,50, 99)
 
                 case ITEM.FILLER.PowerUp:
+                    if not self.game_interface.is_in_level():
+                        continue
+                    if sum(self.unlocked_powerups) == 0:
+                        self.filler.remove(item_name)
+                        self.filler.append(ITEM.FILLER.FillInventory)
+                        continue
                     for player_num in range(PLAYER_COUNT):
+
+                        unlocked_indexes = [i for i in range(2,POWERUP_COUNT)]
+
                         self.game_interface.set_powerupstate(int_to_bytes(self.random.randint(2,POWERUP_COUNT),1) , player_num) # from 2 since dont want to set to normal or super mario
 
                 case ITEM.FILLER.SuperSpeed:

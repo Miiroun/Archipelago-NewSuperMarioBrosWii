@@ -525,13 +525,18 @@ class UseRiivolution(Toggle):
     visibility = Visibility.complex_ui
 
 
-class LevelShuffleRiivolution(Toggle):
+class LevelShuffleRiivolution(Choice):
     """
     Shuffles the level order.
     Requires use_riivolution to be enabled. (default)
     """
-    display_name = "Level Shuffle Riivolution"
-    default = False
+    display_name = "Level Shuffle"
+    option_off = 0
+    option_on = 1
+    #option_same_world = 3
+    #option_weighted = 5
+
+    default = option_off
 
 
 class MusicShuffleRiivolution(Toggle):
@@ -540,7 +545,7 @@ class MusicShuffleRiivolution(Toggle):
     Shuffles the background music and sound effects.
     Requires use_riivolution to be enabled. (default)
     """
-    display_name = "Music Shuffle Riivolution"
+    display_name = "Music Shuffle"
     default = False
 
 
@@ -564,6 +569,9 @@ class TileSheetShuffleRiivolution(Toggle):
     Shuffles the Pa0_jyotyu textures, changes the looks of ?-blocks and brick blocks
     Requires use_riivolution to be enabled. (default)
     """
+    display_name = "Tile Sheet Shuffle"
+
+    default = False
     #visibility = Visibility.none
 
 
@@ -586,6 +594,32 @@ class ImportantEarlyItems(Toggle):
     """
     default = True
 
+
+class WorldsUnlocks(Choice):
+    """
+
+    """
+    display_name = "Worlds Unlocks"
+
+    option_separate = 1
+    #option_single =  3
+    #option_progressive = 5
+    #option_unlocked = 7
+
+    default = option_separate
+    visibility = Visibility.none
+
+class LevelsUnlocks(Choice):
+    """
+
+    """
+    display_name = "Levels Unlocks"
+    option_vanilla = 1
+    #option_all_unlocked = 3
+    #option_requires_item = 5
+
+    default = option_vanilla
+    visibility = Visibility.none
 
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
@@ -624,6 +658,8 @@ class NSMBWOptions(PerGameCommonOptions):
     starcoin_shop_multiplier : StarCoinShopMultiplier
     world_comp_priority : WorldCompPriority
     important_early_items : ImportantEarlyItems
+    worlds_unlocks : WorldsUnlocks
+    levels_unlocks : LevelsUnlocks
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems
@@ -744,6 +780,8 @@ option_groups = [
             SaveStateSlot,
             StarCoinShopMultiplier,
             ImportantEarlyItems,
+            WorldsUnlocks,
+            LevelsUnlocks,
         ],
     ),
 ]

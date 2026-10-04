@@ -66,9 +66,9 @@ class NSMBWSettings(settings.Group):
             super().validate(path)
 
             if not (Path(path) / "Dolphin.exe").exists():
-                ValueError("Dolphin.exe not in Dolphin path")
+                raise ValueError("Dolphin.exe not in Dolphin path")
             if not (Path(path) / "DolphinTool.exe").exists():
-                ValueError("DolphinTool.exe not in Dolphin path")
+                raise ValueError("DolphinTool.exe not in Dolphin path")
 
 
         def browse(self: T, **kwargs: Any) -> T | None:

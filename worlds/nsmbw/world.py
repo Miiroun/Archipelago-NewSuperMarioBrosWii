@@ -132,6 +132,12 @@ class NSMBWworld(World):
         """Special method that gets called as part of distribute_items_restrictive (main fill)."""
         pass
 
+    @classmethod
+    def stage_fill_hook(cls, multiworld: MultiWorld, progitempool: list[Item], usefulitempool: list[Item],
+        filleritempool: list[Item], fill_locations: list[Location]) -> None:
+        items.sort_items(cls, multiworld, progitempool)
+
+
     def post_fill(self) -> None:
         """
         Optional Method that is called after regular fill. Can be used to do adjustments before output generation.

@@ -281,6 +281,7 @@ class Patcher:
         path_to = self.temp_dir.parent
         path_to.mkdir(exist_ok=True, parents=True)
 
+
         if is_linux:
             dolphin_tool_cmd = None
             if is_flatpak_installed():
@@ -630,11 +631,13 @@ if __name__ == "__main__":
                    "background_shuffle_riivolution" : 0,
                    "pallet_shuffle_riivolution" : 0,
                    "tile_sheet_shuffle_riivolution" : 1,
+                   "entrance_randomizer" : 0,
                    }
     _patcher = Patcher(_name, _seed, _slot_data)
 
     if _patcher.output_path.exists():
         shutil.rmtree(_patcher.output_path)
+        rm_tmp()
 
     _patcher.random = Random()
 

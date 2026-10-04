@@ -193,9 +193,15 @@ carry &= carry & spin_jump # this is temp, only until we changed all carry to ei
 #other rules
 outside_powerups = [OptionFilter(LogicOutsidePowerups, True)] | GlitchedRule() # and with this rule
 # these can be somewhat used in the wrong category if makes rules more clean / easier to read, and with these rules
-logic_hard   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_hard)] | GlitchedRule()
-logic_normal = [OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)] | logic_hard # this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
-#logic_easy   = [OptionFilter(LogicDifficulty, LogicDifficulty.option_easy)] | logic_normal
+_raw_logic_hard = OptionFilter(LogicDifficulty, LogicDifficulty.option_hard)
+_raw_logic_normal = OptionFilter(LogicDifficulty, LogicDifficulty.option_normal)
+_raw_logic_easy = OptionFilter(LogicDifficulty, LogicDifficulty.option_easy)
+
+logic_very_hard = _raw_logic_hard & GlitchedRule()
+logic_hard   = _raw_logic_hard | GlitchedRule()
+logic_normal = _raw_logic_normal | logic_hard
+# this one probably cann't be used, but I will leave it in just in case, maybe useful if OR
+#logic_easy   = _raw_logic_easy | logic_normal
 
 # more powerup stuff
 ice_peng = ice | peng
@@ -253,7 +259,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "3-1"  : Level(normal_move & pipe, ((peng & crouch) | logic_hard, True_(), (peng & crouch) | (carry & logic_hard))),  # -1
     "3-2"  : Level(normal_move, (True_(), normal_move | wall_jump | yoshi | propeller_o, True_())),  # -2
     "3-3"  : Level(normal_move & button_down & button_up, ((swim | mini_o | ((propeller_o | (peng & crouch)) & logic_hard) ) , True_(), (carry | propeller_o | (wall_jump & logic_hard)) )),  # -3
-    "3-4"  : Level(pipe & button_down & button_up & normal_move & red_block, (True_(), True_(), True_()),normal_move & pipe),  # -4
+    "3-4"  : Level(normal_move & pipe & button_down & (red_block | (logic_very_hard & run & peng)), (True_(), True_(), True_()),normal_move & pipe),  # -4
     "3-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), red_block, red_block), red_block),  # -5
     "3-G"  : Level(pipe & button_down & button_up & normal_move & door & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), (True_(), True_(), True_()),True_()),  #-6    # 3-Ghosthouse
     "3-T"  : Level(pipe & button_down & button_up & normal_move&tower_rules, (True_(), carry_block, wall_jump | propeller_o)),  # -7 3-T

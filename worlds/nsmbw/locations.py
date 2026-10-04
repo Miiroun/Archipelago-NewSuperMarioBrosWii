@@ -251,22 +251,7 @@ def create_events(world: NSMBWworld) -> None:
             raise NotImplementedError
     _region.add_event("Victory", "Victory", location_type=NSMBWLocation, item_type=items.NSMBWItem)
 
-# these are used in world.shuffled_level_order
-def level_name_to_pos(world_num : int, level_num : int) -> int:
-        pos = sum(LEVELS_PER_WORLD[:(world_num-1)]) + level_num - 1
-        assert 0 <= pos < sum(LEVELS_PER_WORLD), f"pos {pos} is not valid for world {world_num} level {level_num}"
-        return pos
-def pos_to_level_name(pos : int) -> tuple[int, int]:
-        world_sum = 0
-        for world_num in range(1, 10+1):
-            if pos >= world_sum + LEVELS_PER_WORLD[world_num - 1]:
-                world_sum += LEVELS_PER_WORLD[world_num - 1]
-                continue
 
-            level_num = pos - world_sum + 1
-            assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"levelnum {level_num} for world {world_num} and pos {pos} is not valid"
-            return (world_num, level_num)
-        raise ValueError(f"Invalid pos: {pos}")
 
 
 
@@ -333,6 +318,12 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
         assert pos_to_level_name(level_name_to_pos(2,8)) == (2,8), "test rando still works"
         assert Counter(world.shuffled_level_order)[0] == 1, "no duplicates"
 
-        return not (world.shuffled_level_order[level_name_to_pos(3,4)] == level_name_to_pos(3,5) or world.shuffled_level_order[level_name_to_pos(3,5)] == level_name_to_pos(3,4))
+
+
+        return all([
+            not world.shuffled_level_order[level_name_to_pos(3,4)] == level_name_to_pos(3,5),
+            not world.shuffled_level_order[level_name_to_pos(3,5)] == level_name_to_pos(3,4),
+            not level_randoed(world.shuffled_level_order, 7,9) in [(4,8), (5,8)],
+        ])
     else:
         return True

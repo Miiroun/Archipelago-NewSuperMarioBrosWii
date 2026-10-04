@@ -54,15 +54,16 @@ class DolphinClient:
 Dolphin Connection error, following these debug tips, in this order:
       1) New Super Mario Bros Wii is running in the dolphin emulator.
       2) You dont have multiple instances of dolphin open (except your ONE game library).
-      3) Assert Memory Override (MEM1 and MEM2) is disabled. Dolphin -> Settings -> Advanced -> Emulated Memory Size Override.
-      4) Restart your PC.
-      5) Assert your dolphin emulator is recent (newer than 2026.1)
-      6) You have not renamed the dolphin exe and are not running on a fork of dolphin.
-      7) Enable MMU in Dolphin -> Settings -> Advanced -> Enable MMU.
-      8) Reset you dolphin settings Dolphin -> Settings -> Advanced -> Reset All Settings.
-      9) Test running the client in administrator mode. (By right-clicking your archipelago launcher -> run as administrator.)
-      10) Look at https://github.com/randovania/py-dolphin-memory-engine/issues?q=is%3Aissue to see if your issue matches any recorded about dme.
-      11) Post your error in the NSMBW discord, with a screenshot and your log file.
+      3) If you are on macos you will need re-sign dolphin. The procedure is described here: 
+      4) Assert Memory Override (MEM1 and MEM2) is disabled. Dolphin -> Settings -> Advanced -> Emulated Memory Size Override.
+      5) Restart your PC.
+      6) Assert your dolphin emulator is recent (newer than 2026.1)
+      7) You have not renamed the dolphin exe and are not running on a fork of dolphin.
+      8) Enable MMU in Dolphin -> Settings -> Advanced -> Enable MMU.
+      9) Reset you dolphin settings Dolphin -> Settings -> Advanced -> Reset All Settings.
+      10) Test running the client in administrator mode. (By right-clicking your archipelago launcher -> run as administrator.)
+      11) Look at https://github.com/randovania/py-dolphin-memory-engine/issues?q=is%3Aissue to see if your issue matches any recorded about dme.
+      12) Post your error in the NSMBW discord, with a screenshot and your log file.
 """)
             logger.info(error_mess)
             raise DolphinException("Could not connect to Dolphin")

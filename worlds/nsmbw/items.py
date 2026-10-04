@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from BaseClasses import Item, ItemClassification, CollectionState
+from BaseClasses import Item, ItemClassification, CollectionState, MultiWorld, Location
 from .Common import *
 from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer
 
@@ -316,4 +315,43 @@ def fill_filler(world : "NSMBWworld", local_itempool):
             continue
         local_itempool.pop(i)
 
+def sort_items(cls, multiworld: MultiWorld, progitempool: list[Item]):
+    #taken from sms ap : https://github.com/Joshark/archipelago-sms/blob/20cc30b58613ee28a7fe3dd4143f96c33fdadf72/worlds/sms/__init__.py#L245
+
+    # Credit to @Mysteryem for this hook and the sort_fuc.
+    game_players = multiworld.get_game_players(cls.game)
+    # Get all player IDs that require either corona mountain shines to complete their goal or have blue coins
+    sms_excessive_prog_items = {player for player in game_players
+                                if multiworld.worlds[player].options.starcoin_sanity.value}
+
+
+    # Get the player IDs of those that are using minimal accessibility.
+    nsmbw_minimal_players = {player for player in game_players
+                           if multiworld.worlds[player].options.accessibility == "minimal"}
+
+    def sort_func(item: Item):
+        # Credit once again for @Mysteryem for this function AND very nice description
+        if item.player in sms_excessive_prog_items and item.name in [ITEM.StarCoin]:
+            if item.player in nsmbw_minimal_players:
+                # For minimal players, place goal macguffins first. This helps prevent fill from dumping logically
+                # relevant items into unreachable locations and reducing the number of reachable locations to fewer
+                # than the number of items remaining to be placed.
+                #
+                # Placing only the non-required goal macguffins first or slightly more than the number of
+                # non-required goal macguffins first was also tried, but placing all goal macguffins first seems to
+                # give fill the best chance of succeeding.
+                #
+                # All shine sprites and blue coins are given the *deprioritized* classification for minimal players,
+                # which avoids them being placed on priority locations, which would otherwise occur due to them
+                # being sorted to be placed first. They also skip progression balancing in larger multiworlds.
+                return 1
+            else:
+                # For non-minimal players, place goal macguffins last. The helps prevent fill from filling most/all
+                # reachable locations with the goal macguffins that are only required for the goal.
+                return -1
+        else:
+            # Python sorting is stable, so this will leave everything else in its original order.
+            return 0
+
+    progitempool.sort(key=sort_func)
 

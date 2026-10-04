@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Callable, Any
 import operator
 import Utils
@@ -78,3 +79,26 @@ def is_flatpak_installed():
 
     print(f"Flatpak Dolphin Tool Installation NOT detected")
     return False
+
+def rm_game_extract():
+    nsmbw_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw"
+    if nsmbw_dir.exists():
+        shutil.rmtree(nsmbw_dir)
+
+def rm_tmp():
+    import os
+
+    rm_game_extract()
+
+
+    Riivolution = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder)
+
+    files = os.listdir(Riivolution)
+    for file in files:
+        if file.startswith("nsmbw_ap_"):
+            shutil.rmtree(Riivolution / file)
+
+    files = os.listdir(Riivolution / "riivolution")
+    for file in files:
+        if file.startswith("nsmbw_ap_"):
+            os.remove(Riivolution / "riivolution" / file)
