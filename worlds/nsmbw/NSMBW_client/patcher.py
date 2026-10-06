@@ -37,7 +37,7 @@ class Patcher:
     def __init__(self, slot_name : str, seed : str, slot_data : dict):
         self.slot_data = slot_data
 
-        self.name = f"nsmbw_ap_{slot_name}_{seed}"
+        self.name = f"nsmbw_ap_{slot_name}_{seed}_{read_manifest()["world_version"]}"
 
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
@@ -279,7 +279,14 @@ class Patcher:
 
     def extract_game(self):
         path_to = self.temp_dir.parent
+
+        if (not self.get_region()) and path_to.exists():
+            shutil.rmtree(path_to)
+
         path_to.mkdir(exist_ok=True, parents=True)
+
+
+
 
 
         if is_linux:
@@ -578,13 +585,15 @@ class Patcher:
         assert (self.shortcut_path).exists(), "need to have created shortcut successfully"
         print(f"shortcut path:{self.shortcut_path}")
 
-    def get_region(self):
+    def get_region(self) -> bool:
         try:
             with open(self.temp_dir / 'disc' / 'header.bin', "rb") as f:
                 self.region = f.read(6).decode('ascii')
+                return True
         except Exception as e:
-            raise Exception(f"Failed to get region: {e}. \n"
-                            f"most likely is this a cache clear error. Run `/rm_tm` in this client and try to connect again.")
+            return False
+            #raise Exception(f"Failed to get region: {e}. \n"
+            #                f"most likely is this a cache clear error. Run `/rm_tm` in this client and try to connect again.")
 
     def patch(self):
         logger.info(f"Begin patching name: {self.name}")

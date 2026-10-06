@@ -55,6 +55,7 @@ enum RandBase {
     RAND_BASE_ALWAYS = 2, // Randomize on entering a pipe
     RAND_BASE_FILE = 3, // Use seed.txt
     RAND_BASE_NEVER = 4, // rando turned off
+    RAND_BASE_CLIENT = 5, // rando based on info from the archipelago client
 };
 
 extern RandBase g_randBase;
@@ -429,6 +430,34 @@ void GoToNewStage(u32 index, dNext_c* next)
             entry = index+1;
         } else {
             entry = index-1;
+        }
+        break;
+    case RAND_BASE_CLIENT:
+        if (!g_madeEntryTable) {
+            MakeEntryTable(0);
+
+            register u16 (*addr) = g_entryLookup;
+
+            asm volatile {
+                // load address into r12
+                lis r12, 0x80BB
+                ori r12, r12, 0xB000
+                mr r10, addr
+                stw r10, 20(r12)
+            }
+
+
+            g_madeEntryTable = true;
+        }
+        volatile int var = *(volatile u8*)0x80BBB024u;
+        if (var) {
+            entry = g_entryLookup[index];
+        } else {
+            if (index % 2 == 0) {
+                entry = index+1;
+            } else {
+                entry = index-1;
+            }
         }
         break;
     }

@@ -57,6 +57,7 @@
 - Have 2 lists during enterence rando creation: 1 for placement pool and 1 for level pool, so can seperate them
 - Right. I should probably make a list of levels which we allows to be randoed to 7-C instead of a disallowed list like I implement.
 - fall damage trap
+- work on replace csv
 
 
 ## Playtest
@@ -92,6 +93,13 @@
   - I have some problems with the current secret exit systems: figure it out and write unit tests
 - Inventory star broken
 - Go to next world after beating airship
+
+
+0x80792f50 : GetNumberOfCoinsCollectedInEveryLevelForModelPlayBase
+extracted from castle pointer
+- playtest this patch
+- implement in client
+- invesitgate more at 80792e1c in ghidra, figure out which func breaks
 
 
 0x80429f30 	

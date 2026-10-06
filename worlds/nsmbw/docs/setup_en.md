@@ -56,6 +56,7 @@
 6) Play the game: Beat levels and collect star coins. Prepare to take down bowser.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
 8) Make save-states to save the game and run `/save` often.
+   - However do NOT make a save state in peach castle, it will release your remaining starcoin locations.
    - To close the client run `/exit` to make sure everything is saved correctly.
 
 ## Tracker 

@@ -339,18 +339,7 @@ class NSMBWContext(SuperContext):
         super().on_deathlink(data)
 
     def get_version(self):
-
-        text : str
-        if Utils.is_frozen():
-            with (zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf):
-                apnsmbw_file = zipfile.Path(zf) / "nsmbw" / "archipelago.json"
-                text = apnsmbw_file.read_text(encoding='UTF-8')
-        else:
-            apnsmbw_file: Path = Path(__file__).parent.parent
-            with (apnsmbw_file / "archipelago.json").open( "r", encoding="UTF-8") as f:
-                text = f.read()
-        manifest = json.loads(text)
-        self.manifest_version = manifest["world_version"]
+        self.manifest_version = read_manifest()["world_version"]
 
 
     async def dolphin_sync_task_func(self):
@@ -1115,7 +1104,7 @@ class NSMBWContext(SuperContext):
         await self.handle_unlocked_worlds()
         await self.handle_is_world_unlocked()
         await self.handle_unlocked_powerups()
-        await self.handle_set_sc_count(self.starcoin_count)
+        await self.handle_set_sc_count()
         await self.game_interface.handle_unlocks(self.unlocks, self.current_mod)
         await self.handle_traps()
         await self.handle_filler()
@@ -1202,7 +1191,8 @@ class NSMBWContext(SuperContext):
 
 
 
-    async def handle_set_sc_count(self, starcoin_count :  int):
+    async def handle_set_sc_count(self):
+        starcoin_count = self.starcoin_count
         # maybe isnt regestry for starcoin?
 
         #check if in peach castle, then overwrite all starcoins
@@ -1222,6 +1212,20 @@ class NSMBWContext(SuperContext):
         #print(self.connection_state== ConnectionState.IN_GAME)
 
         if at_peach_worldmap:
+            if self.slot_data["use_riivolution"]:
+                match self.slot_data["hint_movie_shop_price_logic"]:
+                    case HintMovieShopPriceLogic.option_free:
+                        self.game_interface.set_peach_castle_sc(231)
+                    case HintMovieShopPriceLogic.option_ordered:
+                        self.game_interface.set_peach_castle_sc(starcoin_count * self.slot_data["starcoin_shop_multiplier"])
+                    case HintMovieShopPriceLogic.option_all:
+                        self.game_interface.set_peach_castle_sc(starcoin_count * self.slot_data["starcoin_shop_multiplier"])
+                    case HintMovieShopPriceLogic.option_progressive:
+                        raise NotImplementedError
+                    case _:
+                        raise NotImplementedError
+                return
+
             self.moded_levelstats = ModifiedState.MODALLWORLDS
             i = 0
             for world_num in range(1, 9 + 1):

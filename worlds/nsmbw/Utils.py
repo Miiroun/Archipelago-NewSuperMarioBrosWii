@@ -102,3 +102,20 @@ def rm_tmp():
     for file in files:
         if file.startswith("nsmbw_ap_"):
             os.remove(Riivolution / "riivolution" / file)
+
+
+def read_manifest():
+    import zipfile
+    import json
+
+    text : str
+    if Utils.is_frozen():
+        with (zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf):
+            apnsmbw_file = zipfile.Path(zf) / "nsmbw" / "archipelago.json"
+            text = apnsmbw_file.read_text(encoding='UTF-8')
+    else:
+        apnsmbw_file: Path = Path(__file__).parent.parent
+        with (apnsmbw_file / "archipelago.json").open( "r", encoding="UTF-8") as f:
+            text = f.read()
+    manifest = json.loads(text)
+    return manifest

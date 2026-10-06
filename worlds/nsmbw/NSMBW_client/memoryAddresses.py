@@ -174,6 +174,11 @@ class MemoryAddresses(object):
         self.custom_brickblock_x    = custom_base  + 4 * 5
         self.custom_brickblock_y    = custom_base  + 4 * 6
         self.custom_use_riivolution = custom_base  + 4 * 7
+        self.custom_enterence_pointer = custom_base  + 4 * 8
+        self.custom_enterence_processes = custom_base  + 4 * 9
+        self.custom_peach_castle_starcoin = custom_base  + 4 * 10
+
+
 
 
         # movement etc patches

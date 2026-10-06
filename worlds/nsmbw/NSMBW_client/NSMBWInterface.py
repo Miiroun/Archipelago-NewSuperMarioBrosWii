@@ -940,6 +940,10 @@ class NSMBWInterface(object):
         address = self.memory_addresses.custom_roulette
         self.dolphin_client.write_address(address, int_to_bytes(num, 4))
 
+    def set_peach_castle_sc(self, num : int):
+        address = self.memory_addresses.custom_peach_castle_starcoin
+        self.dolphin_client.write_address(address, int_to_bytes(num, 4))
+
     def update_check_sum(self):
         # didnt manage to make this one work
         return
