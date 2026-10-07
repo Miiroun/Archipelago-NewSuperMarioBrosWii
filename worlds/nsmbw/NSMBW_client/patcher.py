@@ -37,7 +37,7 @@ class Patcher:
     def __init__(self, slot_name : str, seed : str, slot_data : dict):
         self.slot_data = slot_data
 
-        self.name = f"nsmbw_ap_{slot_name}_{seed}_{read_manifest()["world_version"]}"
+        self.name = f"nsmbw_ap_{slot_name}_{seed}_{read_manifest()['world_version']}"
 
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)

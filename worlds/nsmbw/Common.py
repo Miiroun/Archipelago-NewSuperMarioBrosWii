@@ -174,6 +174,9 @@ def mod_world_name(world_num : int, level_num : int) -> str:
 def name_base(world_num : int, level_num : int, assert_=True) -> str:
     if assert_:
         assert_valid_level(world_num, level_num)
+        if (world_num, level_num) == (0, 0):
+            return "0-0"
+
     return f"{mod_world_name(world_num,level_num)}-{mod_level_name(world_num,level_num)}"
 
 def assert_valid_level(world_num : int, level_num : int) -> None:
@@ -275,27 +278,57 @@ LEVEL_NAMES = list([name_base(world_num, level_num) for world_num, level_num in 
 
 # these are used in world.shuffled_level_order
 def level_name_to_pos(world_num : int, level_num : int) -> int:
-        pos = sum(LEVELS_PER_WORLD[:(world_num-1)]) + level_num - 1
-        assert 0 <= pos < sum(LEVELS_PER_WORLD), f"pos {pos} is not valid for world {world_num} level {level_num}"
-        return pos
+    if (world_num,level_num) == (0,0):
+        return -1
+
+    pos = sum(LEVELS_PER_WORLD[:(world_num-1)]) + level_num - 1
+    assert 0 <= pos < sum(LEVELS_PER_WORLD), f"pos {pos} is not valid for world {world_num} level {level_num}"
+    return pos
+
 def pos_to_level_name(pos : int) -> tuple[int, int]:
-        world_sum = 0
-        for world_num in range(1, 10+1):
-            if pos >= world_sum + LEVELS_PER_WORLD[world_num - 1]:
-                world_sum += LEVELS_PER_WORLD[world_num - 1]
-                continue
+    if pos == -1:
+        return 0,0
 
-            level_num = pos - world_sum + 1
-            assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"levelnum {level_num} for world {world_num} and pos {pos} is not valid"
-            return (world_num, level_num)
-        raise ValueError(f"Invalid pos: {pos}")
+    world_sum = 0
+    for world_num in range(1, 10+1):
+        if pos >= world_sum + LEVELS_PER_WORLD[world_num - 1]:
+            world_sum += LEVELS_PER_WORLD[world_num - 1]
+            continue
 
-def level_randoed(shuffle, world_num : int, level_num : int) -> Tuple[int, int]:
-    randoed_world, randoed_level = pos_to_level_name(shuffle[level_name_to_pos(world_num, level_num)])
-    return randoed_world, randoed_level
+        level_num = pos - world_sum + 1
+        assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"levelnum {level_num} for world {world_num} and pos {pos} is not valid"
+        return (world_num, level_num)
+    raise ValueError(f"Invalid pos: {pos}")
 
-def level_randoed_bijection(shuffle, world_num : int, level_num : int)-> Tuple[int, int]:
-    _index = shuffle.index(level_name_to_pos(world_num, level_num))
-    randoed_world, randoed_level = pos_to_level_name(_index)
-    return randoed_world, randoed_level
+def level_randoed(shuffle, world_num : int, level_num : int, try_=False) -> Tuple[int, int]:
+    if (world_num,level_num) == (0,0):
+        return 0,0
 
+    try:
+        pos = level_name_to_pos(world_num, level_num)
+        if pos == -1:
+            return 0, 0
+        randoed_world, randoed_level = pos_to_level_name(shuffle[pos])
+        return randoed_world, randoed_level
+    except Exception as e:
+        if try_:
+            return 0,0
+        else:
+            raise e
+
+def level_randoed_bijection(shuffle, world_num : int, level_num : int, try_=False)-> Tuple[int, int]:
+    if (world_num,level_num) == (0,0):
+        return 0,0
+
+    try:
+        pos = level_name_to_pos(world_num, level_num)
+        if pos == -1:
+            return 0, 0
+        _index = shuffle.index(pos)
+        randoed_world, randoed_level = pos_to_level_name(_index)
+        return randoed_world, randoed_level
+    except Exception as e:
+        if try_:
+            return 0,0
+        else:
+            raise e

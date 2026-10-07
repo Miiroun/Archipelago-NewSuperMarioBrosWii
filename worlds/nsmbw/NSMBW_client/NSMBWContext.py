@@ -96,7 +96,6 @@ class NSMBWContext(SuperContext):
     starcoin_count : int = 0
     completed_levels : List[str]
     prev_lifecount : List[int]
-    prossesed_inventory_powerup_locations : int = 0
     previous_inventory : List[int]
     previous_mapid : int = 0
     has_complained_about_world : int = 0
@@ -525,7 +524,6 @@ class NSMBWContext(SuperContext):
                 "completed_levels": self.completed_levels,
                 "deathlink_enabled": self.death_link_enabled,
                 "deathlink_group" : self.death_link_group,
-                "prossesed_inventory_powerup_locations" : self.prossesed_inventory_powerup_locations,
                 "completed_levelstats" : map_nd(self.completed_levelstats, bytes_to_int),
                 "moded_levelstats" : self.moded_levelstats,
                 "handled_num" : self.handled_num,
@@ -559,7 +557,6 @@ class NSMBWContext(SuperContext):
                 self.death_link_amnesty_cap = data["death_link_amnesty_cap"]
                 self.death_link_grace_cap = data["death_link_grace_cap"]
 
-                self.prossesed_inventory_powerup_locations = data["prossesed_inventory_powerup_locations"]
 
                 self.completed_levelstats = map_nd(data["completed_levelstats"], lambda  x : int_to_bytes(x, 4))
                 self.moded_levelstats = data["moded_levelstats"]
@@ -1018,13 +1015,18 @@ class NSMBWContext(SuperContext):
             print(f"You got more than 8 invent pow in one sweep, they will not register to prevent accidental mark as completed.")
             return []
 
+        prossesed_inventory_powerup_locations = 0
         for j in range(total_invent_to_add):
-            if self.prossesed_inventory_powerup_locations < self.slot_data["include_inventory_powerups"]:
-                self.prossesed_inventory_powerup_locations += 1
-                location_name = name_inventory(self.prossesed_inventory_powerup_locations)
+
+            while ( prossesed_inventory_powerup_locations < self.slot_data["include_inventory_powerups"]):
+                prossesed_inventory_powerup_locations += 1
+                location_name = name_inventory(prossesed_inventory_powerup_locations)
+                if NSMBWworld.location_name_to_id[location_name] in self.checked_locations | self.prev_sent_locations:
+                    continue
                 checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                 print(f"Location {location_name} checked")
-            else:
+                break
+            if prossesed_inventory_powerup_locations >= self.slot_data["include_inventory_powerups"]:
                 await self.send_random_hint()
                 logger.info(f"Hinted one of your location because you got an inventory powerup")
 

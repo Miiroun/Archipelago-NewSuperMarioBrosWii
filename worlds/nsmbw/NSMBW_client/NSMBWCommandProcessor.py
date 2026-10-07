@@ -104,7 +104,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Do this command if some checks haven't been applied because of wrong cache.
         """
         self.ctx.locations_handled = []
-        self.ctx.prossesed_inventory_powerup_locations = 0
         self.ctx.handled_num = 0
         self.ctx.prev_sent_locations = set()
 

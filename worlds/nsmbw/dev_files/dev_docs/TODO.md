@@ -75,6 +75,8 @@
 - 7-6 unlock
 - Print big red message if dolphin valuation finds incorrect settings
 - level shuffle plando
+- goomba extinction
+- prossesed_inventory_powerup_locations rework
 
 
 ## Bugs to fix

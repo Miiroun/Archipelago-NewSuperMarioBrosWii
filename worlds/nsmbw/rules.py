@@ -137,7 +137,7 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
     for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))
 
-        req_num = math.floor((i/ world.options.include_inventory_powerups.value) * 70)
+        req_num = math.ceil((i/ world.options.include_inventory_powerups.value) * 70)
         invent_rule_general = Has(ITEM.FAKE.InventoryPow.value, count=req_num) & door & climb
         invent_rule_no_toad =  Has(ITEM.FAKE.InventoryPowNoToad.value, count=req_num)
 
