@@ -7,30 +7,20 @@
   - use other program for csv editing
 - Mention which files needs to be selected for settings:
 - Nsmbw: checkpoint item unique for each level?
-- Coin sanity
-  - is probably too extreme
 - Rename raw rules to data / raw_data / rule_data?
 - Work on FINAL MOVMENETS : so REACT can start on block logic
 - Decide on way to store brick rules
-- Look into copying pipe rando
 - Format list of all blocks
 - Spend time on ap-map pack : download images from wiki with python
 - Option to exlude specific worlds
-- MGroundType
-- I can probably make it an host.yaml option to specify the temp directory, so others who encounter this can change it as a workaround.
 - do archipelago nameing of blocks
-- At the start of distribute_items_restrictive, there are items in the multiworld itempool that are already placed on locations:
 - fix header licence
-- Have nsmbw version be part of file name?
 - Ap: write my slot data and seed to meme with riivolution: verify in client
 - Castles req second level half
 - Mention Mac issue in setup
-- color / flip scrren : as trap?
 - change display name of riivolution options?
 - make level completion an impactful setting?
 - other use fuzzer hook
-- look into sunshine sort : https://github.com/Joshark/archipelago-sms/blob/20cc30b58613ee28a7fe3dd4143f96c33fdadf72/worlds/sms/__init__.py#L245
-- only give unlocked powerups
 - improve description of RandomizePowerups
 - After i beat the mushroom house it just freezes me there
 - I think it could be a good idea to have a list somewhere telling which stages aren't rando'd
@@ -56,7 +46,6 @@
 - Allow manual placements of levels
 - Have 2 lists during enterence rando creation: 1 for placement pool and 1 for level pool, so can seperate them
 - Right. I should probably make a list of levels which we allows to be randoed to 7-C instead of a disallowed list like I implement.
-- fall damage trap
 - work on replace csv
 
 
@@ -77,6 +66,7 @@
 - level shuffle plando
 - goomba extinction
 - prossesed_inventory_powerup_locations rework
+- only give unlocked powerups
 
 
 ## Bugs to fix
@@ -394,6 +384,7 @@ Summery poll
   - Speed up / slow down game clock
   - Ice physics
   - Trap to put game in thrown state
+  - color / flip scrren : as trap?
 - FILLER 
   - Gain this levels check point
   - Get toad house (beginning of world) : toad house is in MJ..game.. files, should be easy tm

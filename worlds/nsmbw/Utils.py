@@ -115,7 +115,7 @@ def read_manifest():
             text = apnsmbw_file.read_text(encoding='UTF-8')
     else:
         apnsmbw_file: Path = Path(__file__).parent.parent
-        with (apnsmbw_file / "archipelago.json").open( "r", encoding="UTF-8") as f:
+        with (apnsmbw_file / "nsmbw" / "archipelago.json").open( "r", encoding="UTF-8") as f:
             text = f.read()
     manifest = json.loads(text)
     return manifest
