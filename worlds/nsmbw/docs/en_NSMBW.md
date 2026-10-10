@@ -102,6 +102,9 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 `/match_server_state`
 - If your save file was somehow messed up, this command will fix it.
 
+`\rm_tmp`
+- Will fix most errors related to patching, including region file not found.
+
 
 ## Known quirks / bugs / help with debug
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
@@ -145,11 +148,11 @@ What is different from vanilla?
 - You need world items to unlock both half of worlds
 
 What does the different names mean? <br>
-&emsp; 1-T is the Tower in world 1, 1-🏯
-&emsp; 2-C is the Castle in world 2, 2-🏰
-&emsp; 3-G is the Ghost house in world 3, 3-🏚️
-&emsp; 4-A is the Airship in world 4, 4-🚢, 4-⚓
-&emsp; C-1 is the fist coin level, Coin-1, 🪙-1
+&emsp; 1-T is the Tower in world 1, 1-🏯 <br>
+&emsp; 2-C is the Castle in world 2, 2-🏰 <br>
+&emsp; 3-G is the Ghost house in world 3, 3-🏚️ <br>
+&emsp; 4-A is the Airship in world 4, 4-🚢, 4-⚓ <br>
+&emsp; C-1 is the fist coin level, Coin-1, 🪙-1 <br>
 
 Tracker? <br>
 &emsp; A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
@@ -190,11 +193,11 @@ What does the star coin item do?<br>
 I game over'ed and lost all progress, how do I get it back?.<br>
 &emsp;You can run `/match_server_state` in the client to get back all your levels, depending on the collection state set in `host.yaml`.
 
-What does the level names stand for? <br>
-- 1-T = 1-Tower
-- 2-C = 2-Castle
-- 3-G = 3-Ghosthouse
-- 4-A = 4-Airship
+What are the limitations of level shuffle? <br>
+&emsp; Secret exits must be mapped to other secret exits.<br>
+&emsp; Some level break when moved and are therefor frozzen in place; They are: 2-C, 6-C, 8-3<br>
+&emsp; We have also decided becasue of gameplay reasons not to move the tower, castle, airship and bowsers castle levels.
+
 
 Are there bugs?<br>
 &emsp;Expect bugs, it is still in development.<br>

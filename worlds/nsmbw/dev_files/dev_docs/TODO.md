@@ -22,7 +22,6 @@
 - make level completion an impactful setting?
 - other use fuzzer hook
 - improve description of RandomizePowerups
-- After i beat the mushroom house it just freezes me there
 - I think it could be a good idea to have a list somewhere telling which stages aren't rando'd
 - setup guide: do not have dolphin open
 - clarify dolphin folder when selecting : not rom folder, should include dolphin.exe
@@ -30,9 +29,6 @@
 - Level shuffle options
 - I've looked at the rest of the castles in the editor and if I am correct in what I think Is happening 1-C, 3-C, and 6-C should all be fine and the only ones that won't work are 4-C and 5-C (obviously 2-C & 8-C arent randoed for other reasons)
 - Test remaining 7-C rando
-- uhhh wtf i just entered 7-C from the back entrance and i just come out of this pipe in 3-C?
-- Pop-up in game after beating 8-A
-- also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
 - Advertise rm_tmp
 - Auto run /rm_tmp if some files been removed from temp folder
 - Stricter error for having dolphin open when connect
@@ -47,6 +43,12 @@
 - Have 2 lists during enterence rando creation: 1 for placement pool and 1 for level pool, so can seperate them
 - Right. I should probably make a list of levels which we allows to be randoed to 7-C instead of a disallowed list like I implement.
 - work on replace csv
+  - test
+  - better if could modify code
+  - or do dynamic write
+  - start looking from my world9 patch
+- make breaking changes
+- update docs !!!!!!
 
 
 ## Playtest
@@ -94,10 +96,6 @@ extracted from castle pointer
 - invesitgate more at 80792e1c in ghidra, figure out which func breaks
 
 
-0x80429f30 	
-[32-bit BE] [NTSC] Some pointer that can be used as a way to know you aren't in a stage for FFA/Coin Battle
-0x0=Menu
->0x80000000=In game
 
 
 0x15e566c 	
@@ -200,6 +198,8 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Problem with name being static for level rando : cannot shuffle names ? !
 - option to turn off anoying block sanity level (5-G, 7-3, 8-1, C-1)
 - make some / most of block sanity excluded
+- Pop-up in game after beating 8-A
+  - can I steal somene from in game or does it need custom code?
 
 
 
@@ -209,6 +209,7 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Make yoshi level element
 - option rename
   - mostly riivolution but others too
+- Level shuffle rename from -> to level
 
 
 
@@ -348,6 +349,7 @@ Spendables Star Coins in Peach's Castle [32-Bit BE]
 - Peach castle is weird when hint movies appear / not
 - Slot.lock does not work
 - Hint movies and level shuffle cannot coexist
+- After i beat the mushroom house it just freezes me there
 
 
 Summery poll

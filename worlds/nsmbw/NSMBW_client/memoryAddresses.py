@@ -311,6 +311,8 @@ class MemoryAddresses(object):
 
         self.address_starting_time = self.map_between("P1", 0x800e3a00)
 
+        self.not_in_coin_battle = self.map_between("E2", 0x80429f30)
+
         ## patch patches ---------------------------------------------------
 
         #Skip title screen movies

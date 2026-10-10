@@ -533,10 +533,31 @@ class LevelShuffle(Choice):
     display_name = "Level Shuffle"
     option_off = 0
     option_on = 1
+    option_off_respect_plando = 2
+
     #option_same_world = 3
     #option_weighted = 5
 
     default = option_off
+
+class LevelShuffleBossLock(Choice):
+    """
+    Wherther too allow boss levels to be freely placed or for they to stay in their vanilla placements (just shuffled around)
+    """
+    option_nolock = 0
+    option_lock_types = 3
+    option_lock_placements = 5
+    option_lock_end_of_world = 7
+
+# - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
+
+class LevelShuffleRemove(OptionSet):
+    """
+    An option to remove up to 5 levels by plando:ing them to replace coin levels
+    Will not work for levels with seceret exits
+    """
+    # make this work on none level shuffle
+    # - just make non level plando fill in the best it can when stuff is plandoed
 
 class LevelShufflePlando(OptionDict):
     """
@@ -628,7 +649,7 @@ class WorldsUnlocks(Choice):
 
 class LevelsUnlocks(Choice):
     """
-
+    How levels are unlocked in game
     """
     display_name = "Levels Unlocks"
     option_vanilla = 1
@@ -637,6 +658,14 @@ class LevelsUnlocks(Choice):
 
     default = option_vanilla
     visibility = Visibility.none
+
+class RemoveWorlds(OptionSet):
+    """
+    If you enter a world here they will be completly removed from the seed,
+    They wont have a level item and they will not be able to be unlocked
+    Useful if you want a smaller multiworld
+    """
+
 
 @dataclass
 class NSMBWOptions(PerGameCommonOptions):
@@ -677,6 +706,7 @@ class NSMBWOptions(PerGameCommonOptions):
     important_early_items : ImportantEarlyItems
     worlds_unlocks : WorldsUnlocks
     levels_unlocks : LevelsUnlocks
+    remove_worlds : RemoveWorlds
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems
@@ -706,7 +736,9 @@ class NSMBWOptions(PerGameCommonOptions):
     tile_sheet_shuffle_riivolution : TileSheetShuffle
 
     level_shuffle_riivolution : LevelShuffle
+    level_shuffle_boss_lock : LevelShuffleBossLock
     level_shuffle_plando : LevelShufflePlando
+    level_shuffle_remove : LevelShuffleRemove
 
 
     entrance_randomizer : EntranceRandomizer
@@ -760,6 +792,7 @@ option_groups = [
             StarcoinRequirementWorldUnlock,
             World9UnlockCondition,
             HintMovieShopPriceLogic,
+            RemoveWorlds,
         ]
     ),
     OptionGroup(
@@ -789,6 +822,8 @@ option_groups = [
         [
             LevelShuffle,
             LevelShufflePlando,
+            LevelShuffleBossLock,
+            LevelShuffleRemove,
         ],
     ),
     OptionGroup(

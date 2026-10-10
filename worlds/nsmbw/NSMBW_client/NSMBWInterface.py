@@ -214,7 +214,7 @@ class NSMBWInterface(object):
 
         is_in_stage = (self.get_in_stage_flag()[3] == 1)
 
-        return is_in_stage and is_normal_record and self.not_in_savefile1()
+        return is_in_stage and is_normal_record and self.not_in_savefile1() and self.get_not_in_coin_battle()
 
     def raw_is_in_worldmap(self) -> bool:
         return 1 == bytes_to_int(self.get_on_map())
@@ -814,9 +814,9 @@ class NSMBWInterface(object):
         address_y = self.memory_addresses.custom_coinblock_y
         address_z = self.memory_addresses.custom_coinblock_z
 
-        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 2))
-        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 2))
-        val_z = bytes_to_int(self.dolphin_client.read_address(address_z, 2))
+        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 4))
+        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 4))
+        val_z = bytes_to_int(self.dolphin_client.read_address(address_z, 4))
 
         if val_x+val_y+val_z != 0:
             self.dolphin_client.write_address(address_x, val_00000000)
@@ -828,8 +828,8 @@ class NSMBWInterface(object):
         address_x = self.memory_addresses.custom_brickblock_x
         address_y = self.memory_addresses.custom_brickblock_y
 
-        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 2))
-        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 2))
+        val_x = bytes_to_int(self.dolphin_client.read_address(address_x, 4))
+        val_y = bytes_to_int(self.dolphin_client.read_address(address_y, 4))
         val_z = 0
 
         if val_x+val_y+val_z != 0:
@@ -841,6 +841,12 @@ class NSMBWInterface(object):
         address = self.memory_addresses.custom_use_riivolution
         val = self.dolphin_client.read_address(address, 4)
         return val == val_ffffffff
+
+    def get_not_in_coin_battle(self) -> bool:
+        address = self.memory_addresses.not_in_coin_battle
+        val = self.dolphin_client.read_address(address, 4)
+        #print(f"val : {bytes_to_int(val) : x}")
+        return val == b'\x80\xd2\x5c\x14'
 
 
     def set_worldstats(self,world_num : int, status : bytes):
