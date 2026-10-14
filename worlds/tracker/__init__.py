@@ -1,7 +1,7 @@
 from worlds.LauncherComponents import Component, components, Type, launch_subprocess, icon_paths
 from settings import Group, Bool, UserFolderPath, _world_settings_name_cache
 from typing import Any, ClassVar, Literal, NamedTuple, Callable,Optional
-from worlds.AutoWorld import World
+from worlds.AutoWorld import World, WebWorld
 from BaseClasses import CollectionState,Entrance
 from collections import Counter
 from enum import Enum
@@ -161,6 +161,9 @@ class TrackerWorld(World):
     hidden = True
     item_name_to_id = {}
     location_name_to_id = {}
+
+    web = WebWorld()
+    web.tutorials = []
 
 
 class UTMapTabData:
