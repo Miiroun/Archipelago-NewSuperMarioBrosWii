@@ -173,17 +173,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_refresh_mod(self):
         """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
-        from .NSMBWContext import Modifier, modifier_type_litteral
-
-        self.ctx.current_mod_end_time = 0
-        self.ctx.modifiers = list(
-            Modifier(name, 0.001) for name in get_args(modifier_type_litteral)) + self.ctx.modifiers
-
-        for _ in self.ctx.modifiers:
-            self.ctx.handle_modifiers()
-            sleep(0.01)
-
-        logger.info(f"Successfully refreshed all modifiers")
+        Utils.async_start(self.ctx.modifier_removal())
 
     def _cmd_save(self):
         """

@@ -166,21 +166,21 @@ def mod_level_name(world_num : int, level_num : int) -> str:
     shift = (world_num in [7, 8])
     new_level = level_num - shift
     if (world_num, level_num) in [(3, 6), (4, 6), (5, 6), (7, 7)]:
-        return "G"
+        return "Ghosthouse"
     if world_num !=9:
         if new_level == 7:
-            return "T"
+            return "Tower"
         elif new_level == 8:
-            return "C"
+            return "Castle"
         elif new_level == 9:
-            return "A"
+            return "Airship"
     return str(level_num)
 
 def mod_world_name(world_num : int, level_num : int) -> str:
     if world_num <= 9:
         return f"{world_num}"
     elif world_num == 10:
-        return "C"
+        return "Coin"
     else:
         raise ValueError
 

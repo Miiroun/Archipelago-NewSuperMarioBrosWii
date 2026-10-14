@@ -25,7 +25,7 @@ class TestLevelShufflePlando(NSMBWTestBase):
         "music_shuffle" : True,
         "level_shuffle_plando" : {
             "1-1" : "1-1",
-            "1-2" : "C-1",
+            "1-2" : "Coin-1",
         },
     }
 

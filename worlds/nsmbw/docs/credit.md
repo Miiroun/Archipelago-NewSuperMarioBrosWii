@@ -11,6 +11,7 @@
 - CrazyJoe : Created the custom title screen
 - Matgamer2575 : started project and found some memory addresses
 - Adibtw : Consulted Linux compatibility
+- [CelestePihen](https://github.com/CelestePihen) : PRed a few fixes.
 - [IndyGibb](https://github.com/IndyGibb) : PRed some light code changes using Claude
 - Techmuse : helped with locating addresses
 - LuigiXRules : Fixed typos in documentation, provided helpful insight and playtested Us rev1

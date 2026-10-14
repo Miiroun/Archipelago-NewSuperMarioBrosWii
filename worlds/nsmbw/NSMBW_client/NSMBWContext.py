@@ -343,7 +343,6 @@ class NSMBWContext(SuperContext):
 
         #logger.info("Starting Dolphin Connector, attempting to connect to emulator...")
 
-        Utils.async_start(self.patch_and_run_game())
         await self.game_loop()
 
     async def game_loop(self):
@@ -471,9 +470,11 @@ class NSMBWContext(SuperContext):
         await self.game_interface.alive_player()
 
         self.game_interface.update_check_sum()
-        if time.time() >= self.save_time + 60 * 5 and Utils.get_settings()["nsmbw_settings"].auto_save:
+        if (time.time() >= self.save_time + 60 * 1) and Utils.get_settings()["nsmbw_settings"].auto_save:
             self.save_time = time.time()
             await self.handle_save()
+            if self.current_mod == "":
+                await self.modifier_removal()
 
         await self.ut_auto_tab()
         await self.game_interface.patch_runtime_on_load() # unsure where to put this, just needs to run once, but good if does multiple times if not applied correctly
@@ -1446,79 +1447,105 @@ class NSMBWContext(SuperContext):
         if self.slot_data["randomize_boss_health"] != 0:
             self.game_interface.set_boss_health(10 - self.boss_health)
 
-    async def handle_modifiers(self):
+    async def handle_modifiers(self, text : bool = True):
         now = time.time()
         if now > self.current_mod_end_time and self.current_mod != "":
-            match self.current_mod:
-                case ITEM.TRAPS.GoombaTrap:
+            self.handle_modifiers_clear(text)
+            self.handle_modifiers_add(text)
+
+    def handle_modifiers_clear(self, text=True):
+        match self.current_mod:
+            case ITEM.TRAPS.GoombaTrap:
+                if text:
                     logger.info("You didn't die to a goomba, did you?")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_goomba_speed, reverse=True, double_check=False)
-                case ITEM.TRAPS.ThrowTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_goomba_speed, reverse=True, double_check=False)
+            case ITEM.TRAPS.ThrowTrap:
+                if text:
                     logger.info("Shells are now back to normal.")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_throw, reverse=True)
-                case ITEM.TRAPS.ReverseControlTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_reverse,reverse=True)
-                case ITEM.TRAPS.MovementLockTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right,reverse=True)
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left,reverse=True)
-                case ITEM.FILLER.SuperSpeed:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_super_speed, reverse=True,double_check=False)
-                case ITEM.TRAPS.SlowTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=True,double_check=False)
-                case ITEM.FILLER.LowGravity:
-                    self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
-                case ITEM.TRAPS.GravityTrap:
-                    self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
-                case ITEM.TRAPS.TimeTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_fast_timer, reverse=True)
-                case _:
-                    raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
-            self.current_mod = ""
-            self.current_mod_end_time = 2**64 # set to exterm future
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_throw, reverse=True)
+            case ITEM.TRAPS.ReverseControlTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_reverse,reverse=True)
+            case ITEM.TRAPS.MovementLockTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right,reverse=True)
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left,reverse=True)
+            case ITEM.FILLER.SuperSpeed:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_super_speed, reverse=True,double_check=False)
+            case ITEM.TRAPS.SlowTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=True,double_check=False)
+            case ITEM.FILLER.LowGravity:
+                self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
+            case ITEM.TRAPS.GravityTrap:
+                self.game_interface.set_gravity(int_to_bytes(0xbeae147b, 4))
+            case ITEM.TRAPS.TimeTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_fast_timer, reverse=True)
+            case _:
+                raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
+        self.current_mod = ""
+        self.current_mod_end_time = 2**64 # set to exterm future
 
-        if len(self.modifiers) >= 1 and self.current_mod == "":
-            self.current_mod = self.modifiers[0].type
-            self.current_mod_end_time = now + self.modifiers[0].duration
-            self.modifiers.pop(0)
+    def handle_modifiers_add(self, text : bool = True):
+        if not ( len(self.modifiers) >= 1 and self.current_mod == ""):
+            return
+        self.current_mod = self.modifiers[0].type
+        self.current_mod_end_time = time.time() + self.modifiers[0].duration
+        self.modifiers.pop(0)
 
-            # this checks for multiple
-            for i, obj in enumerate(self.modifiers):
-                if obj.type == self.current_mod:
-                    self.current_mod_end_time += obj.duration * self.slot_data["modifier_multiplier_percentage"] / 100
-                    self.modifiers.pop(i)
+        # this checks for multiple
+        for i, obj in enumerate(self.modifiers):
+            if obj.type == self.current_mod:
+                self.current_mod_end_time += obj.duration * self.slot_data["modifier_multiplier_percentage"] / 100
+                self.modifiers.pop(i)
 
-            match self.current_mod:
-                case ITEM.TRAPS.GoombaTrap:
+        match self.current_mod:
+            case ITEM.TRAPS.GoombaTrap:
+                if text:
                     logger.info("Imaging a goomba comes and attacks you with speed")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_goomba_speed, reverse=True, double_check=False)
-                case ITEM.TRAPS.ThrowTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_goomba_speed, reverse=True, double_check=False)
+            case ITEM.TRAPS.ThrowTrap:
+                if text:
                     logger.info("Shells are apparently hard to throw.")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_throw, reverse=False)
-                case ITEM.TRAPS.ReverseControlTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_throw, reverse=False)
+            case ITEM.TRAPS.ReverseControlTrap:
+                if text:
                     logger.info(f"Did you put your controller upside down?")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_reverse, reverse=False)
-                case ITEM.TRAPS.MovementLockTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right,reverse=False)
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left,reverse=False)
-                case ITEM.FILLER.SuperSpeed:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_reverse, reverse=False)
+            case ITEM.TRAPS.MovementLockTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_right,reverse=False)
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_button_left,reverse=False)
+            case ITEM.FILLER.SuperSpeed:
+                if text:
                     logger.info(f"Zoooooooooooooooom.")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_super_speed, reverse=False,double_check=False)
-                case ITEM.TRAPS.SlowTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_super_speed, reverse=False,double_check=False)
+            case ITEM.TRAPS.SlowTrap:
+                if text:
                     logger.info(f"Is it just me or is it really cold right now?")
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=False,double_check=False)
-                case ITEM.FILLER.LowGravity:
-                    self.game_interface.set_gravity(int_to_bytes(0xbcf5c28f, 4)) # -0.03
-                case ITEM.TRAPS.GravityTrap:
-                    self.game_interface.set_gravity(int_to_bytes(0xbf666666, 4)) # -0.9
-                case ITEM.TRAPS.TimeTrap:
-                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_fast_timer, reverse=False)
-                case _:
-                        raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_player_slow_speed, reverse=False,double_check=False)
+            case ITEM.FILLER.LowGravity:
+                self.game_interface.set_gravity(int_to_bytes(0xbcf5c28f, 4)) # -0.03
+            case ITEM.TRAPS.GravityTrap:
+                self.game_interface.set_gravity(int_to_bytes(0xbf666666, 4)) # -0.9
+            case ITEM.TRAPS.TimeTrap:
+                self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_fast_timer, reverse=False)
+            case _:
+                    raise NotImplementedError(f"Mod {self.current_mod} is not implemented")
+
+    async def modifier_removal(self):
+        modifier_list = list(Modifier(name, 0.001) for name in get_args(modifier_type_litteral)) + self.modifiers
+
+        for mod in modifier_list:
+            self.current_mod = mod.type
+            self.handle_modifiers_clear(text=False)
+            sleep(0.01)
+
+        logger.info(f"Successfully refreshed all modifiers")
+
 
     async def handle_screen_transition(self):
         if self.game_interface.is_screen_transition():
             pass
             self.update_memory_to_server_on_load()
+            if self.current_mod == "":
+                await self.modifier_removal()
 
 
     async def ut_auto_tab(self):

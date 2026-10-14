@@ -176,7 +176,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
         # add location for beating castles and towers
         if world_num <= 8:
             level_location = get_location_names_with_ids([name_tower_clear(world_num)])
-            world.get_region(f"{world_num}-T").add_locations(level_location, NSMBWLocation)
+            world.get_region(f"{world_num}-Tower").add_locations(level_location, NSMBWLocation)
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
             world.get_region(name_base(world_num,8 + (world_num in [4,6,7,8]))).add_locations(level_location, NSMBWLocation)
 
@@ -269,39 +269,41 @@ def create_events(world: NSMBWworld) -> None:
 
 seven_castle_allowed = [
     "1-5",
-    "1-C",
+    "1-Castle",
     "2-2",
     "2-3",
-    "2-T",
-    "3-T",
-    "3-C",
+    "2-Tower",
+    "3-Tower",
+    "3-Castle",
     "4-1",
     "4-3",
     "4-4",
     "4-5",
-    "4-A",
+    "4-Airship",
     "5-1",
     "5-3",
     "5-4",
     "6-3",
     "6-4",
-    "6-T",
-    "6-C",
-    "6-A",
+    "6-Tower",
+    "6-Castle",
+    "6-Airship",
     "7-2",
     "7-3",
     "7-4",
     "7-6",
-    "7-C",
+    "7-Castle",
     "8-1",
-    "8-T",
+    "8-Tower",
     "8-6",
-    "8-A",
+    "8-Airship",
     "9-1",
     "9-3",
     "9-4",
     # these some of these we could acount for in logic
 ]
+for level in seven_castle_allowed:
+    assert level in [name_base(*temp_lvl) for temp_lvl in LEVELS], f"level {level}"
 
 
 def shuffle_level_order(world: NSMBWworld) -> bool:

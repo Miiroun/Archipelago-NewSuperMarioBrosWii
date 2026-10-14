@@ -563,8 +563,8 @@ class LevelShufflePlando(OptionDict):
     Allows you to plando level shuffle
     syntax:
         1-1 : 1-2
-        C-1 : 9-7
-    This will replace 1-1 with 1-2 and C-1 with 9-7, effectively removing it from the randomizer
+        Coin-1 : 9-7
+    This will replace 1-1 with 1-2 and Coin-1 with 9-7, effectively removing it from the randomizer
     Be mindful, some levels cannot be moved and some require specific conditions.
     E.g. 3-4 cannot replace 3-5 due to inability to reach button,
     Levels with secret exits must replace each-other,

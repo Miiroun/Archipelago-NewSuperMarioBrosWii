@@ -31,9 +31,11 @@
 - create map and item tracker?
 - Remove use_riivolution
 - Why is inventory pow 10 so often unreachable
-- Clearmod : no text argumentet, so can get run often
 - /bowserlock : print all reasons
 - Lock bowser from path patch isntead of client
+- I also thought of having a "World 9 Clear" for clearing all 8 levels
+- require second world unlock to unlock 7-6 and 8-7
+  - both in client and apworld
 
 
 - I think it's not bad bad idea to have an option with just world unlocks rather then 2 progressive worlds
@@ -51,6 +53,11 @@ FUTURE
   - item tracking
   - draw images for movements
     - pain is fun
+ITEMTRACKER
+- powerups
+- unlocks
+- worlds?
+- starcoins
 
 
 ## Playtest
@@ -70,6 +77,7 @@ FUTURE
 - only give unlocked powerups
 - LevelUnlock logic
 - level name changes
+- clear_mod
 
 
 ## Bugs to fix
