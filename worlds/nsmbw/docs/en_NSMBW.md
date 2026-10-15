@@ -60,17 +60,31 @@
   - Low Gravity
 - Traps
   - Loose powerup trap
+    - Removes your curent powerup
   - Goomba speed trap
+    - Speeds up goombas
   - Death trap
+    - Kills mario
   - Time trap 
+    - Speeds up the level time.
   - Robbery trap
+    - Takes your money and an inventory powerup
   - Shrink trap
+    - Makes mario small
   - Literature trap
+    - Prints text in the client.
   - Throw trap 
+    - Makes
   - Reverse Control trap
+    - Revers the left and right movement buttons.
   - Movement lock trap
-  - Slow Trap
+    - Makes you unable to move for a short time.
+  - Slow trap
+    - reduces Marios speed.
   - Gravity trap
+    - Increases gravity.
+  - Paranoia trap
+    - Gives you paranoia.
 
 
 ## Locations
@@ -80,6 +94,7 @@
 - Completing towers, castles and secret exits that unlock cannons ( 8 towers, 8 castles and 8 secret exits) World1 tower, 1-3 Secret exit
 - Getting powerups to inventory (from toad-houses or enemy ambushes) e.g. Inventory_powerup_001
 - Unlocking secret exits
+- Hitting blocks, roullette blocks and red rings.
 
 ## General randomized things
 - Level placements
@@ -124,24 +139,23 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
 
 ## Known quirks / bugs / help with debug
 - Making savestates is currently difficult depending on location. Do not close game or make savestates when you are in peach's castle or world 9.
-- For some features (death link and move rando) the game will overwrite savestate 8 in dolphin. (It does this to clear the JIT cache).
 - With movement rando on and not having the item climb will cause a soft lock if you encounter a ledge (like in 6-1). You are free from the softlock if you do /kill.
-- Sometimes mario is invisible on the worldmap.
 - Only save file 2 will work to play on.
 - Known Issues for other game versions
   - None US2: Inventory powerups
   - EU1: Movement (dont turn on)
   - US1: Star and swim movement (add these to don't rando moves if you have movement rando on)
-- On Linux you will need to give the client root access for it to properly access save states. You can also use Xdotools or Ydotools, selectable in `host.yaml`.
+- On Linux, if you disabled `use_riivolution` will you have to use the external tools Xdotools or Ydotools, selectable in `host.yaml`.
 - Climb movement have issues, you can't leve vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
 - Deathlink problems:
   - If not received, try running `/kill`, if this does not work, make sure you have changed the dolphin settings in the set-up guide.
-  - If not sending, try turing off your deathlink group and then toggle deathlink off and on again.
   - Run `/deathlink_debug` or `/debug` (0.3.0) to get information about its current state and post this information in the archipelago discord.
-- Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files
+- Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files. 
 - Music shuffle can cause crashes when you reach some parts of the game. To fix this deleate the `Sounds` directory from `Dolphin Emulator\Load\Riivolution\nsmbw_ap_<seedname>\Sounds` 
 - If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
 - Multiple things can mess with the nsmbw cache stored in the temp folder. To fix them run `/rm_tmp` to clear the temp folder and all riivolution patches. (This will NOT remove your savefiles) .
+- If the games error on patching, try running the command `/rm_tmp`.
+
 
 ## Multiplayer
 You can play NSMBW multiplay 2 ways:

@@ -46,10 +46,14 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
                     org_randod_world_num, org_randod_level_num = (0,0)
 
                 _rule = True_()
-                if mod_level_name(org_randod_world_num,org_randod_level_num) == "T":
-                    _rule &= rules.Has(name_world_unlock(world_num), count=2)
+                if (world.options.world_unlock.value == WorldUnlock.option_separate) and (world_num <= 8) :
+                    if (mod_level_name(org_randod_world_num,org_randod_level_num) == "Tower"):
+                        _rule &= rules.Has(name_world_unlock(world_num), count=2)
 
-                if world_num == 9:
+                    if (world.options.level_unlock.value == LevelUnlock.option_all_unlocked) and (con_lev_num >= 4):
+                        _rule &= rules.Has(name_world_unlock(world_num), count=2)
+
+                if (world_num == 9) and (world.options.level_unlock.value != LevelUnlock.option_all_unlocked):
                     assert len(world.star_coin_req_per_world_9_level) == 8
                     _rule &= rules.Has(ITEM.StarCoin, count=world.star_coin_req_per_world_9_level[con_lev_num - 1])
 
@@ -63,21 +67,24 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
                     bowser_level_clear_rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS),count=world.options.bowser_level_unlock.value)
 
                     _rule &= bowser_starcoin_rules & bowser_world_clear_rule & bowser_level_clear_rule
-                if org_lev_num == 0:
+
+                if (org_lev_num == 0) or (world.options.level_unlock.value == LevelUnlock.option_all_unlocked):
                     world.set_rule(world.get_entrance(f"World{world_num}->{name_base(con_randod_world_num, con_randod_level_num)}"),_rule)
                 else:
                     world.set_rule(world.get_entrance(f"{name_base(org_randod_world_num, org_randod_level_num)}->{name_base(con_randod_world_num, con_randod_level_num)}"),_rule )
-    for secret_exit in SECRET_EXIT:
-        if secret_exit.is_item:
-            _rule = LevelRules[name_base(secret_exit.world, secret_exit.level)][0]
-            if secret_exit.world == 3 and secret_exit.level == 4:
-                _rule = True_() # need to override this since otherwise we get error
-            _rule &= rules.Has(name_secret(secret_exit))
-            if secret_exit.exit_type == 2:
-                #assert len(LevelRules[name_base(secret_exit.world, secret_exit.level)]) == 3, f"Make sure lists is of correct size for {name_base(secret_exit.world, secret_exit.level)}"
-                _rule &= LevelRules[name_base(secret_exit.world, secret_exit.level)][2]
 
-            #_rule = True_() # temp
+    for secret_exit in SECRET_EXIT:
+        if secret_exit.is_item and secret_exit.exit_type == 2:
+            _rule = rules.Has(name_secret(secret_exit))
+            if (secret_exit.world, secret_exit.level) != (3,4):
+                _rule &= LevelRules[name_base(secret_exit.world, secret_exit.level)].clear
+
+            if (secret_exit.world, secret_exit.level_to) in ((7,6), (8,7)) and (world.options.world_unlock.value == WorldUnlock.option_separate):
+                _rule &= Has(name_world_unlock(secret_exit.world), 2)
+
+
+            _rule &= LevelRules[name_base(secret_exit.world, secret_exit.level)].secret_exit
+
             world.set_rule(world.get_entrance(name_secret(secret_exit)),_rule)
 
 
@@ -145,7 +152,9 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
     for i in range(1, world.options.include_inventory_powerups.value + 1):
         invent_pow = world.get_location(name_inventory(i))
 
-        req_num = math.ceil((i/ world.options.include_inventory_powerups.value) * 60) # 70 originaly, lowered to promote all reachable
+        req_num = math.ceil((i/ world.options.include_inventory_powerups.value) * 88) # 70 originaly, lowered to promote all reachable
+        req_num = min(req_num, 55)
+        req_num = max(req_num, 1)
         invent_rule_general = Has(ITEM.FAKE.InventoryPow.value, count=req_num) & door & climb
         invent_rule_no_toad =  Has(ITEM.FAKE.InventoryPowNoToad.value, count=req_num)
 
@@ -174,6 +183,9 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
             if LevelRules[name_base(*level)].roulette is not None:
                 loc = world.get_location(name_roulette(*level))
                 world.set_rule(loc, LevelRules[name_base(*level)].roulette)
+
+    loc = world.get_location(name_world_clear(9))
+    world.set_rule(loc, HasFromListUnique(*list([name_base(9,level_num) for level_num in range(1,8+1)])))
 
 
 def set_completion_condition(world: "NSMBWworld") -> None:

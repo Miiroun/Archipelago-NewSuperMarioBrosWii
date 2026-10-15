@@ -1,29 +1,17 @@
 # TODO 
 # Super Short term
-- Ask how difficult adding UI elements is.
 - Mention which files needs to be selected for settings:
 - Rename raw rules to rule_data?
 - Work on FINAL MOVMENETS : so REACT can start on block logic
-- Format list of all blocks
 - Spend time on ap-map pack : download images from wiki with python?
 - Option to exlude specific worlds
-- do archipelago nameing of blocks
-- fix header licence
-- Ap: write my slot data and seed to meme with riivolution: verify in client
-- Castles req second level half
-- Mention Mac issue in setup
-- make level completion an impactful setting?
 - improve description of RandomizePowerups
 - setup guide: do not have dolphin open
 - clarify dolphin folder when selecting : not rom folder, should include dolphin.exe
 - what about shuffling the enemy ambush stages
-- Level shuffle options
 - I've looked at the rest of the castles in the editor and if I am correct in what I think Is happening 1-C, 3-C, and 6-C should all be fine and the only ones that won't work are 4-C and 5-C (obviously 2-C & 8-C arent randoed for other reasons)
-- Test remaining 7-C rando
 - Stricter error for having dolphin open when connect
-- Docs: progressive world
 - Descriptive folder browsing
-- Docs: level shuffle limitation, trap explain
 - option exclude some levels
   - I think just a setting that can remove up to 5 levels is fine
 - Have 2 lists during enterence rando creation: 1 for placement pool and 1 for level pool, so can seperate them
@@ -32,26 +20,16 @@
 - Why is inventory pow 10 so often unreachable
 - /bowserlock : print all reasons
 - Lock bowser from path patch isntead of client
-- I also thought of having a "World 9 Clear" for clearing all 8 levels
 - require second world unlock to unlock 7-6 and 8-7
-  - both in client and apworld
+  - in client
 
-
-- I think it's not bad bad idea to have an option with just world unlocks rather then 2 progressive worlds
-- WorldsUnlocks apworld side
-  - levelunlock apworld side
-
+  
 
 # internal UT pack
-- redownload wiki img : compress
-  - or generate them myself
 use map visualliser to place out location group : names
-write python script to populate location groups
--> quick internal pack
 FUTURE
   - item tracking
   - draw images for movements
-    - pain is fun
 ITEMTRACKER
 - powerups
 - unlocks
@@ -78,7 +56,12 @@ ITEMTRACKER
 - level name changes
 - clear_mod
 - e.g. 1-Castle name change
-- world unlock logic change
+- world unlock logic change for 8-2, 7-T
+- WorldsUnlocks
+- levelunlock 
+- Test remaining 7-C rando
+- 8-Castle is correctly locked in new system
+- world 9 clear
 
 
 ## Bugs to fix
@@ -104,6 +87,7 @@ ITEMTRACKER
 - 7-G needs door to secret exit
   - Copy paste normal level req to secret exit
   - more levels are missing 
+- Does secret exit apply its rules correct
 
 
 ## Before release
@@ -212,6 +196,8 @@ ITEMTRACKER
 - Dolphin debug to find whitch function responsible path unlocks
 - Goomba extinction: temp filler
 - Add index to game info 
+- CAN get out of logic with seperete worlds, levels unlocked: e.g 3-G 
+- Ask in NSMBW dc how difficult adding UI elements is.
 
 
 ## Logic

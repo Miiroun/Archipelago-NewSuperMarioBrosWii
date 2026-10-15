@@ -1,6 +1,17 @@
 # Secret options
 Strong warning, these are secret for a reason.
-Do not use them if you want a stable playthrough.
+Do not use them if you want a stable playthrough.<!-- TOC -->
+* [Secret options](#secret-options)
+  * [`nintynine_coin_sanity : true`](#nintynine_coin_sanity--true)
+  * [`oneups_sanity : true`](#oneups_sanity--true)
+  * [`red_coin_ring`](#red_coin_ring)
+  * [`roulet_block`](#roulet_block)
+  * [`pallet_shuffle_riivolution : true`](#pallet_shuffle_riivolution--true)
+  * [`block_sanity : true`](#block_sanity--true)
+  * [`entrance_randomizer : on`](#entrance_randomizer--on)
+  * [Legacy Linux save-state hotkeys](#legacy-linux-save-state-hotkeys)
+  * [How to play (`use_riivolution` disabled)](#how-to-play-use_riivolution-disabled)
+<!-- TOC -->
 
 
 ## `nintynine_coin_sanity : true`
@@ -50,3 +61,17 @@ In `host.yaml`, set `nsmbw_settings.keypress_library` to:
   [setup instructions](https://github.com/ReimuNotMoe/ydotool#runtime).
 
 Restart the client after changing this setting.
+
+
+## How to play (`use_riivolution` disabled)
+1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
+2) This should prompt you for your game file. (You can repromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
+   - If you want the game to auto start
+3) Clear save file 2 (you can make a copy of it if you care about it). Then select the now empty savefile 2 to play on.
+4) After you have entered the world map press `CONNECT` in the client, and enter your slot name and password.
+5) Open the in game world-select menu and move to the world you have unlocked.
+6) See the quirks section in [en_NSMBW.md](../../docs/en_NSMBW.md#known-quirks--bugs--help-with-debug) for quirks with the implementation.
+   - If your on Linux, read [legacy-linux-save-state-hotkeys](#legacy-linux-save-state-hotkeys).
+7) Make save-states to save the game and run `/save` often.
+   - Don't use the in game save feature and make a new save state after every level clear.
+   - To close the game run `/exit`

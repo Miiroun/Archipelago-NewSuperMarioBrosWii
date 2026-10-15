@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from BaseClasses import Item, ItemClassification, CollectionState, MultiWorld, Location
 from .Common import *
-from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer
+from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer, WorldUnlock
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -14,6 +14,7 @@ ITEM_NAME_TO_ID = {
     ITEM.StarCoin : 101,
     ITEM.Time : 102,
     ITEM.BossHealth : 103,
+    ITEM.ProgressiveWorld : 104,
     ITEM.GlitchedLogic : 199
 }
 ITEM_NAME_GROUPS = {}
@@ -24,6 +25,7 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     ITEM.StarCoin : ItemClassification.progression_deprioritized_skip_balancing, #77 x 3 st
     ITEM.Time : ItemClassification.progression,
     ITEM.BossHealth : ItemClassification.filler,
+    ITEM.ProgressiveWorld : ItemClassification.progression,
     ITEM.GlitchedLogic : ItemClassification.progression,
 }
 
@@ -173,11 +175,21 @@ def create_all_items(world: NSMBWworld) -> None:
             itempool.append(world.create_item(ITEM.StarCoin))
 
     if world.options.entrance_randomizer.value == EntranceRandomizer.option_off:
-        for i in range(1, 9+1):
-            if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
-                itempool.append(world.create_item(name_world_unlock(i)))
-            if i != 9:
-                itempool.append(world.create_item(name_world_unlock(i)))
+
+        match world.options.world_unlock.value:
+            case WorldUnlock.option_single | WorldUnlock.option_separate:
+                for i in range(1, 9+1):
+                    if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
+                        itempool.append(world.create_item(name_world_unlock(i)))
+                    if (i != 9)  and (world.options.world_unlock.value == WorldUnlock.option_separate):
+                        itempool.append(world.create_item(name_world_unlock(i)))
+            case WorldUnlock.option_progressive:
+                for _ in range(9):
+                    itempool.append(world.create_item(ITEM.ProgressiveWorld))
+            case WorldUnlock.option_unlocked:
+                pass
+            case _:
+                raise ValueError
 
 
     if world.options.randomize_abilites.value:

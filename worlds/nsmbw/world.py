@@ -51,14 +51,19 @@ world_enemy     = [4, 5, 2, 1, 6, 3, 7, 0] # 8-3 should be for enemy, however th
 # collect override might not be best : maybe an event for each source : with an multiple, then we can do collect on event items
 
 for world_num in range(1, 8+1):
-    collection_map_general.update({
-        name_base(world_num, world_toad[world_num - 1], assert_=False)  : 4,
-    })
+    if world_toad[world_num - 1] != 0:
+        collection_map_general.update({
+            name_base(world_num, world_toad[world_num - 1])  : 4,
+        })
 
-    collection_map_no_toad.update({
-        name_base(world_num, world_star[world_num - 1], assert_=False)  : 1,
-        name_base(world_num, world_enemy[world_num - 1], assert_=False) : 6,
-    })
+    if world_star[world_num - 1] != 0:
+        collection_map_no_toad.update({
+            name_base(world_num, world_star[world_num - 1])  : 1,
+        })
+    if world_enemy[world_num - 1] != 0:
+        collection_map_no_toad.update({
+            name_base(world_num, world_enemy[world_num - 1]) : 6,
+        })
 collection_map_general.update(collection_map_no_toad)
 
 class NSMBWworld(World):

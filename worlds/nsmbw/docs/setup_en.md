@@ -30,22 +30,11 @@
    - If you do have it enabled make sure you do NOT have the game open when you press CONNECT.
 
 
-## How to play (`use_riivolution` disabled)
-1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
-2) This should prompt you for your game file. (You can repromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
-   - If you want the game to auto start
-3) Clear save file 2 (you can make a copy of it if you care about it). Then select the now empty savefile 2 to play on.
-4) After you have entered the world map press `CONNECT` in the client, and enter your slot name and password.
-5) Open the in game world-select menu and move to the world you have unlocked.
-6) See the quirks section in [en_NSMBW.md](../docsen_NSMBW.md#known-quirks--bugs--help-with-debug) for quirks with the implementation.
-   - If your on Linux, read [legacy-linux-save-state-hotkeys](../dev_files/dev_docs/secret_options.md#legacy-linux-save-state-hotkeys).
-7) Make save-states to save the game and run `/save` often.
-   - Don't use the in game save feature and make a new save state after every level clear.
-   - To close the game run `/exit`
-
-
-## How to play (`use_riivolution` enabled)
-0) In `host.yaml`, under the section `nsmbw_settings`. Make sure they are their default values `auto_open` : `false` and `auto_open_riivolution` : `true`. 
+## How to play
+0) Verify these points before continuing your setup.
+   - In `host.yaml`, under the section `nsmbw_settings`. Make sure they are their default values `auto_open` : `false` and `auto_open_riivolution` : `true`.
+   - On macOS, you might need to [resign](https://github.com/aldelaro5/dolphin-memory-engine#macos-code-signing) your dolphin copy.
+   - If you disabled `use_riivolution` use [this](../dev_files/dev_docs/secret_options.md#how-to-play-use_riivolution-disabled) guide instead.
 1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
 2) You will be promoted for the location of your dolphin install if they are not located automatically. 
    - You can change their values later on in `host.yaml`. BE CAREFUL use `/` or `\\` NOT `\` as path separators.
@@ -55,9 +44,9 @@
 4) The game will now open automatically.
    - If it does not, you can right-click your game in dolphin → `start with riivolution patch`. Enable just the patch for this multiworld and start the game.
 5) Select `SAVEFILE 2` to play on.
-6) Play the game: Beat levels and collect star coins. Prepare to take down bowser.
+6) Play the game: Beat levels and collect star coins. Prepare to beat bowser once and for all.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
-8) Make save-states to save the game and run `/save` often.
+7) Make save-states to save the game and run `/save` often.
    - However, do NOT make a save state in peach castle, it will release your remaining starcoin locations.
    - To close the client run `/exit` to make sure everything is saved correctly.
 

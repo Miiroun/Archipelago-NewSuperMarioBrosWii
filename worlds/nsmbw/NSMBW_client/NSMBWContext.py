@@ -982,6 +982,20 @@ class NSMBWContext(SuperContext):
                 self.completed_levels.remove(level_name)
                 self.log_color("Bowsers castle is now unlocked", "blue")
                 self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 0x10, 1))
+
+
+        level = self.game_interface.get_world_level_num_in_level()
+        if level[0] == 9:
+            for level_num in range(1,8+1):
+                level_stats = self.game_interface.get_level_stats(9, level_num)[0]
+                if level_stats & 0x10 != 0x10:
+                    self.locations_handled += checked_locations
+                    return checked_locations
+
+            loc_name = name_world_clear(9)
+            if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
+                checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
+
         self.locations_handled += checked_locations
         return checked_locations
 
@@ -1047,6 +1061,10 @@ class NSMBWContext(SuperContext):
                 self.time += 1
             elif item_id == 103:
                 self.boss_health += 1
+            elif item_id == 104:
+                if 0 in self.unlocked_worlds:
+                    ind = self.unlocked_worlds.index(0)
+                    self.unlocked_worlds[ind] = 1
             elif 201 <= item_id <= 299:
                 self.unlocked_worlds[item_id - 201] += 1
             elif 301 <= item_id <= 399:
@@ -1070,12 +1088,12 @@ class NSMBWContext(SuperContext):
                 print(f"A time extension was received")
             elif item_name == ITEM.BossHealth:
                 print("Boss health recived")
+            elif item_name == ITEM.ProgressiveWorld:
+                logger.info(f"Progressive world received.")
             elif 201 <= item_id <= 299:
                 world_num = item_id - 200
-                if world_num != 9 and self.unlocked_worlds[world_num-1] == 1:
-                    logger.info(f"Progressive world {world_num} was received, you will need 2 to unlock the whole world.")
-                else:
-                    print(f"World {world_num} was received.")
+                if self.unlocked_worlds[world_num-1] == 1:
+                    logger.info(f"Progressive world {world_num} was received.")
             elif 301 <= item_id <= 399:
                 print(f"Received move {item_name} ")
             elif 401 <= item_id <= 499:
@@ -1174,13 +1192,6 @@ class NSMBWContext(SuperContext):
 
     async def handle_unlocked_worlds(self):
         # when leaving a level the game somtimes freezes when world1 is not unlocked
-        use_world_one = self.game_interface.is_in_worldmap()#self.game_interface.is_in_level()#not (current_map_world in [7,8])
-
-        for world_num in range(1 , 9 + 1):
-            if ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])) or ((not use_world_one) and world_num == 1):
-                self.game_interface.set_worldstats(world_num, b'\x01')
-            elif self.unlocked_worlds[world_num - 1] == 0:
-                self.game_interface.set_worldstats(world_num, b'\x00')
 
         second_half : int
         match self.slot_data["world_unlock"]:
@@ -1191,13 +1202,28 @@ class NSMBWContext(SuperContext):
                     if (self.unlocked_worlds[world_num - 1] >= 2):
                         second_half += 1
             case WorldUnlock.option_single:
+                second_half = 2 ** 8 - 1
+            case WorldUnlock.option_progressive:
+                second_half = 2 ** 8 - 1
+            case WorldUnlock.option_unlocked:
                 second_half = 2**8-1
             case _:
-                raise ValueError(f"world_unlock : self.slot_data['world_unlock']")
-
+                raise ValueError(f"world_unlock : {self.slot_data['world_unlock']}")
         self.game_interface.set_world_second_half_unlock(int_to_bytes(second_half, 4))
 
+        use_world_one = self.game_interface.is_in_worldmap()#self.game_interface.is_in_level()#not (current_map_world in [7,8])
+        for world_num in range(1, 9 + 1):
+            match self.slot_data["world_unlock"]:
+                case WorldUnlock.option_separate | WorldUnlock.option_single | WorldUnlock.option_progressive:
+                    if ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])) or ((not use_world_one) and world_num == 1):
+                        self.game_interface.set_worldstats(world_num, b'\x01')
+                    elif self.unlocked_worlds[world_num - 1] == 0:
+                        self.game_interface.set_worldstats(world_num, b'\x00')
 
+                case WorldUnlock.option_unlocked:
+                    self.game_interface.set_worldstats(world_num, b'\x01')
+                case _:
+                    raise ValueError(f"world_unlock : {self.slot_data['world_unlock']}")
 
     async def handle_set_sc_count(self):
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 from BaseClasses import Entrance, Region
 from rule_builder import rules
 from .Common import *
-from .options import World9UnlockCondition
+from .options import World9UnlockCondition, WorldUnlock, LevelUnlock
 from .raw_rules import get_level_connections
 
 if TYPE_CHECKING:
@@ -74,7 +74,17 @@ def connect_regions(world: NSMBWworld) -> None:
 
     for world_num in range(1,9+1):
         amount : int = world.options.starcoin_requirement_world_unlock.value[str(world_num)]
-        _rule : rules.Rule = rules.Has(name_world_unlock(world_num)) & rules.Has(ITEM.StarCoin, count=amount)
+        _rule = rules.True_()
+        match world.options.world_unlock.value:
+            case WorldUnlock.option_single | WorldUnlock.option_separate:
+                _rule &= rules.Has(name_world_unlock(world_num))
+            case WorldUnlock.option_progressive:
+                rules.Has(ITEM.ProgressiveWorld, world_num)
+            case WorldUnlock.option_unlocked:
+                pass
+            case _:
+                raise ValueError(world.options.world_unlock.value)
+        _rule &= rules.Has(ITEM.StarCoin, count=amount)
         menu_region.connect(world.get_region(f"World{world_num}"), f"menu->World{world_num}", _rule)
         for org_lev_num, con_levels in enumerate(connections[world_num-1]):
             for con_lev_num in con_levels:
@@ -85,12 +95,20 @@ def connect_regions(world: NSMBWworld) -> None:
                 else:
                     org_randod_world_num, org_randod_level_num = (0,0)
 
-                if org_randod_level_num == 0:
-                    world.get_region(f"World{world_num}").connect(world.get_region(name_base(con_randod_world_num, con_randod_level_num) + " start"),
-                                                            f"World{world_num}->{name_base(con_randod_world_num, con_randod_level_num)}")
+                org_region : Region
+                conn_name : str
+                if (org_randod_level_num == 0) or (world.options.level_unlock.value == LevelUnlock.option_all_unlocked):
+                    org_region = world.get_region(f"World{world_num}")
+                    conn_name = f"World{world_num}->{name_base(con_randod_world_num, con_randod_level_num)}"
+                    if conn_name in world.multiworld.regions.entrance_cache[world.player]:
+                        continue
+
+                elif world.options.level_unlock.value == LevelUnlock.option_vanilla:
+                    org_region = world.get_region(name_base(org_randod_world_num, org_randod_level_num))
+                    conn_name = f"{name_base(org_randod_world_num, org_randod_level_num)}->{name_base(con_randod_world_num, con_randod_level_num)}"
                 else:
-                    world.get_region(name_base(org_randod_world_num, org_randod_level_num)).connect(world.get_region(name_base(con_randod_world_num, con_randod_level_num)+ " start"),
-                                                                  f"{name_base(org_randod_world_num, org_randod_level_num)}->{name_base(con_randod_world_num, con_randod_level_num)}")
+                    raise ValueError
+                org_region.connect(world.get_region(name_base(con_randod_world_num, con_randod_level_num)+ " start"),conn_name)
     for secret_exit in SECRET_EXIT:
         if secret_exit.is_item:
             from_level = level_randoed(world.shuffled_level_order,secret_exit.world, secret_exit.level)

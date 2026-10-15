@@ -78,8 +78,9 @@ for world_num in range(1,10+1): # worlds
     block_world_set |= block_level_set
 
     # add location for beating castles and towers
-    if world_num <= 8:
+    if world_num in [1,2,3,4,5,6,7,9]:
         LOCATION_NAME_TO_ID.update({name_world_clear(world_num) : 3_000_000+100*world_num + 1})
+    if world_num <= 8:
         LOCATION_NAME_TO_ID.update({name_tower_clear(world_num) : 3_000_000+100*world_num + 2})
 LOCATION_NAME_GROUPS.update({
     "Starcoins" : sc_world_set,
@@ -87,7 +88,7 @@ LOCATION_NAME_GROUPS.update({
     "Starcoin 1" : set(name_starcoin(world_num, level_num, 1) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1,9+1)),
     "Starcoin 2" : set(name_starcoin(world_num, level_num, 2) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
     "Starcoin 3" : set(name_starcoin(world_num, level_num, 3) for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1) for world_num in range(1, 9 + 1)),
-    "Level completed" : set(name_world_clear(world_num) for world_num in range(1,8+1)),
+    "Level completed" : set(name_world_clear(world_num) for world_num in [1,2,3,4,5,6,7,9]),
     "Towers" : set(name_tower_clear(world_num) for world_num in range(1,8+1)),
     "1ups"              : set(name_1ups(world_num, level_num)           for world_num, level_num in LEVELS),
     "99 coins"          : set(name_99coins(world_num, level_num)        for world_num, level_num in LEVELS),
@@ -139,9 +140,10 @@ def create_all_locations(world: NSMBWworld) -> None:
 
 def make_locations_priority(world: NSMBWworld) -> None:
     for world_num in range(1, 9+1):  # worlds
-        if world_num != 9:
-            if world.options.world_comp_priority.value == True:
+        if world.options.world_comp_priority.value == True:
+            if world_num != 9:
                 world.get_location(name_tower_clear(world_num)).progress_type = LocationProgressType.PRIORITY
+            if world_num != 8:
                 world.get_location(name_world_clear(world_num)).progress_type = LocationProgressType.PRIORITY
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world.options.starcoin_sanity.value == False:
@@ -177,8 +179,14 @@ def create_regular_locations(world: NSMBWworld) -> None:
         if world_num <= 8:
             level_location = get_location_names_with_ids([name_tower_clear(world_num)])
             world.get_region(f"{world_num}-Tower").add_locations(level_location, NSMBWLocation)
+        if world_num in [1,2,3,4,5,6,7]:
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
             world.get_region(name_base(world_num,8 + (world_num in [4,6,7,8]))).add_locations(level_location, NSMBWLocation)
+        if world_num == 9:
+            level_location = get_location_names_with_ids([name_world_clear(world_num)])
+            world.get_region(f"World{world_num}").add_locations(level_location, NSMBWLocation)
+
+
 
     if world.options.shortcuts_sanity.value == True:
         for secret_exit in SECRET_EXIT:

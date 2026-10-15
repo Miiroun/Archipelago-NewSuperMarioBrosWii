@@ -217,7 +217,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             logger.info(f"Not connecterd")
             return
         completed_worlds = sum(
-            [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in range(1, 7 + 1)])
+            [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in [1,2,3,4,5,6,7,9]])
         logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['bowser_world_unlock']} worlds.")
 
     def _cmd_goal(self):

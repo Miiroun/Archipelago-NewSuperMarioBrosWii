@@ -550,13 +550,14 @@ class LevelShuffleBossLock(Choice):
 
 # - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
 
-class LevelShuffleRemove(OptionSet):
+class LevelShuffleRemove(OptionList):
     """
     An option to remove up to 5 levels by plando:ing them to replace coin levels
     Will not work for levels with seceret exits
     """
     # make this work on none level shuffle
     # - just make non level plando fill in the best it can when stuff is plandoed
+    valid_keys = LEVEL_NAMES
 
 class LevelShufflePlando(OptionDict):
     """
@@ -572,6 +573,8 @@ class LevelShufflePlando(OptionDict):
     """
     display_name = "Level Shuffle Plando"
 
+    valid_keys = LEVEL_NAMES
+    valid_items = LEVEL_NAMES
     value : Dict[str, str]
     default  =  {}
 
@@ -631,9 +634,10 @@ class ImportantEarlyItems(Toggle):
 
 class WorldUnlock(Choice):
     """
-    Seperate : most worlds req 2 items to unlock
-    single : all worlds are unlocked with a single item
-
+    Separate : most worlds req 2 items to unlock, lessens risk for getting BK:ed
+    Single : all worlds are unlocked with a single item
+    Progressive :
+    Unlocked : All worlds start unlocked
     """
     display_name = "Worlds Unlocks"
 
@@ -649,7 +653,7 @@ class LevelUnlock(Choice):
     """
     How levels are unlocked in game
     Vanilla = levels are unlocked like vanilla
-    All_unlocked = YOu start with access to all levels in your world
+    All_unlocked = You start with access to all levels in your world
     """
     display_name = "Levels Unlocks"
     option_vanilla = 1
@@ -880,7 +884,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
               f"consider lowering this to get a more enjoyable experience.")
 
     # this tries to prevent num loc > num items
-    if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.level_completion.value * 71 +
+    if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.level_completion.value * 77 +
                 world.options.hint_movie_sanity.value * 65 + world.options.include_inventory_powerups.value) #world comp, madatory  + 17
          <= 10+
         (itm :=  world.options.randomize_time.value
@@ -953,4 +957,10 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if world.options.level_unlock.value != LevelUnlock.option_all_unlocked:
             world.options.level_unlock.value = LevelUnlock.option_all_unlocked
             print("(NSMBW generation warning) entrance_randomizer require level_unlock set to all_unlocked")
+
+    for i in range(1, min(5, len(world.options.level_shuffle_remove.value))+1):
+        world.options.level_shuffle_plando.value.update({
+            f"Coin-{i}" : world.options.level_shuffle_remove.value[i]
+        })
+
 

@@ -136,6 +136,7 @@ class ITEM:
     Time            = "Time"
     GlitchedLogic   = "Glitched Logic"
     BossHealth      = "Decrease Boss Health"
+    ProgressiveWorld= "Progressive world"
 
 
 
@@ -160,7 +161,6 @@ for world_num in range(1,10+1):
         LEVELS.append((world_num, level_num))
 del world_num
 del level_num
-
 
 def mod_level_name(world_num : int, level_num : int) -> str:
     shift = (world_num in [7, 8])
@@ -211,7 +211,7 @@ def name_secret(secret_exit : SecretExit) -> str:
         raise ValueError(f"Unknown exit_type: {secret_exit.exit_type}")
 
 def name_world_clear(world_num : int) ->  str:
-    assert 1 <= world_num <= 8, f"world_num {world_num} is not valid"
+    assert 1 <= world_num <= 7 or world_num == 9, f"world_num {world_num} is not valid"
     return f"World{world_num} clear"
 def name_tower_clear(world_num : int) -> str:
     assert 1 <= world_num <= 8

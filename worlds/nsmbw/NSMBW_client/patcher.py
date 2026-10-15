@@ -33,6 +33,9 @@ class Patcher:
     output_path : Path
     random : Random
     region : str
+    shortcut_path : Path
+    xml_path : Path
+
 
     def __init__(self, slot_name : str, seed : str, slot_data : dict):
         self.slot_data = slot_data
@@ -49,6 +52,8 @@ class Patcher:
         self.random = Random(seed)
 
         self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
+        self.xml_path = self.output_path.parent / "riivolution" / f"{self.name}.xml"
+
 
     def recolor_tileset(self, source_bytes : bytes) -> bytes:
 
@@ -545,11 +550,10 @@ class Patcher:
 
         #print("-------XML-----------------")
         #print(ET.tostring(wiidisc))
-        destination = self.output_path.parent / "riivolution" / f"{self.name}.xml"
-        destination.parent.mkdir(exist_ok=True, parents=True)
+        self.xml_path.parent.mkdir(exist_ok=True, parents=True)
 
         ET.indent(tree, '\t')
-        with open(destination, "w+") as file_name:
+        with open(self.xml_path, "w+") as file_name:
             tree.write(file_name, encoding='unicode')
 
 
@@ -586,7 +590,7 @@ class Patcher:
         with open(self.shortcut_path, "w+") as file_name:
             #json.dump(data, file_name, indent=4)
             file_name.write(json.dumps(data, indent=2).replace("\\\\", r"\/"))
-        assert (self.shortcut_path).exists(), "need to have created shortcut successfully"
+        assert self.shortcut_path.exists(), "need to have created shortcut successfully"
         print(f"shortcut path:{self.shortcut_path}")
 
     def get_region(self) -> bool:
@@ -604,9 +608,21 @@ class Patcher:
         logger.info(f"output file path: {self.output_path}")
 
         logger.info("tests if old rando exist")
-        if self.output_path.exists():
-            logger.info(f"old rando exist, uses it instead")
+        if self.output_path.exists() + self.shortcut_path.exists() + self.xml_path.exists()== 3:
+            logger.info(f"Old rando files found, uses them instead")
             return
+        elif self.output_path.exists():
+            logger.info(f"old rando only partially exists, clears out remaining to reset it")
+            shutil.rmtree(self.output_path)
+        elif self.xml_path.exists():
+            logger.info(f"old rando only partially exists, clears out remaining to reset it")
+            os.remove(self.xml_path)
+        elif self.shortcut_path.exists():
+            logger.info(f"old rando only partially exists, clears out remaining to reset it")
+            os.remove(self.shortcut_path)
+        else:
+            print(f"Old files not found")
+
 
         logger.info(f"Extracting game to {str(self.temp_dir.parent)}")
         self.extract_game()
@@ -625,7 +641,7 @@ class Patcher:
         self.create_riivolution_patch()
 
 
-        logger.info("Deleting temp game extraction")
+        #logger.info("Deleting temp game extraction")
         #delete_temp()
 
         logger.info(f"Creates desktop shortcut")
