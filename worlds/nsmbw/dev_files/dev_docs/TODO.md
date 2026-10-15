@@ -1,6 +1,5 @@
 # TODO 
 # Super Short term
-- Edit world map so all levels unlocked from start
 - Ask how difficult adding UI elements is.
 - Mention which files needs to be selected for settings:
 - Rename raw rules to rule_data?
@@ -78,6 +77,8 @@ ITEMTRACKER
 - LevelUnlock logic
 - level name changes
 - clear_mod
+- e.g. 1-Castle name change
+- world unlock logic change
 
 
 ## Bugs to fix
@@ -104,6 +105,15 @@ ITEMTRACKER
   - Copy paste normal level req to secret exit
   - more levels are missing 
 
+
+## Before release
+- React : blocks
+- ALL #super-short-term
+  - inlcuding tracker
+- fix all bugs
+- do all playtest
+- remove use_riivolution from setup
+- verify UT 0.3.5 is latest
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death

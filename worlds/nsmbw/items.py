@@ -34,7 +34,7 @@ important_items = {ITEM.ABILITIES.Jump, ITEM.ABILITIES.Run, ITEM.LEVELELEMENTS.P
 for i in range(1,9+1):
     ITEM_NAME_TO_ID.update({name_world_unlock(i) : 200 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({name_world_unlock(i) : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({ITEM.Groups.Worlds : set(name_world_unlock(i) for i in range(1,9+1))})
+ITEM_NAME_GROUPS.update({ITEM.Groups.Worlds.value : set(name_world_unlock(i) for i in range(1,9+1))})
 
 nicks : List[Tuple[str,str]] = [
     ("spin", ITEM.ABILITIES.SpinJump.value),
@@ -62,7 +62,7 @@ ITEM_NAME_GROUPS.update({
     "Abilities" : set(ABILITIES),
     "Level elements" : set(LEVEL_ELEMENTS),
     "Enemies" : set(ENEMIES),
-    ITEM.Groups.Unlocks : set(UNLOCKS)
+    ITEM.Groups.Unlocks.value : set(UNLOCKS)
 })
 
 DEFAULT_ITEM_CLASSIFICATIONS.update({
@@ -92,7 +92,7 @@ for i, this_powerup_unlock in enumerate(POWERUP_UNLOCK):
         DEFAULT_ITEM_CLASSIFICATIONS.update({this_powerup_unlock : ItemClassification.progression | ItemClassification.useful})
     else:
         DEFAULT_ITEM_CLASSIFICATIONS.update({this_powerup_unlock : ItemClassification.progression})
-ITEM_NAME_GROUPS.update({ITEM.Groups.Powerups : set(POWERUP_UNLOCK)})
+ITEM_NAME_GROUPS.update({ITEM.Groups.Powerups.value : set(POWERUP_UNLOCK)})
 
 for i, secret_exit in enumerate(SECRET_EXIT):
     ITEM_NAME_TO_ID.update({name_secret(secret_exit): 700 + i + 1})

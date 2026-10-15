@@ -1,15 +1,15 @@
 # New Super Mario Bros Wii Archipelago Randomizer Setup Guide
 
-## Required Software
+## Software
 - [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest) 
 - [Dolphin emulator](https://dolphin-emu.org/download/) (minimum 2503)
 - [NSMBW AP-World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
 - A legally dumped copy of New Super Mario Bros Wii (US rev 2) (both .iso and .wbfs works but not .nikt.iso)
-  - If this is not the edition of your copy, see [en_NSMBW.md](../docs/en_NSMBW.md) for list of features known to be broken on other versions.
+  - If this is not the edition of your copy, see [en_NSMBW.md](../docs/en_NSMBW.md#known-quirks--bugs--help-with-debug) for list of features known to be broken on other versions.
   - To dump your game first install the [wii homebrew channel](http://wiibrew.org/wiki/Homebrew_setup), likely by using [Wilbrand](http://wiibrew.org/wiki/Wilbrand) or [Str2hax](https://wiibrew.org/wiki/Str2hax) (recommended).
   - Optionally install [Open Shop Channel](https://oscwii.org/), which you can then use to install one of the following programs.
   - Use [cleanrip](https://wiibrew.org/wiki/CleanRip) or [usb loader gx](https://usbloadergx.com/) (recommended) to dump your game to the SD-card.
-- [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) (Optionally) 
+- [Universal Tracker](https://github.com/FarisTheAncient/Archipelago/releases) (minimum 0.3.5, optional) 
 
 
 ## Setup
@@ -18,7 +18,7 @@
 3) Then create a player yaml file from the option creator in the launcher.
    -  Default yaml is recommended for new players. It has 441 locations (as of 0.2.0).
    - If you want to play with a lower location count disable star coins (231 locations).
-   - See [en_NSMBW.md](../docs/en_NSMBW.md) for all options, etc.
+   - See [en_NSMBW.md](../docs/en_NSMBW.md#options) for all options, etc.
 4) Note that the ap client is bundled with launcher.
 5) Open dolphin, change the following settings:
    - `Options → Configuration → Advanced → Memory Override` to `Off`
@@ -37,7 +37,8 @@
 3) Clear save file 2 (you can make a copy of it if you care about it). Then select the now empty savefile 2 to play on.
 4) After you have entered the world map press `CONNECT` in the client, and enter your slot name and password.
 5) Open the in game world-select menu and move to the world you have unlocked.
-6) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
+6) See the quirks section in [en_NSMBW.md](../docsen_NSMBW.md#known-quirks--bugs--help-with-debug) for quirks with the implementation.
+   - If your on Linux, read [legacy-linux-save-state-hotkeys](../dev_files/dev_docs/secret_options.md#legacy-linux-save-state-hotkeys).
 7) Make save-states to save the game and run `/save` often.
    - Don't use the in game save feature and make a new save state after every level clear.
    - To close the game run `/exit`
@@ -60,8 +61,10 @@
    - However, do NOT make a save state in peach castle, it will release your remaining starcoin locations.
    - To close the client run `/exit` to make sure everything is saved correctly.
 
+
 ## Tracker 
 - You can optionally use the built-in universal tracker extension to track available locations.
 - Simply download [universal tracker](https://github.com/FarisTheAncient/Archipelago/releases?q=Tracker) and put it into your custom worlds folder (or double click it).
 - UT is integrated into the NSMBW client if you have it in your custom worlds folder.
+- 0.4.0 includes an internal location and image tracker; for it to work make sure you have UT 0.3.5 or newer.
 

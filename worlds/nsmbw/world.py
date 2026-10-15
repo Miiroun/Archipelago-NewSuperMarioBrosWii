@@ -338,8 +338,8 @@ class NSMBWworld(World):
             return 0
 
     both_pages = [
-        ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups),
-        ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks),
+        ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups.value),
+        ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks.value),
         #ItemLayoutSection(name="All items", items="Everything"),
         #{"name": "All items", "items": "Everything"}
 
@@ -382,7 +382,7 @@ class NSMBWworld(World):
         "map_page_index": map_page_index,
 
         "item_page_item_layouts": [
-          ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds)
+          ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds.value)
         ] + both_pages,
         "map_page_item_layouts_left": [
         ] + both_pages,

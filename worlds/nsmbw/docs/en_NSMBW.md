@@ -1,6 +1,22 @@
 # New Super Mario Bros Wii
+<!-- TOC -->
+* [New Super Mario Bros Wii](#new-super-mario-bros-wii)
+  * [Goals](#goals)
+  * [Items](#items)
+  * [Locations](#locations)
+  * [General randomized things](#general-randomized-things)
+  * [Options](#options)
+  * [Deathlink](#deathlink)
+  * [Settings](#settings)
+  * [Prominent commands](#prominent-commands)
+  * [Known quirks / bugs / help with debug](#known-quirks--bugs--help-with-debug)
+  * [Multiplayer](#multiplayer)
+  * [FAQ](#faq)
+  * [Debug tips](#debug-tips)
+  * [Other NSMBW modding projects](#other-nsmbw-modding-projects)
+<!-- TOC -->
 
-## What is goal
+## Goals
 - To beat bowsers castle at world 8
 - Bowsers castle is looked behind having a number of star coin items and beaten the last level in a number of worlds. (Configurable in player yaml)
 - There also exist alternative goals:
