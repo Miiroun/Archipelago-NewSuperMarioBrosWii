@@ -517,7 +517,6 @@ class NSMBWContext(SuperContext):
                 "deathlink_enabled": self.death_link_enabled,
                 "deathlink_group" : self.death_link_group,
                 "completed_levelstats" : map_nd(self.completed_levelstats, bytes_to_int),
-                "moded_levelstats" : self.moded_levelstats,
                 "handled_num" : self.handled_num,
                 "save_slot" : self.save_slot,
                 "death_link_amnesty_cap" : self.death_link_amnesty_cap,
@@ -916,9 +915,9 @@ class NSMBWContext(SuperContext):
                     checked_locations.append(NSMBWworld.location_name_to_id[exit_name])
                     self.completed_levels.append(exit_name)
                     print(f"You collected a check for {exit_name}")
-                if not (exit_name in self.unlocked_secret_exits):
+                if (not exit_name in self.unlocked_secret_exits) or (not self.is_world_part2_unlocked(world_num)):
                     self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
-            elif (exit_name in self.unlocked_secret_exits) and (exit_name in self.completed_levels):
+            elif (exit_name in self.unlocked_secret_exits) and (exit_name in self.completed_levels) and (self.is_world_part2_unlocked(world_num)):
                 self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + byte_to_check, 1))
                 self.completed_levels.remove(exit_name)
                 logger.info(f"Exit {exit_name} have been unlocked")
@@ -1112,7 +1111,6 @@ class NSMBWContext(SuperContext):
 
         # proccess code
         await self.handle_unlocked_worlds()
-        await self.handle_is_world_unlocked()
         await self.handle_unlocked_powerups()
         await self.handle_set_sc_count()
         await self.game_interface.handle_unlocks(self.unlocks, self.current_mod)
@@ -1190,14 +1188,29 @@ class NSMBWContext(SuperContext):
         for player_num in range(PLAYER_COUNT):
             self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
 
-    async def handle_unlocked_worlds(self):
-        # when leaving a level the game somtimes freezes when world1 is not unlocked
+    def is_world_unlocked(self, world_num) -> bool:
+        use_world_one = self.game_interface.is_in_worldmap()  # self.game_interface.is_in_level()#not (current_map_world in [7,8])
+        match self.slot_data["world_unlock"]:
+            case WorldUnlock.option_separate | WorldUnlock.option_single | WorldUnlock.option_progressive:
+                return ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])) or ((not use_world_one) and world_num == 1)
 
-        second_half : int
+            case WorldUnlock.option_unlocked:
+                return True
+            case _:
+                raise ValueError(f"world_unlock : {self.slot_data['world_unlock']}")
+
+    def is_world_part2_unlocked(self, world_num):
+        return (((self.slot_data["world_unlock"] != WorldUnlock.option_separate) or  (self.unlocked_worlds[world_num - 1] >= 2))
+                and self.is_world_unlocked(world_num))
+
+    async def handle_unlocked_worlds(self):
+        await self.set_starting_world()
+
+        # when leaving a level the game somtimes freezes when world1 is not unlocked
         match self.slot_data["world_unlock"]:
             case WorldUnlock.option_separate:
                 second_half = 0
-                for world_num in range(1 , 8 + 1):
+                for world_num in range(1, 8 + 1):
                     second_half = (second_half << 1)
                     if (self.unlocked_worlds[world_num - 1] >= 2):
                         second_half += 1
@@ -1206,24 +1219,18 @@ class NSMBWContext(SuperContext):
             case WorldUnlock.option_progressive:
                 second_half = 2 ** 8 - 1
             case WorldUnlock.option_unlocked:
-                second_half = 2**8-1
+                second_half = 2 ** 8 - 1
             case _:
                 raise ValueError(f"world_unlock : {self.slot_data['world_unlock']}")
+
         self.game_interface.set_world_second_half_unlock(int_to_bytes(second_half, 4))
 
-        use_world_one = self.game_interface.is_in_worldmap()#self.game_interface.is_in_level()#not (current_map_world in [7,8])
         for world_num in range(1, 9 + 1):
-            match self.slot_data["world_unlock"]:
-                case WorldUnlock.option_separate | WorldUnlock.option_single | WorldUnlock.option_progressive:
-                    if ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])) or ((not use_world_one) and world_num == 1):
-                        self.game_interface.set_worldstats(world_num, b'\x01')
-                    elif self.unlocked_worlds[world_num - 1] == 0:
-                        self.game_interface.set_worldstats(world_num, b'\x00')
+            if self.is_world_unlocked(world_num):
+                self.game_interface.set_worldstats(world_num, b'\x01')
+            else:
+                self.game_interface.set_worldstats(world_num, b'\x00')
 
-                case WorldUnlock.option_unlocked:
-                    self.game_interface.set_worldstats(world_num, b'\x01')
-                case _:
-                    raise ValueError(f"world_unlock : {self.slot_data['world_unlock']}")
 
     async def handle_set_sc_count(self):
 
@@ -1446,7 +1453,7 @@ class NSMBWContext(SuperContext):
                     }
                 }])
 
-    async def handle_is_world_unlocked(self):
+    async def set_starting_world(self):
         try:
            lowest_unlocked = self.unlocked_worlds.index(1) +1
         except ValueError: # this fails if all worlds are at level 2
@@ -1563,7 +1570,7 @@ class NSMBWContext(SuperContext):
             self.handle_modifiers_clear(text=False)
             sleep(0.01)
 
-        logger.info(f"Successfully refreshed all modifiers")
+        #logger.info(f"Successfully refreshed all modifiers")
 
 
     async def handle_screen_transition(self):

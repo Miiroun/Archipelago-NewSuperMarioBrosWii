@@ -174,6 +174,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_refresh_mod(self):
         """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
         Utils.async_start(self.ctx.modifier_removal())
+        logger.info(f"Successfully refreshed all modifiers")
+
 
     def _cmd_save(self):
         """
@@ -198,7 +200,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.username is None:
             logger.info(f"Not connecterd")
             return
-        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['bowser_star_unlock']} for unlocking bowser")
+        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['bowser_star_unlock']} for goaling")
 
     def _cmd_worlds_unlocked(self):
         """
@@ -218,7 +220,16 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             return
         completed_worlds = sum(
             [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in [1,2,3,4,5,6,7,9]])
-        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['bowser_world_unlock']} worlds.")
+        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['bowser_world_unlock']} worlds for goaling.")
+
+    def _cmd_completed_levels(self):
+        """
+        Returns the amount of levels that are considered completed.
+        """
+        if self.ctx.username is None:
+            logger.info(f"Not connecterd")
+            return
+        logger.info(f"{self.ctx.get_count_levels_cleared()} / {self.ctx.slot_data['bowser_level_unlock']} levels completed for goaling ")
 
     def _cmd_goal(self):
         """
@@ -238,6 +249,10 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"Your goal is all levels.")
             case _:
                 raise NotImplementedError
+        self._cmd_starcoins()
+        self._cmd_completed_worlds()
+        self._cmd_com
+
     def _cmd_kill(self):
         """
         A command that kills mario. Useful if you get soft-locked.

@@ -3,10 +3,11 @@ from __future__ import annotations
 from copy import deepcopy
 
 from BaseClasses import  Location, LocationProgressType
+from Options import OptionError
 
 from . import items
 from .Common import *
-from .options import AlternativeGoal, BlockSanity
+from .options import AlternativeGoal, BlockSanity, LevelShuffleBossLock
 from .raw_rules import LevelRules, get_block_id
 
 if TYPE_CHECKING:
@@ -148,7 +149,8 @@ def make_locations_priority(world: NSMBWworld) -> None:
         for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             if world.options.starcoin_sanity.value == False:
                 for sc in range(1,3+1):
-                    world.get_location(name_starcoin(world_num,level_num,sc)).progress_type = LocationProgressType.PRIORITY
+                    shuffled_level = level_randoed(world.shuffled_level_order, world_num,level_num)
+                    world.get_location(name_starcoin(*shuffled_level,sc)).progress_type = LocationProgressType.EXCLUDED
 
 
     # this is replaced by not making the locations
@@ -178,13 +180,13 @@ def create_regular_locations(world: NSMBWworld) -> None:
         # add location for beating castles and towers
         if world_num <= 8:
             level_location = get_location_names_with_ids([name_tower_clear(world_num)])
-            world.get_region(f"{world_num}-Tower").add_locations(level_location, NSMBWLocation)
+            world.get_region(name_base(*level_randoed(world.shuffled_level_order,world_num,7 + (world_num in [7,8])))).add_locations(level_location, NSMBWLocation)
         if world_num in [1,2,3,4,5,6,7]:
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
-            world.get_region(name_base(world_num,8 + (world_num in [4,6,7,8]))).add_locations(level_location, NSMBWLocation)
+            world.get_region(name_base(*level_randoed(world.shuffled_level_order,world_num,8 + (world_num in [4,6,7,8])))).add_locations(level_location, NSMBWLocation)
         if world_num == 9:
             level_location = get_location_names_with_ids([name_world_clear(world_num)])
-            world.get_region(f"World{world_num}").add_locations(level_location, NSMBWLocation)
+            world.get_region(f"World{9}").add_locations(level_location, NSMBWLocation)
 
 
 
@@ -322,8 +324,8 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
     if world.options.level_shuffle.value == True:
-        not_shuffled_locations = deepcopy(world.shuffled_level_order)
         not_shuffled_levels    = deepcopy(world.shuffled_level_order)
+        not_shuffled_locations = deepcopy(world.shuffled_level_order)
 
 
         def add_to_list(list_to_add: List[Tuple[int,int]]) -> List[Tuple[int,int]]:
@@ -331,7 +333,30 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
 
             id_list_shuffle = deepcopy(id_list)
             world.random.shuffle(id_list_shuffle)
-            return list(zip(id_list, id_list_shuffle))
+
+            i = 0
+            while i < len(id_list):
+                if id_list[i] in not_shuffled_levels:
+                    not_shuffled_levels.remove(id_list[i])
+                    i += 1
+                else:
+                    id_list.pop(i)
+            i = 0
+            while i < len(id_list_shuffle):
+                if id_list_shuffle[i] in not_shuffled_locations:
+                    not_shuffled_locations.remove(id_list_shuffle[i])
+                    i += 1
+                else:
+                    id_list_shuffle.pop(i)
+
+            values = min(len(id_list), len(id_list_shuffle))
+            if len(id_list) > values:
+                not_shuffled_levels.extend(id_list[values:])
+            if len(id_list_shuffle) > values:
+                not_shuffled_locations.extend(id_list_shuffle[values:])
+
+
+            return list(zip(id_list[:values], id_list_shuffle[:values]))
 
         def shuffle_req(shuffled_level_order) -> bool:
             _list = [
@@ -363,8 +388,8 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
         #dont_shuffle += [(2,6), (7,3)] # dont know why crash
 
         #secret_exits.remove((2,6))
-        secret_exits.remove((4,7))
-        secret_exits.remove((7,8))
+        #secret_exits.remove((4,7))
+        #secret_exits.remove((7,8))
 
         tower_secret_group = [(4,7), (7,8)]
         tower_group = [(1,7), (2,7), (3,7), (5,7), (6,7), (8,8), ]
@@ -375,7 +400,6 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
 
 
 
-        shuffle_specific_list : List[Tuple[int,int]] = add_to_list(secret_exits) + add_to_list(castle_group) + add_to_list(tower_secret_group) + add_to_list(tower_group) + add_to_list(airship_group)
 
         # this is plando
         for _from_str in sorted(list(world.options.level_shuffle_plando.value.keys())):
@@ -390,22 +414,35 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             assert _to in not_shuffled_locations, f"_to: {_to}"
             not_shuffled_locations.remove(_to)
 
-        assert shuffle_req(world.shuffled_level_order), f"plano invalid"
+        if not shuffle_req(world.shuffled_level_order):
+            raise Exception("nsmbw plano invalid")
 
-
+        # this does option specific additions
+        shuffle_specific_list : List[Tuple[int,int]] = []
 
         for item in dont_shuffle:
             shuffle_specific_list += add_to_list([item])
 
+        match world.options.level_shuffle_boss_lock.value:
+            case LevelShuffleBossLock.option_lock_types:
+                shuffle_specific_list += add_to_list(castle_group) + add_to_list(tower_secret_group) + add_to_list(tower_group) + add_to_list(airship_group)
+            case LevelShuffleBossLock.option_lock_placements:
+                shuffle_specific_list += add_to_list(castle_group + tower_group + airship_group) + add_to_list(tower_secret_group)
+            case LevelShuffleBossLock.option_nolock:
+                pass
+            case LevelShuffleBossLock.option_lock_end_of_world:
+                # this is not exactly intended behaviour : want to also add Towers to this pool
+                shuffle_specific_list += add_to_list(castle_group + airship_group)
+            case _:
+                raise NotImplementedError
+
+
+        shuffle_specific_list += add_to_list(secret_exits)
+
         for _from, _to in shuffle_specific_list:
             world.shuffled_level_order[_from] = _to
+            # already been removed
 
-            # does not matter which we remove, both should be removed since its an bijection
-            assert _from in not_shuffled_levels, f"_from: {_from}"
-            not_shuffled_levels.remove(_from)
-
-            assert _to in not_shuffled_locations, f"_to: {_to}"
-            not_shuffled_locations.remove(_to)
 
 
         world.random.shuffle(not_shuffled_locations)

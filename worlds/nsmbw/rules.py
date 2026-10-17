@@ -20,7 +20,9 @@ def set_all_rules(world: "NSMBWworld") -> None:
     set_all_location_rules(world)
     set_completion_condition(world)
 
-    assert world.get_region(name_base(*level_randoed(world.shuffled_level_order, world.options.starting_world.value, 1))).can_reach(world.multiworld.state), f"unable to reach first level in your starting world {world.options.starting_world.value}"
+    assert world.get_region(f"World{world.options.starting_world.value}").can_reach(world.multiworld.state), f"World{world.options.starting_world.value}"
+    start_level = name_base(*level_randoed(world.shuffled_level_order, world.options.starting_world.value, 1))
+    assert world.get_region(start_level).can_reach(world.multiworld.state), f"unable to reach first level in your starting world {world.options.starting_world.value} : {LevelRules[start_level].clear.resolve(world).explain_json()}"
 
 
 def set_level_entrance_rules(world: "NSMBWworld") -> None:

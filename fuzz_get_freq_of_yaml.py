@@ -1,4 +1,5 @@
 import collections
+import os
 import typing
 from numbers import Number
 
@@ -7,7 +8,9 @@ import yaml
 import json
 #import scipy
 
-map_name = "nsmbw"
+map_name = os.listdir("fuzz_output/error")[0]
+
+#map_name = "nsmbw"
 #map_name = "multi"
 
 game_name_cap = "NSMBW"
@@ -29,7 +32,7 @@ def prossess_options(options):
     print(failure_type)
 
     options_counter = []
-    skipp_options = [] #"death_link_group"
+    skipp_options = ["death_link_group"] #
     for option in options:
         if option in skipp_options:
             continue
@@ -52,9 +55,9 @@ def prossess_options(options):
             most_com_num = comon[0][1]
             least_com_num = comon[-1][1]
             percent_diff = abs(most_com_num - least_com_num) / (most_com_num + least_com_num)
-            if  percent_diff < 0.2 :
-                pass
-                continue
+            #if  percent_diff < 0.2 :
+            #    pass
+            #    continue
 
             #print(option)
             #print(option_counter)

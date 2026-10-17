@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from BaseClasses import Item, ItemClassification, CollectionState, MultiWorld, Location
+from BaseClasses import Item, ItemClassification, CollectionState, MultiWorld, Location, LocationProgressType
 from .Common import *
 from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer, WorldUnlock
 
@@ -141,11 +141,8 @@ extra_start_items : Dict[int,set]= {
 
 def precollect_items(world: NSMBWworld) -> None:
     excluded_items : set = set()
-    if world.options.entrance_randomizer.value == EntranceRandomizer.option_on:
-        for i in range(1, 9 + 1):
-            excluded_items.add(name_world_unlock(i))
-            if i != 9:
-                excluded_items.add(name_world_unlock(i))
+    if world.options.world_unlock.value == WorldUnlock.option_progressive:
+        excluded_items.add(ITEM.ProgressiveWorld)
     else:
         excluded_items.add(name_world_unlock(world.options.starting_world.value))
 
@@ -296,13 +293,12 @@ def fill_filler(world : "NSMBWworld", local_itempool):
 
     # code inspired by tunic implementation
     sphere_one_locs = world.multiworld.get_reachable_locations(CollectionState(world.multiworld), world.player)
-    local_locations: List[NSMBWLocation] = [
+    local_locations: List[Location] = [
         loc for loc in world.multiworld.get_unfilled_locations(world.player)
-        if loc not in sphere_one_locs
-           and loc.name not in world.options.priority_locations.value
+        if (loc not in sphere_one_locs) and (loc.progress_type != LocationProgressType.PRIORITY)
     ]
 
-    local_fillers: List[NSMBWItem] = [
+    local_fillers: List[Item] = [
         itm for itm in local_itempool
         if (itm.name in (FILLER + TRAPS))
            and itm.player == world.player
@@ -312,7 +308,8 @@ def fill_filler(world : "NSMBWworld", local_itempool):
     amount = min(len(local_fillers), len(local_fillers))
     world.random.shuffle(local_fillers)
     world.random.shuffle(local_locations)
-    for _ in range(round(amount * world.options.percentage_filler_forced_local / 100)):
+    local_locations.sort(key=(lambda loc : loc == LocationProgressType.EXCLUDED) )
+    for _ in range(round(amount * world.options.percentage_filler_forced_local.value / 100)):
         if not (len(local_locations) > 1) and (len(local_fillers) > 1):
             break
         _item = local_fillers.pop()
@@ -333,7 +330,7 @@ def sort_items(cls, multiworld: MultiWorld, progitempool: list[Item]):
     # Credit to @Mysteryem for this hook and the sort_fuc.
     game_players = multiworld.get_game_players(cls.game)
     # Get all player IDs that require either corona mountain shines to complete their goal or have blue coins
-    sms_excessive_prog_items = {player for player in game_players
+    nsmbw_excessive_prog_items = {player for player in game_players
                                 if multiworld.worlds[player].options.starcoin_sanity.value}
 
 
@@ -343,7 +340,7 @@ def sort_items(cls, multiworld: MultiWorld, progitempool: list[Item]):
 
     def sort_func(item: Item):
         # Credit once again for @Mysteryem for this function AND very nice description
-        if item.player in sms_excessive_prog_items and item.name in [ITEM.StarCoin]:
+        if item.player in nsmbw_excessive_prog_items and item.name in [ITEM.StarCoin]:
             if item.player in nsmbw_minimal_players:
                 # For minimal players, place goal macguffins first. This helps prevent fill from dumping logically
                 # relevant items into unreachable locations and reducing the number of reachable locations to fewer

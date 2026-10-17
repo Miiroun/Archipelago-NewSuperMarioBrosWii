@@ -1,35 +1,31 @@
 null:
   progression_balancing: 50 #
 NSMBW: #
+  level_shuffle_plando: {}
+  level_shuffle_remove : []
+  #percentage_filler_forced_local : 0
+  world_comp_priority : false
+  #world_unlock : separate
+  #level_unlock : vanilla
+  #level_completion : true
+  #level_shuffle : true
+  #hint_movie_sanity  : false
+  #alternative_goal : bowser
+  starcoin_requirement_world_unlock : {}
+
   fuzz_constraints:
     - option: alternative_goal
       if_value: 'hintmovies'
       then:
         hint_movie_sanity: 'true'
-    - option: starcoin_sanity
-      if_value: 'false'
+    - option: level_shuffle
+      if_value: "on"
       then:
-        hint_movie_sanity: 'true'
-    - option: hint_movie_sanity
-      if_value: 'true'
-      then:
-        level_shuffle: 'false'
+        hint_movie_sanity: 'false'
     - option: level_completion
       if_value: 'false'
       then:
         starcoin_sanity: 'true'
-    - option: level_shuffle
-      if_value: 'true'
-      then:
-        use_riivolution: 'true'
-    - option: music_shuffle
-      if_value: 'true'
-      then:
-        use_riivolution: 'true'
-    - option: tile_sheet_shuffle
-      if_value: 'true'
-      then:
-        use_riivolution: 'true'
 
     # Settings below this point require enabling allow_gen_impactful_settings in the host.yaml to bypass
     - sum_cap:
@@ -43,11 +39,6 @@ NSMBW: #
       if_value: 'ordered'
       then:
         hint_movie_shop_price_logic: 'progressive'
-
-    - option: level_completion
-      if_value: 'false'
-      then:
-        level_completion: 'true'
 
 #empty:
 #  accessibility: full

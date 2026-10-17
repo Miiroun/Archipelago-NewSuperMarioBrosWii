@@ -261,7 +261,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "3-3"  : Level(normal_move & button_down & button_up, ((swim | mini_o | ((propeller_o | (peng & crouch)) & logic_hard) ) , True_(), (carry | propeller_o | (wall_jump & logic_hard)) )),  # -3
     "3-4"  : Level(normal_move & pipe & button_down & (red_block | (logic_very_hard & run & peng)), (True_(), True_(), True_()),normal_move & pipe),  # -4
     "3-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), red_block, red_block), red_block),  # -5
-    "3-Ghosthouse"  : Level(pipe & button_down & button_up & normal_move & door & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), (True_(), True_(), True_()),True_()),  #-6    # 3-Ghosthousehosthouse
+    "3-GhostHouse"  : Level(pipe & button_down & button_up & normal_move & door & (climb | (propeller_o & wall_jump) | (oswj & logic_hard & outside_powerups)), (True_(), True_(), True_()),True_()),  #-6    # 3-GhostHousehosthouse
     "3-Tower"  : Level(pipe & button_down & button_up & normal_move&tower_rules, (True_(), carry_block, wall_jump | propeller_o)),  # -7 3-Tower
     "3-Castle"  : Level(pipe & button_down & button_up & normal_move & door, (True_(), True_(), True_())),  # -8 3-Castle
 
@@ -271,7 +271,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "4-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), mini | propeller_o | (peng & crouch & (run | logic_hard)) | (swim & (super_mario | run | (star & logic_hard))), swim & mini)),  # -3
     "4-4"  : Level(pipe & button_down & button_up & normal_move & swim, ((peng | ice_o | propeller_o | mini_o) & p_switch, True_(), True_())),  # -4
     "4-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -5
-    "4-Ghosthouse"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch) | (ice_peng_o & carry_block)), (True_(), True_(), True_()), True_()),  # -6 4-Ghosthouse
+    "4-GhostHouse"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch) | (ice_peng_o & carry_block)), (True_(), True_(), True_()), True_()),  # -6 4-GhostHouse
     "4-Tower"  : Level(normal_move & tower_rules, (True_(), True_(), True_()), True_()),  # -7 4-Tower
     "4-Castle"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), True_(), True_())),  # -8 4-Castle
     "4-Airship"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & ground_pound) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-Airship
@@ -281,7 +281,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "5-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), carry |((peng_o & crouch) & logic_hard), True_())),  # -3
     "5-4"  : Level(pipe & button_down & button_up & normal_move, (logic_hard | super_mario | run, logic_hard | carry | propeller_o, carry)),  # -4
     "5-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), carry)),  # -5
-    "5-Ghosthouse"  : Level(normal_move & door & ((question_switch & carry_block) | logic_hard), (True_(), True_(), True_() ), True_() ),  # -6 5-Ghosthousehosthouse
+    "5-GhostHouse"  : Level(normal_move & door & ((question_switch & carry_block) | logic_hard), (True_(), True_(), True_() ), True_() ),  # -6 5-GhostHousehosthouse
     "5-Tower"  : Level(pipe & button_down & button_up & normal_move& tower_rules & (carry | wall_jump | propeller_o), (True_(), True_(), super_mario)),  # -7 5-Tower
     "5-Castle"  : Level(pipe & button_down & button_up & normal_move & door & TimeRule(150), (wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_())),  # -8 5-Castle
 # world 6
@@ -301,7 +301,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "7-4"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -4
     "7-5"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (True_(), propeller | p_switch, True_())),  # -5
     "7-6"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_()), True_()),  # -6
-    "7-Ghosthouse"  : Level(pipe & button_down & button_up & normal_move & door & question_switch, (True_(),  True_(), (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))), (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))),  #  7-Ghosthousehosthouse
+    "7-GhostHouse"  : Level(pipe & button_down & button_up & normal_move & door & question_switch, (True_(),  True_(), (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))), (climb | propeller_o | (mini_o & (carry | (wall_jump & logic_hard))))),  #  7-GhostHousehosthouse
     "7-Tower"  : Level(pipe & button_down & button_up & normal_move&tower_rules& door, (True_(), True_(), True_()), True_()),  # -8 7-Tower
     "7-Castle"  : Level(pipe & button_down & button_up & normal_move & door & (run | (super_mario & logic_hard)), (super_mario, True_(), wall_jump | propeller_o)),  # 7-Castle
 # world 8
@@ -333,7 +333,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
 }
 
 for level in LEVELS:
-    assert name_base(*level) in LevelRules.keys()
+    assert name_base(*level) in LevelRules.keys(), f"missing level : {name_base(*level)}"
 
 def get_level_connections() -> List[List[List[int]]]:
     connections = []
@@ -414,7 +414,7 @@ def get_level_connections() -> List[List[List[int]]]:
             [5],  # -4
             [9],  # -5
             [9],  # -6
-            [4], # - 7 # ghosthouse
+            [4], # - 7 # GhostHouse
             [7],  # -Towerower
             []  # -Castleaslte
         ],

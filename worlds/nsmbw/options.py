@@ -119,8 +119,9 @@ class EnemiesIncluded(ItemSet):
 class RandomizePowerups(Choice):
     __doc__ = f"""
     Will randomize {POWERUP_UNLOCK}. Notably Star counts as an ability.
-    They will require the archipelago item to pick its super 
-    on_except_mushroom: (recommended) Will randomize all powerups except Super Mushroom. 
+    off :Powerups behave as vanilla.
+    on : Powerups will require the archipelago item to collect in game.
+    on_except_mushroom: (recommended) Like on except Super Mushroom is unlocked from start. 
     on_progressive: Treats all powerups as Super Mushroom if the item Super Mushroom is not received.
     """
     display_name = "Randomize Power-ups"
@@ -532,7 +533,7 @@ class LevelShuffle(Choice):
     display_name = "Level Shuffle"
     option_off = 0
     option_on = 1
-    option_off_respect_plando = 2
+    #option_off_respect_plando = 2
 
     #option_same_world = 3
     #option_weighted = 5
@@ -940,7 +941,6 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if world.options.hint_movie_sanity.value and world.options.level_shuffle.value:
         raise OptionError(f"(NSMBW generation error) Due to a bug hint_movie_sanity and level_shuffle can not both be enabled")
 
-    world.options.starcoin_requirement_world_unlock.value[str(world.options.starting_world.value)] = 0
     for world_num in range(1,9+1):
         if str(world_num) not in world.options.starcoin_requirement_world_unlock.value.keys():
             world.options.starcoin_requirement_world_unlock.value[str(world_num)] = 0
@@ -958,9 +958,28 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
             world.options.level_unlock.value = LevelUnlock.option_all_unlocked
             print("(NSMBW generation warning) entrance_randomizer require level_unlock set to all_unlocked")
 
-    for i in range(1, min(5, len(world.options.level_shuffle_remove.value))+1):
+    for i in range(min(5, len(world.options.level_shuffle_remove.value))):
         world.options.level_shuffle_plando.value.update({
-            f"Coin-{i}" : world.options.level_shuffle_remove.value[i]
+            f"Coin-{i+1}" : world.options.level_shuffle_remove.value[i]
         })
+
+    secret_exit_names: List[str] = list()
+    for secret_exit_ in SECRET_EXIT:
+        if secret_exit_.exit_type == 2:
+            secret_exit_names.append(name_base(secret_exit_.world, secret_exit_.level))
+
+    for key, value in world.options.level_shuffle_plando.value.items():
+        if (key not in LEVEL_NAMES) or (value not in LEVEL_NAMES):
+            raise OptionError(f"(NSMBW generation Error) Invalid plando {key}:{value}, either key or value doesnt exist")
+        if (key in secret_exit_names) ^ (value in secret_exit_names):
+            raise OptionError(f"(NSMBW generation Error) Invalid plando {key}:{value}, secret exits needs to be plandoed to secret exits")
+
+    if len(world.options.level_shuffle_plando.value) != len(set(world.options.level_shuffle_plando.value.values())):
+        raise OptionError(f"(NSMBW generation Error) Dublicate values in level_shuffle_plando")
+
+    if world.options.world_unlock.value == WorldUnlock.option_progressive:
+        world.options.starting_world.value = StartingWorld.option_world1
+
+    world.options.starcoin_requirement_world_unlock.value[str(world.options.starting_world.value)] = 0
 
 

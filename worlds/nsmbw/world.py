@@ -98,8 +98,6 @@ class NSMBWworld(World):
 
     star_coin_req_per_world_9_level : List[int]
 
-    percentage_filler_forced_local : int
-
     def __init__(self, multiworld: "MultiWorld", player: int):
         super().__init__(multiworld, player)
         self.star_coin_req_per_world_9_level = []
@@ -168,6 +166,7 @@ class NSMBWworld(World):
     @classmethod
     def stage_fill_hook(cls, multiworld: MultiWorld, progitempool: list[Item], usefulitempool: list[Item],
         filleritempool: list[Item], fill_locations: list[Location]) -> None:
+        pass
         items.sort_items(cls, multiworld, progitempool)
 
 
@@ -387,7 +386,8 @@ class NSMBWworld(World):
         "map_page_index": map_page_index,
 
         "item_page_item_layouts": [
-          ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds.value)
+            ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds.value),
+            ItemLayoutSection(name="Everything", items=ITEM.Groups.Worlds.value),
         ] + both_pages,
         "map_page_item_layouts_left": [
         ] + both_pages,
