@@ -1,24 +1,14 @@
 # TODO 
 # Super Short term
 - Mention which files needs to be selected for settings:
-- Rename raw rules to rule_data?
-- Work on FINAL MOVMENETS : so REACT can start on block logic
+- Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - Spend time on ap-map pack : download images from wiki with python?
-- Option to exlude specific worlds
-- improve description of RandomizePowerups
-- setup guide: do not have dolphin open
 - clarify dolphin folder when selecting : not rom folder, should include dolphin.exe
 - what about shuffling the enemy ambush stages
-- I've looked at the rest of the castles in the editor and if I am correct in what I think Is happening 1-C, 3-C, and 6-C should all be fine and the only ones that won't work are 4-C and 5-C (obviously 2-C & 8-C arent randoed for other reasons)
-- Stricter error for having dolphin open when connect
 - Descriptive folder browsing
 - option exclude some levels
   - I think just a setting that can remove up to 5 levels is fine
-- Have 2 lists during enterence rando creation: 1 for placement pool and 1 for level pool, so can seperate them
-- create map and item tracker?
-- Remove use_riivolution
 - Why is inventory pow 10 so often unreachable
-- /bowserlock : print all reasons
 - Lock bowser from path patch isntead of client
 - require second world unlock to unlock 7-6 and 8-7
   - in client
@@ -26,15 +16,10 @@
   
 
 # internal UT pack
-use map visualliser to place out location group : names
 FUTURE
-  - item tracking
   - draw images for movements
 ITEMTRACKER
-- powerups
 - unlocks
-- worlds?
-- starcoins
 
 
 ## Playtest
@@ -88,6 +73,11 @@ ITEMTRACKER
   - Copy paste normal level req to secret exit
   - more levels are missing 
 - Does secret exit apply its rules correct
+- starcoin_requirement_world_unlock breaks fuzzer
+  - HOW fix ??
+  - just sanction or add req to fuzzer
+- level clear doesnt send?
+  - because efficency changes?
 
 
 ## Before release
@@ -98,6 +88,7 @@ ITEMTRACKER
 - do all playtest
 - remove use_riivolution from setup
 - verify UT 0.3.5 is latest
+- mark as prerelease ? 
 
 ## Short term
 - fix UT-autotab : actually works? : needs to just update on switch and not death
@@ -198,6 +189,7 @@ ITEMTRACKER
 - Add index to game info 
 - CAN get out of logic with seperete worlds, levels unlocked: e.g 3-G 
 - Ask in NSMBW dc how difficult adding UI elements is.
+- Rename raw rules to rule_data?
 
 
 ## Logic
@@ -222,6 +214,12 @@ ITEMTRACKER
   - p-switch
   - Crouch
   - Walljump (slide)
+
+
+## FUZZER erros
+-  world_comp_priority : false
+-  starcoin_requirement_world_unlock : {} 
+These 2 yaml restraints fixes most of fuzzing errors, especially `starcoin_requirement_world_unlock` is bad in fuzzing
 
 
 ## Mid term

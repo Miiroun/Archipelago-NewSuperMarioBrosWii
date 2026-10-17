@@ -166,7 +166,7 @@ def mod_level_name(world_num : int, level_num : int) -> str:
     shift = (world_num in [7, 8])
     new_level = level_num - shift
     if (world_num, level_num) in [(3, 6), (4, 6), (5, 6), (7, 7)]:
-        return "Ghosthouse"
+        return "GhostHouse"
     if world_num !=9:
         if new_level == 7:
             return "Tower"

@@ -2,12 +2,14 @@ from copy import deepcopy
 from pathlib import Path
 from typing import List, Dict, Any, TypedDict
 
+from worlds.nsmbw.Common import *
 # this file should populate the tracker location group
 
 from worlds.nsmbw.world import NSMBWworld
 import json
 
 loc_group = NSMBWworld.location_name_groups
+loc_name_id = NSMBWworld.location_name_to_id
 
 
 class Section(TypedDict):
@@ -38,10 +40,18 @@ values : List[Pin] = json.load((partial_trackerfiles_path / "locations.json").op
 
 converted_values : List[Pin] = []
 for i, pin in enumerate(values):
-    if pin["name"] not in loc_group.keys():
-        raise ValueError(f"{pin['name']} is not a valid location group name: {loc_group.keys()}")
+    groups : Iterable
+    if pin["name"] in list([name_base(*level) for level in LEVELS]):
+        groups = loc_group[pin["name"] + " Everything"]
+    elif pin["name"] in loc_name_id.keys():
+        groups = [pin["name"]]
+    elif pin["name"] in loc_group.keys():
+        groups = loc_group[pin["name"]]
+    else:
+        raise ValueError(f"{pin['name']} is not a valid location group name")
     sections: List[Section]= []
-    for location_name in loc_group[pin["name"]]:
+
+    for location_name in groups :
         sections.append(
             {
             "name": location_name,
@@ -59,3 +69,4 @@ for i, pin in enumerate(values):
 
 
 json.dump(converted_values, (tracker_path / "locations" / "locations.json").open("w+"), indent=2)
+print("Successfully built ")
