@@ -1,8 +1,56 @@
 [
   {
+    "name": "world1",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world1.png"
+  },
+  {
+    "name": "world2",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world2.png"
+  },
+  {
+    "name": "world3",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world3.png"
+  },
+  {
+    "name": "world4",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world4.png"
+  },
+  {
+    "name": "world5",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world5.png"
+  },
+  {
+    "name": "world6",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world6.png"
+  },
+  {
+    "name": "world7",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world7.png"
+  },
+  {
+    "name": "world8",
+    "location_size": 16,
+    "location_border_thickness": 1,
+    "img": "images/maps/world8.png"
+  },
+  {
     "name": "world9",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/nsmbw_world_9_map_screenshot.png"
+    "img": "images/maps/world9.png"
   }
 ]

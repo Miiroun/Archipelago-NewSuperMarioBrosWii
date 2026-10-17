@@ -34,5 +34,17 @@
     "type": "toggle",
     "img": "images/items/Ice Flower.png",
     "codes": "Ice Flower"
+  },
+  {
+    "name": "Star",
+    "type": "toggle",
+    "img": "images/items/Star.png",
+    "codes": "Star"
+  },
+  {
+    "name": "Starcoin",
+    "type": "toggle",
+    "img": "images/items/Starcoin.png",
+    "codes": "Starcoin"
   }
 ]
