@@ -5,6 +5,7 @@
 /NSMBW_client/riivolution_patch/Kamek-Ninja-Template/code_based_on/
 
 *.o
+*~
 
 #dev file stuff
 /dev_files/experiment.ipynb
