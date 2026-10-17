@@ -10,7 +10,7 @@ import bsdiff4
 
 
 def gen_diff_files():
-    _patcher = patcher.Patcher("m", "0123456789", {
+    _patcher = patcher.Patcher("m", "0123456789",0, {
         "level_shuffle" : LevelShuffle.option_off
     })
     _patcher.extract_game()

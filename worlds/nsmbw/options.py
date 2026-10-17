@@ -877,13 +877,15 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
               f"consider lowering this to get a more enjoyable experience.")
 
     # this tries to prevent num loc > num items
-    if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.level_completion.value * 77 +
+    if ((loc := world.options.level_completion.value * 77 +
                 world.options.hint_movie_sanity.value * 65 + world.options.include_inventory_powerups.value) #world comp, madatory  + 17
-         <= 10 + 10 +
-        (itm :=  world.options.randomize_time.value
-         +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
+         <= 10 +
+        (itm :=  world.options.randomize_time.value+(world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))
+            + len(world.options.abilites_included.value) * world.options.randomize_abilites.value + len(world.options.level_elements_included.value) * world.options.randomize_level_elements.value +
+            len(world.options.enemies_included.value) * (world.options.randomize_enemies.value >= 1)
+        ):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
-                          f"you have approximate {loc} locations, {itm} items, margin {itm-loc}")
+                          f"you have approximately {loc} locations, {itm} items, margin {itm-loc}")
 
     TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
     if (Utils.get_settings()["nsmbw_settings"].allow_gen_impactful_settings == False) and TESTING:#and (len(world.multiworld.player_ids) >= 2):
@@ -937,9 +939,9 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if str(world_num) not in world.options.starcoin_requirement_world_unlock.value.keys():
             world.options.starcoin_requirement_world_unlock.value[str(world_num)] = 0
 
-    if world.options.bowser_level_unlock.value > 70:
-        world.options.bowser_level_unlock.value = 70
-        print(f"(NSMBW generation warning) generation fails if bowser_level_unlock > 70.")
+    if world.options.bowser_level_unlock.value > 65:
+        world.options.bowser_level_unlock.value = 65
+        print(f"(NSMBW generation warning) generation fails if bowser_level_unlock > 65.")
 
     if world.options.block_sanity.value in [BlockSanity.option_powerup_blocks or BlockSanity.option_brick_blocks]:
         raise OptionError("(NSMBW generation error) block_sanity does not currently support your enabled mode")

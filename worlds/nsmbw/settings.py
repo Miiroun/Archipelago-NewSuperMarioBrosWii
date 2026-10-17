@@ -195,7 +195,7 @@ class NSMBWSettings(settings.Group):
     auto_save_savestates: AutoSaveSaveStates | bool = False
     auto_close: AutoCloseGame | bool = False
 
-    debug_mode : DebugMode | bool = not Utils.is_frozen()
+    debug_mode : DebugMode | bool = not is_nsmbwapworld_frozen()
 
     collect_level : CollectLevel  = CollectLevel(1)
     save_file_path : SaveFileLocation  = SaveFileLocation("nsmbw")

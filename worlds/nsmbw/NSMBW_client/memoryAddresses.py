@@ -51,7 +51,7 @@ class SymbolReader(object):
 
 class MemoryAddresses(object):
     def __init__(self, this_version):
-        if Utils.is_frozen():
+        if is_nsmbwapworld_frozen():
             with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
                 #memorymap_path = zipfile.Path(zf) / "NSMBW_client" / "wii_code_tools" /"address-map.txt"
                 memory_path = r"nsmbw/NSMBW_client/lib/wii_code_tools/address-map.txt"

@@ -1,8 +1,10 @@
+import json
 from dataclasses import dataclass
 
 from BaseClasses import CollectionState, ItemClassification, MultiWorld, Item, Location, Region
 from NetUtils import JSONMessagePart
 from rule_builder.cached_world import CachedRuleBuilderWorld
+from rule_builder.rules import Rule
 from worlds.AutoWorld import World
 
 from . import items, locations, regions, rules, web_world, raw_rules
@@ -313,31 +315,48 @@ class NSMBWworld(World):
             return []
 
     def explain_more(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
-        text : str| None = None
-        rule_list = raw_rules.specific_level_requierments()
+        rule : Rule| None = None
         try:
-            world_num, level_num = level_bijection(target_name)
-            text = repr(rule_list[world_num-1][level_num-1][0].to_dict())
+            level= level_bijection(target_name)
+            rule = raw_rules.LevelRules[name_base(*level)].clear
         except ValueError:
-            try:
-                world_num, level_num = base_bijection(target_name)
-                text = repr(rule_list[world_num - 1][level_num - 1][0].to_dict())
-            except ValueError:
-                try:
-                    world_num, level_num, sc_num = sc_bijection(target_name)
-                    text = repr(rule_list[world_num - 1][level_num - 1][1][sc_num-1].to_dict())
-                except ValueError:
-                    text = f"{target_name} is not a valid level or star coin name and can therefor not be explained more"
-        if text is not None:
+            pass
+        try:
+            level = base_bijection(target_name)
+            rule = raw_rules.LevelRules[name_base(*level)].clear
+        except ValueError:
+            pass
+        try:
+            world_num,level_num, sc_num = sc_bijection(target_name)
+            rule = raw_rules.LevelRules[name_base(world_num, level_num)].starcoins[sc_num-1]
+        except ValueError:
+            pass
+
+        if rule is not None:
+            text : str= json.dumps(rule.to_dict(), indent=2)
             return [{"type":"text","text":text}]
         else:
-            return None
+            return []
 
+    @staticmethod
     def map_page_index(data: Any) -> int:
-        if data == None:
+        if (data is None or data == ""):
             return 0
+
         try:
-            return int(data)-1
+            int_data =  int(data)
+            if int_data < 99:
+                if int_data < 10:
+                    return int_data - 1
+                else:
+                    raise ValueError
+            else:
+                world_num = int_data % 100
+                level_num = int_data - world_num * 100
+
+                maps_before = sum( (world_num > level[0] )or(world_num==level[0] and level_num>= level[1]) for level in LEVELS)
+                offset_from_prev = 9 -1
+                return  maps_before + offset_from_prev
         except ValueError:
             return 0
 
@@ -382,7 +401,7 @@ class NSMBWworld(World):
 
         "item_page_items" : "items/items.json",
 
-        "map_page_setting_key": "{player}_{team}_UT_MAP",
+        "map_page_setting_key": "{player}_{team}_NSMBW_UT_MAP",
         "map_page_index": map_page_index,
 
         "item_page_item_layouts": [

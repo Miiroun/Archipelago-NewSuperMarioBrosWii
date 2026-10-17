@@ -187,7 +187,8 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
                 world.set_rule(loc, LevelRules[name_base(*level)].roulette)
 
     loc = world.get_location(name_world_clear(9))
-    world.set_rule(loc, HasFromListUnique(*list([name_base(9,level_num) for level_num in range(1,8+1)])))
+    level_list = list([name_base(*level_randoed(world.shuffled_level_order, 9,level_num)) for level_num in range(1,8+1)])
+    world.set_rule(loc, HasFromListUnique(*level_list, count=8))
 
 
 def set_completion_condition(world: "NSMBWworld") -> None:

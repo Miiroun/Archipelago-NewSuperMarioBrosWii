@@ -77,7 +77,7 @@ for i, trap in enumerate(TRAPS):
 ITEM_NAME_GROUPS.update({"Traps" : set(TRAPS)})
 
 
-for i, filler in enumerate(FILLER):
+for i, filler in enumerate(FILLER + UNIQUE):
     ITEM_NAME_TO_ID.update({filler : 501 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({filler : ItemClassification.filler})
 ITEM_NAME_GROUPS.update({"Filler" : set(FILLER)})
@@ -246,6 +246,9 @@ def create_all_items(world: NSMBWworld) -> None:
                 world.multiworld.early_items[world.player][item] = 1
 
     unique_filler = set()
+
+    if True:
+        unique_filler |= set(UNIQUE)
 
     if world.options.randomize_enemies.value:
         for enemies in ENEMIES:

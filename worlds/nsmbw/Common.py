@@ -119,6 +119,9 @@ class ITEM:
         LowGravity      = "Low Gravity"
         PowerUpGrace    = "Power-up Grace"
 
+    class UNIQUE(StrEnum):
+        GoombaExtinction = "Goomba Extinction"
+
     class FAKE(StrEnum):
         InventoryPow        = "InventoryPowAccessible"
         InventoryPowNoToad  = "InventoryPowAccessibleNoToad"
@@ -149,7 +152,7 @@ UNLOCKS = ABILITIES + LEVEL_ELEMENTS + ENEMIES
 
 TRAPS = list([c.value for c in ITEM.TRAPS])
 FILLER = list([c.value for c in ITEM.FILLER])
-
+UNIQUE = list([c.value for c in ITEM.UNIQUE])
 
 SUPPORTED_VERSIONS = ["E2"]
 
@@ -313,7 +316,9 @@ def pos_to_level_name(pos : int) -> tuple[int, int]:
         return (world_num, level_num)
     raise ValueError(f"Invalid pos: {pos}")
 
-def validate_level(func):
+
+# noinspection type-hints
+def validate_level(func : Callable[Any, Tuple[int,int]]) -> Callable[Any, Tuple[int,int]]:
     def wrapper(self, *args, **kwargs):
         level = func(self, *args, **kwargs)
         if level != (0,0):

@@ -1,3 +1,4 @@
+import os.path
 import shutil
 import subprocess
 from pathlib import Path
@@ -109,7 +110,7 @@ def read_manifest():
     import json
 
     text : str
-    if Utils.is_frozen():
+    if is_nsmbwapworld_frozen():
         with (zipfile.ZipFile(Path(__file__).parent.parent) as zf):
             apnsmbw_file = zipfile.Path(zf) / "nsmbw" / "archipelago.json"
             text = apnsmbw_file.read_text(encoding='UTF-8')
@@ -119,3 +120,13 @@ def read_manifest():
             text = f.read()
     manifest = json.loads(text)
     return manifest
+
+
+def is_nsmbwapworld_frozen() -> bool:
+    if Utils.is_frozen():
+        return True
+    else:
+        if os.path.basename(__file__) == "Utils.py":
+            return False
+        else:
+            return True

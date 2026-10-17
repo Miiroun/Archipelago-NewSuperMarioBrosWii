@@ -40,10 +40,10 @@ class Patcher:
     apnsmbw_file : Path
 
 
-    def __init__(self, slot_name : str, seed : str, slot_data : dict):
+    def __init__(self, slot_name : str, seed : str, team_number : int, slot_data : dict):
         self.slot_data = slot_data
 
-        self.name = f"nsmbw_ap_{read_manifest()['world_version']}_{slot_name}_{seed}"
+        self.name = f"nsmbw_ap_{read_manifest()['world_version']}_{slot_name}_{team_number}_{seed}"
 
 
         self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
@@ -213,7 +213,7 @@ class Patcher:
 
 
     def copy_riivolution_skeleton(self):
-        if not Utils.is_frozen():
+        if not is_nsmbwapworld_frozen():
             _from = self.apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
             assert self.apnsmbw_file.exists(), f"folder {self.apnsmbw_file} does not exist"
             assert _from.exists(), f"folder {_from} does not exits"
@@ -251,7 +251,7 @@ class Patcher:
         return PatchDetails
 
     def extract_bsdiff(self):
-        if Utils.is_frozen():
+        if is_nsmbwapworld_frozen():
             self.bsdiff_patch_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "patch_data"
             self.bsdiff_patch_dir.mkdir(exist_ok=True, parents=True)
 
@@ -262,7 +262,9 @@ class Patcher:
                         continue
                     if member.filename == path_data_loc_dir.at:
                         continue
-                    member.filename = os.path.basename(member.filename)
+                    #member.filename = os.path.basename(member.filename)
+                    member.filename = member.filename.replace("nsmbw/NSMBW_client/riivolution_patch/Riivolution_patch_data/", "")
+                    #logger.info(f"filename {member.filename}")
                     zf.extract(member, self.bsdiff_patch_dir)
         else:
             self.bsdiff_patch_dir =  self.apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
@@ -701,7 +703,7 @@ if __name__ == "__main__":
                    "entrance_randomizer" : 0,
                    "level_shuffle_enemy_ambushes" : 1,
                    }
-    _patcher = Patcher(_name, _seed, _slot_data)
+    _patcher = Patcher(_name, _seed,0, _slot_data)
 
     subprocess.run([Path(__file__).parent/"riivolution_patch" / "Kamek-Ninja-Template" / "config_and_build.bat"], cwd = Path(__file__).parent/"riivolution_patch" / "Kamek-Ninja-Template")
 

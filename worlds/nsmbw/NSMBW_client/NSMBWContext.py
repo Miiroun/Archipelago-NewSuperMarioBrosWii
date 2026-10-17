@@ -159,7 +159,6 @@ class NSMBWContext(SuperContext):
         self.current_mod_end_time = 2**64
 
         self.unlocks = []
-        self.traps = []
         self.filler = []
 
         self.save_time = time.time()
@@ -196,7 +195,7 @@ class NSMBWContext(SuperContext):
                 self.slot_data = args["slot_data"]
                 # checks for new slot_data values to be compatible
 
-                if not Utils.is_frozen():
+                if not is_nsmbwapworld_frozen():
                     backwards_compat : List[tuple] = []
                     for name, value in backwards_compat:
                         if name not in self.slot_data.keys():
@@ -295,7 +294,7 @@ class NSMBWContext(SuperContext):
         class NSMBWManager(ui):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                if is_frozen():
+                if is_nsmbwapworld_frozen():
                     _path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw_icon.png"
                     if not _path.exists():
                         _path.parent.mkdir(parents=True, exist_ok=True)
@@ -384,6 +383,7 @@ class NSMBWContext(SuperContext):
                         #print(f"finished loop:   {self.loop_time - time.time()}")
                     except Exception as e:
                         logger.info(traceback.format_exc())
+                        messagebox("New Super Mario Bros Wii Error", str(e), True)
                         self.log_color(f"Failed with error {e}. When handling client logic", "red")
 
 
@@ -634,6 +634,7 @@ class NSMBWContext(SuperContext):
         checked_locations += await self.check_hintmovies()
 
         checked_locations += await self.check_level_completion()
+        checked_locations += await self.check_special_levels()
         checked_locations += await self.check_starcoins()
 
 
@@ -651,7 +652,7 @@ class NSMBWContext(SuperContext):
             for sc_num in range(1, 3+1):
                 sc_status = sc_statuses[4 * sc_num-1]
 
-                if sc_status == 0:  # becomes 0 if collected
+                if sc_status != 4:  # becomes 0 if collected by mario
                     world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
                     if (world_num, level_num) == (0, 0):
                         continue
@@ -668,13 +669,14 @@ class NSMBWContext(SuperContext):
     async def check_starcoins(self):
         checked_locations = []
 
-        if self.game_interface.get_world_level_num_in_level()[0] not in range(1,9+1):
+        level = self.game_interface.get_world_level_num_on_map()
+
+        if level[0] not in range(1,9+1):
             return []
 
 
-        level = self.game_interface.get_world_level_num_in_level()
         level_status = bytes_to_int(self.game_interface.get_level_stats(*level))
-        randoed = self.game_interface.get_modified_world_level_num_in_level()
+        randoed = self.game_interface.get_modified_world_level_num_on_map()
 
         def send_sc_check(sc_num=0):
             location_name = name_starcoin(*randoed, sc_num)
@@ -727,19 +729,20 @@ class NSMBWContext(SuperContext):
 
     async def check_1ups(self):
         checked_locations = []
+        LEVEL = self.game_interface.get_modified_world_level_num_in_level()
+        if LEVEL != (0, 0):
+            return checked_locations
 
-        if self.slot_data["oneups_sanity"] == True:
-            for player_num in range(PLAYER_COUNT):
-                current_lives = self.game_interface.get_lives_count(player_num)
-                if current_lives > self.prev_lifecount[player_num]:
-                    self.prev_lifecount[player_num] = current_lives
-                    LEVEL = self.game_interface.get_modified_world_level_num_in_level()
-                    if LEVEL != (0, 0):
-                        location_name = name_1ups(*LEVEL)
-                        loc_id = NSMBWworld.location_name_to_id[location_name]
-                        if loc_id not in self.locations_handled:
-                            checked_locations.append(loc_id)
-                            print(f"Locaton: {location_name} completed")
+        for player_num in range(PLAYER_COUNT):
+            current_lives = self.game_interface.get_lives_count(player_num)
+            if current_lives > self.prev_lifecount[player_num]:
+                self.prev_lifecount[player_num] = current_lives
+                if self.slot_data["oneups_sanity"] == True:
+                    location_name = name_1ups(*LEVEL)
+                    loc_id = NSMBWworld.location_name_to_id[location_name]
+                    if loc_id not in self.locations_handled:
+                        checked_locations.append(loc_id)
+                        print(f"Locaton: {location_name} completed")
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -867,32 +870,41 @@ class NSMBWContext(SuperContext):
         bowser_unlock = world_req and starcoin_req and level_req
         return bowser_unlock
 
-    async def check_level_completion(self):
+    async def check_level_completion(self) -> List[int]:
         checked_locations = []
+
 
         # level compleation logic
         # check if level is cleared
         level = self.game_interface.get_world_level_num_on_map()
 
 
-        if level[0] not in range(1, 9 + 1):
-            return []
+        if level[0] in range(1, 9 + 1):
+            # do we need to chech all or could we just check the one we are in?
+            #for world_num in world_nums:
+                #for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
+            randoed_level = self.game_interface.get_modified_world_level_num_on_map()
+            level_status = self.game_interface.get_level_stats(*level)[0]
+            if level_status & 16 == 16:
+                level_name = name_level(*randoed_level)
+                level_id = NSMBWworld.location_name_to_id[level_name]
+                if level_id not in  self.locations_handled:
+                    checked_locations.append(level_id)
+                    if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                        print(f"You collected a check for completing {level_name}")
 
+        self.locations_handled += checked_locations
+        return checked_locations
 
-        # do we need to chech all or could we just check the one we are in?
-        #for world_num in world_nums:
-            #for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-        randoed_level = self.game_interface.get_modified_world_level_num_on_map()
-        level_status = self.game_interface.get_level_stats(*level)[0]
-        if level_status & 16 == 16:
-            level_name = name_level(*randoed_level)
-            if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
-                checked_locations.append(NSMBWworld.location_name_to_id[level_name])
-                if Utils.get_settings()["nsmbw_settings"].debug_mode:
-                    print(f"You collected a check for completing {level_name}")
-
+    async def check_special_levels(self) -> List[int]:
+        checked_locations = []
 
         # secret exits
+
+        level = self.game_interface.get_world_level_num_on_map()
+        randoed_level = self.game_interface.get_modified_world_level_num_on_map()
+        level_status = self.game_interface.get_level_stats(*level)[0]
+
         for secret_exit in SECRET_EXIT:
             world_num = secret_exit.world
             level_num = secret_exit.level
@@ -968,8 +980,7 @@ class NSMBWContext(SuperContext):
 
         # this code is for unlocking the final level
         bowser_unlock = self.get_bow_unlocked()
-        if bowser_unlock:
-            self.game_interface.set_bowser_unlocked()
+        self.game_interface.set_bowser_unlocked(bowser_unlock)
 
         level_name = name_level(8,10)
         level_stats = self.game_interface.get_level_stats(8,10)[0]
@@ -985,17 +996,19 @@ class NSMBWContext(SuperContext):
                 self.log_color("Bowsers castle is now unlocked", "blue")
 
 
-        level = self.game_interface.get_world_level_num_in_level()
+        level = self.game_interface.get_world_level_num_on_map()
         if level[0] == 9:
             for level_num in range(1,8+1):
                 level_stats = self.game_interface.get_level_stats(9, level_num)[0]
                 if level_stats & 0x10 != 0x10:
-                    self.locations_handled += checked_locations
-                    return checked_locations
+                    break
+            else:
 
-            loc_name = name_world_clear(9)
-            if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
-                checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
+                loc_name = name_world_clear(9)
+                if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
+                    checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
+                    if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                        print(f"You collected a check for completing {level_name}")
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -1012,7 +1025,8 @@ class NSMBWContext(SuperContext):
             if current_item > 96:
                 self.game_interface.set_inventory_items(int_to_bytes(96, 1), i)
             if i == POWERUP_COUNT:
-                if (self.slot_data["randomize_abilites"]) and (ITEM.ABILITIES.Star in self.slot_data["abilites_included"]):
+                if ((self.slot_data["randomize_abilites"]) and (ITEM.ABILITIES.Star in self.slot_data["abilites_included"]) and
+                    ITEM.ABILITIES.Star not in self.unlocks):
                     self.game_interface.set_inventory_items(int_to_bytes(0, 1), i)
             self.previous_inventory[i] = current_item
 
@@ -1098,7 +1112,7 @@ class NSMBWContext(SuperContext):
             elif 301 <= item_id <= 399:
                 print(f"Received move {item_name} ")
             elif 401 <= item_id <= 499:
-                self.traps.append(item_name)
+                self.filler.append(item_name)
             elif 501 <= item_id <= 599:
                 self.filler.append(item_name)
             elif 601 <= item_id <= 699:
@@ -1116,7 +1130,6 @@ class NSMBWContext(SuperContext):
         await self.handle_unlocked_powerups()
         await self.handle_set_sc_count()
         await self.game_interface.handle_unlocks(self.unlocks, self.current_mod)
-        await self.handle_traps()
         await self.handle_filler()
         await self.handle_unlocked_time()
         await self.handle_boss_health()
@@ -1262,86 +1275,13 @@ class NSMBWContext(SuperContext):
 
 
 
-    async def handle_traps(self):
-        for trap in self.traps:
-            match trap:
-                case ITEM.TRAPS.GoombaTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.GoombaTrap, 120))
-
-                case ITEM.TRAPS.TimeTrap:
-                    logger.info("Check your clock, do you have enought time?")
-                    self.modifiers.append(Modifier(ITEM.TRAPS.TimeTrap, 99999)) # want to stay until death
-
-
-                case ITEM.TRAPS.LosePowerupTrap:
-                    logger.info("What happened to your power up?")
-                    for player_num in range(PLAYER_COUNT):
-                        curr_pow = self.game_interface.get_powerupstate(player_num)
-                        if curr_pow != b'\x01':
-                            self.game_interface.set_powerupstate(b'\x01', player_num)
-                        else:
-                            self.game_interface.set_powerupstate(b'\x00', player_num)
-
-                case ITEM.TRAPS.DeathTrap:
-                    logger.info(f"You fell for a death trap")
-                    await self.game_interface.kill_player()
-                    self.is_pending_death_link_reset = True
-
-                case ITEM.TRAPS.RobberyTrap:
-                    logger.info("I took some off your coins.")
-                    self.coin_overflow -= self.game_interface.get_coin_count()
-                    self.game_interface.set_coin_count(0)
-                    self.game_interface.set_inventory_items(int_to_bytes(0, 1), self.random.randint(0,POWERUP_COUNT+1))
-                case ITEM.TRAPS.ShrinkTrap:
-                    logger.info(f"Why are you so small!")
-                    for player_num in range(PLAYER_COUNT):
-                        self.game_interface.set_powerupstate(b'\x00', player_num)
-
-                case ITEM.TRAPS.LiteratureTrap:
-                    copy_pastas = [
-                        "Once upon a time ... there was plummer ... name ... Mario.",
-                        "Once upon a time ... there was plummer ... name ... Luigi.",
-                        """
-Everyone knows Mario is cool as f--k. But who knows what he's thinking? Who knows why he crushes turtles? And why do we think about him as fondly as we think of the mystical (nonexistent?) Dr Pepper? Perchance.
-I believe it was Kant who said "Experience without theory is blind, but theory without experience is mere intellectual play." Mario exhibits experience by crushing turts all day, but he exhibits theory by stating "Lets-a go!" Keep it up, baby!
-When Mario leaves his place of safety to stomp a turty, he knows that he may Die. And yet, for a man who can purchase lives with money, a life becomes a mere store of value. A tax that can be paid for, much as a rich man feels any law with a fine is a price. We think of Mario as a hero,but he is simply a one percenter of a more privileged variety. The lifekind. Perchance.
-                        """,
-                        "The alphabet is a b c d e f h i j k l m n o p q r s t u v w z y z, excpet Which one was missing?" #g
-                    ]
-                    for letter in self.random.choice(copy_pastas).split():
-                        messagebox("Literature trap", letter)
-                        logger.info(letter)
-                        await asyncio.sleep(0.3)
-
-                case ITEM.TRAPS.ThrowTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.ThrowTrap, 120))
-
-                case ITEM.TRAPS.ReverseControlTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.ReverseControlTrap, 30))
-
-                case ITEM.TRAPS.MovementLockTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.MovementLockTrap, 5))
-
-                case ITEM.TRAPS.SlowTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.SlowTrap, 60))
-
-                case ITEM.TRAPS.GravityTrap:
-                    self.modifiers.append(Modifier(ITEM.TRAPS.GravityTrap, 15))
-
-                case ITEM.TRAPS.ParanoiaTrap:
-                    logger.info(f"Paranoia trap: Modified something ...")
-
-                case _:
-                    logger.info(f"Trap {trap} is not implemented")
-                    raise NotImplementedError(f"Trap {trap} is not implemented")
-            self.traps.remove(trap)
-
     async def handle_filler(self):
         for item_name in self.filler:
             amount = self.slot_data["amount_support_received"]
             if self.slot_data["amount_support_received"] == -1:
                 amount = self.random.randint(1, 10)
             match item_name:
+                #--------------fillers
                 case ITEM.FILLER.FillInventory:
                     logger.info(f"Fill inventory x{amount} was received ")
                     for i in range(POWERUP_COUNT+1+1):
@@ -1400,6 +1340,83 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                     self.powerup_grace += 1
                     logger.info("You got a Power-up grace")
 
+
+                #---------------------traps-------------------------------
+                case ITEM.TRAPS.GoombaTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.GoombaTrap, 120))
+
+                case ITEM.TRAPS.TimeTrap:
+                    logger.info("Check your clock, do you have enought time?")
+                    self.modifiers.append(Modifier(ITEM.TRAPS.TimeTrap, 99999))  # want to stay until death
+
+                case ITEM.TRAPS.LosePowerupTrap:
+                    logger.info("What happened to your power up?")
+                    for player_num in range(PLAYER_COUNT):
+                        curr_pow = self.game_interface.get_powerupstate(player_num)
+                        if curr_pow != b'\x01':
+                            self.game_interface.set_powerupstate(b'\x01', player_num)
+                        else:
+                            self.game_interface.set_powerupstate(b'\x00', player_num)
+
+                case ITEM.TRAPS.DeathTrap:
+                    logger.info(f"You fell for a death trap")
+                    await self.game_interface.kill_player()
+                    self.is_pending_death_link_reset = True
+
+                case ITEM.TRAPS.RobberyTrap:
+                    logger.info("I took some off your coins.")
+                    self.coin_overflow -= self.game_interface.get_coin_count()
+                    self.game_interface.set_coin_count(0)
+                    self.game_interface.set_inventory_items(int_to_bytes(0, 1),
+                                                            self.random.randint(0, POWERUP_COUNT + 1))
+                case ITEM.TRAPS.ShrinkTrap:
+                    logger.info(f"Why are you so small!")
+                    for player_num in range(PLAYER_COUNT):
+                        self.game_interface.set_powerupstate(b'\x00', player_num)
+
+                case ITEM.TRAPS.LiteratureTrap:
+                    copy_pastas = [
+                        "Once upon a time ... there was plummer ... name ... Mario.",
+                        "Once upon a time ... there was plummer ... name ... Luigi.",
+                        """
+Everyone knows Mario is cool as f--k. But who knows what he's thinking? Who knows why he crushes turtles? And why do we think about him as fondly as we think of the mystical (nonexistent?) Dr Pepper? Perchance.
+I believe it was Kant who said "Experience without theory is blind, but theory without experience is mere intellectual play." Mario exhibits experience by crushing turts all day, but he exhibits theory by stating "Lets-a go!" Keep it up, baby!
+When Mario leaves his place of safety to stomp a turty, he knows that he may Die. And yet, for a man who can purchase lives with money, a life becomes a mere store of value. A tax that can be paid for, much as a rich man feels any law with a fine is a price. We think of Mario as a hero,but he is simply a one percenter of a more privileged variety. The lifekind. Perchance.
+                        """,
+                        "The alphabet is a b c d e f h i j k l m n o p q r s t u v w z y z, excpet Which one was missing?"
+                        # g
+                    ]
+                    for letter in self.random.choice(copy_pastas).split():
+                        messagebox("Literature trap", letter)
+                        logger.info(letter)
+                        await asyncio.sleep(0.3)
+
+                case ITEM.TRAPS.ThrowTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.ThrowTrap, 120))
+
+                case ITEM.TRAPS.ReverseControlTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.ReverseControlTrap, 30))
+
+                case ITEM.TRAPS.MovementLockTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.MovementLockTrap, 5))
+
+                case ITEM.TRAPS.SlowTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.SlowTrap, 60))
+
+                case ITEM.TRAPS.GravityTrap:
+                    self.modifiers.append(Modifier(ITEM.TRAPS.GravityTrap, 15))
+
+                case ITEM.TRAPS.ParanoiaTrap:
+                    logger.info(f"Paranoia trap: Modified something ...")
+
+                # --------------------------UNIQUE--------------------------------------------
+
+                case ITEM.UNIQUE.GoombaExtinction:
+                    logger.info(f"All goombas are nowe extincted")
+                    self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_goomba, False)
+
+
+                # ------------------ end of line --------------------------------------------
                 case _:
                     logger.info(f"Filler {item_name} is not implemented")
                     raise Exception(f"Filler {item_name} is not implemented")
@@ -1417,8 +1434,6 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             current_lives = self.game_interface.get_lives_count(player_num)
             #print(f"current_lives = {current_lives}")
             is_dead = current_lives < self.prev_lifecount[player_num] # and (self.game_interface.get_player_status() == b'\x01') and (self.game_interface.get_in_stage_flag()[3] == 0)
-            if current_lives > self.prev_lifecount[player_num]:
-                self.prev_lifecount[player_num] = self.game_interface.get_lives_count(player_num)
 
             if is_dead and self.game_interface.is_screen_transition() and (not self.game_interface.is_in_level() or not self.game_interface.is_in_menu()): #self.prev_lifecount[player_num] == 0:
                 is_dead = False
@@ -1593,20 +1608,16 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             map_id = 0
 
             if self.game_interface.is_in_level():
-                temp = bytes_to_int(self.game_interface.get_level_level())+1
-                if 1 <= temp <= 10:
-                    map_id = temp
-            temp = bytes_to_int(self.game_interface.get_map_world())+1
-            if 1 <= temp <= 9:
-                if map_id == 0:
-                    map_id += temp*100
-                else:
-                    map_id = temp
+                world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
+                map_id = world_num * 100 + level_num
+            elif self.game_interface.is_in_worldmap():
+                world_num, level_num = self.game_interface.get_modified_world_level_num_on_map()
+                map_id = world_num
 
             if self.previous_mapid != map_id:
-                await self.send_msgs([{"cmd": "Set","key": f"{self.slot}_{self.team}_UT_MAP",
+                await self.send_msgs([{"cmd" : "Set","key" : f"{self.slot}_{self.team}_NSMBW_UT_MAP",
                     "default": 0, "operations": [{"operation": "replace", "value": str(map_id)}]}])
-            self.previous_mapid = map_id
+                self.previous_mapid = map_id
 
 
     # util functions------------------------------------------------
@@ -1771,7 +1782,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
         except AssertionError as e:
             logger.error(e)
         try:
-            self.patcher = Patcher(self.username, self.seed_name, self.slot_data)
+            self.patcher : Patcher = Patcher(self.username, self.seed_name, self.team if self.team else 0, self.slot_data)
             if not self.patcher.shortcut_path.exists():
                 self.patcher.patch()
             self.patcher.get_region()

@@ -646,7 +646,10 @@ class NSMBWInterface(object):
         world_num = world_num_tmp + 1
         level_num = level_num_tmp + 1
 
-        if level_num > 100:
+        if world_num > 10:
+            return 0, 0
+
+        if level_num >= 40 or level_num in [39]:
             return 0,0
 
         if world_num == 9:
@@ -1003,9 +1006,9 @@ class NSMBWInterface(object):
         address = self.memory_addresses.custom_level_unlock_type
         self.dolphin_client.write_address(address,  int_to_bytes(value, 4))
 
-    def set_bowser_unlocked(self):
+    def set_bowser_unlocked(self, unlocked : bool):
         address = self.memory_addresses.custom_bowser_unlocked
-        self.dolphin_client.write_address(address, int_to_bytes(1, 4))
+        self.dolphin_client.write_address(address, int_to_bytes(unlocked, 4))
 
     def update_check_sum(self):
         # didnt manage to make this one work
