@@ -46,6 +46,7 @@ class NSMBWSettings(settings.Group):
     class GameFilePath(settings.FilePath):
         """A path to your game file, that ends with either .iso or .wbfs but NOT .nkit.iso"""
         required = True
+        description = "Your nsmbw game file"
 
 
         # this code overwrites default in setting
@@ -57,7 +58,7 @@ class NSMBWSettings(settings.Group):
         r"""
         Path to dolphin program directory, used only on windows
         Example: C:\Program Files\Dolphin-x64
-        Should include Dolphin.exe and DolphinTool.exe
+        Should include Dolphin.exe and DolphinTool.exe, often called `Dolphin-x64`
         """
         description = "Path to dolphin program directory, should include Dolphin.exe"
 
@@ -73,6 +74,9 @@ class NSMBWSettings(settings.Group):
 
         def browse(self: T, **kwargs: Any) -> T | None:
             from Utils import open_directory
+            from Utils import messagebox
+            messagebox("Dolphin folder", self.__docs__)
+
             res = open_directory(f"Select {self.description or self.__class__.__name__}", self)
             if res:
                 try:
@@ -180,7 +184,7 @@ class NSMBWSettings(settings.Group):
 
     class TempDir(settings.FolderPath):
         """Which path to use as temp folder. If your temp directories permission is weirdly configured you may have to change it, otherwise do not touch it."""
-        required = True
+        required = False
 
 
     game_file_path: GameFilePath  = GameFilePath(r"New SUPER MARIO BROS. Wii.iso")
@@ -200,7 +204,7 @@ class NSMBWSettings(settings.Group):
     clear_cache_save_slot : ClearCacheSaveSLot = ClearCacheSaveSLot.Slot7
     dolphin_instance_override : DolphinInstanceOverride | bool= False
 
-    temporary_directory : TempDir = TempDir(tempfile.gettempdir())
+    temporary_directory : TempDir = TempDir(os.path.join(tempfile.gettempdir(),"nsmbw"))
 
     if Utils.is_windows:
         dolphin_folder : DolphinFolder = DolphinFolder(get_dolphin_path_windows())

@@ -81,7 +81,7 @@ def is_flatpak_installed():
     return False
 
 def rm_game_extract():
-    nsmbw_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw"
+    nsmbw_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)
     if nsmbw_dir.exists():
         shutil.rmtree(nsmbw_dir)
 
