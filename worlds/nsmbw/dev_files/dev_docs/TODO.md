@@ -1,17 +1,6 @@
 # TODO 
 # Super Short term
-- Mention which files needs to be selected for settings:
-- Work on FINAL MOVMENETS : so REACT can start on block logic ? 
-- Spend time on ap-map pack : download images from wiki with python?
-- clarify dolphin folder when selecting : not rom folder, should include dolphin.exe
-- what about shuffling the enemy ambush stages
-- Descriptive folder browsing
-- option exclude some levels
-  - I think just a setting that can remove up to 5 levels is fine
-- Why is inventory pow 10 so often unreachable
 - Lock bowser from path patch isntead of client
-- require second world unlock to unlock 7-6 and 8-7
-  - in client
 
   
 ## Playtest
@@ -39,11 +28,15 @@
 - Test remaining 7-C rando
 - 8-Castle is correctly locked in new system
 - world 9 clear
+- require second world unlock to unlock 7-6 and 8-7
+- Secret exits are properly level randoed
+- bsdiff patch frozen
+- enemy ambush
+- folder browsing
 
 
 ## Bugs to fix
 - I understand for the ones that are just jingles, but a lot of others like the world map themes wouldn't loop if they were put in a level
-- 8-7 exit is unlocked without normal exit item being recived
 - multiplayer : second player dont collect starcoin immediately
 - UT fuzzer errors 
 - Np! Also any idea on how to get 6-4 first star coin without Yoshi or any power up? It’s say it is in logic (it’s the 6-2 level in my seed). I'm curious
@@ -70,6 +63,8 @@
   - just sanction or add req to fuzzer
 - level clear doesnt send?
   - because efficency changes?
+- block location : does see after level rando
+- more items than locations
 
 
 ## Before release
@@ -95,7 +90,6 @@
 - Make secret exit items to reunlock them
 - assert early items are actually early, write test?
 - Figure out how to change HM unlock condition?
-- AFTER JIT clear have proven to work : make post in AP-mod thread about it
 - To-do:  prompt to watch hint movie
 - Need spin to get off vine and yoshi
 - look up hint movie prossessing in ghidra
@@ -108,7 +102,6 @@
 - Shuffle in coin and battle stages into main levels
 - Can't leave vine without spin jump
   - rework climb
-- bool dWmConnect_c::GetConnect at 800f3380 might allow me to not override tower completion and have all levels unlocked from start
 - why does global mutation fuzzer hook fail at settings??
 - Rework timer modifier option
 - on_progressive should req that powerup and super mushrom are both received while on should depend on outside powerups
@@ -182,6 +175,7 @@
 - CAN get out of logic with seperete worlds, levels unlocked: e.g 3-G 
 - Ask in NSMBW dc how difficult adding UI elements is.
 - Rename raw rules to rule_data?
+- Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 
 
 ## Logic
@@ -401,15 +395,9 @@ Summery poll
 
 
 ## Long term
-- Non ap rando (enemy, level, entrance)
-  - One of set world level / level world changes ingame level: can be used for level rando
-- Do something with coin battles?
-  - Maybe have location for collecting at least % in levels, each level is an item
 - Get rid of keyboard
-  - Can do this by creating a instruction write wrapper that writes instruction to data and then have function in game load it instead: icbi followed by isync
 - Fix so work with multiple dolphin instances
 - Add support for other mods: pipe rando, mkwcat 8player, newer (needs logic), etc
-  - Needs to create new memory map (on the fly? or need to create it for all editions), would be helpful for using the memory patch with the randomizer
 - Actual deathlink messages
 - Shuffle with custom levels (no logic)
 - Unlock other charactes (no gameplay) with player 1 change character fix
@@ -417,9 +405,6 @@ Summery poll
 - Have character be randomized and unlockable
 - Chance for level to be replaced by backwards version
  think about abstracting apworld so can support mods?
-  - create my own build system?
-    - run build all diffrent mod versions
-    - also run kamek
   - ask mods if newer would be ok?
   - what to have diffrent worlds with diffrent game names : that just changes game name + file name + common and raw_rules + maybe modifiy client
 

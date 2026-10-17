@@ -294,7 +294,7 @@ class NSMBWContext(SuperContext):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 if is_frozen():
-                    _path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "nsmbw_icon.png"
+                    _path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw_icon.png"
                     if not _path.exists():
                         _path.parent.mkdir(parents=True, exist_ok=True)
                         with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:

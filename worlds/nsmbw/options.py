@@ -323,7 +323,7 @@ class StarcoinRequirementWorldUnlock(OptionCounter):
     How many starcoins should be required to unlock a world
     """
     min = 0
-    max = 231
+    max = 200 # set this low to lower risque of gen failure
 
     _default = {
         "1" : 0,
@@ -511,21 +511,6 @@ class EnemyShuffle(Toggle):
     visibility = Visibility.none
 
 
-class UseRiivolution(Toggle):
-    """
-    Creates a riivolution patch when connecting the client to the server.
-    If disabled the client will instead rely on memory patching.
-    Required to:
-     - Use other riivolution based options.
-     - Not having the client autoload save states.
-     - See custom randomizer graphics (log and starcoin model)
-     WARNING : strongly recommended to have enabled, ONLY change if this causes issues
-    """
-    display_name = "Use Riivolution"
-    default = True
-    visibility = Visibility.complex_ui
-
-
 class LevelShuffle(Choice):
     """
     Shuffles the level order.
@@ -550,6 +535,12 @@ class LevelShuffleBossLock(Choice):
     option_lock_end_of_world = 7
 
 # - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
+
+class LevelShuffleEnemyAmbushes(Choice):
+    """
+    Shuffles the enemy ambush stages
+    """
+
 
 class LevelShuffleRemove(OptionList):
     """
@@ -742,6 +733,7 @@ class NSMBWOptions(PerGameCommonOptions):
 
     level_shuffle : LevelShuffle
     level_shuffle_boss_lock : LevelShuffleBossLock
+    level_shuffle_enemy_ambushes : LevelShuffleEnemyAmbushes
     level_shuffle_plando : LevelShufflePlando
     level_shuffle_remove : LevelShuffleRemove
 
@@ -814,7 +806,6 @@ option_groups = [
     OptionGroup(
         "Riivolution",
         [
-            UseRiivolution,
             MusicShuffle,
             BackgroundShuffle,
             PalletShuffle,
@@ -827,6 +818,7 @@ option_groups = [
         [
             LevelShuffle,
             LevelShufflePlando,
+            LevelShuffleEnemyAmbushes,
             LevelShuffleBossLock,
             LevelShuffleRemove,
         ],

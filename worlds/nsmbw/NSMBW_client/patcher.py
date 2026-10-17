@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+from copy import deepcopy
 from pathlib import Path
 import zipfile
 
@@ -35,6 +36,7 @@ class Patcher:
     region : str
     shortcut_path : Path
     xml_path : Path
+    bsdiff_patch_dir : Path
 
 
     def __init__(self, slot_name : str, seed : str, slot_data : dict):
@@ -47,12 +49,13 @@ class Patcher:
         self.output_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder) / self.name
 
         file_name = os.path.basename(Path(Utils.get_settings()["nsmbw_settings"].game_file_path))
-        self.temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" /  file_name / "DATA"
+        self.temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)  /  file_name / "DATA"
 
         self.random = Random(seed)
 
-        self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "riivolution_shortcuts" / f"{self.name}.json"
+        self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)  / "riivolution_shortcuts" / f"{self.name}.json"
         self.xml_path = self.output_path.parent / "riivolution" / f"{self.name}.xml"
+
 
 
     def recolor_tileset(self, source_bytes : bytes) -> bytes:
@@ -229,21 +232,24 @@ class Patcher:
                         continue
                     zf.extract(member, self.output_path)
 
-    def patch_details(self):
-        PatchDetails = [
+    def patch_details(self) -> List[tuple[str,str,str]]:
+        PatchDetails : List[tuple[str,str,str]] = [
             ("star_coin", "Object", "Object"),
             ("openingTitle", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
             ("key_boss_castle", "Object", "Object"),
         ]
+
+        if not self.slot_data["level_shuffle"]:
+            for level_to_patch in os.listdir(self.bsdiff_patch_dir / "Stage"):
+                name  = level_to_patch.replace("patch_", "").replace(".bin", "")
+                PatchDetails.append((name, "stage", name))
         return PatchDetails
 
     def patch_bsdiff(self):
 
-        patch_data = self.patch_details()
-
         if Utils.is_frozen():
-            temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "patch_data"
-            temp_dir.mkdir(exist_ok=True, parents=True)
+            self.bsdiff_patch_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "patch_data"
+            self.bsdiff_patch_dir.mkdir(exist_ok=True, parents=True)
 
             with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
                 path_data_loc_dir = zipfile.Path(zf) / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
@@ -253,8 +259,12 @@ class Patcher:
                     if member.filename == path_data_loc_dir.at:
                         continue
                     member.filename = os.path.basename(member.filename)
-                    zf.extract(member, temp_dir)
+                    zf.extract(member, self.bsdiff_patch_dir)
+        else:
+            apnsmbw_file = Path(Utils.user_path("")) / "worlds" / "nsmbw"
+            self.bsdiff_patch_dir =  apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
 
+        patch_data = self.patch_details()
         for name, folder_source, folder_patch in patch_data:
             original_file_loc = self.temp_dir / "files" / folder_source / f"{name}.arc"
             assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
@@ -262,18 +272,15 @@ class Patcher:
             destination_path.parent.mkdir(exist_ok=True, parents=True)
 
             if Utils.is_frozen():
-                temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw" / "patch_data"
-
-                path_data_loc = temp_dir / f"patch_{name}.bin"
+                path_data_loc = self.bsdiff_patch_dir / f"patch_{name}.bin"
 
                 bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
 
             else:
-                apnsmbw_file = Path(Utils.user_path("")) / "worlds" / "nsmbw"
-                _from = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
-                assert _from.exists()
 
-                path_data_loc = _from / folder_patch / f"patch_{name}.bin"
+                assert self.bsdiff_patch_dir.exists()
+
+                path_data_loc = self.bsdiff_patch_dir  / folder_patch / f"patch_{name}.bin"
                 assert path_data_loc.parent.exists(), f"folder {path_data_loc} does not exist"
                 assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
 
@@ -289,8 +296,6 @@ class Patcher:
             shutil.rmtree(path_to)
 
         path_to.mkdir(exist_ok=True, parents=True)
-
-
 
 
 
@@ -366,6 +371,8 @@ class Patcher:
     def create_riivolution_patch(self):
         if self.slot_data["level_shuffle"]:
             self.patch_levels()
+        if self.slot_data["level_shuffle_enemy_ambushes"]:
+            self.patch_level_ambushes()
         if self.slot_data["background_shuffle"]:
             folder_name = "Object"
             # these does not work because they need brres handling, I would prefer not to write it
@@ -427,6 +434,18 @@ class Patcher:
             else:
                 shutil.copy(temp_path / name1, self.output_path / folder_name / name2)
 
+    def patch_level(self, _from, _to):
+        """
+        If we have a level patch then we use it, otherwise we just copy the level
+        """
+        path_data_loc = self.bsdiff_patch_dir / "Stage" / f"patch_{_from}.bin"
+        original_file_loc = self.temp_dir / "files" / "Stage" / _from
+        destination_path = self.output_path / "Stage" / _to
+
+        if path_data_loc.exists():
+            bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
+        else:
+            shutil.copy(original_file_loc, destination_path)
 
     def patch_levels(self):
         """"""
@@ -463,7 +482,25 @@ class Patcher:
 
         os.makedirs(self.output_path / "Stage", exist_ok=True)
         for i in range(len(level_shuffle)):
-            shutil.copy(self.temp_dir /"files" / "Stage" / level_name_converter(*level_shuffle[i]), self.output_path / "Stage" / level_name_converter(*levels[i]))
+            self.patch_level(level_name_converter(*level_shuffle[i]), level_name_converter(*levels[i]))
+
+    def patch_level_ambushes(self):
+        ambush_names  = []
+        for world_num in range(1,8+1):
+            ambush_names.append(f"0{world_num}-33.arc")
+            ambush_names.append(f"0{world_num}-34.arc")
+            ambush_names.append(f"0{world_num}-35.arc")
+
+
+        ambush_names_shuffled = deepcopy(ambush_names)
+        self.random.shuffle(ambush_names_shuffled)
+
+        os.makedirs(self.output_path / "Stage", exist_ok=True)
+        for i in range(len(ambush_names)):
+            self.patch_level(ambush_names[i], ambush_names_shuffled[i])
+
+
+
 
     def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False, removed : Optional[list] = None):
         temp_path = self.temp_dir / "files" / folder_name
@@ -661,6 +698,7 @@ if __name__ == "__main__":
                    "pallet_shuffle" : 0,
                    "tile_sheet_shuffle" : 1,
                    "entrance_randomizer" : 0,
+                   "level_shuffle_enemy_ambushes" : 1,
                    }
     _patcher = Patcher(_name, _seed, _slot_data)
 

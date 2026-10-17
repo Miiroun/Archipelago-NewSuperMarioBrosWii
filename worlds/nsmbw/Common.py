@@ -132,7 +132,7 @@ class ITEM:
         Worlds          = "Worlds"
 
 
-    StarCoin        = "Starcoin"
+    StarCoin        = "Star coin"
     Time            = "Time"
     GlitchedLogic   = "Glitched Logic"
     BossHealth      = "Decrease Boss Health"

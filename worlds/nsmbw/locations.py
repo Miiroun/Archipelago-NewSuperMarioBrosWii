@@ -328,35 +328,39 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
         not_shuffled_locations = deepcopy(world.shuffled_level_order)
 
 
-        def add_to_list(list_to_add: List[Tuple[int,int]]) -> List[Tuple[int,int]]:
-            id_list = list(map(lambda x : level_name_to_pos(x[0], x[1]), list_to_add))
+        def add_to_list(list_to_add: List[Tuple[int,int]], list_locations_to : List[Tuple[int,int]] | None = None) -> List[Tuple[int,int]]:
+            to_list = list(map(lambda x : level_name_to_pos(x[0], x[1]), list_to_add))
+            world.random.shuffle(to_list)
 
-            id_list_shuffle = deepcopy(id_list)
-            world.random.shuffle(id_list_shuffle)
+            if list_locations_to:
+                from_list = list(map(lambda x: level_name_to_pos(x[0], x[1]), list_locations_to))
+            else:
+                from_list = deepcopy(to_list)
+            world.random.shuffle(from_list)
 
             i = 0
-            while i < len(id_list):
-                if id_list[i] in not_shuffled_levels:
-                    not_shuffled_levels.remove(id_list[i])
+            while i < len(to_list):
+                if to_list[i] in not_shuffled_levels:
+                    not_shuffled_levels.remove(to_list[i])
                     i += 1
                 else:
-                    id_list.pop(i)
+                    to_list.pop(i)
             i = 0
-            while i < len(id_list_shuffle):
-                if id_list_shuffle[i] in not_shuffled_locations:
-                    not_shuffled_locations.remove(id_list_shuffle[i])
+            while i < len(from_list):
+                if from_list[i] in not_shuffled_locations:
+                    not_shuffled_locations.remove(from_list[i])
                     i += 1
                 else:
-                    id_list_shuffle.pop(i)
+                    from_list.pop(i)
 
-            values = min(len(id_list), len(id_list_shuffle))
-            if len(id_list) > values:
-                not_shuffled_levels.extend(id_list[values:])
-            if len(id_list_shuffle) > values:
-                not_shuffled_locations.extend(id_list_shuffle[values:])
+            values = min(len(to_list), len(from_list))
+            if len(to_list) > values:
+                not_shuffled_levels.extend(to_list[values:])
+            if len(from_list) > values:
+                not_shuffled_locations.extend(from_list[values:])
 
 
-            return list(zip(id_list[:values], id_list_shuffle[:values]))
+            return list(zip(to_list[:values], from_list[:values]))
 
         def shuffle_req(shuffled_level_order) -> bool:
             _list = [
@@ -431,8 +435,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             case LevelShuffleBossLock.option_nolock:
                 pass
             case LevelShuffleBossLock.option_lock_end_of_world:
-                # this is not exactly intended behaviour : want to also add Towers to this pool
-                shuffle_specific_list += add_to_list(castle_group + airship_group)
+                shuffle_specific_list += add_to_list(castle_group + airship_group  + airship_group, [(world_num, 8 + (world_num in [4,6,7,8])) for world_num in range(1,8+1)])
             case _:
                 raise NotImplementedError
 

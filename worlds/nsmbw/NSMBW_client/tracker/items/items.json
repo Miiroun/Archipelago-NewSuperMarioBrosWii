@@ -138,9 +138,9 @@
     "codes": "Yoshi"
   },
   {
-    "name": "Starcoin",
+    "name": "Star coin",
     "type": "consumable",
-    "img": "images/items/Starcoin.png",
-    "codes": "Starcoin"
+    "img": "images/items/Star coin.png",
+    "codes": "Star coin"
   }
 ]
