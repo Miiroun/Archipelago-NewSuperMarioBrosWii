@@ -51,7 +51,7 @@ for i, pin in enumerate(values):
         raise ValueError(f"{pin['name']} is not a valid location group name")
     sections: List[Section]= []
 
-    for location_name in groups :
+    for location_name in sorted(groups) :
         sections.append(
             {
             "name": location_name,
