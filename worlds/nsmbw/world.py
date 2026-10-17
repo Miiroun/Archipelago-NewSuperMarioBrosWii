@@ -387,7 +387,7 @@ class NSMBWworld(World):
 
         "item_page_item_layouts": [
             ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds.value),
-            ItemLayoutSection(name="Everything", items=ITEM.Groups.Worlds.value),
+            ItemLayoutSection(name="Everything", items="Everything"),
         ] + both_pages,
         "map_page_item_layouts_left": [
         ] + both_pages,

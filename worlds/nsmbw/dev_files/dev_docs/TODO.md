@@ -14,14 +14,6 @@
   - in client
 
   
-
-# internal UT pack
-FUTURE
-  - draw images for movements
-ITEMTRACKER
-- unlocks
-
-
 ## Playtest
 - bowser_level_unlock 
 - starcoin_requirement_world_unlock
