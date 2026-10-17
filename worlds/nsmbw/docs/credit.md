@@ -49,7 +49,8 @@
 - Based on star coins in mario, made by nintendo
 
 ### Tracker images
-- the world maps and the powerup images are downloaded from https://www.mariowiki.com/ which is licenced under https://creativecommons.org/licenses/by-sa/4.0/. Some of them have been compresed.
+- The world map images are downloaded from https://www.mariowiki.com/ which is licenced under https://creativecommons.org/licenses/by-sa/4.0/. Some of them have been compresed.
+- ALl draw images are (for now) made by miiroun and licenced under MIT
 
 
 ### Community projects used

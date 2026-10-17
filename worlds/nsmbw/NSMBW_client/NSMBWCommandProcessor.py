@@ -112,7 +112,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             if key == "":
                 self.ctx.unlock_everything()
             elif len(key.split("-")) == 2:
-                world_num, level_num = base_bijection(key.upper())
+                world_num, level_num = base_bijection(key)
                 self.ctx.game_interface.set_level_stats(int(world_num), int(level_num), b'\x37')
             else:
                 logger.info(r"Error in key for /dev")
@@ -251,7 +251,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 raise NotImplementedError
         self._cmd_starcoins()
         self._cmd_completed_worlds()
-        self._cmd_com
+        self._cmd_completed_levels()
 
     def _cmd_kill(self):
         """

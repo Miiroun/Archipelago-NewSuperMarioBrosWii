@@ -2,6 +2,7 @@ import os.path
 from pathlib import Path
 
 from worlds.nsmbw.NSMBW_client.patcher import Patcher
+from worlds.nsmbw.options import LevelShuffle
 from ..NSMBW_client import patcher
 from ..Common import *
 import bsdiff4
@@ -9,16 +10,20 @@ import bsdiff4
 
 
 def gen_diff_files():
-    _patcher = patcher.Patcher("m", "0123456789", {})
+    _patcher = patcher.Patcher("m", "0123456789", {
+        "level_shuffle" : LevelShuffle.option_off
+    })
     _patcher.extract_game()
+    _patcher.extract_bsdiff()
     _patcher.get_region()
 
+    assert _patcher.region == "SMNE01", f"invalid region {_patcher.region}"
 
-    apnsmbw_file = Path(Utils.user_path("")) / "custom_worlds" / "nsmbw.apworld" if Utils.is_frozen() else Path(Utils.user_path("")) / "worlds" / "nsmbw"
-    _from = apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
-    _to = apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch"/ "Riivolution_patch_data"
 
-    PatchDetails  = _patcher.patch_details()
+    _from = _patcher.apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
+    _to = _patcher.apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch"/ "Riivolution_patch_data"
+
+    PatchDetails  = _patcher.patch_details(generating = True)
 
     for name, folder_source, folder_patch in PatchDetails:
         path_data_loc = _to / folder_patch / f"patch_{name}.bin"
@@ -29,17 +34,16 @@ def gen_diff_files():
 
 
         original_file_loc = _patcher.temp_dir / "files" / folder_source / f"{name}.arc"
+        assert original_file_loc.exists()
 
         destination_path = _from / folder_patch / f"{name}.arc"
-        destination_path.parent.mkdir(exist_ok=True)
+        destination_path.parent.mkdir(exist_ok=True, parents=True)
 
         bsdiff4.file_diff(original_file_loc, destination_path, path_data_loc)
+        assert destination_path.exists()
         print(f"Successfully wrote patch to {path_data_loc}")
 
 
 if __name__ == "__main__":
-
-    assert os.path.basename(Utils.get_settings()["nsmbw_settings"].game_file_path) == "New Super Mario Bros. Wii (USA) (En,Fr,Es) (Rev 2).wbfs"
-
     gen_diff_files()
 

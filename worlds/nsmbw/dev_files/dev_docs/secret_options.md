@@ -64,6 +64,10 @@ Restart the client after changing this setting.
 
 
 ## How to play (`use_riivolution` disabled)
+0) Change these dolphin options
+   - `Options → Configuration → Interface → Hotkeys Require Window Focus` to `Off`
+   - `Options → Hotkey Settings → Save and Load State`. Make sure saving (e.g. shift + F8 or @(Shift+F8)) and loading (e.g. F8) save states from slot 7 and 8 are their default values.
+   - If you care about your dolphin savefiles then back them up.
 1) Open the AP launcher (restart if it was open before) and find NSMBW Client, open it.
 2) This should prompt you for your game file. (You can repromt it by removing the nsmbw_settings in host.yaml, do NOT edit it manually).
    - If you want the game to auto start

@@ -112,7 +112,9 @@ class NSMBWInterface(object):
             time.sleep(0.1)
             game_id = self.dolphin_client.read_address(GC_GAME_ID_ADDRESS, 6)
             if game_id == b"\x00\x00\x00\x00\x00\x00" or len(game_id) < 6:
-                self.log_color(f"game_id {game_id} is blank, this is probably caused by a faild dolphin read.", "red")
+                message = f"game_id {game_id} is blank, this is probably caused by a faild dolphin read."
+                messagebox("game_id blank", message, True)
+                self.log_color(message, "red")
                 return False
 
             try:
@@ -138,7 +140,9 @@ class NSMBWInterface(object):
                     self.log_color(text, "red")
                 self.memory_addresses = MemoryAddresses(version_name)
             else:
-                self.log_color(f"game_id {game_id}, game_rev {game_rev} not found in valid versions {GAME_VERSIONS}, connected to wrong game?.", "red")
+                message = f"game_id {game_id}, game_rev {game_rev} not found in valid versions {GAME_VERSIONS}, connected to wrong game?."
+                messagebox("Wrong game", message, True)
+                self.log_color(message, "red")
                 return False
 
 
@@ -149,7 +153,9 @@ class NSMBWInterface(object):
             if self.get_using_riivolution_patch():
                 print(f"Riivolution patch detected")
             else:
-                self.log_color(f"Riivolution patch not detected, make sure you auto launch dolphin from the client, do NOT open it manually.")
+                message = f"Riivolution patch not detected, make sure you auto launch dolphin from the client, do NOT open it manually."
+                messagebox("Riivolution patch not detected", message, True)
+                self.log_color(message)
                 return False
 
             if self.current_game:
@@ -634,12 +640,14 @@ class NSMBWInterface(object):
         self.apply_patch(self.memory_addresses.patches)
         self.set_level_unlock_type(self.slot_data["level_unlock"])
 
-    def get_world_level_num_in_level(self) -> Tuple[int, int]:
-        if not self.is_in_level():
-            return 0,0
 
-        world_num = bytes_to_int(self.get_world_level()) + 1
-        level_num = bytes_to_int(self.get_level_level()) + 1
+    @staticmethod
+    def internal_to_external_world_level_num(world_num_tmp : int, level_num_tmp : int) -> Tuple[int,int]:
+        world_num = world_num_tmp + 1
+        level_num = level_num_tmp + 1
+
+        if level_num > 100:
+            return 0,0
 
         if world_num == 9:
             return world_num, level_num
@@ -671,8 +679,40 @@ class NSMBWInterface(object):
         else:
             return 0,0
 
+    @validate_level
+    def get_world_level_num_in_level(self) -> Tuple[int, int]:
+        if not self.is_in_level():
+            return 0,0
+
+        world_num = bytes_to_int(self.get_world_level())
+        level_num = bytes_to_int(self.get_level_level())
+
+        return self.internal_to_external_world_level_num(world_num,level_num)
+
+    @validate_level
     def get_modified_world_level_num_in_level(self) -> Tuple[int, int]:
         level = self.get_world_level_num_in_level()
+
+        if level == (0,0):
+            return level
+
+        mod_level = level_randoed(self.slot_data["shuffled_level_order"], *level)
+
+        return mod_level
+
+    @validate_level
+    def get_world_level_num_on_map(self) -> Tuple[int, int]:
+        if not self.is_in_worldmap():
+            return 0,0
+
+        world_num = bytes_to_int(self.get_map_world())
+        level_num = bytes_to_int(self.get_current_position_on_map())
+
+        return self.internal_to_external_world_level_num(world_num,level_num)
+
+    @validate_level
+    def get_modified_world_level_num_on_map(self) -> Tuple[int, int]:
+        level = self.get_world_level_num_on_map()
 
         if level == (0,0):
             return level
@@ -744,6 +784,9 @@ class NSMBWInterface(object):
     def get_map_world(self) -> bytes:
         address = self.memory_addresses.map_world
         return self.dolphin_client.read_address(address,1)
+    def get_current_position_on_map(self) -> bytes:
+        address = self.memory_addresses.current_position_on_map
+        return self.dolphin_client.read_address(address,4)
     def get_record_state(self) -> bytes:
         address = self.memory_addresses.game_recording_state+3 # beacuse 4byte number
         return self.dolphin_client.read_address(address,1)
@@ -957,8 +1000,12 @@ class NSMBWInterface(object):
         self.dolphin_client.write_address(address, value)
 
     def set_level_unlock_type(self, value : int):
-        address = self.memory_addresses.level_unlock_type
+        address = self.memory_addresses.custom_level_unlock_type
         self.dolphin_client.write_address(address,  int_to_bytes(value, 4))
+
+    def set_bowser_unlocked(self):
+        address = self.memory_addresses.custom_bowser_unlocked
+        self.dolphin_client.write_address(address, int_to_bytes(1, 4))
 
     def update_check_sum(self):
         # didnt manage to make this one work

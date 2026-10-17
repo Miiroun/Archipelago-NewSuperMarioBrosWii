@@ -5,7 +5,8 @@
 
 
 // Writes that riivolution is active to mem, to verify in client
-kmWrite32(0x80BBB01C, 0xFFFFFFFF);
+// doesnt work beause memory get moved around at launch
+//kmWrite32(0x80BBB01C, 0xFFFFFFFF);
 
 
 // Skip Wii Remote Strap Screen PAL by CLF78

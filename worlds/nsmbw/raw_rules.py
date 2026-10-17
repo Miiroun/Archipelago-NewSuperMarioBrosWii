@@ -462,7 +462,7 @@ class Block(NamedTuple):
     #have a field for rule / area ??
     pos_x : int
     pos_y : int
-    pos_z : int= 0
+    pos_z : int = 0
     rule : Rule = True_()
 
 
@@ -476,25 +476,28 @@ def get_block_id(world_num : int, level_num : int) -> List[Block]:
     block_ids : Dict[str, List[Block]] = defaultdict(list)
     block_ids.update({
         "1-1" : [
-            Block("At Start 1", 0x446a, 0xc40c, 0xc2c8),
-            Block("At Start 2", 0x4485, 0xc40c, 0xc2c8),
-            Block("At Start 3", 0x4485, 0xc3f8, 0xc2c8),
+            Block("At Start 1", 0x446a0000, 0xc40c0000, 0xc2c80000),
+            Block("At Start 2", 0x44850000, 0xc40c0000, 0xc2c80000),
+            Block("At Start 3", 0x44850000, 0xc3f80000, 0xc2c80000),
 
-            Block("Before pipes",  0x450a, 0xc3e8, 0x43f2),
+            Block("Before pipes",  0x450a8000, 0xc3e80000, 0x43f20000),
 
-            Block("Multicoin brick before checkpoint", 0x4529, 0xc3f8, 0xc2c8),
+            Block("Multicoin brick before checkpoint", 0x45298000, 0xc3f80000, 0xc2c80000),
 
-            Block("Propeller After checkpoint", 0x4557, 0xc402, 0xc2c8),
-            Block("Propeller under orange walk", 0x458c, 0xc3f8, 0xc2c8),
+            Block("Coinblock after checkpoint 1", 0x45568000, 0xc4020000, 0xc2c80000),
+            Block("Propeller After checkpoint", 0x45588000, 0xc4020000, 0xc2c80000),
+            Block("Coinblock after checkpoint 2", 0x45578000, 0xc4020000, 0xc2c80000),
 
-            Block("Multicoin 1 under orange walk", 0x4592, 0xc40c, 0xc2c8),
-            Block("Multicoin 2 under orange walk", 0x4599, 0xc40c, 0xc2c8),
+            Block("Propeller under orange walk", 0x458cc000, 0xc3f80000, 0xc2c80000),
 
-            Block("1up above pipe", 0x45a9, 0xc400, 0xc2c8),
+            Block("Multicoin 1 under orange walk", 0x45920000, 0xc40c0000, 0xc2c80000),
+            Block("Multicoin 2 under orange walk", 0x45990000, 0xc40c0000, 0xc2c80000),
 
-            Block("Secret 1up 1", 0x4558, 0xc400, 0xc2c8),
-            Block("Secret 1up 2", 0x45b9, 0xc410, 0xc2c8), #why are they the same, do we need the extra precision?
-            Block("Secret 1up 3", 0x45b9, 0xc410, 0xc2c8),
+            Block("1up above pipe", 0x45a90000, 0xc4000000, 0xc2c80000),
+
+            Block("Secret 1up 1", 0x45580000, 0xc4000000, 0xc2c80000),
+            Block("Secret 1up 2", 0x45b90000, 0xc4100000, 0xc2c80000), #why are they the same, do we need the extra precision?
+            Block("Secret 1up 3", 0x45b90000, 0xc4100000, 0xc2c80000),
 
         ],
 

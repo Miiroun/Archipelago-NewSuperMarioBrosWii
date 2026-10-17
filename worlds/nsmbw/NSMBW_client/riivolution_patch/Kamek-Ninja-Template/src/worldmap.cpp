@@ -37,6 +37,9 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 
     register int world_unlocked;
     register int level_unlock;
+    register int bowser_unlock;
+
+
     asm {
         lis r12, 0x80BB
         ori r12, r12, 0xB000
@@ -45,6 +48,9 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
         mr world_unlocked, r10
         lwz r10, 48(r12)
         mr level_unlock, r10
+        lwz r10, 52(r12)
+        mr bowser_unlock, r10
+
     }
 
     world_unlocked >> (7-world);
@@ -53,7 +59,9 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 
     bool cleared = IsCourseOmoteClear(param_1, param_2); // default
 
-    if ((level > 10) && (world_unlocked == 0)) {
+    if (world == 7 and level == 23){
+        cleared =  bowser_unlock == 1;
+    } else if ((level > 10) && (world_unlocked == 0)) {
         // this code dissables towers if not enabled second half
         cleared =  false;
     } else {

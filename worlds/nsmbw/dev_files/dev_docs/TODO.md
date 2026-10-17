@@ -1,26 +1,19 @@
 # TODO 
 # Super Short term
-- Lock bowser from path patch isntead of client
+- remove background off tracker items
+
 
   
 ## Playtest
 - bowser_level_unlock 
-- starcoin_requirement_world_unlock
-- 3-4 fix and cause
 - roulette and red coin : more
 - PercentageFillerForcedLocal
-- powerups : a lot, get help
-- Having more powerups than loc should send hints
 - performance from just the riivo patch : no client
 - 7-6 unlock
 - Print big red message if dolphin valuation finds incorrect settings
 - level shuffle plando
-- goomba extinction
-- prossesed_inventory_powerup_locations rework
 - only give unlocked powerups
 - LevelUnlock logic
-- level name changes
-- clear_mod
 - e.g. 1-Castle name change
 - world unlock logic change for 8-2, 7-T
 - WorldsUnlocks
@@ -31,8 +24,9 @@
 - require second world unlock to unlock 7-6 and 8-7
 - Secret exits are properly level randoed
 - bsdiff patch frozen
-- enemy ambush
-- folder browsing
+- LiteratureTrap
+- bowser lock
+- 8-Airship fixed patch
 
 
 ## Bugs to fix
@@ -61,10 +55,8 @@
 - starcoin_requirement_world_unlock breaks fuzzer
   - HOW fix ??
   - just sanction or add req to fuzzer
-- level clear doesnt send?
-  - because efficency changes?
-- block location : does see after level rando
 - more items than locations
+- game freezes after pause
 
 
 ## Before release

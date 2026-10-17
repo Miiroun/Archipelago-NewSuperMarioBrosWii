@@ -536,7 +536,7 @@ class LevelShuffleBossLock(Choice):
 
 # - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
 
-class LevelShuffleEnemyAmbushes(Choice):
+class LevelShuffleEnemyAmbushes(Toggle):
     """
     Shuffles the enemy ambush stages
     """
@@ -879,7 +879,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     # this tries to prevent num loc > num items
     if ((loc := world.options.shortcuts_sanity.value * 12 + world.options.level_completion.value * 77 +
                 world.options.hint_movie_sanity.value * 65 + world.options.include_inventory_powerups.value) #world comp, madatory  + 17
-         <= 10+
+         <= 10 + 10 +
         (itm :=  world.options.randomize_time.value
          +( world.options.randomize_powerups.value >=1) *len(POWERUP_UNLOCK))):
         raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
@@ -949,6 +949,9 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if world.options.level_unlock.value != LevelUnlock.option_all_unlocked:
             world.options.level_unlock.value = LevelUnlock.option_all_unlocked
             print("(NSMBW generation warning) entrance_randomizer require level_unlock set to all_unlocked")
+        if world.options.world_unlock.value != WorldUnlock.option_unlocked:
+            world.options.world_unlock.value = WorldUnlock.option_unlocked
+            print("(NSMBW generation warning) entrance_randomizer require world_unlock set to unlocked")
 
     for i in range(min(5, len(world.options.level_shuffle_remove.value))):
         world.options.level_shuffle_plando.value.update({

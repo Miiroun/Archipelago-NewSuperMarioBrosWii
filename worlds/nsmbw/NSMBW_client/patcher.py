@@ -37,6 +37,7 @@ class Patcher:
     shortcut_path : Path
     xml_path : Path
     bsdiff_patch_dir : Path
+    apnsmbw_file : Path
 
 
     def __init__(self, slot_name : str, seed : str, slot_data : dict):
@@ -56,7 +57,7 @@ class Patcher:
         self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)  / "riivolution_shortcuts" / f"{self.name}.json"
         self.xml_path = self.output_path.parent / "riivolution" / f"{self.name}.xml"
 
-
+        self.apnsmbw_file = Path(Utils.user_path("")) / "worlds" / "nsmbw"
 
     def recolor_tileset(self, source_bytes : bytes) -> bytes:
 
@@ -213,9 +214,8 @@ class Patcher:
 
     def copy_riivolution_skeleton(self):
         if not Utils.is_frozen():
-            apnsmbw_file =  Path(Utils.user_path("")) / "worlds" / "nsmbw"
-            _from = apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
-            assert apnsmbw_file.exists(), f"folder {apnsmbw_file} does not exist"
+            _from = self.apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
+            assert self.apnsmbw_file.exists(), f"folder {self.apnsmbw_file} does not exist"
             assert _from.exists(), f"folder {_from} does not exits"
 
 
@@ -232,21 +232,25 @@ class Patcher:
                         continue
                     zf.extract(member, self.output_path)
 
-    def patch_details(self) -> List[tuple[str,str,str]]:
+    def patch_details(self, generating = False) -> List[tuple[str,str,str]]:
         PatchDetails : List[tuple[str,str,str]] = [
             ("star_coin", "Object", "Object"),
             ("openingTitle", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
             ("key_boss_castle", "Object", "Object"),
         ]
-
-        if not self.slot_data["level_shuffle"]:
+        if generating:
+            _from = self.apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
+            assert _from.exists()
+            for level_to_patch in os.listdir(_from / "Stage"):
+                name = level_to_patch.replace(".arc", "")
+                PatchDetails.append((name, "Stage", "Stage"))
+        elif not self.slot_data["level_shuffle"]:
             for level_to_patch in os.listdir(self.bsdiff_patch_dir / "Stage"):
                 name  = level_to_patch.replace("patch_", "").replace(".bin", "")
-                PatchDetails.append((name, "stage", name))
+                PatchDetails.append((name, "Stage", "Stage"))
         return PatchDetails
 
-    def patch_bsdiff(self):
-
+    def extract_bsdiff(self):
         if Utils.is_frozen():
             self.bsdiff_patch_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "patch_data"
             self.bsdiff_patch_dir.mkdir(exist_ok=True, parents=True)
@@ -261,30 +265,26 @@ class Patcher:
                     member.filename = os.path.basename(member.filename)
                     zf.extract(member, self.bsdiff_patch_dir)
         else:
-            apnsmbw_file = Path(Utils.user_path("")) / "worlds" / "nsmbw"
-            self.bsdiff_patch_dir =  apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
+            self.bsdiff_patch_dir =  self.apnsmbw_file.parent / "nsmbw" / "NSMBW_client" / "riivolution_patch" / "Riivolution_patch_data"
 
-        patch_data = self.patch_details()
-        for name, folder_source, folder_patch in patch_data:
+    def patch_bsdiff(self):
+        self.extract_bsdiff()
+
+        for name, folder_source, folder_patch in self.patch_details():
             original_file_loc = self.temp_dir / "files" / folder_source / f"{name}.arc"
             assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
             destination_path = self.output_path / folder_patch / f"{name}.arc"
             destination_path.parent.mkdir(exist_ok=True, parents=True)
 
-            if Utils.is_frozen():
-                path_data_loc = self.bsdiff_patch_dir / f"patch_{name}.bin"
 
-                bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
+            assert self.bsdiff_patch_dir.exists()
 
-            else:
+            path_data_loc = self.bsdiff_patch_dir  / folder_patch / f"patch_{name}.bin"
+            assert path_data_loc.parent.exists(), f"folder {path_data_loc} does not exist"
+            assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
 
-                assert self.bsdiff_patch_dir.exists()
+            bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
 
-                path_data_loc = self.bsdiff_patch_dir  / folder_patch / f"patch_{name}.bin"
-                assert path_data_loc.parent.exists(), f"folder {path_data_loc} does not exist"
-                assert path_data_loc.exists(), f"folder {path_data_loc} does not exist"
-
-                bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
             assert destination_path.exists(), f"folder {destination_path} does not exist"
 
 
@@ -576,7 +576,8 @@ class Patcher:
         ET.SubElement(_patch, "memory", {"offset": "0x800E54B0", "value": "38600000", "original": "38637AAC"})
 
 
-        ET.SubElement(_patch, "memory", {"offset": "0x80BBB01C", "value": "FFFFFFFF"})
+        # doesnt work becuse copys memoery at this loc on rev 2
+        #ET.SubElement(_patch, "memory", {"offset": "0x80BBB01C", "value": "FFFFFFFF"}) # why is this moved?
 
         #pipe randomizer
         if self.slot_data["entrance_randomizer"] == EntranceRandomizer.option_on:

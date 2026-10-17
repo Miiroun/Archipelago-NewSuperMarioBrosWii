@@ -22,12 +22,8 @@
 4) Note that the ap client is bundled with launcher.
 5) Open dolphin, change the following settings:
    - `Options → Configuration → Advanced → Memory Override` to `Off`
-   - `Options → Configuration → Interface → Hotkeys Require Window Focus` to `Off`
-   - `Options → Hotkey Settings → Save and Load State`. Make sure saving (e.g. shift + F8 or @(Shift+F8)) and loading (e.g. F8) save states from slot 7 and 8 are their default values.
-   - If you care about your dolphin savefiles then back them up.
 6) Inside the client press `CONNECT` and then enter your player name (from the yaml).
-   - If you do NOT have the `use_riivolution` option enabled, then wait to CONNECT until you are at the level select menu in world 1.
-   - If you do have it enabled make sure you do NOT have the game open when you press CONNECT.
+   - Make sure you do NOT have the game open when you press CONNECT.
 
 
 ## How to play
@@ -46,8 +42,7 @@
 5) Select `SAVEFILE 2` to play on.
 6) Play the game: Beat levels and collect star coins. Prepare to beat bowser once and for all.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
-7) Make save-states to save the game and run `/save` often.
-   - However, do NOT make a save state in peach castle, it will release your remaining starcoin locations.
+7) Save in game to save progress. You can also use savestates but be carful loading them
    - To close the client run `/exit` to make sure everything is saved correctly.
 
 

@@ -261,14 +261,14 @@ def name_block_sanity(world_num : int, level_num : int, id : int) -> str:
 def base_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,10+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
-            if name_base(world_num, level_num) == name:
+            if name_base(world_num, level_num).casefold() == name.casefold():
                 return world_num, level_num
     raise ValueError(f"Level: {name} not found")
 
 def level_bijection(name : str ) -> tuple[int, int]:
     for world_num in range(1,10+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
-            if name_level(world_num, level_num) == name:
+            if name_level(world_num, level_num).casefold() == name.casefold():
                 return world_num, level_num
     raise ValueError(f"Level: {name} not found")
 
@@ -276,7 +276,7 @@ def sc_bijection(name : str ) -> tuple[int, int, int]:
     for world_num in range(1,10+1):
         for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1):
             for sc_num in range(1,3+1):
-                if name_starcoin(world_num,level_num,sc_num) == name:
+                if name_starcoin(world_num,level_num,sc_num).casefold() == name.casefold():
                     return world_num, level_num, sc_num
     raise ValueError(f"SC: {name} not found")
 
@@ -313,6 +313,16 @@ def pos_to_level_name(pos : int) -> tuple[int, int]:
         return (world_num, level_num)
     raise ValueError(f"Invalid pos: {pos}")
 
+def validate_level(func):
+    def wrapper(self, *args, **kwargs):
+        level = func(self, *args, **kwargs)
+        if level != (0,0):
+            assert_valid_level(*level)
+        return level
+
+    return wrapper
+
+@validate_level
 def level_randoed(shuffle, world_num : int, level_num : int, try_=False) -> Tuple[int, int]:
     if (world_num,level_num) == (0,0):
         return 0,0
@@ -329,6 +339,7 @@ def level_randoed(shuffle, world_num : int, level_num : int, try_=False) -> Tupl
         else:
             raise e
 
+@validate_level
 def level_randoed_bijection(shuffle, world_num : int, level_num : int, try_=False)-> Tuple[int, int]:
     if (world_num,level_num) == (0,0):
         return 0,0

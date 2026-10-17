@@ -187,7 +187,7 @@ class NSMBWSettings(settings.Group):
         required = False
 
 
-    game_file_path: GameFilePath  = GameFilePath(r"New SUPER MARIO BROS. Wii.iso")
+    game_file_path: GameFilePath  = GameFilePath(r"NewSUPERMARIOBROS.Wii.iso")
 
     auto_start_riivolution : AutoStartRiivolution | bool = True
     auto_load : AutoLoadState | bool = False

@@ -191,7 +191,7 @@ class NSMBWContext(SuperContext):
     def on_package(self, cmd: str, args: dict):
         match cmd:
             case "Connected":
-                Utils.async_start(self.detect_dolphin_settings())
+                assert self.detect_dolphin_settings(), "Invalid dolphin setting"
 
                 self.slot_data = args["slot_data"]
                 # checks for new slot_data values to be compatible
@@ -229,6 +229,8 @@ class NSMBWContext(SuperContext):
                 if tracker_loaded:
                     args.setdefault("slot_data", dict())
 
+                if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                    rm_tmp()
                 Utils.async_start(self.patch_and_run_game())
 
                 self.game_interface.slot_data = self.slot_data
@@ -523,7 +525,7 @@ class NSMBWContext(SuperContext):
                 "death_link_grace_cap" : self.death_link_grace_cap,
                 "powerup_grace" : self.powerup_grace,
             }
-            with open(path / f"{self.seed_name}.json", "w+") as file_name:
+            with open(path / f"{self.patcher.name}.json", "w+") as file_name:
                 json.dump(data, file_name)
             logger.info("Saved to file")
         else:
@@ -537,7 +539,7 @@ class NSMBWContext(SuperContext):
 
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
-                with open(Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json", "r") as file_name:
+                with open(Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.patcher.name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
                     data = json.load(file_name)
                 self.completed_levels = data["completed_levels"]
@@ -550,7 +552,6 @@ class NSMBWContext(SuperContext):
 
 
                 self.completed_levelstats = map_nd(data["completed_levelstats"], lambda  x : int_to_bytes(x, 4))
-                self.moded_levelstats = data["moded_levelstats"]
                 self.handled_num = data["handled_num"]
                 self.save_slot = data["save_slot"]
                 self.powerup_grace = data["powerup_grace"]
@@ -631,9 +632,9 @@ class NSMBWContext(SuperContext):
         checked_locations += await self.check_roulette_block()
         checked_locations += await self.check_blocksanity()
         checked_locations += await self.check_hintmovies()
-        if self.game_interface.is_in_worldmap():
-            checked_locations += await self.check_level_completion(self.unlocked_worlds)
-            checked_locations += await self.check_starcoins()
+
+        checked_locations += await self.check_level_completion()
+        checked_locations += await self.check_starcoins()
 
 
         if self.game_interface.is_in_level():
@@ -866,12 +867,12 @@ class NSMBWContext(SuperContext):
         bowser_unlock = world_req and starcoin_req and level_req
         return bowser_unlock
 
-    async def check_level_completion(self, unlocked_worlds):
+    async def check_level_completion(self):
         checked_locations = []
 
         # level compleation logic
         # check if level is cleared
-        level = self.game_interface.get_world_level_num_in_level()
+        level = self.game_interface.get_world_level_num_on_map()
 
 
         if level[0] not in range(1, 9 + 1):
@@ -881,7 +882,7 @@ class NSMBWContext(SuperContext):
         # do we need to chech all or could we just check the one we are in?
         #for world_num in world_nums:
             #for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-        randoed_level = self.game_interface.get_modified_world_level_num_in_level()
+        randoed_level = self.game_interface.get_modified_world_level_num_on_map()
         level_status = self.game_interface.get_level_stats(*level)[0]
         if level_status & 16 == 16:
             level_name = name_level(*randoed_level)
@@ -904,6 +905,7 @@ class NSMBWContext(SuperContext):
             byte_to_check : int
             if secret_exit.exit_type == 1:
                 byte_to_check = 0x10
+                continue
             elif secret_exit.exit_type == 2:
                 byte_to_check = 0x20
             else:
@@ -932,7 +934,7 @@ class NSMBWContext(SuperContext):
             if level_stats & 0x10 == 0x10:
                 if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
                     checked_locations.append(NSMBWworld.location_name_to_id[level_name])
-                if unlocked_worlds[world_num-1] <= 1:
+                if self.unlocked_worlds[world_num - 1] <= 1:
                     if not (level_name in self.completed_levels):
                         self.completed_levels.append(level_name)
                     #self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x27,1))
@@ -965,22 +967,22 @@ class NSMBWContext(SuperContext):
 
 
         # this code is for unlocking the final level
-        completed_worlds = self.get_completed_worlds()
         bowser_unlock = self.get_bow_unlocked()
+        if bowser_unlock:
+            self.game_interface.set_bowser_unlocked()
+
         level_name = name_level(8,10)
         level_stats = self.game_interface.get_level_stats(8,10)[0]
         # runs if to disable bowsers castle if completed 8-arship and not comprehended unlock conditions
         if  level_stats & 16 == 16 and (not bowser_unlock):
             if not (level_name in self.completed_levels):
                 self.completed_levels.append(level_name)
-            self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats &  0x27, 1))
-            self.log_color(f"Completed 8-Airship but does not meet requirements for unlocking bowser (Require {self.slot_data['bowser_star_unlock']} star coins and you have {self.starcoin_count}, Require {self.slot_data['bowser_world_unlock']} worlds completed and you have {completed_worlds}).", "blue")
+            self.log_color(f"Completed 8-Airship but does not meet requirements for unlocking bowser: run /goal to get reason", "blue")
         # if previously completed 8-arship and now unlocked bowser
         if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
             if level_name in self.completed_levels:
                 self.completed_levels.remove(level_name)
                 self.log_color("Bowsers castle is now unlocked", "blue")
-                self.game_interface.set_level_stats(8, 10, int_to_bytes(level_stats + 0x10, 1))
 
 
         level = self.game_interface.get_world_level_num_in_level()
@@ -1029,7 +1031,7 @@ class NSMBWContext(SuperContext):
                 checked_locations.append(NSMBWworld.location_name_to_id[location_name])
                 print(f"Location {location_name} checked")
                 break
-            if prossesed_inventory_powerup_locations >= self.slot_data["include_inventory_powerups"]:
+            else:
                 await self.send_random_hint()
                 logger.info(f"Hinted one of your location because you got an inventory powerup")
 
@@ -1296,15 +1298,20 @@ class NSMBWContext(SuperContext):
                         self.game_interface.set_powerupstate(b'\x00', player_num)
 
                 case ITEM.TRAPS.LiteratureTrap:
-                    match self.random.randint(1,2):
-                        case 1:
-                            for letter in "Once upon a time ... there was plummer ... name ... Mario.".split():
-                                logger.info(letter)
-                                await asyncio.sleep(0.3)
-                        case 2:
-                            for letter in "Once upon a time ... there was plummer ... name ... Luigi.".split():
-                                logger.info(letter)
-                                await asyncio.sleep(0.3)
+                    copy_pastas = [
+                        "Once upon a time ... there was plummer ... name ... Mario.",
+                        "Once upon a time ... there was plummer ... name ... Luigi.",
+                        """
+Everyone knows Mario is cool as f--k. But who knows what he's thinking? Who knows why he crushes turtles? And why do we think about him as fondly as we think of the mystical (nonexistent?) Dr Pepper? Perchance.
+I believe it was Kant who said "Experience without theory is blind, but theory without experience is mere intellectual play." Mario exhibits experience by crushing turts all day, but he exhibits theory by stating "Lets-a go!" Keep it up, baby!
+When Mario leaves his place of safety to stomp a turty, he knows that he may Die. And yet, for a man who can purchase lives with money, a life becomes a mere store of value. A tax that can be paid for, much as a rich man feels any law with a fine is a price. We think of Mario as a hero,but he is simply a one percenter of a more privileged variety. The lifekind. Perchance.
+                        """,
+                        "The alphabet is a b c d e f h i j k l m n o p q r s t u v w z y z, excpet Which one was missing?" #g
+                    ]
+                    for letter in self.random.choice(copy_pastas).split():
+                        messagebox("Literature trap", letter)
+                        logger.info(letter)
+                        await asyncio.sleep(0.3)
 
                 case ITEM.TRAPS.ThrowTrap:
                     self.modifiers.append(Modifier(ITEM.TRAPS.ThrowTrap, 120))
@@ -1326,7 +1333,7 @@ class NSMBWContext(SuperContext):
 
                 case _:
                     logger.info(f"Trap {trap} is not implemented")
-                    raise Exception(f"Trap {trap} is not implemented")
+                    raise NotImplementedError(f"Trap {trap} is not implemented")
             self.traps.remove(trap)
 
     async def handle_filler(self):
@@ -1673,7 +1680,8 @@ class NSMBWContext(SuperContext):
                             pass
                             #current_bytes &= 0x37 - (2 **(sc_num - 1))
                         else:
-                            print(f"What is happening with {NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)]}, {name_starcoin(world_num, level_num, sc_num)}")
+                            pass # if not enabled in this rando
+                            #print(f"What is happening with {NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)]}, {name_starcoin(world_num, level_num, sc_num)}")
 
 
                 if self.slot_data["level_completion"] == True:
@@ -1685,7 +1693,8 @@ class NSMBWContext(SuperContext):
                             pass
                             #current_bytes &= 0x27
                         else:
-                            print(f"What is happening with {NSMBWworld.location_name_to_id[name_level(world_num, level_num)]}, {name_base(world_num, level_num)}")
+                            pass # if not enabled in this rando
+                            #print(f"What is happening with {NSMBWworld.location_name_to_id[name_level(world_num, level_num)]}, {name_base(world_num, level_num)}")
 
 
                 self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes,1))
@@ -1789,13 +1798,15 @@ class NSMBWContext(SuperContext):
                         )
                     self.connection_pause = time.time() + 15
             else:
-                self.log_color("Failed to auto start dolphin, make sure you don't have any dolphin windows open","red")
+                message = "Failed to auto start dolphin, make sure you don't have any dolphin windows open. Autostart required for loading the riivolution to patch correctly."
+                messagebox("Did NOT auto start dolphin", message, True)
+                self.log_color(message,"red")
         except Exception as e:
             logger.info(traceback.format_exc())
             self.log_color(f"Patching error: {e}", "red")
 
 
-    async def detect_dolphin_settings(self):
+    def detect_dolphin_settings(self):
         try:
             settings_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder).parent.parent / "Config"
             assert settings_path.exists(), f"path {settings_path} does not exist"
@@ -1807,7 +1818,10 @@ class NSMBWContext(SuperContext):
 
             RAMOverrideEnable = config.getboolean("Core", "RAMOverrideEnable")
             if RAMOverrideEnable == True:
-                self.log_color(f"Dissable RAMOverrideEnable (mem1 and mem2) in your advanced dolphin settings for the client too hook properly")
+                message = f"Dissable RAMOverrideEnable (mem1 and mem2) in your advanced dolphin settings for the client too hook properly"
+                self.log_color(message)
+                messagebox("Incompatible dolphin settings", message, True)
+                return False
 
             #with open(settings_path, 'w') as configfile:
             #    config.write(configfile)
@@ -1815,6 +1829,7 @@ class NSMBWContext(SuperContext):
         except Exception as e:
             logger.info(traceback.format_exc())
             self.log_color(e)
+        return True
 
     async def send_random_hint(self):
         loc_id = {self.random.choice(list(self.missing_locations- self.locations_info.keys() - self.locations_scouted - self.checked_locations))}

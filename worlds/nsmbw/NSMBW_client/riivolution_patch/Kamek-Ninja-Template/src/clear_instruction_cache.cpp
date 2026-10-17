@@ -10,6 +10,10 @@ kmBranchDefAsm(0x800B0B40, 0x800B0B44)
     lis r12, 0x80BB
     ori r12, r12, 0xB000
 
+    // these code are for verifying dolphin is connected with riivolution
+    lis r10, 0xFFFF
+    ori r10, r10, 0xFFFF
+    stw r10, 0x1C(r12)
 
     // load address that is in memory 0x80BBB000
     lwz r11, 0(r12)
