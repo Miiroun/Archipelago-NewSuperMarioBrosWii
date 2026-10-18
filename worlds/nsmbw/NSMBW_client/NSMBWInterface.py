@@ -484,8 +484,6 @@ class NSMBWInterface(object):
 
         patch_ability(ITEM.ABILITIES.Crouch, self.memory_addresses.patch_crouch)
 
-        patch_ability(ITEM.LEVELELEMENTS.Yoshi, self.memory_addresses.patch_yoshi, double_check=False)
-
 
         if ITEM.ABILITIES.Swim in slot_data_ablities_included:
             if not ITEM.ABILITIES.Swim in unlocked_moves:
@@ -554,6 +552,9 @@ class NSMBWInterface(object):
 
         patch_element(ITEM.LEVELELEMENTS.Door, self.memory_addresses.patch_door)
         patch_element(ITEM.LEVELELEMENTS.Pipe, self.memory_addresses.patch_pipe)
+
+        patch_element(ITEM.LEVELELEMENTS.Yoshi, self.memory_addresses.patch_yoshi, double_check=False)
+
 
         patch_element(ITEM.LEVELELEMENTS.PSwitch, self.memory_addresses.patch_p_switch)
         patch_element(ITEM.LEVELELEMENTS.QuestSwitch, self.memory_addresses.patch_q_switch)
