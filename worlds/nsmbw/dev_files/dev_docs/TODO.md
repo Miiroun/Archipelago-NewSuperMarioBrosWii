@@ -4,15 +4,18 @@
 
 ## Playtest
 - Go to next world after beating airship
-
+  - may have of by one error on new patch
 
 ## Bugs to fix
 
 
-fuzzing error
+## fuzzing error
 - Could not access required locations for accessibility check
 - starcoin_requirement_world_unlock breaks fuzzer
 - same with bowser lock options
+- !-switch is causing some issues
+- inventory pow also problematic
+
 
 ## Before release
 - React : blocks
@@ -92,6 +95,7 @@ fuzzing error
 - Rename raw rules to rule_data?
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - fix webp alpha images not loading
+- Maybe create custom kivy tab for launching game
 
 
 ## Logic
@@ -239,7 +243,7 @@ Summery poll
 - Finding toad in level gives hint
 - Unlocks : future planed movement
   - "climb_rocky_wall, tilting platforms (motion control), "canon pipes" "Bounc mushroom", "triple_jump", "cloud" (State_CloudMove),
-  - "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), red coins - ring, stopmping on enemeies
+  - "noteblock" (daEnWhiteBlock_c::makesBounce_maybe),  "Spring" (jumpDai), stopmping on enemeies
   - "pow", "hold_rope" (3-G) (Hang action?),  "Bone ride", "Snake blocks", "climb_fence" (checkNetPunch makes spin forever)
   - spring
   - item that removes the world map vines in world 5

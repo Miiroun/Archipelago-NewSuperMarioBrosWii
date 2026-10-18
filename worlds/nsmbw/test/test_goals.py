@@ -22,5 +22,5 @@ class TestGoalHintMovies(NSMBWTestBase):
 
 class TestGoalAllLevels(NSMBWTestBase):
     options = {
-        "alternative_goal": AlternativeGoal.option_all_levels,
+        "alternative_goal": AlternativeGoal.option_levels,
     }

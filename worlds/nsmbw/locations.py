@@ -7,7 +7,7 @@ from Options import OptionError
 
 from . import items
 from .Common import *
-from .options import AlternativeGoal, BlockSanity, LevelShuffleBossLock
+from .options import AlternativeGoal, BlockSanity, LevelShuffleBossLock, LevelShuffle
 from .raw_rules import LevelRules, get_block_id
 
 if TYPE_CHECKING:
@@ -266,7 +266,7 @@ def create_events(world: NSMBWworld) -> None:
             _region = world.get_region("Menu")
         case AlternativeGoal.option_hintmovies:
             _region = world.get_region("Peach castle")
-        case AlternativeGoal.option_all_levels:
+        case AlternativeGoal.option_levels:
             _region = world.get_region("Menu")
         case _:
             raise NotImplementedError
@@ -312,6 +312,44 @@ seven_castle_allowed = [
 for level in seven_castle_allowed:
     assert level in [name_base(*temp_lvl) for temp_lvl in LEVELS], f"level {level}"
 
+secret_exits: List[Tuple[int, int]] = list()
+for secret_exit_ in SECRET_EXIT:
+    if secret_exit_.exit_type == 2:
+        secret_exits.append((secret_exit_.world, secret_exit_.level))
+all_secret_exits = deepcopy(secret_exits)
+
+castle_group = [(1, 8), (3, 8), (4, 8), (5, 8), (7, 9)]
+dont_shuffle = [(2, 8), (6, 8), (8, 3), (8, 9)]
+# dont_shuffle += [(2,6), (7,3)] # dont know why crash
+
+
+tower_secret_group = [(4, 7), (7, 8)]
+tower_group = [(1, 7), (2, 7), (3, 7), (5, 7), (6, 7), (8, 8), ]
+
+airship_group = [(4, 9), (6, 9), (8, 10)]
+
+
+
+def shuffle_req(world, shuffled_level_order, log : bool = False) -> bool:
+    _list = [
+        level_randoed_bijection(shuffled_level_order, 3, 4, try_=True) != (3, 5),
+        level_randoed_bijection(shuffled_level_order, 3, 5, try_=True) != (3, 4),
+        level_randoed(shuffled_level_order, 3, 4, try_=True) != (3, 5),
+        level_randoed(shuffled_level_order, 3, 5, try_=True) != (3, 4),
+        name_base(*level_randoed(world.shuffled_level_order, 7, 9, try_=True), assert_=False) in (seven_castle_allowed + [("0-0")]),  # add 0,0 because allow to fail if not shuffled
+        all([(level_randoed_bijection(shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0, 0)])) for secret_exit in all_secret_exits]),
+        all([(level_randoed(shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0, 0)])) for secret_exit in all_secret_exits]),
+
+        all([(level_randoed_bijection(shuffled_level_order, level[0], level[1], try_=True) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
+        all([(level_randoed(shuffled_level_order, level[0], level[1], try_=True) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
+
+    ]
+    if (not all(_list)) and log:
+        print(_list)
+        print([(secret_exit ) for secret_exit in all_secret_exits])
+        print([(level_randoed(          shuffled_level_order, secret_exit[0], secret_exit[1], try_=True)   ) for secret_exit in all_secret_exits])
+    return all(_list)
+
 
 def shuffle_level_order(world: NSMBWworld) -> bool:
     is_ut = getattr(world.multiworld, "generation_is_fake", False)
@@ -320,7 +358,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
 
     world.shuffled_level_order = list(range(sum(LEVELS_PER_WORLD)))
 
-    if world.options.level_shuffle.value == True:
+    if world.options.level_shuffle.value in [LevelShuffle.option_on] :
         not_shuffled_levels    = deepcopy(world.shuffled_level_order)
         not_shuffled_locations = deepcopy(world.shuffled_level_order)
 
@@ -359,48 +397,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
 
             return list(zip(to_list[:values], from_list[:values]))
 
-        def shuffle_req(shuffled_level_order) -> bool:
-            _list = [
-                level_randoed_bijection(shuffled_level_order, 3,4, try_=True) != (3,5),
-                name_base(*level_randoed(world.shuffled_level_order, 7, 9, try_=True), assert_=False) in (seven_castle_allowed+ [("0-0")]), # add 0,0 because allow to fail if not shuffled
-                all([(level_randoed_bijection(shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0,0)])     ) for secret_exit in all_secret_exits]),
-                all([(level_randoed(          shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0,0)])     ) for secret_exit in all_secret_exits]),
-
-                all([(level_randoed_bijection(shuffled_level_order, level[0], level[1], try_=True) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
-                all([(level_randoed(          shuffled_level_order, level[0], level[1], try_=True) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
-
-            ]
-            #if not all(_list):
-            #    print(_list)
-            #    print([(secret_exit ) for secret_exit in all_secret_exits])
-            #    print([(level_randoed(          shuffled_level_order, secret_exit[0], secret_exit[1], try_=True)   ) for secret_exit in all_secret_exits])
-            return all(_list)
-
-
-        secret_exits : List[Tuple[int,int]] = list()
-        for secret_exit_ in SECRET_EXIT:
-            if secret_exit_.exit_type == 2:
-                secret_exits.append((secret_exit_.world, secret_exit_.level))
-        all_secret_exits = deepcopy(secret_exits)
-
-
-        castle_group = [(1,8),(3,8),(4,8),(5,8), (7,9)]
-        dont_shuffle = [(2,8), (6,8), (8,3), (8,9)]
-        #dont_shuffle += [(2,6), (7,3)] # dont know why crash
-
-        #secret_exits.remove((2,6))
-        #secret_exits.remove((4,7))
-        #secret_exits.remove((7,8))
-
-        tower_secret_group = [(4,7), (7,8)]
-        tower_group = [(1,7), (2,7), (3,7), (5,7), (6,7), (8,8), ]
-
-        airship_group = [(4,9), (6,9), (8,10)]
-
-        world.shuffled_level_order = [-1,] * int(sum(LEVELS_PER_WORLD))
-
-
-
+        world.shuffled_level_order = [-1, ] * int(sum(LEVELS_PER_WORLD))
 
         # this is plando
         for _from_str in sorted(list(world.options.level_shuffle_plando.value.keys())):
@@ -415,7 +412,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             assert _to in not_shuffled_locations, f"_to: {_to}"
             not_shuffled_locations.remove(_to)
 
-        if not shuffle_req(world.shuffled_level_order):
+        if not shuffle_req(world, world.shuffled_level_order):
             raise Exception("nsmbw plano invalid")
 
         # this does option specific additions
@@ -436,17 +433,18 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             case _:
                 raise NotImplementedError
 
+        if world.options.level_shuffle.value == LevelShuffle.option_on:
+            shuffle_specific_list += add_to_list(secret_exits)
 
-        shuffle_specific_list += add_to_list(secret_exits)
 
         for _from, _to in shuffle_specific_list:
             world.shuffled_level_order[_from] = _to
             # already been removed
 
+        if world.options.level_shuffle.value == LevelShuffle.option_on:
+            world.random.shuffle(not_shuffled_locations)
+            world.random.shuffle(not_shuffled_levels)
 
-
-        world.random.shuffle(not_shuffled_locations)
-        world.random.shuffle(not_shuffled_levels)
 
         for _from, _to in zip(not_shuffled_levels, not_shuffled_locations):
             world.shuffled_level_order[_from] = _to
@@ -457,14 +455,18 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             assert _to in not_shuffled_locations, f"_to: {_to}"
             #not_shuffled_locations.remove(_to)
 
-        assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
-        assert -1 not in world.shuffled_level_order
-        assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder counter {Counter(world.shuffled_level_order).most_common(5)} must have unique elements"
-        assert pos_to_level_name(level_name_to_pos(2,8)) == (2,8), "test rando still works"
-        assert Counter(world.shuffled_level_order)[0] == 1, "no duplicates"
-
-
-
-        return shuffle_req(world.shuffled_level_order)
+    elif world.options.level_shuffle.value in [LevelShuffle.option_off_respect_plando] :
+        for _from_str in sorted(list(world.options.level_shuffle_plando.value.keys())):
+            _to_str = world.options.level_shuffle_plando.value[_from_str]
+            _to = level_name_to_pos(*base_bijection(_to_str))
+            _from = level_name_to_pos(*base_bijection(_from_str))
+            world.shuffled_level_order[_from] = _to
     else:
-        return True
+        pass
+
+    assert len(world.shuffled_level_order) == sum(LEVELS_PER_WORLD)
+    assert -1 not in world.shuffled_level_order
+    assert len(world.shuffled_level_order) == len(set(world.shuffled_level_order)), f"Shuffleorder counter {Counter(world.shuffled_level_order).most_common(5)} must have unique elements"
+    assert pos_to_level_name(level_name_to_pos(2,8)) == (2,8), "test rando still works"
+    assert Counter(world.shuffled_level_order)[0] == 1, "no duplicates"
+    return shuffle_req(world, world.shuffled_level_order)

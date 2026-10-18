@@ -245,7 +245,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"Your goal is starcoins.")
             case AlternativeGoal.option_hintmovies:
                 logger.info(f"Your goal is hint movies.")
-            case AlternativeGoal.option_all_levels:
+            case AlternativeGoal.option_levels:
                 logger.info(f"Your goal is all levels.")
             case _:
                 raise NotImplementedError

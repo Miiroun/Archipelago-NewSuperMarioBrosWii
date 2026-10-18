@@ -207,7 +207,7 @@ def set_completion_condition(world: "NSMBWworld") -> None:
                     continue
                 hm_rule &= CanReachLocation(name_hintmovie(hm_num))
             world.set_rule(victory_loc, hm_rule)
-        case AlternativeGoal.option_all_levels:
+        case AlternativeGoal.option_levels:
             _rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS), count=world.options.bowser_level_unlock.value)
             world.set_rule(victory_loc, _rule)
         case _:

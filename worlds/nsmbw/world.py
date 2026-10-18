@@ -253,34 +253,47 @@ class NSMBWworld(World):
 
     def set_level_rando(world):
         is_ut = getattr(world.multiworld, "generation_is_fake", False)
-        if not is_ut:
-            shuffle_level_order(world)
+        if is_ut:
+            return
 
-            if world.options.level_shuffle.value == True:
-                i = 0
+        for _ in range(1_000):
+            status = shuffle_level_order(world)
 
-                beatable = False
-                while not beatable:
-                    status = shuffle_level_order(world)
-
-                    # this makes sure the first 2 levels are beatable
-                    randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 1)])
-                    randod_world_num2, randod_level_num2 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world.options.starting_world.value, 2)])
-                    #_rule = (level_rules[randod_world_num1 - 1][randod_level_num1 - 1][0] & level_rules[randod_world_num2 - 1][randod_level_num2 - 1][0]).resolve(world)
-                    _rule1 = (raw_rules.LevelRules[name_base(randod_world_num1, randod_level_num1)].clear).resolve(world)
-                    _rule2 = (raw_rules.LevelRules[name_base(randod_world_num2, randod_level_num2)].clear).resolve(world)
+            # this makes sure the first 2 levels are beatable
+            randod_level1 = level_randoed(world.shuffled_level_order, world.options.starting_world.value, 1)
+            randod_level2 = level_randoed(world.shuffled_level_order, world.options.starting_world.value, 2)
+            _rule1 = raw_rules.LevelRules[name_base(*randod_level1)].clear.resolve(world)
+            _rule2 = raw_rules.LevelRules[name_base(*randod_level2)].clear.resolve(world)
 
 
-                    beatable = _rule1(world.multiworld.state) and _rule2(world.multiworld.state) and status
+            beatable = _rule1(world.multiworld.state) and _rule2(world.multiworld.state) and status
+            if beatable:
+                break
 
-                    i += 1
-                    if i > 10_000:
-                        raise Exception(f"Faild to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
+        else:
+            status = locations.shuffle_req(world, world.shuffled_level_order, log=True)
+            randod_level1 = level_randoed(world.shuffled_level_order, world.options.starting_world.value, 1)
+            randod_level2 = level_randoed(world.shuffled_level_order, world.options.starting_world.value, 2)
+            _rule1 = raw_rules.LevelRules[name_base(*randod_level1)].clear.resolve(world)
+            _rule2 = raw_rules.LevelRules[name_base(*randod_level2)].clear.resolve(world)
 
+            print(
+            f"""
+            status = {status}
+            level1 = {_rule1(world.multiworld.state)} : {randod_level1} : {_rule1.explain_str()}
+            level2 = {_rule2(world.multiworld.state)} : {randod_level2} : {_rule2.explain_str()}
+            """)
+            raise Exception(f"Failed to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
+
+        assert locations.shuffle_req(world, world.shuffled_level_order), "something gone wrong in level shuffle assertion"
 
 
     # "do NOT copy this option handling code, it is really not god and causes issues"
-    default_options_set : Set[str] = {"progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints', 'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items'}
+    default_options_set : Set[str] = {
+        "progression_balancing", "accessibility", 'local_items', 'non_local_items', 'start_inventory', 'start_hints',
+        'start_location_hints', 'exclude_locations', 'priority_locations', 'item_links', 'plando_items',
+        'level_shuffle_plando', 'level_shuffle_remove', 'percentage_filler_forced_local',
+    }
     default_options_set |= {"filler_items", "trap_items"}
     def fill_slot_data(self) -> Mapping[str, Any]:
         option_list : list = list(self.options.__dict__.keys()- self.default_options_set)

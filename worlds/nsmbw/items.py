@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from BaseClasses import Item, ItemClassification, CollectionState, MultiWorld, Location, LocationProgressType
 from .Common import *
-from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer, WorldUnlock
+from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer, WorldUnlock, LevelShuffle
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -134,7 +134,7 @@ extra_start_items : Dict[int,set]= {
     3: {ITEM.LEVELELEMENTS.Pipe.value},
     4 : {ITEM.ABILITIES.Swim.value}  | pip_essen,
     5 : {ITEM.ABILITIES.Climb.value, ITEM.ABILITIES.Swim.value} | pip_essen,
-    6: set(),
+    6: {ITEM.ABILITIES.Swim.value} | pip_essen,
     7: {ITEM.ABILITIES.Swim.value} | pip_essen,
     8 : {ITEM.ABILITIES.Run.value, ITEM.ABILITIES.ButtonLeft.value, ITEM.ABILITIES.Jump.value} | pip_essen
 }
@@ -151,18 +151,7 @@ def precollect_items(world: NSMBWworld) -> None:
 
 # With those two helper functions defined, let's now get to actually creating and submitting our itempool.
 def create_all_items(world: NSMBWworld) -> None:
-    starting_world_num : int = world.options.starting_world.value
     excluded_items : set = set()
-
-    if len({ITEM.ABILITIES.SpinJump.value, ITEM.ABILITIES.Jump.value} - world.options.abilites_included.value) == 0:
-        if world.random.randint(0,1) == 0:
-            world.options.abilites_included.value -= {ITEM.ABILITIES.SpinJump}
-        else:
-            world.options.abilites_included.value -= {ITEM.ABILITIES.Jump}
-
-    if not world.options.level_shuffle.value:
-        world.options.abilites_included.value = world.options.abilites_included.value -extra_start_items[starting_world_num]
-        world.options.level_elements_included.value -= extra_start_items[starting_world_num]
 
 
     itempool: list[Item] = []
@@ -176,7 +165,7 @@ def create_all_items(world: NSMBWworld) -> None:
         match world.options.world_unlock.value:
             case WorldUnlock.option_single | WorldUnlock.option_separate:
                 for i in range(1, 9+1):
-                    if i != starting_world_num: # this needs to run here to skip generating any if starting world is 9
+                    if i != world.options.starting_world.value: # this needs to run here to skip generating any if starting world is 9
                         itempool.append(world.create_item(name_world_unlock(i)))
                     if (i != 9)  and (world.options.world_unlock.value == WorldUnlock.option_separate):
                         itempool.append(world.create_item(name_world_unlock(i)))
@@ -212,7 +201,7 @@ def create_all_items(world: NSMBWworld) -> None:
         itempool.append(world.create_item(ITEM.Time))
     if world.options.randomize_time.value > 0:
         world_time_req = [90, 200, 200, 200, 200, 200, 200, 200, 150]
-        amount_req = get_time_math(world, world_time_req[starting_world_num])
+        amount_req = get_time_math(world, world_time_req[world.options.starting_world.value])
         for _ in range(amount_req): world.push_precollected(world.create_item(ITEM.Time))
 
     if world.options.randomize_boss_health.value == True:

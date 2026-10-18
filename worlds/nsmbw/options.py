@@ -3,7 +3,6 @@ from .Common import *
 
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from .world import NSMBWworld
 
@@ -19,7 +18,7 @@ class AlternativeGoal(Choice):
     option_bowser = 0
     option_starcoins = 1
     option_hintmovies = 2
-    option_all_levels = 3
+    option_levels = 3
 
     default = option_bowser
 
@@ -514,16 +513,19 @@ class EnemyShuffle(Toggle):
 class LevelShuffle(Choice):
     """
     Shuffles the level order.
+    off : Vanilla
+    on : Moves around levels
+    off_respect_plando : Like off except if you have any level_shuffle_plando they will be respected
     """
     display_name = "Level Shuffle"
     option_off = 0
     option_on = 1
-    #option_off_respect_plando = 2
+    option_off_respect_plando = 2
 
     #option_same_world = 3
     #option_weighted = 5
 
-    default = option_off
+    default = option_off_respect_plando
 
 class LevelShuffleBossLock(Choice):
     """
@@ -537,7 +539,7 @@ class LevelShuffleBossLock(Choice):
     option_lock_placements = 5
     option_lock_end_of_world = 7
 
-    default = option_lock_placements
+    default = option_nolock
 
 # - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
 
@@ -889,19 +891,19 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
             + len(world.options.abilites_included.value) * world.options.randomize_abilites.value + len(world.options.level_elements_included.value) * world.options.randomize_level_elements.value +
             len(world.options.enemies_included.value) * (world.options.randomize_enemies.value >= 1)
         ):
-        raise OptionError(f"(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate"
-                          f"you have approximately {loc} locations, {itm} items, margin {itm-loc}")
+        raise OptionError(f"""(NSMBW generation error) You need to turn on more locations for NSBMW for it to be able to generate
+                          you have approximately {loc} locations, {itm} items, margin {itm-loc}""")
 
     TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
     if (Utils.get_settings()["nsmbw_settings"].allow_gen_impactful_settings == False) and TESTING:#and (len(world.multiworld.player_ids) >= 2):
         if world.options.include_inventory_powerups.value > 100:
-            raise OptionError(f"(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,"
-                                  f"if you still wish to use this, enable allow_gen_impactful_settings in your host.yaml")
+            raise OptionError(f"""""(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,
+                                  if you still wish to use this, enable allow_gen_impactful_settings in your host.yaml""")
         if world.options.hint_movie_shop_price_logic.value == HintMovieShopPriceLogic.option_ordered:
             raise OptionError("(NSMBW generation error) Option ordered for HintMovieShopPriceLogic can rarely create unbeatable seeds and therefor needs to enable allow_gen_impactful_settings in your host.yaml ")
 
-        if world.options.logic_difficulty.value == LogicDifficulty.option_hard:
-            raise OptionError("(NSMBW generation error) Logic difficulty set to hard without enabling allow_gen_impactful_settings in host.yaml")
+        #if world.options.logic_difficulty.value == LogicDifficulty.option_hard:
+        #    raise OptionError("(NSMBW generation error) Logic difficulty set to hard without enabling allow_gen_impactful_settings in host.yaml")
 
         if world.options.red_coin_ring.value or world.options.oneups_sanity.value or world.options.nintynine_coin_sanity.value or world.options.roulet_block.value or world.options.block_sanity.value:
             raise OptionError("(NSMBW generation error) You have enabled a secret setting (that doesnt have logic) without allow_gen_impactful_settings in host.yaml, turn them of or enable it")
@@ -937,7 +939,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if not world.options.hint_movie_sanity.value:
             raise OptionError(f"(NSMBW generation error) hint_movie_sanity needs to be enabled for alternative goal hint_movies")
 
-    if world.options.hint_movie_sanity.value and world.options.level_shuffle.value:
+    if world.options.hint_movie_sanity.value and (world.options.level_shuffle.value == LevelShuffle.option_on):
         raise OptionError(f"(NSMBW generation error) Due to a bug hint_movie_sanity and level_shuffle can not both be enabled")
 
     for world_num in range(1,9+1):
@@ -976,12 +978,22 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if (key in secret_exit_names) ^ (value in secret_exit_names):
             raise OptionError(f"(NSMBW generation Error) Invalid plando {key}:{value}, secret exits needs to be plandoed to secret exits")
 
-    if len(world.options.level_shuffle_plando.value) != len(set(world.options.level_shuffle_plando.value.values())):
+    if len(world.options.level_shuffle_plando.value.values()) != len(set(world.options.level_shuffle_plando.value.values())):
         raise OptionError(f"(NSMBW generation Error) Dublicate values in level_shuffle_plando")
 
     if world.options.world_unlock.value == WorldUnlock.option_progressive:
         world.options.starting_world.value = StartingWorld.option_world1
 
     world.options.starcoin_requirement_world_unlock.value[str(world.options.starting_world.value)] = 0
+
+
+    if len({ITEM.ABILITIES.SpinJump.value, ITEM.ABILITIES.Jump.value} - world.options.abilites_included.value) == 0:
+        world.options.abilites_included.value -= {world.random.choice([ITEM.ABILITIES.Jump, ITEM.ABILITIES.SpinJump])}
+
+    from .items import extra_start_items
+    if world.options.level_shuffle.value in [LevelShuffle.option_off, LevelShuffle.option_off_respect_plando]:
+        world.options.abilites_included.value       -= extra_start_items[world.options.starting_world.value]
+        world.options.level_elements_included.value -= extra_start_items[world.options.starting_world.value]
+
 
 

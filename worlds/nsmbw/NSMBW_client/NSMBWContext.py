@@ -605,7 +605,7 @@ class NSMBWContext(SuperContext):
                 if len(set(name_hintmovie(hm_num) for hm_num in range(HINTMOVIE_COUNT)) - set(DEPRIO_HM) - self.checked_locations) == 0:
                     await self.send_goal()
 
-            case AlternativeGoal.option_all_levels:
+            case AlternativeGoal.option_levels:
                 level_req = (self.get_count_levels_cleared() >= self.slot_data["bowser_level_unlock"])
 
                 if level_req:
