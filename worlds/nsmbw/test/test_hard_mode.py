@@ -10,8 +10,8 @@ class TestHardModeOff(NSMBWTestBase):
         "logic_difficulty" : LogicDifficulty.option_normal,
         "logic_outside_powerups": True,
 
-        "bowser_star_unlock" : 100,
-        "bowser_world_unlock" : 4,
+        "goal_starcoin_unlock" : 100,
+        "goal_world_unlock" : 4,
     }
 
     def test_1_1(self) -> None:
@@ -41,8 +41,8 @@ class TestHardModeOn(NSMBWTestBase):
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_hard,
         "logic_outside_powerups" : True,
-        "bowser_star_unlock" : 100,
-        "bowser_world_unlock" : 4,
+        "goal_starcoin_unlock" : 100,
+        "goal_world_unlock" : 4,
     }
 
     def test_1_1(self) -> None:

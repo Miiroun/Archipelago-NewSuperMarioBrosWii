@@ -424,7 +424,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
         match world.options.level_shuffle_boss_lock.value:
             case LevelShuffleBossLock.option_lock_types:
                 shuffle_specific_list += add_to_list(castle_group) + add_to_list(tower_secret_group) + add_to_list(tower_group) + add_to_list(airship_group)
-            case LevelShuffleBossLock.option_lock_placements:
+            case LevelShuffleBossLock.option_lock_positions:
                 shuffle_specific_list += add_to_list(castle_group + tower_group + airship_group) + add_to_list(tower_secret_group)
             case LevelShuffleBossLock.option_nolock:
                 pass

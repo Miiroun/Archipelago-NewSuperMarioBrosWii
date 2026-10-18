@@ -274,7 +274,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "4-GhostHouse"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch) | (ice_peng_o & carry_block)), (True_(), True_(), True_()), True_()),  # -6 4-GhostHouse
     "4-Tower"  : Level(normal_move & tower_rules, (True_(), True_(), True_()), True_()),  # -7 4-Tower
     "4-Castle"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), True_(), True_())),  # -8 4-Castle
-    "4-Airship"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & ground_pound) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-Airship
+    "4-Airship"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry_block | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & ground_pound) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-Airship
 # world 5
     "5-1"  : Level(normal_move & (climb | propeller_o) & pipe, (super_mario & ground_pound, swim | mini_o, ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound)))),  # -1
     "5-2"  : Level(pipe & button_down & button_up & normal_move, (True_(), button_left | (crouch & logic_hard), (carry_block & spin_jump) | propeller_o | (max_mini & logic_hard & outside_powerups))),  # -2

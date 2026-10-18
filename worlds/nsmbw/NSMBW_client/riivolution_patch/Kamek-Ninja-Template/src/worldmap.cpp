@@ -1,4 +1,5 @@
 #include <kamek.h>
+#include <game/bases/d_wm_lib.hpp>
 
 //breakpoint 0x80c7fecf
 
@@ -10,16 +11,27 @@ kmBranchDefCpp(0x800fa440, 0x800fa6e4, int, int param_1, int param_2)
 }
 */
 
-extern int GetClearStatus(int param_1, int param_2);
+
+//extern "C" {
+//extern bool IsCourseClear__6dWmLibFii(int world, int stage);
+//extern int GetClearStatus__6dWmLibFii(int param_1, int param_2);
+//}
+
+
+
+//extern int GetClearStatus(int param_1, int param_2);
 
 
 bool IsCourseOmoteClear(int param_1, int param_2)
-
 {
+
+  //int iVar1;
+  //bool bVar2;
+
   int iVar1;
   bool bVar2;
 
-  iVar1 = GetClearStatus(param_1, param_2);
+  iVar1 = dWmLib::GetClearStatus(param_1, param_2);
   if ((iVar1 == 1) || (iVar1 == 2) || (iVar1 == 4)) {
     bVar2 = true;
   }
@@ -27,13 +39,29 @@ bool IsCourseOmoteClear(int param_1, int param_2)
     bVar2 = false;
   }
   return bVar2;
+
+
+  //return dWmLib::IsCourseOmoteClear(param_1,param_2);
+  //asm {
+  //}
+  //return dWmLib::IsCourseClearSimple(param_1, param_2);
 }
+
 
 
 kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 {
-    int world = param_1 & 0xffU;
-    int level = param_2 & 0xffU;
+    register int param_1_copy;
+    register int param_2_copy;
+
+    asm {
+        mr param_1_copy, r3
+        mr param_2_copy, r4
+    }
+
+
+    int world = param_1 & 0xffU+1;
+    int level = param_2 & 0xffU+1;
 
     register int world_unlocked;
     register int level_unlock;
@@ -53,21 +81,25 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 
     }
 
-    world_unlocked << (7-world);
+    world_unlocked >> (world-1);
     world_unlocked = world_unlocked & 1;
 
 
-    bool cleared = IsCourseOmoteClear(param_1, param_2); // default
+    bool cleared = IsCourseOmoteClear(param_1_copy, param_2_copy); // default
 
-    if (world == 7 and level == 37){
+    if (world == 8 and level == 38){
+        // this code allows client to confirm bowser_unlock
         cleared =  bowser_unlock == 1;
-    } else if ((level == 21) && (world_unlocked == 0)) {
+    } else if ((level == 22) && (world_unlocked == 0)) {
         // this code dissables towers if not enabled second half
         cleared =  false;
     } else {
         if (level_unlock == 1) {
-            cleared = IsCourseOmoteClear(param_1, param_2);
+            //cleared = IsCourseOmoteClear(world, level);
         } else if (level_unlock == 3)  {
+            cleared = true;
+        } else {
+            // panic
             cleared = true;
         }
     }

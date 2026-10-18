@@ -11,8 +11,8 @@ class TestMovementOff(NSMBWTestBase):
         "logic_difficulty" : LogicDifficulty.option_normal,
         "logic_outside_powerups": True,
 
-        "bowser_star_unlock" : 100,
-        "bowser_world_unlock" : 4,
+        "goal_starcoin_unlock" : 100,
+        "goal_world_unlock" : 4,
         "level_shuffle": False,
     }
 
@@ -46,8 +46,8 @@ class TestMovementOn(NSMBWTestBase):
         "starting_world" : 1,
         "logic_difficulty" : LogicDifficulty.option_normal,
         "logic_outside_powerups" : True,
-        "bowser_star_unlock" : 100,
-        "bowser_world_unlock" : 4,
+        "goal_starcoin_unlock" : 100,
+        "goal_world_unlock" : 4,
         "level_shuffle": False,
     }
 

@@ -74,7 +74,7 @@ class ITEM:
         Jump        = "Jump"
         Run         = "Run"
         ButtonLeft      = "Button Left"
-        ButtonRight     = "Button Tight"
+        ButtonRight     = "Button Right"
         ButtonUp        = "Button Up"
         ButtonDown      = "Button Down"
 

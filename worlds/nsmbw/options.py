@@ -12,7 +12,7 @@ class AlternativeGoal(Choice):
     Bowser      : Beat 8-C
     Starcoin    : Have starcoin = requirement
     Hintmovie   : Have all hintmovie locations
-    All_levels  : Beat x amount of levels to goal, uses bowser_level_unlock
+    All_levels  : Beat x amount of levels to goal, uses goal_level_unlock
     """
     display_name = "Alternative Goal"
     option_bowser = 0
@@ -62,16 +62,17 @@ class RandomizeAbilities(Toggle):
     """
 
 class AbilitiesIncluded(ItemSet):
+    valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value,
+                                   ITEM.ABILITIES.Jump.value
+                                   }
     __doc__ = f"""
-    Which abilities: {ABILITIES} are shuffled into the item pool.
+    Which abilities: {valid_keys} are shuffled into the item pool.
     Requires Randomize Abilities to be enabled.
     Consider not enabling run on your first attempt since it slows you down significantly.
     More abilities exists as secret options as they have smaller issues.
     They are: Spin jump and Climb
     """
-    valid_keys = set(ABILITIES) - {ITEM.ABILITIES.ButtonUp.ButtonRight.value, ITEM.ABILITIES.ButtonLeft.value,
-                                   ITEM.ABILITIES.Jump.value
-                                   }
+
 
     default = valid_keys - {ITEM.ABILITIES.SpinJump.value,ITEM.ABILITIES.Climb.value,
                             ITEM.ABILITIES.ButtonDown.value, ITEM.ABILITIES.ButtonUp.value,
@@ -85,12 +86,12 @@ class RandomizeLevelElements(Toggle):
     """
 
 class LevelElementsIncluded(ItemSet):
+    valid_keys = set(LEVEL_ELEMENTS) - {ITEM.LEVELELEMENTS.QuestSwitch.value}
     __doc__ = f"""
-    Which level elements: {LEVEL_ELEMENTS} are shuffled into the item pool.
+    Which level elements: {valid_keys} are shuffled into the item pool.
     Requires Randomize Level Elements to be enabled.
     The only valid none default option is pipe, which still is required for most world starts.
     """
-    valid_keys = set(LEVEL_ELEMENTS) - {ITEM.LEVELELEMENTS.QuestSwitch.value}
     default = valid_keys - {ITEM.LEVELELEMENTS.Pipe.value}
 
 
@@ -106,10 +107,10 @@ class RandomizeEnemies(Choice):
 
 
 class EnemiesIncluded(ItemSet):
-    __doc__ = f"""
-    Enemies: {ENEMIES} are shuffled into the item pool.
-    """
     valid_keys = set(ENEMIES)
+    __doc__ = f"""
+    Enemies: {valid_keys} are shuffled into the item pool.
+    """
     default = valid_keys
     visibility = Visibility.none
 
@@ -159,6 +160,7 @@ class HintMovieSanity(Toggle):
     """
     Hint movies in peach castles are locations, adds 65 locations.
     You will need to receive starcoin items and complete levels to buy them.
+    Incompatible with level shuffle
     """
     display_name = "Include Hint Movies"
     default = False
@@ -245,7 +247,6 @@ class RedCoinRing(Toggle):
 class RouletBlock(Toggle):
     """
     Implemented without logic.
-    Requires riivolution
     """
     visibility = Visibility.none
 
@@ -253,7 +254,6 @@ class RouletBlock(Toggle):
 class BlockSanity(Choice):
     """
     Implemented without logic.
-    Requires riivolution
     """
     option_disabled = 0
     option_powerup_blocks = 3
@@ -324,7 +324,7 @@ class StarcoinRequirementWorldUnlock(OptionCounter):
     min = 0
     max = 200 # set this low to lower risque of gen failure
 
-    _default = {
+    default = {
         "1" : 0,
         "2" : 0,
         "3" : 0,
@@ -335,8 +335,8 @@ class StarcoinRequirementWorldUnlock(OptionCounter):
         "8" : 0,
         "9" : 0
     }
-    valid_keys = _default.keys()
-    value = _default
+    valid_keys = default.keys()
+
 
 class World9UnlockCondition(Choice):
     """
@@ -364,7 +364,17 @@ class IncludeNumberInventoryItems(Range):
     display_name = "Include Inventory Items"
     range_start = 0
     range_end = 999
-    default = 10
+    default = 25
+
+class InventoryItemHintsPercentageChance(Range):
+    """
+    After send all your inventory items will you have a chance to get a random location hint.
+    This change is specified as a percentage.
+    """
+    range_start =  0
+    range_end = 100
+
+    default = 20
 
 class WorldCompPriority(Toggle):
     """
@@ -375,7 +385,7 @@ class WorldCompPriority(Toggle):
     default = False
     #visibility = Visibility.complex_ui
 
-class BowserCastleStarUnlock(Range):
+class GoalStarcoinRequirement(Range):
     """
     Requires at least x star coins to unlock final level or goal.
     Recommended to have bellow ~ 200 to not get fill errors
@@ -387,7 +397,7 @@ class BowserCastleStarUnlock(Range):
 
     default = 100
 
-class BowserCastleWorldUnlock(Range):
+class GoalWorldRequirement(Range):
     """
     Requirement of beating at least x of worlds to unlock final level.
     """
@@ -398,7 +408,7 @@ class BowserCastleWorldUnlock(Range):
 
     default = 2
 
-class BowserCastleLevelUnlock(Range):
+class GoalLevelRequirement(Range):
     """
     Requirement of beating at least x of levels to unlock final level.
     """
@@ -532,14 +542,15 @@ class LevelShuffleBossLock(Choice):
     Wherther too allow boss levels to be freely placed or for they to stay in their vanilla placements (just shuffled around)
     nolock : Places no restriction on level placement
     lock_types : Airships to airships, castles to castles, towers to towers
+    lock_positions : Towers, Castles and Airships
     lock_end_of_world : The last level of each world will have a bossfight
     """
     option_nolock = 0
     option_lock_types = 3
-    option_lock_placements = 5
+    option_lock_positions = 5
     option_lock_end_of_world = 7
 
-    default = option_nolock
+    default = option_lock_end_of_world
 
 # - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
 
@@ -633,9 +644,9 @@ class ImportantEarlyItems(Toggle):
 
 class WorldUnlock(Choice):
     """
-    Separate : most worlds req 2 items to unlock, lessens risk for getting BK:ed
-    Single : all worlds are unlocked with a single item
-    Progressive :
+    Separate : Most worlds requires 2 items to unlock secnond half of (except world9), lessens risk for getting BK:ed
+    Single : All worlds are unlocked with a single item
+    Progressive : You unlock world in order of 1 to 9
     Unlocked : All worlds start unlocked
     """
     display_name = "Worlds Unlocks"
@@ -678,6 +689,7 @@ class NSMBWOptions(PerGameCommonOptions):
     hint_movie_sanity : HintMovieSanity
     starcoin_sanity: StarcoinSanity
     include_inventory_powerups : IncludeNumberInventoryItems
+    inventory_item_hints_percentage_chance : InventoryItemHintsPercentageChance
     oneups_sanity : OneupsSanity
     nintynine_coin_sanity : NintyNineCoins
     red_coin_ring : RedCoinRing
@@ -719,9 +731,9 @@ class NSMBWOptions(PerGameCommonOptions):
     percentage_filler_forced_local : PercentageFillerForcedLocal
 
 
-    bowser_star_unlock : BowserCastleStarUnlock
-    bowser_world_unlock : BowserCastleWorldUnlock
-    bowser_level_unlock : BowserCastleLevelUnlock
+    goal_starcoin_unlock : GoalStarcoinRequirement
+    goal_world_unlock : GoalWorldRequirement
+    goal_level_unlock : GoalLevelRequirement
 
     death_link : DeathLink
     death_link_group : DeathLinkGroup
@@ -782,9 +794,9 @@ option_groups = [
         "Clear condition",
         [
             AlternativeGoal,
-            BowserCastleStarUnlock,
-            BowserCastleWorldUnlock,
-            BowserCastleLevelUnlock,
+            GoalStarcoinRequirement,
+            GoalWorldRequirement,
+            GoalLevelRequirement,
         ],
     ),
     OptionGroup(
@@ -797,6 +809,9 @@ option_groups = [
             World9UnlockCondition,
             HintMovieShopPriceLogic,
             RemoveWorlds,
+            WorldUnlock,
+            LevelUnlock,
+            ImportantEarlyItems,
         ]
     ),
     OptionGroup(
@@ -811,17 +826,18 @@ option_groups = [
         ]
     ),
     OptionGroup(
-        "Riivolution",
+        "Cosmetic Shuffle",
         [
             MusicShuffle,
             BackgroundShuffle,
             PalletShuffle,
             TileSheetShuffle,
             EntranceRandomizer,
+
         ],
     ),
     OptionGroup(
-        "LevelShuffle",
+        "Level Shuffle",
         [
             LevelShuffle,
             LevelShufflePlando,
@@ -845,9 +861,8 @@ option_groups = [
             StarCoinCollectImmediately,
             SaveStateSlot,
             StarCoinShopMultiplier,
-            ImportantEarlyItems,
-            WorldUnlock,
-            LevelUnlock,
+            HintHintMovies,
+            InventoryItemHintsPercentageChance,
         ],
     ),
 ]
@@ -895,7 +910,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
                           you have approximately {loc} locations, {itm} items, margin {itm-loc}""")
 
     TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
-    if (Utils.get_settings()["nsmbw_settings"].allow_gen_impactful_settings == False) and TESTING:#and (len(world.multiworld.player_ids) >= 2):
+    if (Utils.get_settings()["nsmbw_settings"].allow_gen_impactful_settings == False) and (not TESTING):#and (len(world.multiworld.player_ids) >= 2):
         if world.options.include_inventory_powerups.value > 100:
             raise OptionError(f"""""(NSMBW generation error) You have more than 100 inventory powerup locations which is many and is locked by settings,
                                   if you still wish to use this, enable allow_gen_impactful_settings in your host.yaml""")
@@ -912,9 +927,9 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
             raise OptionError("(NSMBW generation error) NSMBW has a lot of trubbel generating with LevelCompletion off, turn it on or enable `allow_gen_impactful_settings` in host.yaml")
 
 
-    MAX_ALLOWED_BOWSER_SC = 231-7
-    if world.options.bowser_star_unlock.value > MAX_ALLOWED_BOWSER_SC:
-        world.options.bowser_star_unlock.value = MAX_ALLOWED_BOWSER_SC
+    MAX_ALLOWED_BOWSER_SC = 231-10
+    if world.options.goal_starcoin_unlock.value > MAX_ALLOWED_BOWSER_SC:
+        world.options.goal_starcoin_unlock.value = MAX_ALLOWED_BOWSER_SC
         print(f"(NSMBW generation warning) Generation fails when star req for reaching bowser is > {MAX_ALLOWED_BOWSER_SC}, amount forcefully lowered")
 
 
@@ -946,9 +961,9 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if str(world_num) not in world.options.starcoin_requirement_world_unlock.value.keys():
             world.options.starcoin_requirement_world_unlock.value[str(world_num)] = 0
 
-    if world.options.bowser_level_unlock.value > 65:
-        world.options.bowser_level_unlock.value = 65
-        print(f"(NSMBW generation warning) generation fails if bowser_level_unlock > 65.")
+    if world.options.goal_level_unlock.value > 65:
+        world.options.goal_level_unlock.value = 65
+        print(f"(NSMBW generation warning) generation fails if goal_level_unlock > 65.")
 
     if world.options.block_sanity.value in [BlockSanity.option_powerup_blocks or BlockSanity.option_brick_blocks]:
         raise OptionError("(NSMBW generation error) block_sanity does not currently support your enabled mode")

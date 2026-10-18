@@ -73,8 +73,6 @@ class NSMBWInterface(object):
     deathtimer : float = time.time()
     should_clear : int
 
-    auto_clear_cache : bool = True
-
     random : Random
 
     slot_data : dict
@@ -85,8 +83,6 @@ class NSMBWInterface(object):
         self.dolphin_client = DolphinClient(logger)
         self.should_clear = 0
         self.log_color = log_color
-
-        self.auto_clear_cache = True
 
         self.random = Random()
 
@@ -396,27 +392,6 @@ class NSMBWInterface(object):
             self.log_color(f"Error {e} when trying to use keyboard to save-state. If you are on linux this will need root privileges for movement rando, death-link and similar features. You can ignore this error if you manually make a save state to slot {slot} every time you see this message. You could also use xdotool instead by enabling it in host.yaml.", "red")
 
 
-    def clear_cache(self):
-        if self.should_clear == 0:
-            #raise ValueError(f"shouldn't clear")
-            print(f"shouldn't clear cache when not needed")
-            return
-        #if self.is_in_level() or self.is_in_worldmap():
-        #logger.info("Clearing JIT cache by loading savestate")
-
-        if not self.auto_clear_cache:
-            logger.info(f"Auto clear cache turned off, you will need to do this manually by saving and loading a savestate.")
-
-        time.sleep(0.3)
-        self.save_state(Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot, do_logging=False)
-        time.sleep(0.5)
-        self.load_state(Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot, do_logging=False)
-        time.sleep(0.3)
-
-        self.should_clear = 0
-
-        #logger.info("If something is not functioning as expected: try saving and loading a savestate or clearing the"
-        #            " JIT cache manualy (JIT -> clear chache).")
 
     def clear_cache_in_game(self, address: int) -> bool:
         clear_address = self.memory_addresses.custom_clear_cache

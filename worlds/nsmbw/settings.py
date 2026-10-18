@@ -75,7 +75,7 @@ class NSMBWSettings(settings.Group):
         def browse(self: T, **kwargs: Any) -> T | None:
             from Utils import open_directory
             from Utils import messagebox
-            messagebox("Dolphin folder", self.__docs__)
+            messagebox("Dolphin folder", self.__doc__)
 
             res = open_directory(f"Select {self.description or self.__class__.__name__}", self)
             if res:
@@ -145,17 +145,6 @@ class NSMBWSettings(settings.Group):
         """Enable debug commands and more detailed logging."""
 
 
-    class ClearCacheSaveSLot(settings.IntEnum):
-        """ Will press F{num} and F{num}+shift to save and load its saveslot"""
-        Slot1 = 1
-        Slot2 = 2
-        Slot3 = 3
-        Slot4 = 4
-        Slot5 = 5
-        Slot6 = 6
-        Slot7 = 7
-        Slot8 = 8
-
 
     class KeypressLibrary(settings.IntEnum):
         """
@@ -201,7 +190,6 @@ class NSMBWSettings(settings.Group):
     save_file_path : SaveFileLocation  = SaveFileLocation("nsmbw")
     allow_gen_impactful_settings : AllowGenDiffSettings | bool = False
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
-    clear_cache_save_slot : ClearCacheSaveSLot = ClearCacheSaveSLot.Slot7
     dolphin_instance_override : DolphinInstanceOverride | bool= False
 
     temporary_directory : TempDir = TempDir(os.path.join(tempfile.gettempdir(),"nsmbw"))

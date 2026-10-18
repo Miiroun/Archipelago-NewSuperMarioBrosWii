@@ -1,10 +1,11 @@
 # TODO 
 # Super Short term
+- Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 
 
 ## Playtest
-- Go to next world after beating airship
-  - may have of by one error on new patch
+
+
 
 ## Bugs to fix
 
@@ -18,11 +19,9 @@
 
 
 ## Before release
-- React : blocks
-- fix all bugs
-- do all playtest
+- go over which options are hidden
 - verify UT 0.3.5 is latest
-- mark as prerelease ? 
+
 
 ## Short term
 - Add enemy ambush and toad rescue
@@ -93,7 +92,6 @@
 - CAN get out of logic with seperete worlds, levels unlocked: e.g 3-G 
 - Ask in NSMBW dc how difficult adding UI elements is.
 - Rename raw rules to rule_data?
-- Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - fix webp alpha images not loading
 - Maybe create custom kivy tab for launching game
 

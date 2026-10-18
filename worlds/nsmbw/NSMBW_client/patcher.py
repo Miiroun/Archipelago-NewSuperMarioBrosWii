@@ -237,7 +237,8 @@ class Patcher:
             ("star_coin.arc", "Object", "Object"),
             ("openingTitle.arc", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
             ("key_boss_castle.arc", "Object", "Object"),
-        ]
+            ("cobKinoko1up.arc", "Worldmap", "Worldmap"),
+            ]
         if generating:
             _from = self.apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
             assert _from.exists()
@@ -375,6 +376,8 @@ class Patcher:
             self.patch_levels()
         if self.slot_data["level_shuffle_enemy_ambushes"]:
             self.patch_level_ambushes()
+        if True:
+            self.patch_toad_houses()
         if self.slot_data["background_shuffle"]:
             folder_name = "Object"
             # these does not work because they need brres handling, I would prefer not to write it
@@ -502,8 +505,19 @@ class Patcher:
         for i in range(len(ambush_names)):
             self.patch_level(ambush_names[i], ambush_names_shuffled[i])
 
+    def patch_toad_houses(self):
+        green_toad_names = []
+        red_toad_names = []
+        for world_num in range(1, 9 + 1):
+            green_toad_names.append(f"0{world_num}-26.arc")
+            red_toad_names.append(f"0{world_num}-27.arc")
+            # , f"0{world_num}-29.arc" not all worlds have this extra level
 
+        os.makedirs(self.output_path / "Stage", exist_ok=True)
+        for i in range(len(green_toad_names)):
+            self.patch_level(red_toad_names[i], green_toad_names[i])
 
+        # copy cobKinokoRed to cobKinoko1up
 
     def patch_subfolder(self, folder_name : str, filter_str : str, arc_rename : bool = False, removed : Optional[list] = None):
         temp_path = self.temp_dir / "files" / folder_name
@@ -720,9 +734,8 @@ if __name__ == "__main__":
     short_cut_path = _patcher.shortcut_path
 
     assert short_cut_path.exists(), ""
-    if True:
-        pass
-        #subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+
+    subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
 
 
 

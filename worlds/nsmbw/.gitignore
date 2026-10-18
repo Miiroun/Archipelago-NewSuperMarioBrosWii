@@ -6,6 +6,7 @@
 
 *.o
 *~
+*.arc
 
 #dev file stuff
 /dev_files/experiment.ipynb

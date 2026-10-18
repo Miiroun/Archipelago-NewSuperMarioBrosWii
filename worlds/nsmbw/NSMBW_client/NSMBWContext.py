@@ -233,7 +233,6 @@ class NSMBWContext(SuperContext):
                 Utils.async_start(self.patch_and_run_game())
 
                 self.game_interface.slot_data = self.slot_data
-                self.game_interface.auto_clear_cache = False
 
                 commandprocessor = self.command_processor(self)
                 commandprocessor._cmd_versions()
@@ -452,16 +451,13 @@ class NSMBWContext(SuperContext):
         await self.ut_auto_tab()
         await self.handle_screen_transition()
         #print(f"after misc loop:   {self.loop_time - time.time()}")
-        await asyncio.sleep(0.03)
+        await asyncio.sleep(0.1)
 
         if self.game_interface.get_savefile_num() != 2:
             text = f"Please select save file 2 to play on instead of save file {self.game_interface.get_savefile_num()}, others are not fully supported"
             if not text in self.prossessed_errors:
                 self.log_color(text, "red")
                 self.prossessed_errors.append(text)
-
-        if self.game_interface.should_clear >= 1:
-            self.game_interface.clear_cache()
 
     async def handle_in_worldmap(self):
         await self.handle_receive_items()
@@ -483,8 +479,6 @@ class NSMBWContext(SuperContext):
         await self.handle_screen_transition()
         await asyncio.sleep(0.1)
 
-        if self.game_interface.should_clear >= 1:
-            self.game_interface.clear_cache()
 
 
 
@@ -495,8 +489,6 @@ class NSMBWContext(SuperContext):
 
 
         await asyncio.sleep(0.5)
-        if self.game_interface.should_clear >= 1:
-            self.game_interface.clear_cache()
         #print(self.game_interface.get_record_state())
 
 
@@ -598,7 +590,7 @@ class NSMBWContext(SuperContext):
                     await self.send_goal()
 
             case AlternativeGoal.option_starcoins:
-                if  self.starcoin_count >= self.slot_data["bowser_star_unlock"]:
+                if  self.starcoin_count >= self.slot_data["goal_starcoin_unlock"]:
                     await self.send_goal()
 
             case AlternativeGoal.option_hintmovies:
@@ -606,7 +598,7 @@ class NSMBWContext(SuperContext):
                     await self.send_goal()
 
             case AlternativeGoal.option_levels:
-                level_req = (self.get_count_levels_cleared() >= self.slot_data["bowser_level_unlock"])
+                level_req = (self.get_count_levels_cleared() >= self.slot_data["goal_level_unlock"])
 
                 if level_req:
                     await self.send_goal()
@@ -863,9 +855,9 @@ class NSMBWContext(SuperContext):
 
     def get_bow_unlocked(self) -> bool:
         completed_worlds = self.get_completed_worlds()
-        world_req = (completed_worlds >= self.slot_data["bowser_world_unlock"])
-        starcoin_req = (self.starcoin_count >= self.slot_data["bowser_star_unlock"])
-        level_req = (self.get_count_levels_cleared() >= self.slot_data["bowser_level_unlock"])
+        world_req = (completed_worlds >= self.slot_data["goal_world_unlock"])
+        starcoin_req = (self.starcoin_count >= self.slot_data["goal_starcoin_unlock"])
+        level_req = (self.get_count_levels_cleared() >= self.slot_data["goal_level_unlock"])
 
         bowser_unlock = world_req and starcoin_req and level_req
         return bowser_unlock
@@ -977,7 +969,7 @@ class NSMBWContext(SuperContext):
         if  level_stats & 16 == 16 and (not bowser_unlock):
             if not (level_name in self.completed_levels):
                 self.completed_levels.append(level_name)
-            self.log_color(f"Completed 8-Airship but does not meet requirements for unlocking bowser: run /goal to get reason", "blue")
+                self.log_color(f"Completed 8-Airship but does not meet requirements for unlocking bowser: run /goal to get reason", "blue")
         # if previously completed 8-arship and now unlocked bowser
         if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
             if level_name in self.completed_levels:
@@ -1035,8 +1027,9 @@ class NSMBWContext(SuperContext):
                 print(f"Location {location_name} checked")
                 break
             else:
-                await self.send_random_hint()
-                logger.info(f"Hinted one of your location because you got an inventory powerup")
+                if self.slot_data["inventory_item_hints_percentage_chance"] >= self.random.randint(1,100):
+                    await self.send_random_hint()
+                    logger.info(f"Hinted one of your location because you got an inventory powerup")
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -1216,7 +1209,7 @@ class NSMBWContext(SuperContext):
             case WorldUnlock.option_separate:
                 second_half = 0
                 for world_num in range(1, 8 + 1):
-                    second_half += (self.unlocked_worlds[world_num - 1]) >= 2 << (world_num-1)
+                    second_half += (self.unlocked_worlds[world_num - 1]) >= 1 << (world_num-1)
             case WorldUnlock.option_single:
                 second_half = 2 ** 8 - 1
             case WorldUnlock.option_progressive:
@@ -1618,7 +1611,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 self.game_interface.set_level_stats(world_num, level_num, b'\x37') #\x00\x00\x00
                 if world_num==8 and level_num==9:
-                    self.game_interface.set_level_stats(world_num, level_num, b'\x00') #\x00\x00\x00
+                    pass
 
     async def send_location_with_id(self, checked_locations : List[int]):
         set_checked_locations = set(checked_locations)
@@ -1669,7 +1662,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
         for world_num in range(1,9+1):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                current_bytes = bytes_to_int(self.game_interface.get_level_stats(*level_randoed_bijection(self.slot_data["shuffled_level_order"],world_num, level_num)))
+                current_bytes = bytes_to_int(self.game_interface.get_level_stats(*level_randoed(self.slot_data["shuffled_level_order"],world_num, level_num)))
 
                 if self.slot_data["starcoin_sanity"] == True:
                     for sc_num in range(1,3+1):
@@ -1699,23 +1692,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                 self.game_interface.set_level_stats(*level_randoed(self.slot_data["shuffled_level_order"], world_num, level_num), int_to_bytes(current_bytes,1))
 
     def log_color(self, text: str, color: str = "red") -> None:
-        text_msg : JSONMessagePart= {"type": "color",
-                                 "text":text,
-                                 "color": color}
-
-
-        color_map : Dict[str, str]  = {
-            "black" : "\x1b[30m",
-            "red" : "\x1b[31m",
-            "green" : "\x1b[32m",
-            "yellow" : "\x1b[33m",
-            "blue" : "\x1b[34m",
-            "magenta" : "\x1b[35m",
-            "cyan" : "\x1b[36m",
-            "white" : "\x1b[97m",
-        }
-
-        #print(color_map[color] + text + '\033[0m')
+        text_msg : JSONMessagePart= {"type": "color","text":text,"color": color}
 
         if self.ui:
             #self.ui.print_json([text_msg])
@@ -1827,7 +1804,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
         except Exception as e:
             logger.info(traceback.format_exc())
-            self.log_color(e)
+            self.log_color(str(e))
         return True
 
     async def send_random_hint(self):

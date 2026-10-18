@@ -200,7 +200,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.username is None:
             logger.info(f"Not connecterd")
             return
-        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['bowser_star_unlock']} for goaling")
+        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['goal_starcoin_unlock']} for goaling")
 
     def _cmd_worlds_unlocked(self):
         """
@@ -220,7 +220,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             return
         completed_worlds = sum(
             [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in [1,2,3,4,5,6,7,9]])
-        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['bowser_world_unlock']} worlds for goaling.")
+        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['goal_world_unlock']} worlds for goaling.")
 
     def _cmd_completed_levels(self):
         """
@@ -229,7 +229,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.username is None:
             logger.info(f"Not connecterd")
             return
-        logger.info(f"{self.ctx.get_count_levels_cleared()} / {self.ctx.slot_data['bowser_level_unlock']} levels completed for goaling ")
+        logger.info(f"{self.ctx.get_count_levels_cleared()} / {self.ctx.slot_data['goal_level_unlock']} levels completed for goaling ")
 
     def _cmd_goal(self):
         """
@@ -260,12 +260,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Utils.async_start(self.ctx.game_interface.kill_player())
         self.ctx.is_pending_death_link_reset = True
 
-    def _cmd_refresh(self):
-        """
-        Refreshes the JIT cashe (by save and load savestate). Usefull if something like moves are not updating.
-        """
-        self.ctx.game_interface.should_clear += 1
-        self.ctx.game_interface.clear_cache()
 
     def _cmd_reconnect_dolphin(self):
         """
@@ -365,10 +359,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Utils.get_settings()["nsmbw_settings"]["auto_close"] ^= True
         logger.info(f"Auto close: {Utils.get_settings()['nsmbw_settings']['auto_close']}")
 
-    def _cmd_auto_clear_cache(self):
-        """Toggles wherethere to automatically clear cache. If you turn it of you will have to manually do it (by loading a savestate) for deathlink, movementrando and more to work. This is not saved betwen sestions"""
-        self.ctx.game_interface.auto_clear_cache ^= True
-        logger.info(f"Auto clear cache: {self.ctx.game_interface.auto_clear_cache}")
 
     def _cmd_reprompt_gamefile(self):
         """Repromt for selecting game file"""
@@ -401,12 +391,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         num = int(slot)
         assert 1 <= num <= 8
         self.ctx.save_slot = num
-
-    def _cmd_change_clear_cache_slot(self, slot):
-        """Changes the save state slot used for clrearing the JIT cache."""
-        num = int(slot)
-        assert 1 <= num <= 8
-        Utils.get_settings()["nsmbw_settings"].clear_cache_save_slot = num
 
     def _cmd_rm_tmp(self):
         """Delete all files used for creating the patch files (including all created patches, but not save data) and other temporary files."""

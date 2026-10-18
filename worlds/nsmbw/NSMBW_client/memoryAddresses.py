@@ -349,8 +349,8 @@ class MemoryAddresses(object):
         patch_skipp_move_next_world = [
             #self.create_patch("P1", 0x808CC968, 0x41820050, name="skipp_move_next_world"), # beq instru
             #self.create_patch("P1", 0x808CC970, 0x41820048, name="skipp_move_next_world"), # beq instru
-            self.create_patch("P1", 0x808cc9e0, instru_noop, name="skipp_move_next_world"),
-            self.create_patch("P1", 0x808cc9ec, instru_noop, name="skipp_move_next_world"),
+            self.create_patch("P1", 0x808cc9e0, instru_li_r3 + val_0000, name="skipp_move_next_world"),
+            #self.create_patch("P1", 0x808cc9ec, instru_noop, name="skipp_move_next_world"),
         ]
 
 

@@ -61,12 +61,12 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
                 if (con_randod_world_num, con_randod_level_num) == (8,9):
                     # want to change to CanReachRegion, but unshure how to put in a count for it : with Any() but req ap 0.6.8
-                    bowser_starcoin_rules = Has(ITEM.StarCoin, count=world.options.bowser_star_unlock.value)
+                    bowser_starcoin_rules = Has(ITEM.StarCoin, count=world.options.goal_starcoin_unlock.value)
 
                     bowser_world_clear_list = list([name_base(*level) for level in[(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9)]])
-                    bowser_world_clear_rule =  HasFromListUnique(*bowser_world_clear_list, count=world.options.bowser_world_unlock.value)
+                    bowser_world_clear_rule =  HasFromListUnique(*bowser_world_clear_list, count=world.options.goal_world_unlock.value)
 
-                    bowser_level_clear_rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS),count=world.options.bowser_level_unlock.value)
+                    bowser_level_clear_rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS), count=world.options.goal_level_unlock.value)
 
                     _rule &= bowser_starcoin_rules & bowser_world_clear_rule & bowser_level_clear_rule
 
@@ -198,7 +198,7 @@ def set_completion_condition(world: "NSMBWworld") -> None:
             reach_bowser_rule = rules.Has(name_base(8, 9))
             world.set_rule(victory_loc, reach_bowser_rule)
         case AlternativeGoal.option_starcoins:
-            sc_rule = rules.Has(ITEM.StarCoin, world.options.bowser_star_unlock.value)
+            sc_rule = rules.Has(ITEM.StarCoin, world.options.goal_starcoin_unlock.value)
             world.set_rule(victory_loc, sc_rule)
         case AlternativeGoal.option_hintmovies:
             hm_rule = True_()
@@ -208,7 +208,7 @@ def set_completion_condition(world: "NSMBWworld") -> None:
                 hm_rule &= CanReachLocation(name_hintmovie(hm_num))
             world.set_rule(victory_loc, hm_rule)
         case AlternativeGoal.option_levels:
-            _rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS), count=world.options.bowser_level_unlock.value)
+            _rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS), count=world.options.goal_level_unlock.value)
             world.set_rule(victory_loc, _rule)
         case _:
             raise NotImplementedError
