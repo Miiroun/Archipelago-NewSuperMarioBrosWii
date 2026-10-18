@@ -528,11 +528,16 @@ class LevelShuffle(Choice):
 class LevelShuffleBossLock(Choice):
     """
     Wherther too allow boss levels to be freely placed or for they to stay in their vanilla placements (just shuffled around)
+    nolock : Places no restriction on level placement
+    lock_types : Airships to airships, castles to castles, towers to towers
+    lock_end_of_world : The last level of each world will have a bossfight
     """
     option_nolock = 0
     option_lock_types = 3
     option_lock_placements = 5
     option_lock_end_of_world = 7
+
+    default = option_lock_placements
 
 # - also i was thinking about the randomization itself and i agree that the world clears should end on boss stages but why not let it be any boss level?
 

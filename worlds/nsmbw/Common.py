@@ -197,7 +197,7 @@ def name_base(world_num : int, level_num : int, assert_=True) -> str:
 
 def assert_valid_level(world_num : int, level_num : int) -> None:
     assert 1 <= world_num <= 10, f"world {world_num} is invalid"
-    assert 1 <= level_num <= LEVELS_PER_WORLD[world_num-1], f"Level {level_num} is not valid for world {world_num}"
+    assert 1 <= level_num <= 10, f"Level {level_num} is not valid for world {world_num}"
 
 def name_level(world_num : int, level_num : int) -> str:
     return f"{name_base(world_num,level_num)} clear"

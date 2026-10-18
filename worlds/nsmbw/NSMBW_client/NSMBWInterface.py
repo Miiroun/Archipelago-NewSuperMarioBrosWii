@@ -78,6 +78,7 @@ class NSMBWInterface(object):
     random : Random
 
     slot_data : dict
+    patch_runtime : bool = False
 
     def __init__(self, logger: Logger, log_color) -> None:
         self.logger = logger
@@ -637,8 +638,10 @@ class NSMBWInterface(object):
 
 
     async def patch_runtime_on_load(self):
-        self.apply_patch(self.memory_addresses.patches)
-        self.set_level_unlock_type(self.slot_data["level_unlock"])
+        if not self.patch_runtime:
+            self.apply_patch(self.memory_addresses.patches)
+            self.set_level_unlock_type(self.slot_data["level_unlock"])
+            self.patch_runtime = True
 
 
     @staticmethod
@@ -649,7 +652,7 @@ class NSMBWInterface(object):
         if world_num > 10:
             return 0, 0
 
-        if level_num >= 40 or level_num in [39]:
+        if level_num >= 40 or level_num in [8,9,10,39]:
             return 0,0
 
         if world_num == 9:
@@ -667,7 +670,7 @@ class NSMBWInterface(object):
             elif level_num in [24, 25]:  # castle
                 level_num = 8 + (world_num in [7, 8])
             elif level_num == 38:  # airship
-                assert world_num in [4, 6, 8], f"world {world_num} doesnt have an airship"
+                #assert world_num in [4, 6, 8], f"world {world_num} doesnt have an airship"
                 level_num = 9 + (world_num in [8])
             else:
                 raise ValueError(f"level_num: {level_num} is not acounted for")

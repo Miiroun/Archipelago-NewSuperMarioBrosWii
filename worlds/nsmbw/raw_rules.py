@@ -314,7 +314,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "8-7"  : Level(pipe & button_down & button_up & normal_move & TimeRule(200), (True_(), True_(), True_())),  # -7
     "8-Tower"  : Level(pipe & button_down & button_up & normal_move&tower_rules & TimeRule(200), (True_(), True_(), True_())),  # -8 8-Tower
     "8-Castle"  : Level(normal_move & door & button_down & pipe & ((propeller & crouch) | logic_hard), (True_(), True_(), True_())),  # -9 8-Castle
-    "8-Airship"  : Level(pipe & button_down & normal_move & ground_pound & spin_jump , (True_(), True_(), propeller | (ground_pound & ((mini_o & (wall_jump | run)) | (logic_hard & run & carry))))),  # -10 8-Airship
+    "8-Airship"  : Level(pipe & button_down & normal_move & ground_pound & spin_jump & super_mario, (True_(), True_(), propeller | (ground_pound & ((mini_o & (wall_jump | run)) | (logic_hard & run & carry))))),  # -10 8-Airship
 # world 9
     "9-1"  : Level(pipe & button_down & button_up & normal_move, (logic_normal | propeller | mini_o, True_(), True_())),  # -1
     "9-2"  : Level(pipe & button_down & button_up & normal_move & (mini_o | (run & climb) | swim | (peng_o & crouch & run)) & (run | logic_hard), (True_(), swim, (carry & ((mini_o & ground_pound) | (run & climb) | swim)) | (peng_o & crouch & run))),  # -2

@@ -1,29 +1,12 @@
 # TODO 
 # Super Short term
-- remove background off tracker items
 
 
 ## Playtest
-- bowser_level_unlock 
-- roulette and red coin : more
-- PercentageFillerForcedLocal
-- world unlock logic change for 8-2, 7-T
-- Test remaining 7-C rando
-- 8-Castle is correctly locked in new system
-- require second world unlock to unlock 7-6 and 8-7
-- Secret exits are properly level randoed
-- Secret exits have their logic properlly
-- multiplayer : 
-  - second player dont collect starcoin immediately
-  - The extra lives filler does NOT work properly with multiple people; I was player 2, and my lives were set to 94 and 88 at two separate points when the filler was only supposed to give 5 extra lives. I do wonder if this is only visual, though, cause a couple levels later, my lives would always revert down to a smaller number
-- Level patch 8-A
+- Go to next world after beating airship
 
 
 ## Bugs to fix
-- Go to next world after beating airship
-- Does secret exit apply its rules correct
-- sometimes freeze after paus menu
-- bowser lock in client 
 
 
 fuzzing error
@@ -108,7 +91,7 @@ fuzzing error
 - Ask in NSMBW dc how difficult adding UI elements is.
 - Rename raw rules to rule_data?
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
-- if on all levels unlocked does secret exits always open
+- fix webp alpha images not loading
 
 
 ## Logic
@@ -232,6 +215,8 @@ These 2 yaml restraints fixes most of fuzzing errors, especially `starcoin_requi
 - Hint movies and level shuffle cannot coexist
 - After i beat the mushroom house it just freezes me there
 - I understand for the ones that are just jingles, but a lot of others like the world map themes wouldn't loop if they were put in a level
+- sometimes freeze after paus menu
+  - after loading savestate when the riivo patch have been redone
 
 
 Summery poll

@@ -730,7 +730,7 @@ class NSMBWContext(SuperContext):
     async def check_1ups(self):
         checked_locations = []
         LEVEL = self.game_interface.get_modified_world_level_num_in_level()
-        if LEVEL != (0, 0):
+        if LEVEL == (0, 0):
             return checked_locations
 
         for player_num in range(PLAYER_COUNT):
@@ -912,60 +912,49 @@ class NSMBWContext(SuperContext):
                 continue
 
             exit_name = name_secret(secret_exit)
-            level_stats = bytes_to_int(self.game_interface.get_level_stats(world_num, level_num))
 
-            byte_to_check : int
             if secret_exit.exit_type == 1:
-                byte_to_check = 0x10
                 continue
-            elif secret_exit.exit_type == 2:
-                byte_to_check = 0x20
-            else:
-                raise ValueError(f"Something is wrong with SECRET_EXIT, {secret_exit} not in {SECRET_EXIT}")
 
 
-            if level_stats & byte_to_check == byte_to_check:
+            if level_status & 0x20 == 0x20:
                 if not NSMBWworld.location_name_to_id[exit_name] in self.locations_handled:
                     checked_locations.append(NSMBWworld.location_name_to_id[exit_name])
                     self.completed_levels.append(exit_name)
                     print(f"You collected a check for {exit_name}")
                 if (not exit_name in self.unlocked_secret_exits) or (not self.is_world_part2_unlocked(world_num)):
-                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats - byte_to_check,1))
+                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_status - 0x20,1))
             elif (exit_name in self.unlocked_secret_exits) and (exit_name in self.completed_levels) and (self.is_world_part2_unlocked(world_num)):
-                self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + byte_to_check, 1))
+                self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_status + 0x20, 1))
                 self.completed_levels.remove(exit_name)
                 logger.info(f"Exit {exit_name} have been unlocked")
 
         for world_num in range(1,8+1):
-
             #tower logc?
             level_name = name_tower_clear(world_num)
             level_num = 7
             level_num += 1 if world_num in  [7,8] else 0
-            level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
-            if level_stats & 0x10 == 0x10:
+            if (world_num, level_num) != level:
+                continue
+
+            if level_status & 0x10 == 0x10:
                 if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
                     checked_locations.append(NSMBWworld.location_name_to_id[level_name])
+                    logger.info(f"You collected a check for completing {level_name}, to unlock the rest of this world, receive its AP-item.")
                 if self.unlocked_worlds[world_num - 1] <= 1:
                     if not (level_name in self.completed_levels):
                         self.completed_levels.append(level_name)
-                    #self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats &  0x27,1))
-                    logger.info(f"You collected a check for completing {level_name}, to unlock the rest of this world, receive its AP-item.")
-            #else:
-            #    if unlocked_worlds[world_num-1] >= 2:
-            #        if level_name in self.completed_levels:
-            #            self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_stats + 0x10,1))
-            #            self.completed_levels.remove(level_name)
-            #            logger.info(f"Second half of world {world_num} is unlocked")
-            #            # if reset this value then maybe will not move to next world
 
-
+        for world_num in range(1, 8 + 1):
             #castle logic
             # and logic for completing world
             if world_num != 8:
                 level_name = name_world_clear(world_num)
                 level_num = 8 # should make dynamic
                 level_num += 1 if world_num in  [4,6,7,8] else 0
+                if (world_num, level_num) != level:
+                    continue
+
                 level_stats = self.game_interface.get_level_stats(world_num, level_num)[0]
                 if level_stats & 0x10 == 0x10:
                     if not (NSMBWworld.location_name_to_id[level_name] in self.locations_handled):
@@ -1222,13 +1211,12 @@ class NSMBWContext(SuperContext):
         await self.set_starting_world()
 
         # when leaving a level the game somtimes freezes when world1 is not unlocked
+        second_half : int
         match self.slot_data["world_unlock"]:
             case WorldUnlock.option_separate:
                 second_half = 0
                 for world_num in range(1, 8 + 1):
-                    second_half = (second_half << 1)
-                    if (self.unlocked_worlds[world_num - 1] >= 2):
-                        second_half += 1
+                    second_half += (self.unlocked_worlds[world_num - 1]) >= 2 << (world_num-1)
             case WorldUnlock.option_single:
                 second_half = 2 ** 8 - 1
             case WorldUnlock.option_progressive:
@@ -1500,7 +1488,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
     async def handle_boss_health(self):
         if self.slot_data["randomize_boss_health"] != 0:
-            self.game_interface.set_boss_health(10 - self.boss_health)
+            self.game_interface.set_boss_health(max(10 - self.boss_health, 1))
 
     async def handle_modifiers(self, text : bool = True):
         now = time.time()
@@ -1681,7 +1669,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
         for world_num in range(1,9+1):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                current_bytes = bytes_to_int(self.game_interface.get_level_stats(world_num, level_num))
+                current_bytes = bytes_to_int(self.game_interface.get_level_stats(*level_randoed_bijection(self.slot_data["shuffled_level_order"],world_num, level_num)))
 
                 if self.slot_data["starcoin_sanity"] == True:
                     for sc_num in range(1,3+1):
@@ -1708,7 +1696,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                             #print(f"What is happening with {NSMBWworld.location_name_to_id[name_level(world_num, level_num)]}, {name_base(world_num, level_num)}")
 
 
-                self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(current_bytes,1))
+                self.game_interface.set_level_stats(*level_randoed(self.slot_data["shuffled_level_order"], world_num, level_num), int_to_bytes(current_bytes,1))
 
     def log_color(self, text: str, color: str = "red") -> None:
         text_msg : JSONMessagePart= {"type": "color",

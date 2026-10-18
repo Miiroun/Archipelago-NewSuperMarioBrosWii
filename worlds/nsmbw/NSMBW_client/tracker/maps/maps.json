@@ -3,54 +3,54 @@
     "name": "world1",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world1.png"
+    "img": "images/maps/world1.jpg"
   },
   {
     "name": "world2",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world2.png"
+    "img": "images/maps/world2.jpg"
   },
   {
     "name": "world3",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world3.png"
+    "img": "images/maps/world3.jpg"
   },
   {
     "name": "world4",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world4.png"
+    "img": "images/maps/world4.jpg"
   },
   {
     "name": "world5",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world5.png"
+    "img": "images/maps/world5.jpg"
   },
   {
     "name": "world6",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world6.png"
+    "img": "images/maps/world6.jpg"
   },
   {
     "name": "world7",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world7.png"
+    "img": "images/maps/world7.jpg"
   },
   {
     "name": "world8",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world8.png"
+    "img": "images/maps/world8.jpg"
   },
   {
     "name": "world9",
     "location_size": 16,
     "location_border_thickness": 1,
-    "img": "images/maps/world9.png"
+    "img": "images/maps/world9.jpg"
   }
 ]

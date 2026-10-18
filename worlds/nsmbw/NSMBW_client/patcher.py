@@ -234,15 +234,15 @@ class Patcher:
 
     def patch_details(self, generating = False) -> List[tuple[str,str,str]]:
         PatchDetails : List[tuple[str,str,str]] = [
-            ("star_coin", "Object", "Object"),
-            ("openingTitle", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
-            ("key_boss_castle", "Object", "Object"),
+            ("star_coin.arc", "Object", "Object"),
+            ("openingTitle.arc", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
+            ("key_boss_castle.arc", "Object", "Object"),
         ]
         if generating:
             _from = self.apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
             assert _from.exists()
             for level_to_patch in os.listdir(_from / "Stage"):
-                name = level_to_patch.replace(".arc", "")
+                name = level_to_patch
                 PatchDetails.append((name, "Stage", "Stage"))
         elif not self.slot_data["level_shuffle"]:
             for level_to_patch in os.listdir(self.bsdiff_patch_dir / "Stage"):
@@ -273,9 +273,9 @@ class Patcher:
         self.extract_bsdiff()
 
         for name, folder_source, folder_patch in self.patch_details():
-            original_file_loc = self.temp_dir / "files" / folder_source / f"{name}.arc"
+            original_file_loc = self.temp_dir / "files" / folder_source / f"{name}"
             assert original_file_loc.exists(), f"folder {original_file_loc} does not exist"
-            destination_path = self.output_path / folder_patch / f"{name}.arc"
+            destination_path = self.output_path / folder_patch / f"{name}"
             destination_path.parent.mkdir(exist_ok=True, parents=True)
 
 
@@ -444,6 +444,7 @@ class Patcher:
         original_file_loc = self.temp_dir / "files" / "Stage" / _from
         destination_path = self.output_path / "Stage" / _to
 
+        assert path_data_loc.parent.exists()
         if path_data_loc.exists():
             bsdiff4.file_patch(original_file_loc, destination_path, path_data_loc)
         else:
@@ -694,7 +695,7 @@ if __name__ == "__main__":
     _seed = "0123456789"
     level_order = list(range(sum(LEVELS_PER_WORLD)))
     random.shuffle(level_order)
-    _slot_data = { "level_shuffle" : 0,
+    _slot_data = { "level_shuffle" : 1,
                    "music_shuffle" : 1,
                    "shuffled_level_order" : level_order,
                    "background_shuffle" : 0,
@@ -721,7 +722,7 @@ if __name__ == "__main__":
     assert short_cut_path.exists(), ""
     if True:
         pass
-        subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
+        #subprocess.Popen([str(dolphin_path), "-e", str(short_cut_path)])
 
 
 

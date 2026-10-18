@@ -33,15 +33,15 @@ def gen_diff_files():
         assert path_data_loc.parent.exists()
 
 
-        original_file_loc = _patcher.temp_dir / "files" / folder_source / f"{name}.arc"
-        assert original_file_loc.exists()
+        original_file_loc = _patcher.temp_dir / "files" / folder_source / f"{name}"
+        assert original_file_loc.exists(), original_file_loc
 
-        destination_path = _from / folder_patch / f"{name}.arc"
+        destination_path = _from / folder_patch / f"{name}"
         destination_path.parent.mkdir(exist_ok=True, parents=True)
 
         bsdiff4.file_diff(original_file_loc, destination_path, path_data_loc)
         assert destination_path.exists()
-        print(f"Successfully wrote patch to {path_data_loc}")
+        print(f"Successfully wrote patch {name}")
 
 
 if __name__ == "__main__":

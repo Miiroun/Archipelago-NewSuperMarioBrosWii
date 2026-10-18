@@ -362,7 +362,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
         def shuffle_req(shuffled_level_order) -> bool:
             _list = [
                 level_randoed_bijection(shuffled_level_order, 3,4, try_=True) != (3,5),
-                name_base(*level_randoed_bijection(world.shuffled_level_order, 7, 9, try_=True), assert_=False) in (seven_castle_allowed+ [("0-0")]), # add 0,0 because allow to fail if not shuffled
+                name_base(*level_randoed(world.shuffled_level_order, 7, 9, try_=True), assert_=False) in (seven_castle_allowed+ [("0-0")]), # add 0,0 because allow to fail if not shuffled
                 all([(level_randoed_bijection(shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0,0)])     ) for secret_exit in all_secret_exits]),
                 all([(level_randoed(          shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0,0)])     ) for secret_exit in all_secret_exits]),
 

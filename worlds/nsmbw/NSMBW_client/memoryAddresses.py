@@ -101,7 +101,7 @@ class MemoryAddresses(object):
         # memory map doesnt work for this for some reason
         #self.powerup_state = 0x8154CCE7
 
-        self.mario_lifecount = [self.map_between("E2",0x80354E90+i*2) for i in range(PLAYER_COUNT)] # JUST GEUSSING DATA STRUCTURE
+        self.mario_lifecount = [self.map_between("E2",0x80354E90+i*4) for i in range(PLAYER_COUNT)] # JUST GEUSSING DATA STRUCTURE
         assert len(self.mario_lifecount) == PLAYER_COUNT, f"Mario life count address list is of wrong size {len(self.mario_lifecount)}"
 
         self.on_map = self.map_between("E2",0x80424798)
@@ -346,7 +346,12 @@ class MemoryAddresses(object):
         ]
 
         #// Always go to the next world when the castle level is completed, reversed from mkwcat pipe rando
-        patch_skipp_move_next_world = [self.create_patch("P1", 0x808cc9e0, instru_noop, name="skipp_move_next_world")]
+        patch_skipp_move_next_world = [
+            #self.create_patch("P1", 0x808CC968, 0x41820050, name="skipp_move_next_world"), # beq instru
+            #self.create_patch("P1", 0x808CC970, 0x41820048, name="skipp_move_next_world"), # beq instru
+            self.create_patch("P1", 0x808cc9e0, instru_noop, name="skipp_move_next_world"),
+            self.create_patch("P1", 0x808cc9ec, instru_noop, name="skipp_move_next_world"),
+        ]
 
 
         #Always can save patches, from mkwcat pipe rando

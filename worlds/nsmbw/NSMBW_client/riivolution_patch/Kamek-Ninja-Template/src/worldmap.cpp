@@ -53,15 +53,15 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 
     }
 
-    world_unlocked >> (7-world);
+    world_unlocked << (7-world);
     world_unlocked = world_unlocked & 1;
 
 
     bool cleared = IsCourseOmoteClear(param_1, param_2); // default
 
-    if (world == 7 and level == 38){
+    if (world == 7 and level == 37){
         cleared =  bowser_unlock == 1;
-    } else if ((level > 10) && (world_unlocked == 0)) {
+    } else if ((level == 21) && (world_unlocked == 0)) {
         // this code dissables towers if not enabled second half
         cleared =  false;
     } else {
