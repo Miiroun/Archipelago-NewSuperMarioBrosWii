@@ -151,6 +151,8 @@ class NSMBWworld(World):
         """Optional method that is supposed to be used for special fill stages. This is run *after* plando."""
         items.fill_filler(self,self.multiworld.itempool)
 
+        assert locations.shuffle_req(self, self.shuffled_level_order, True, False), "something gone wrong in level shuffle assertion"
+
 
     @classmethod
     def stage_pre_fill(cls, multiworld: MultiWorld) -> None:
@@ -285,7 +287,7 @@ class NSMBWworld(World):
             """)
             raise Exception(f"Failed to find a reachable first location in 10_000 tries. Please try again. Or lower requirements for levels by starting with more unlocks.")
 
-        assert locations.shuffle_req(world, world.shuffled_level_order), "something gone wrong in level shuffle assertion"
+        assert locations.shuffle_req(world, world.shuffled_level_order, True, False), "something gone wrong in level shuffle assertion"
 
 
     # "do NOT copy this option handling code, it is really not god and causes issues"
@@ -352,34 +354,23 @@ class NSMBWworld(World):
             return []
 
     @staticmethod
-    def map_page_index(data: Any) -> int:
-        if (data is None or data == ""):
-            return 0
-
+    def map_page_index(data: str) -> int:
+        data_dict = {
+            "World1" : 0,
+            "World2": 1,
+            "World3": 2,
+            "World4": 3,
+            "World5": 4,
+            "World6": 5,
+            "World7": 6,
+            "World8": 7,
+            "World9": 8,
+        }
         try:
-            int_data =  int(data)
-            if int_data < 99:
-                if int_data < 10:
-                    return int_data - 1
-                else:
-                    raise ValueError
-            else:
-                world_num = int_data % 100
-                level_num = int_data - world_num * 100
-
-                maps_before = sum( (world_num > level[0] )or(world_num==level[0] and level_num>= level[1]) for level in LEVELS)
-                offset_from_prev = 9 -1
-                return  maps_before + offset_from_prev
-        except ValueError:
+            return data_dict[data]
+        except KeyError:
             return 0
 
-    both_pages = [
-        ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups.value),
-        ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks.value),
-        #ItemLayoutSection(name="All items", items="Everything"),
-        #{"name": "All items", "items": "Everything"}
-
-    ]
 
     tracker_world: ClassVar[dict[str, Any]] = {
         #"map_page_maps": "maps/maps.json",
@@ -420,9 +411,12 @@ class NSMBWworld(World):
         "item_page_item_layouts": [
             ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds.value),
             ItemLayoutSection(name="Everything", items="Everything"),
-        ] + both_pages,
+            ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups.value),
+            ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks.value),
+        ],
         "map_page_item_layouts_left": [
-        ] + both_pages,
-
+            ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups.value),
+            ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks.value),
+        ],
     }
 

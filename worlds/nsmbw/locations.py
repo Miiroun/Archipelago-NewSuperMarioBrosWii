@@ -197,7 +197,7 @@ def create_regular_locations(world: NSMBWworld) -> None:
             if secret_exit.exit_type == 1:
                 continue
             level_location = get_location_names_with_ids([name_secret(secret_exit)])
-            world.get_region(name_base(world_num,level_num) + " start").add_locations(level_location, NSMBWLocation)
+            world.get_region(name_base(world_num,level_num)).add_locations(level_location, NSMBWLocation)
 
     #add locations for hintmovies
     if world.options.hint_movie_sanity.value == True:
@@ -330,24 +330,25 @@ airship_group = [(4, 9), (6, 9), (8, 10)]
 
 
 
-def shuffle_req(world, shuffled_level_order, log : bool = False) -> bool:
-    _list = [
-        level_randoed_bijection(shuffled_level_order, 3, 4, try_=True) != (3, 5),
-        level_randoed_bijection(shuffled_level_order, 3, 5, try_=True) != (3, 4),
-        level_randoed(shuffled_level_order, 3, 4, try_=True) != (3, 5),
-        level_randoed(shuffled_level_order, 3, 5, try_=True) != (3, 4),
-        name_base(*level_randoed(world.shuffled_level_order, 7, 9, try_=True), assert_=False) in (seven_castle_allowed + [("0-0")]),  # add 0,0 because allow to fail if not shuffled
-        all([(level_randoed_bijection(shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0, 0)])) for secret_exit in all_secret_exits]),
-        all([(level_randoed(shuffled_level_order, secret_exit[0], secret_exit[1], try_=True) in (all_secret_exits + [(0, 0)])) for secret_exit in all_secret_exits]),
+def shuffle_req(world, shuffled_level_order, log : bool = False, try_= True) -> bool:
+    _list : List[bool]= [
+        level_randoed_bijection(shuffled_level_order, 3, 4, try_=try_) != (3, 5),
+        level_randoed_bijection(shuffled_level_order, 3, 5, try_=try_) != (3, 4),
+        level_randoed(shuffled_level_order, 3, 4, try_=try_) != (3, 5),
+        level_randoed(shuffled_level_order, 3, 5, try_=try_) != (3, 4),
+        name_base(*level_randoed(world.shuffled_level_order, 7, 9, try_=try_), assert_=False) in (seven_castle_allowed + [("0-0")]),  # add 0,0 because allow to fail if not shuffled
+        all([(level_randoed_bijection(shuffled_level_order, secret_exit[0], secret_exit[1], try_=try_) in (all_secret_exits + [(0, 0)])) for secret_exit in all_secret_exits]),
+        all([(level_randoed(shuffled_level_order, secret_exit[0], secret_exit[1], try_=try_) in (all_secret_exits + [(0, 0)])) for secret_exit in all_secret_exits]),
 
-        all([(level_randoed_bijection(shuffled_level_order, level[0], level[1], try_=True) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
-        all([(level_randoed(shuffled_level_order, level[0], level[1], try_=True) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
+        all([(level_randoed_bijection(shuffled_level_order, level[0], level[1], try_=try_) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
+        all([(level_randoed(shuffled_level_order, level[0], level[1], try_=try_) in (dont_shuffle + [(0, 0)])) for level in dont_shuffle]),
 
     ]
     if (not all(_list)) and log:
         print(_list)
         print([(secret_exit ) for secret_exit in all_secret_exits])
         print([(level_randoed(          shuffled_level_order, secret_exit[0], secret_exit[1], try_=True)   ) for secret_exit in all_secret_exits])
+
     return all(_list)
 
 

@@ -49,11 +49,9 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
                 _rule = True_()
                 if (world.options.world_unlock.value == WorldUnlock.option_separate) and (world_num <= 8) :
-                    if (mod_level_name(org_randod_world_num,org_randod_level_num) == "Tower"):
+                    if org_lev_num in LEVEL_SECOND_HALF_OF_WORLDS[world_num-1]:
                         _rule &= rules.Has(name_world_unlock(world_num), count=2)
 
-                    if (world.options.level_unlock.value == LevelUnlock.option_all_unlocked) and (con_lev_num >= 4):
-                        _rule &= rules.Has(name_world_unlock(world_num), count=2)
 
                 if (world_num == 9) and (world.options.level_unlock.value != LevelUnlock.option_all_unlocked):
                     assert len(world.star_coin_req_per_world_9_level) == 8
@@ -63,7 +61,7 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
                     # want to change to CanReachRegion, but unshure how to put in a count for it : with Any() but req ap 0.6.8
                     bowser_starcoin_rules = Has(ITEM.StarCoin, count=world.options.goal_starcoin_unlock.value)
 
-                    bowser_world_clear_list = list([name_base(*level) for level in[(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9)]])
+                    bowser_world_clear_list = list([name_base(*level) for level in [(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9)]])
                     bowser_world_clear_rule =  HasFromListUnique(*bowser_world_clear_list, count=world.options.goal_world_unlock.value)
 
                     bowser_level_clear_rule = rules.HasFromList(*list((name_base(*level)) for level in LEVELS), count=world.options.goal_level_unlock.value)
@@ -77,15 +75,21 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
     for secret_exit in SECRET_EXIT:
         if secret_exit.is_item and secret_exit.exit_type == 2:
+            randoed_secret_exit: SecretExit = secret_exit_randoed_func(world.shuffled_level_order, level_randoed, secret_exit)
+
             _rule = rules.Has(name_secret(secret_exit))
-            if (secret_exit.world, secret_exit.level) != (3,4):
-                _rule &= LevelRules[name_base(secret_exit.world, secret_exit.level)].clear
+            if ((secret_exit.world, secret_exit.level) == (3,4)) and (randoed_secret_exit.world, randoed_secret_exit.level) == (3,4):
+                pass
+            else:
+                _rule &= Has(name_base(randoed_secret_exit.world, randoed_secret_exit.level))#LevelRules[name_base(secret_exit.world, secret_exit.level)].clear
 
-            if (secret_exit.world, secret_exit.level_to) in ((7,6), (8,7)) and (world.options.world_unlock.value == WorldUnlock.option_separate):
-                _rule &= Has(name_world_unlock(secret_exit.world), 2)
+
+            if (world.options.world_unlock.value == WorldUnlock.option_separate) and (secret_exit.world <= 8):
+                if secret_exit.level_to in LEVEL_SECOND_HALF_OF_WORLDS[secret_exit.world - 1]:
+                    _rule &= rules.Has(name_world_unlock(secret_exit.world), count=2)
 
 
-            _rule &= LevelRules[name_base(secret_exit.world, secret_exit.level)].secret_exit
+            _rule &= LevelRules[name_base(randoed_secret_exit.world, randoed_secret_exit.level)].secret_exit
 
             world.set_rule(world.get_entrance(name_secret(secret_exit)),_rule)
 
@@ -132,23 +136,6 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
 
             location = world.get_location(name_hintmovie(hm_num))
             world.set_rule(location, hm_rule)
-
-    if world.options.shortcuts_sanity.value == True:
-        for secret_exit in SECRET_EXIT:
-            world_num = secret_exit.world
-            level_num = secret_exit.level
-
-            if secret_exit.exit_type == 1:
-                continue
-
-            secret_exit_loc = world.get_location(name_secret(secret_exit))
-
-            randod_world_num1, randod_level_num1 = pos_to_level_name(world.shuffled_level_order[level_name_to_pos(world_num, level_num)])
-
-            #assert len( LevelRules[name_base(world_num, level_num)]) == 3, f"Make sure lists is of correct size for {name_base(world_num, level_num)}"
-            _rule = LevelRules[name_base(randod_world_num1, randod_level_num1)].secret_exit
-            assert _rule is not None, f"werid rando for {name_base(world_num,level_num)} to {name_base(randod_world_num1, randod_level_num1)}"
-            world.set_rule(secret_exit_loc, rules.Has(name_base(world_num, level_num)) & _rule) # TODO remove this temp has_base, it is just for legacy reasons
 
 
     for i in range(1, world.options.include_inventory_powerups.value + 1):

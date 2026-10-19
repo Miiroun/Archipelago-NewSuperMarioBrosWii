@@ -213,6 +213,8 @@ class Patcher:
 
 
     def copy_riivolution_skeleton(self):
+        self.output_path.mkdir(parents=True, exist_ok=True)
+
         if not is_nsmbwapworld_frozen():
             _from = self.apnsmbw_file.parent / "nsmbw" /  "NSMBW_client" / "riivolution_patch" / "Riivolution_template"
             assert self.apnsmbw_file.exists(), f"folder {self.apnsmbw_file} does not exist"
@@ -666,16 +668,16 @@ class Patcher:
         if self.output_path.exists() + self.shortcut_path.exists() + self.xml_path.exists()== 3:
             logger.info(f"Old rando files found, uses them instead")
             return
-        elif self.output_path.exists():
-            logger.info(f"old rando only partially exists, clears out remaining to reset it")
-            shutil.rmtree(self.output_path)
-        elif self.xml_path.exists():
-            logger.info(f"old rando only partially exists, clears out remaining to reset it")
-            os.remove(self.xml_path)
-        elif self.shortcut_path.exists():
-            logger.info(f"old rando only partially exists, clears out remaining to reset it")
-            os.remove(self.shortcut_path)
         else:
+            if self.output_path.exists():
+                logger.info(f"old rando only partially exists, clears out remaining to reset it")
+                shutil.rmtree(self.output_path)
+            if self.xml_path.exists():
+                logger.info(f"old rando only partially exists, clears out remaining to reset it")
+                os.remove(self.xml_path)
+            if self.shortcut_path.exists():
+                logger.info(f"old rando only partially exists, clears out remaining to reset it")
+                os.remove(self.shortcut_path)
             print(f"Old files not found")
 
 

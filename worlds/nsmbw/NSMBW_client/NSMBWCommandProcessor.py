@@ -93,7 +93,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.username is None:
             logger.info(f"Connect before auto start")
             return
-        Utils.async_start(self.ctx.patch_and_run_game(True))
+        async_start(self.ctx.patch_and_run_game(True))
 
     def _cmd_reapply_checks(self):
         """
@@ -103,7 +103,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self.ctx.handled_num = 0
         self.ctx.prev_sent_locations = set()
 
-    if Utils.get_settings()["nsmbw_settings"].debug_mode:
+    if DEBUG_MODE():
         def _cmd_clear(self, key: str = ""):
             """
             A cheat command useful for developing.
@@ -112,8 +112,11 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             if key == "":
                 self.ctx.unlock_everything()
             elif len(key.split("-")) == 2:
-                world_num, level_num = base_bijection(key)
-                self.ctx.game_interface.set_level_stats(int(world_num), int(level_num), b'\x37')
+                try:
+                    world_num, level_num = base_bijection(key)
+                    self.ctx.game_interface.set_level_stats(int(world_num), int(level_num), b'\x37')
+                except ValueError:
+                    logger.info(f"Enter a correct level name, {key} not valid")
             else:
                 logger.info(r"Error in key for /dev")
 
@@ -189,7 +192,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Load save file for client memory.
         """
         Utils.async_start(self.ctx.handle_load())
-        self.ctx.update_memory_to_server_on_load()
+        self.ctx.update_memory_to_server()
 
         # self.ctx.handle_load()
 
@@ -362,7 +365,16 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_reprompt_gamefile(self):
         """Repromt for selecting game file"""
-        NSMBWSettings.GameFilePath.browse(Utils.get_settings()["nsmbw_settings"].game_file_path)
+        NSMBWSettings.GameFilePath.browse(NSMBWSettings.game_file_path)
+
+    def _cmd_repromt_dolphin(self):
+        """Repromt the asking for dolphin directory"""
+        if is_windows:
+            NSMBWSettings.DolphinFolder.browse(NSMBWSettings.dolphin_folder)
+        else:
+            NSMBWSettings.DolphinExe.browse(NSMBWSettings.dolphin_exe)
+            NSMBWSettings.DolphinTool.browse(NSMBWSettings.dolphin_tool)
+        NSMBWSettings.DolphinRiivolutionFolder.browse(NSMBWSettings.dolphin_riivolution_folder)
 
     def _cmd_force_hook(self) -> None:
         """Force restart the Dolphin hook process (unhook + fresh re-hook), runs 30 times"""
@@ -374,7 +386,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(
                 f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
-        self.ctx.update_memory_to_server_on_load()
+        self.ctx.update_memory_to_server()
 
     def _cmd_clear_inventory(self):
         """Clears your inventory of powerups (except 5).
@@ -439,17 +451,24 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     # if Utils.get_settings()["nsmbw_settings"].debug_mode:
     def _cmd_whatis(self, name):
         """Prints where a location has been rando to"""
-        world_num, level_num = base_bijection(name)
-        randod_world_num1, randod_level_num1 = locations.pos_to_level_name(
-            self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
-        logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
+        try:
+            world_num, level_num = base_bijection(name)
+
+            randod_world_num1, randod_level_num1 = locations.pos_to_level_name(
+                self.ctx.slot_data["shuffled_level_order"][locations.level_name_to_pos(world_num, level_num)])
+            logger.info(f"{name_base(randod_world_num1, randod_level_num1)}")
+        except ValueError:
+            logger.info(f"Enter a correct level name, {name} not valid")
 
     def _cmd_whereis(self, name):
         """Prints where a location has been rando from"""
-        world_num, level_num = base_bijection(name)
-        _index = self.ctx.slot_data["shuffled_level_order"].index(locations.level_name_to_pos(world_num, level_num))
-        randod_level = locations.pos_to_level_name(_index)
-        logger.info(f"{name_base(*randod_level)}")
+        try:
+            world_num, level_num = base_bijection(name)
+            _index = self.ctx.slot_data["shuffled_level_order"].index(locations.level_name_to_pos(world_num, level_num))
+            randod_level = locations.pos_to_level_name(_index)
+            logger.info(f"{name_base(*randod_level)}")
+        except ValueError:
+            logger.info(f"Enter a correct level name, {name} not valid")
 
     def _cmd_print_slot_data(self):
         """Prints all slot data, useful for debuging"""
@@ -485,53 +504,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_versions(self):
         """Prints out a few diffrent versions that is useful to know"""
-        if is_windows:
-            import ctypes
-
-            # code from https://sjohannes.wordpress.com/2012/03/23/win32-python-getting-all-window-titles/
-            EnumWindows = ctypes.windll.user32.EnumWindows
-            EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int),
-                                                 ctypes.POINTER(ctypes.c_int))
-            GetWindowText = ctypes.windll.user32.GetWindowTextW
-            GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
-            IsWindowVisible = ctypes.windll.user32.IsWindowVisible
-
-            titles = []
-
-            def foreach_window(hwnd, lParam):
-                if IsWindowVisible(hwnd):
-                    length = GetWindowTextLength(hwnd)
-                    buff = ctypes.create_unicode_buffer(length + 1)
-                    GetWindowText(hwnd, buff, length + 1)
-                    titles.append(buff.value)
-                return True
-
-            EnumWindows(EnumWindowsProc(foreach_window), 0)
-
-            #print(titles)
-            titles : List[str] = list(titles)
-
-            dolphin_version = [title for title in titles
-                               if title.startswith("Dolphin")]
-            if len(dolphin_version) == 0:
-                dolphin_version = "Dolphin not detected"
-            elif len(dolphin_version) == 1:
-                dolphin_version = dolphin_version[0]
-        else:
-            dolphin_version = "not able to collect on this this OS"
-
-        logger.info(
-            f"OS                        : {sys.platform}\n"
-            f"NSMBWAP Client version    : {self.ctx.manifest_version}\n"
-            f"NSMBWAP generated version : {self.ctx.slot_data['NSMBW_Version'] if self.ctx.username is not None else 'not connected'}\n"
-            f"UT version                : {UT_VERSION if tracker_loaded else 'Not loaded'}\n"
-            f"AP version                : {Utils.__version__}\n"
-            f"Server version            : {self.ctx.server_version}\n"
-            f"Generator version         : {self.ctx.generator_version}\n"
-            f"Game version              : {self.ctx.game_interface.current_game if self.ctx.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
-            f"Game revision             : {self.ctx.game_interface.game_rev if self.ctx.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
-            f"Dolphin versions          : {dolphin_version}\n"
-        )
+        self.ctx.print_versions()
 
     def _cmd_get_error(self):
         """Prints latest stacktrace"""
@@ -547,7 +520,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_save()
         if self.ctx.game_interface.memory_addresses is not None:
             self.ctx.game_interface.connect_to_game()
-        self._cmd_refresh()
         self._cmd_refresh_mod()
         self._cmd_match_server_state()
         # self._cmd_reapply_checks() # send invent pow, dont run

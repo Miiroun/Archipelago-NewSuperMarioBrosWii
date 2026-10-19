@@ -26,9 +26,9 @@ BOSS_HEALTH_COUNT = 10
 class SecretExit(NamedTuple):
     world : int
     level : int
-    level_to : int | None
-    exit_type : Literal[1,2, None]
-    is_item : bool | None
+    level_to : Optional[int] = None
+    exit_type : Optional[Literal[1,2]] = None
+    is_item : Optional[bool] = None
 
     def __eq__(self, other : Any ):
         if not isinstance(other, SecretExit):
@@ -36,17 +36,17 @@ class SecretExit(NamedTuple):
         return (self.world == other.world) and (self.level == other.level)
 
 SECRET_EXIT : List[SecretExit] = [
-    SecretExit(1, 3, 0, 2, False),
+    SecretExit(1, 3, None, 2, False),
     SecretExit(2, 4, 8, 2, True),
     SecretExit(2, 6, 0, 2, False),
     SecretExit(3, 4, 5, 2, True),
-    SecretExit(3, 5, 0, 2, False),
-    SecretExit(3, 6, 0, 2, False),
+    SecretExit(3, 5, None, 2, False),
+    SecretExit(3, 6, None, 2, False),
     SecretExit(4, 6, 8, 2, True),
-    SecretExit(4, 7, 0, 2, False),
-    SecretExit(5, 6, 0, 2, False),
+    SecretExit(4, 7, None, 2, False),
+    SecretExit(5, 6, None, 2, False),
     SecretExit(6, 5, 8, 2, True),
-    SecretExit(6, 6, 0, 2, False),
+    SecretExit(6, 6, None, 2, False),
     SecretExit(7, 6, 9, 1, True),
     SecretExit(7, 7, 5, 2, True),
     SecretExit(7, 8, 6, 2, True),
@@ -328,7 +328,7 @@ def validate_level(func : Callable[Any, Tuple[int,int]]) -> Callable[Any, Tuple[
     return wrapper
 
 @validate_level
-def level_randoed(shuffle, world_num : int, level_num : int, try_=False) -> Tuple[int, int]:
+def level_randoed(shuffle : List[int], world_num : int, level_num : int, try_=False) -> Tuple[int, int]:
     if (world_num,level_num) == (0,0):
         return 0,0
 
@@ -345,7 +345,7 @@ def level_randoed(shuffle, world_num : int, level_num : int, try_=False) -> Tupl
             raise e
 
 @validate_level
-def level_randoed_bijection(shuffle, world_num : int, level_num : int, try_=False)-> Tuple[int, int]:
+def level_randoed_bijection(shuffle : List[int], world_num : int, level_num : int, try_=False)-> Tuple[int, int]:
     if (world_num,level_num) == (0,0):
         return 0,0
 
@@ -361,3 +361,29 @@ def level_randoed_bijection(shuffle, world_num : int, level_num : int, try_=Fals
             return 0,0
         else:
             raise e
+
+def secret_exit_randoed_func(shuffle : List[int], func : Callable, secret_exit : SecretExit) -> SecretExit:
+    assert secret_exit in SECRET_EXIT, f"{SECRET_EXIT} is not a secret exit"
+    assert secret_exit.exit_type == 2, f"{secret_exit} should not be using this function as it's a normal level"
+
+    randoed_level = func(shuffle, secret_exit.world, secret_exit.level)
+
+    new_secret = SecretExit(*randoed_level, 0)
+
+    new_index  = SECRET_EXIT.index(new_secret)
+
+    return SECRET_EXIT[new_index]
+
+
+def get_level_acronym(acro : str) -> str:
+    data = {
+        "G" : "Gousthouse",
+        "T" : "Tower",
+        "C" : "Castle",
+        "A" : "Airship",
+    }
+    try:
+        return data[acro]
+    except KeyError:
+        return ""
+

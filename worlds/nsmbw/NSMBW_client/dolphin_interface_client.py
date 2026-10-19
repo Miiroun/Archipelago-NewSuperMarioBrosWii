@@ -12,6 +12,9 @@ import Utils
 
 from ..Common import *
 import logging
+
+from ..settings import NSMBWSettings
+
 logger = logging.getLogger("Client")
 
 
@@ -20,10 +23,14 @@ GC_GAME_ID_ADDRESS = 0x80000000
 
 # from mkdd
 DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE = "DME_DOLPHIN_PROCESS_NAME"
-if Utils.get_settings()["nsmbw_settings"].dolphin_process_name:
-    os.environ[DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE] = Utils.get_settings()["nsmbw_settings"].dolphin_process_name
-elif DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE in os.environ:
-    del os.environ[DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE]
+try:
+    if Utils.get_settings()["nsmbw_settings"].dolphin_process_name:
+        os.environ[DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE] = Utils.get_settings()["nsmbw_settings"].dolphin_process_name
+    elif DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE in os.environ:
+        del os.environ[DME_DOLPHIN_PROCESS_NAME_ENV_VARIABLE]
+except Exception as e:
+    logger.info(str(e))
+    #NSMBWSettings.GameFilePath.browse(NSMBWSettings.game_file_path)
 
 class DolphinException(Exception):
     pass

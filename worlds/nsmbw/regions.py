@@ -109,10 +109,15 @@ def connect_regions(world: NSMBWworld) -> None:
                 else:
                     raise ValueError
                 org_region.connect(world.get_region(name_base(con_randod_world_num, con_randod_level_num)+ " start"),conn_name)
+
     for secret_exit in SECRET_EXIT:
-        if secret_exit.is_item:
+        #randoed_secret_exit : SecretExit = secret_exit_randoed_func(world.shuffled_level_order, level_randoed_bijection, secret_exit)
+
+
+        if secret_exit.is_item and (secret_exit.exit_type == 2):
+            #world.get_region(name_base(randoed_secret_exit.world, randoed_secret_exit.level) + " start").connect(world.get_region(name_base(randoed_secret_exit.world, randoed_secret_exit.level_to) + " start"), name_secret(secret_exit), rules.True_())
+
             from_level = level_randoed(world.shuffled_level_order,secret_exit.world, secret_exit.level)
             to_level = level_randoed(world.shuffled_level_order, secret_exit.world, secret_exit.level_to)
             world.get_region(name_base(*from_level) + " start").connect(world.get_region(name_base(*to_level) + " start"),name_secret(secret_exit))
-
 

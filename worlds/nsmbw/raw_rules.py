@@ -123,6 +123,12 @@ class GlitchedRule(Rule["NSMBWworld"], game = game_name):
         else:
             return False_().resolve(world)
 
+@dataclasses.dataclass()
+class AccessRedSwitch(Rule["NSMBWworld"], game = game_name):
+    @override
+    def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
+        return Has(name_base(*level_randoed(world.shuffled_level_order, 3,5))).resolve(world)
+# we might need to create a resolved rule, if this is instanced too late
 
 
 
@@ -161,7 +167,7 @@ crouch = has_ability(ITEM.ABILITIES.Crouch) & button_down
 
 question_switch = has_element(ITEM.LEVELELEMENTS.QuestSwitch)
 p_switch = has_element(ITEM.LEVELELEMENTS.PSwitch)
-red_block = has_element(ITEM.LEVELELEMENTS.RedSwitch) & Has(name_base(3,5))
+red_block = has_element(ITEM.LEVELELEMENTS.RedSwitch) & AccessRedSwitch()
 
 yoshi = has_element(ITEM.LEVELELEMENTS.Yoshi)
 star = has_ability(ITEM.ABILITIES.Star)
@@ -290,7 +296,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "6-3"  : Level(normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),(True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry))), # 6-3
     "6-4"  : Level(pipe & button_down & button_up & normal_move, (yoshi | propeller| (logic_hard & carry_shell), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
     "6-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), climb & (carry | propeller_o)), climb),  # -5
-    "6-6"  : Level(pipe & button_down & button_up & normal_move & (question_switch | logic_hard), (True_(), True_(), True_()),True_()),  # -6
+    "6-6"  : Level(pipe & button_down & button_up & normal_move & (question_switch | logic_hard), (True_(), logic_normal | carry | propeller_o, logic_normal | carry | propeller_o),True_()),  # -6
     "6-Tower"  : Level(pipe & button_down & button_up & normal_move&tower_rules, (True_(), wall_jump | propeller_o, wall_jump | propeller_o)),  # -7 6-Tower
     "6-Castle"  : Level(pipe & button_down & button_up & normal_move& door, (True_(), True_(), True_())),  # -8 6-Castle
     "6-Airship"  : Level(pipe & button_down & button_up & normal_move & spin_jump, (ground_pound  | (logic_hard & ((peng_o & crouch & wall_jump) | (carry & (ice | peng_o)))), ground_pound , ground_pound  | (logic_hard & peng_o & crouch))),  # -9 6-Airship
@@ -402,7 +408,7 @@ def get_level_connections() -> List[List[List[int]]]:
             [7],  # -4
             [6],  # -5
             [8],  # -6
-            [5],  # -Towerower
+            [5],  # -Tower
             [9],  # -Castleaslte
             [] # - airship
         ],
@@ -415,7 +421,7 @@ def get_level_connections() -> List[List[List[int]]]:
             [9],  # -5
             [9],  # -6
             [4], # - 7 # GhostHouse
-            [7],  # -Towerower
+            [7],  # -Tower
             []  # -Castleaslte
         ],
         [  # world 8
@@ -455,6 +461,20 @@ def get_level_connections() -> List[List[List[int]]]:
 
 
     return connections
+
+LEVEL_SECOND_HALF_OF_WORLDS : List[List[int]] = [
+    [4,5,6,8], # 1
+    [4,5,6,8], # 2
+    [4,5,8], # 3
+    [4,5,6,8], # 4
+    [4,5,6,8], # 5
+    [5,6,8], # 6
+    [4,5,6,8], # 7
+    [7,4,5,6,9,10], # 8
+    [5,6,7,8],  # 9
+    [4,5], # Co
+]
+
 
 
 class Block(NamedTuple):

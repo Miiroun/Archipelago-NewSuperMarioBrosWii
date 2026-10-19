@@ -48,6 +48,13 @@ class NSMBWSettings(settings.Group):
         required = True
         description = "Your nsmbw game file"
 
+        @classmethod
+        def validate(cls, path: str) -> None:
+            super().validate(path)
+
+            file_ending = path.split(".")[-1]
+            if file_ending not in ["iso", "wbfs"]:
+                raise Exception(f"Invalid file extension {file_ending}")
 
         # this code overwrites default in setting
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:
@@ -94,14 +101,14 @@ class NSMBWSettings(settings.Group):
         A path to your dolphin program
         """
         is_exe = True
-        required = False
+        required = True
 
     class DolphinTool(settings.FilePath):
         r"""
         A path to your dolphin tools program
         """
         is_exe = True
-        required = False
+        required = True
         #description = ""
 
     class DolphinRiivolutionFolder(settings.FolderPath):
@@ -176,7 +183,7 @@ class NSMBWSettings(settings.Group):
         required = False
 
 
-    game_file_path: GameFilePath  = GameFilePath(r"NewSUPERMARIOBROS.Wii.iso")
+    game_file_path: GameFilePath  = GameFilePath(r"NewSuperMarioBrosWii.iso")
 
     auto_start_riivolution : AutoStartRiivolution | bool = True
     auto_load : AutoLoadState | bool = False
@@ -188,7 +195,7 @@ class NSMBWSettings(settings.Group):
 
     collect_level : CollectLevel  = CollectLevel(1)
     save_file_path : SaveFileLocation  = SaveFileLocation("nsmbw")
-    allow_gen_impactful_settings : AllowGenDiffSettings | bool = False
+    allow_gen_impactful_settings : AllowGenDiffSettings | bool = not is_nsmbwapworld_frozen()
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
     dolphin_instance_override : DolphinInstanceOverride | bool= False
 

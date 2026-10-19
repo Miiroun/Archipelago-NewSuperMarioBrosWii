@@ -90,7 +90,7 @@ class NSMBWContext(SuperContext):
     completed_levels : List[str]
     prev_lifecount : List[int]
     previous_inventory : List[int]
-    previous_mapid : int = 0
+    previous_map_key : str = ""
     has_complained_about_world : int = 0
 
     prev_sent_locations : set
@@ -130,7 +130,7 @@ class NSMBWContext(SuperContext):
 
     block_list : str  = ""
     
-    patcher : Patcher | None
+    patcher : Optional[Patcher] = None
 
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
@@ -230,19 +230,21 @@ class NSMBWContext(SuperContext):
 
                 if Utils.get_settings()["nsmbw_settings"].debug_mode:
                     rm_tmp()
-                Utils.async_start(self.patch_and_run_game())
 
                 self.game_interface.slot_data = self.slot_data
 
-                commandprocessor = self.command_processor(self)
-                commandprocessor._cmd_versions()
+                #commandprocessor = self.command_processor(self)
+                #commandprocessor._cmd_versions()
+
+
+                async_start(self.patch_and_run_game())
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
 
             case "RoomUpdate":
                 if "checked_locations" in args:
-                    self.update_memory_to_server_on_load()
+                    self.update_memory_to_server()
 
             case "ReceivedItems":
                 pass
@@ -270,10 +272,22 @@ class NSMBWContext(SuperContext):
         super().on_package(cmd, args)
 
     async def disconnect(self, allow_autoreconnect: bool = False):
-        await self.handle_save()
-        self.game_interface.dolphin_client.disconnect()
+        try:
+            await self.handle_save()
+            self.game_interface.dolphin_client.disconnect()
+            self.patcher = None
+            self.connection_state = ConnectionState.DISCONNECTED
+        except Exception as e:
+            logger.info(traceback.format_exc())
+            self.log_color(f"Error when disconnecting: {e}")
+
         await super().disconnect(allow_autoreconnect)
 
+        try:
+            self.server = None
+        except Exception as e:
+            logger.info(traceback.format_exc())
+            self.log_color(f"Error when disconnecting: {e}")
 
     async def shutdown(self):
         if self.username is not None:
@@ -284,6 +298,7 @@ class NSMBWContext(SuperContext):
             await asyncio.sleep(0.1)
             await self.handle_save()
             self.game_interface.dolphin_client.disconnect()
+        #await self.disconnect(False)
         await super().shutdown()
 
     def make_gui(self):
@@ -334,8 +349,8 @@ class NSMBWContext(SuperContext):
 
 
     async def dolphin_sync_task_func(self):
-        self.get_version()
-        self.log_color(f"Using nsmbw.apworld version: {self.manifest_version}", "blue")
+        #self.get_version()
+        #self.log_color(f"Using nsmbw.apworld version: {self.manifest_version}", "blue")
         logger.info(f" If you have trouble, look at this glossary for help: ")
         self.log_color(
             f"https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/blob/NSMBW/worlds/nsmbw/docs/en_NSMBW.md",
@@ -394,10 +409,10 @@ class NSMBWContext(SuperContext):
                     await asyncio.sleep(1)
             except Exception as e:
                 if isinstance(e, dolphin_interface_client.DolphinException):
-                    logger.error(str(e))
+                    self.log_color(str(e))
                 else:
                     logger.error(traceback.format_exc())
-                    logger.error(e)
+                    self.log_color(str(e))
                 await asyncio.sleep(3)
                 continue
 
@@ -406,9 +421,7 @@ class NSMBWContext(SuperContext):
         if self.connection_state == status:
             return
         else:
-            #logger.info(status_messages[status])
-            #if dolphin_interface_client.get_num_dolphin_instances() > 1:
-            #    logger.info(status_messages[ConnectionState.MULTIPLE_DOLPHIN_INSTANCES])
+            async_start(self.handle_screen_transition())
             self.connection_state = status
 
 
@@ -416,13 +429,16 @@ class NSMBWContext(SuperContext):
         """If the game is not connected or not in a playable state, this will attempt to retry connecting to the game."""
         if self.connection_state == ConnectionState.DISCONNECTED:
             if self.game_interface.connect_to_game():
+                self.print_versions()
                 await self.handle_load()
                 await self.game_interface.patch_runtime_on_load()
                 if Utils.get_settings()["nsmbw_settings"].auto_load:
                     await asyncio.sleep(1)
-                    self.update_memory_to_server_on_load()
+                    self.update_memory_to_server()
             else:
+                logger.info(traceback.format_exc())
                 self.log_color(f"Dolphin connection faild", "red")
+                await self.disconnect(False)
                 await asyncio.sleep(10)
 
 
@@ -449,7 +465,6 @@ class NSMBWContext(SuperContext):
         self.game_interface.update_check_sum()
         await self.game_interface.alive_player()
         await self.ut_auto_tab()
-        await self.handle_screen_transition()
         #print(f"after misc loop:   {self.loop_time - time.time()}")
         await asyncio.sleep(0.1)
 
@@ -470,13 +485,13 @@ class NSMBWContext(SuperContext):
         self.game_interface.update_check_sum()
         if (time.time() >= self.save_time + 60 * 1) and Utils.get_settings()["nsmbw_settings"].auto_save:
             self.save_time = time.time()
+            await self.handle_screen_transition()
             await self.handle_save()
             if self.current_mod == "":
                 await self.modifier_removal()
 
         await self.ut_auto_tab()
         await self.game_interface.patch_runtime_on_load() # unsure where to put this, just needs to run once, but good if does multiple times if not applied correctly
-        await self.handle_screen_transition()
         await asyncio.sleep(0.1)
 
 
@@ -502,7 +517,7 @@ class NSMBWContext(SuperContext):
             await asyncio.sleep(0.5)
 
         print(f"Seedname {self.seed_name}")
-        if self.seed_name != "" and (not (self.seed_name is None)):
+        if (self.seed_name != "") and (not (self.seed_name is None)) and (self.patcher is not None):
             path = Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves"
             path.mkdir(parents=True, exist_ok=True)
 
@@ -556,7 +571,7 @@ class NSMBWContext(SuperContext):
                     await asyncio.sleep(0.5)
 
                 await asyncio.sleep(1)
-                self.update_memory_to_server_on_load()
+                self.update_memory_to_server()
                 await asyncio.sleep(0.1)
 
             except FileNotFoundError:
@@ -645,15 +660,20 @@ class NSMBWContext(SuperContext):
                 sc_status = sc_statuses[4 * sc_num-1]
 
                 if sc_status != 4:  # becomes 0 if collected by mario
-                    world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
-                    if (world_num, level_num) == (0, 0):
+                    randoed_level = self.game_interface.get_modified_world_level_num_in_level()
+                    level = self.game_interface.get_world_level_num_in_level()
+                    if (randoed_level == (0, 0)) or (level == (0,0)):
                         continue
 
-                    location_name = name_starcoin(world_num, level_num, sc_num)
+                    location_name = name_starcoin(*randoed_level, sc_num)
                     if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                         checked_locations.append(NSMBWworld.location_name_to_id[location_name])
+                        level_status = bytes_to_int(self.game_interface.get_level_stats(*level))
+                        new_level_status = level_status | (1<<sc_num-1)
+                        self.game_interface.set_level_stats(*level, int_to_bytes(new_level_status, 1))
+
                         if Utils.get_settings()["nsmbw_settings"].debug_mode:
-                            logger.info(f"Sent check from item{location_name}")
+                            logger.info(f"Sent check from item {location_name}")
         self.locations_handled += checked_locations
         return checked_locations
 
@@ -894,32 +914,34 @@ class NSMBWContext(SuperContext):
         # secret exits
 
         level = self.game_interface.get_world_level_num_on_map()
-        randoed_level = self.game_interface.get_modified_world_level_num_on_map()
+        #randoed_level = self.game_interface.get_modified_world_level_num_on_map()
         level_status = self.game_interface.get_level_stats(*level)[0]
 
         for secret_exit in SECRET_EXIT:
-            world_num = secret_exit.world
-            level_num = secret_exit.level
-            if (world_num, level_num) != randoed_level:
+            if (secret_exit.world, secret_exit.level) != level:
                 continue
-
-            exit_name = name_secret(secret_exit)
-
             if secret_exit.exit_type == 1:
                 continue
 
+            randoed_secret_exit : SecretExit = secret_exit_randoed_func(self.slot_data["shuffled_level_order"], level_randoed, secret_exit)
+
+            exit_name_location = name_secret(randoed_secret_exit)
+            exit_name_position = name_secret(secret_exit)
+
+
+
 
             if level_status & 0x20 == 0x20:
-                if not NSMBWworld.location_name_to_id[exit_name] in self.locations_handled:
-                    checked_locations.append(NSMBWworld.location_name_to_id[exit_name])
-                    self.completed_levels.append(exit_name)
-                    print(f"You collected a check for {exit_name}")
-                if (not exit_name in self.unlocked_secret_exits) or (not self.is_world_part2_unlocked(world_num)):
-                    self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_status - 0x20,1))
-            elif (exit_name in self.unlocked_secret_exits) and (exit_name in self.completed_levels) and (self.is_world_part2_unlocked(world_num)):
-                self.game_interface.set_level_stats(world_num, level_num, int_to_bytes(level_status + 0x20, 1))
-                self.completed_levels.remove(exit_name)
-                logger.info(f"Exit {exit_name} have been unlocked")
+                if not NSMBWworld.location_name_to_id[exit_name_location] in self.locations_handled:
+                    checked_locations.append(NSMBWworld.location_name_to_id[exit_name_location])
+                    self.completed_levels.append(exit_name_position)
+                    print(f"You collected a check for {exit_name_location}")
+                if (not exit_name_position in self.unlocked_secret_exits) or (not self.is_world_part2_unlocked(level[0])):
+                    self.game_interface.set_level_stats(*level, int_to_bytes(level_status & 0x17,1))
+            elif (exit_name_position in self.unlocked_secret_exits) and (exit_name_position in self.completed_levels) and (self.is_world_part2_unlocked(level[0])):
+                self.game_interface.set_level_stats(*level, int_to_bytes(level_status | 0x20, 1))
+                self.completed_levels.remove(exit_name_position)
+                self.log_color(f"Exit {exit_name_position} have been unlocked", "blue")
 
         for world_num in range(1,8+1):
             #tower logc?
@@ -1209,7 +1231,9 @@ class NSMBWContext(SuperContext):
             case WorldUnlock.option_separate:
                 second_half = 0
                 for world_num in range(1, 8 + 1):
-                    second_half += (self.unlocked_worlds[world_num - 1]) >= 1 << (world_num-1)
+                    _byte : int = 1 << (world_num-1)
+                    is_unlocked = (self.unlocked_worlds[world_num - 1] >= 2 )
+                    second_half += is_unlocked * _byte
             case WorldUnlock.option_single:
                 second_half = 2 ** 8 - 1
             case WorldUnlock.option_progressive:
@@ -1577,28 +1601,35 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
 
     async def handle_screen_transition(self):
-        if self.game_interface.is_screen_transition():
-            pass
-            self.update_memory_to_server_on_load()
-            if self.current_mod == "":
-                await self.modifier_removal()
+        #if self.game_interface.is_screen_transition():
+        #    pass
+        self.update_memory_to_server()
+        await self.ut_auto_tab()
+
+
+        if self.game_interface.is_in_menu():
+            return
+
+
+        if self.current_mod == "":
+            await self.modifier_removal()
 
 
     async def ut_auto_tab(self):
         if tracker_loaded and self.slot:
-            map_id = 0
+            map_key : str = ""
 
             if self.game_interface.is_in_level():
                 world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
-                map_id = world_num * 100 + level_num
+                map_key = f"{world_num-level_num}"
             elif self.game_interface.is_in_worldmap():
                 world_num, level_num = self.game_interface.get_modified_world_level_num_on_map()
-                map_id = world_num
+                map_key = f"World{world_num}"
 
-            if self.previous_mapid != map_id:
+            if self.previous_map_key != map_key:
                 await self.send_msgs([{"cmd" : "Set","key" : f"{self.slot}_{self.team}_NSMBW_UT_MAP",
-                    "default": 0, "operations": [{"operation": "replace", "value": str(map_id)}]}])
-                self.previous_mapid = map_id
+                    "default": 0, "operations": [{"operation": "replace", "value": str(map_key)}]}])
+                self.previous_map_key = map_key
 
 
     # util functions------------------------------------------------
@@ -1645,7 +1676,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             if self.server and not self.server.socket.closed:
                 await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
 
-    def update_memory_to_server_on_load(self):
+    def update_memory_to_server(self):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             return
         if self.game_interface.memory_addresses is None:
@@ -1662,34 +1693,48 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
         for world_num in range(1,9+1):
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
-                current_bytes = bytes_to_int(self.game_interface.get_level_stats(*level_randoed(self.slot_data["shuffled_level_order"],world_num, level_num)))
+                level = (world_num, level_num)
+                randoed_level = level_randoed(self.slot_data["shuffled_level_order"],*level)
 
-                if self.slot_data["starcoin_sanity"] == True:
+                current_bytes = bytes_to_int(self.game_interface.get_level_stats(*level))
+
+                if True:#self.slot_data["starcoin_sanity"] == True:
                     for sc_num in range(1,3+1):
-                        if NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.checked_locations:
+                        if NSMBWworld.location_name_to_id[name_starcoin(*randoed_level, sc_num)] in self.checked_locations:
                             current_bytes |= 0x00 + (2**(sc_num - 1))
-                        elif NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)] in self.missing_locations:
-                            pass
-                            #current_bytes &= 0x37 - (2 **(sc_num - 1))
+                        elif NSMBWworld.location_name_to_id[name_starcoin(*randoed_level, sc_num)] in self.missing_locations:
+                            if DEBUG_MODE():
+                                current_bytes &= 0x37 - (2 **(sc_num - 1))
                         else:
                             pass # if not enabled in this rando
-                            #print(f"What is happening with {NSMBWworld.location_name_to_id[name_starcoin(world_num, level_num, sc_num)]}, {name_starcoin(world_num, level_num, sc_num)}")
 
 
                 if self.slot_data["level_completion"] == True:
-
-                    if not ((world_num, level_num) in skipp_levels):
-                        if NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.checked_locations:
+                    if not (level in skipp_levels):
+                        if NSMBWworld.location_name_to_id[name_level(*randoed_level)] in self.checked_locations:
                             current_bytes |= 0x10
-                        elif NSMBWworld.location_name_to_id[name_level(world_num, level_num)] in self.missing_locations:
-                            pass
-                            #current_bytes &= 0x27
+                        elif NSMBWworld.location_name_to_id[name_level(*randoed_level)] in self.missing_locations:
+                            if DEBUG_MODE():
+                                current_bytes &= 0x27
                         else:
                             pass # if not enabled in this rando
-                            #print(f"What is happening with {NSMBWworld.location_name_to_id[name_level(world_num, level_num)]}, {name_base(world_num, level_num)}")
 
 
-                self.game_interface.set_level_stats(*level_randoed(self.slot_data["shuffled_level_order"], world_num, level_num), int_to_bytes(current_bytes,1))
+                if True:
+                    secret_exit_tmp = SecretExit(*randoed_level, exit_type= 2)
+                    if secret_exit_tmp in SECRET_EXIT:
+                        secret_exit = SECRET_EXIT[SECRET_EXIT.index(secret_exit_tmp)]
+                        if secret_exit.exit_type == 2:
+                            if NSMBWworld.location_name_to_id[name_secret(secret_exit)] in self.checked_locations:
+                                current_bytes |= 0x20
+                            elif NSMBWworld.location_name_to_id[name_secret(secret_exit)] in self.missing_locations:
+                                if DEBUG_MODE():
+                                    current_bytes &= 0x17
+                            else:
+                                pass # werid shit
+
+
+                self.game_interface.set_level_stats(*level, int_to_bytes(current_bytes,1))
 
     def log_color(self, text: str, color: str = "red") -> None:
         text_msg : JSONMessagePart= {"type": "color","text":text,"color": color}
@@ -1738,15 +1783,15 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
 
     async def patch_and_run_game(self, override = False):
-        auto_start_riivolution: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
-        auto_load : bool = get_settings()["nsmbw_settings"].auto_load
-        input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
         try:
+            self.connection_pause = time.time() + 999
+
+            auto_start_riivolution: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
+            auto_load: bool = get_settings()["nsmbw_settings"].auto_load
+            input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
+
             assert input_iso_path is not None, "Add a path to your game file in host.yaml"
             assert Path(input_iso_path).exists(), "Your game file path is invalid"
-        except AssertionError as e:
-            logger.error(e)
-        try:
             self.patcher : Patcher = Patcher(self.username, self.seed_name, self.team if self.team else 0, self.slot_data)
             if not self.patcher.shortcut_path.exists():
                 self.patcher.patch()
@@ -1775,11 +1820,14 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                     self.connection_pause = time.time() + 15
             else:
                 message = "Failed to auto start dolphin, make sure you don't have any dolphin windows open. Autostart required for loading the riivolution to patch correctly."
-                messagebox("Did NOT auto start dolphin", message, True)
+                #messagebox("Did NOT auto start dolphin", message, True)
                 self.log_color(message,"red")
+
         except Exception as e:
+            async_start(self.disconnect(False))
             logger.info(traceback.format_exc())
             self.log_color(f"Patching error: {e}", "red")
+            messagebox(f"Patching error", str(e), True)
 
 
     def detect_dolphin_settings(self):
@@ -1821,6 +1869,55 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                 if len(loc - self.locations_info.keys() - self.locations_scouted - self.checked_locations)> 0: # test if sent hint before
                     Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": list(loc), "create_as_hint": 2}]))
                     self.locations_scouted |= loc
+
+    def print_versions(self):
+        if is_windows:
+            import ctypes
+
+            # code from https://sjohannes.wordpress.com/2012/03/23/win32-python-getting-all-window-titles/
+            EnumWindows = ctypes.windll.user32.EnumWindows
+            EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int),
+                                                 ctypes.POINTER(ctypes.c_int))
+            GetWindowText = ctypes.windll.user32.GetWindowTextW
+            GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+            IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+
+            titles = []
+
+            def foreach_window(hwnd, lParam):
+                if IsWindowVisible(hwnd):
+                    length = GetWindowTextLength(hwnd)
+                    buff = ctypes.create_unicode_buffer(length + 1)
+                    GetWindowText(hwnd, buff, length + 1)
+                    titles.append(buff.value)
+                return True
+
+            EnumWindows(EnumWindowsProc(foreach_window), 0)
+
+            #print(titles)
+            titles : List[str] = list(titles)
+
+            dolphin_version = [title for title in titles
+                               if title.startswith("Dolphin")]
+            if len(dolphin_version) == 0:
+                dolphin_version = "Dolphin not detected"
+            elif len(dolphin_version) == 1:
+                dolphin_version = dolphin_version[0]
+        else:
+            dolphin_version = "not able to collect on this this OS"
+
+        logger.info(
+            f"OS                        : {sys.platform}\n"
+            f"NSMBWAP Client version    : {self.manifest_version}\n"
+            f"NSMBWAP generated version : {self.slot_data['NSMBW_Version'] if self.username is not None else 'not connected'}\n"
+            f"UT version                : {UT_VERSION if tracker_loaded else 'Not loaded'}\n"
+            f"AP version                : {Utils.__version__}\n"
+            f"Server version            : {self.server_version}\n"
+            f"Generator version         : {self.generator_version}\n"
+            f"Game version              : {self.game_interface.current_game if self.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
+            f"Game revision             : {self.game_interface.game_rev if self.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
+            f"Dolphin versions          : {dolphin_version}\n"
+        )
 
 #end of class
 

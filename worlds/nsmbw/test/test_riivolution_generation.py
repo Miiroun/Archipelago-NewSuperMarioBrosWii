@@ -19,18 +19,27 @@ class TestLevelShuffle(NSMBWTestBase):
 class TestLevelShufflePlando(NSMBWTestBase):
     options = {
         "randomize_movement": True,
-        "randomize_powerups": RandomizePowerups.option_on,
+        "randomize_powerups": RandomizePowerups.option_off,
         "starting_world" : 1,
         "level_shuffle" : True,
         "music_shuffle" : True,
         "level_shuffle_plando" : {
             "1-1" : "1-1",
             "1-2" : "Coin-1",
+            "1-3" : "3-4"
         },
     }
 
     def test_level_shuffle_plando(self) -> None:
         self.assertTrue( level_randoed(self.world.shuffled_level_order, 1,1) == (1,1))
+
+    def test_level_shuffle_secret_exit(self) -> None:
+        self.collect_by_name(name_secret(SecretExit(3,4,5,2,True)))
+
+        #print(self.world.get_location(name_secret(SecretExit(3,4,5,2,True))).access_rule.explain_str())
+        #self.assertTrue( self.world.get_location(name_secret(SecretExit(3,4,5,2,True))).can_reach(self.multiworld.state))
+        self.assertFalse( self.world.get_location(name_base(3,4)).can_reach(self.multiworld.state))
+        #enterence_name_list = self.world.get_entrances()
 
 
 class TestLevelShuffleOff(NSMBWTestBase):

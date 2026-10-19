@@ -2,7 +2,7 @@ import os.path
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Callable, Any
+from typing import Callable, Any, DefaultDict
 import operator
 import Utils
 
@@ -94,11 +94,14 @@ def rm_tmp():
 
     Riivolution = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder)
 
+    Riivolution.mkdir(parents=True, exist_ok=True)
     files = os.listdir(Riivolution)
     for file in files:
         if file.startswith("nsmbw_ap_"):
             shutil.rmtree(Riivolution / file)
 
+
+    (Riivolution  / "riivolution").mkdir(parents=True, exist_ok=True)
     files = os.listdir(Riivolution / "riivolution")
     for file in files:
         if file.startswith("nsmbw_ap_"):
@@ -129,4 +132,13 @@ def is_nsmbwapworld_frozen() -> bool:
         if os.path.basename(__file__) == "Utils.py":
             return False
         else:
+
             return True
+
+def DEBUG_MODE() -> bool:
+    try:
+        DEBUG_MODE = Utils.get_settings()["nsmbw_settings"].debug_mode
+    except Exception as e:
+        #logger.info(str(e))
+        DEBUG_MODE = False
+    return DEBUG_MODE

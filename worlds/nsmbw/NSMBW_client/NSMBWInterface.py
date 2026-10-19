@@ -165,7 +165,7 @@ class NSMBWInterface(object):
 
                 Utils.async_start(self.shuffle_sprites())
 
-                logger.info(f"Successfully connected to dolphin")
+                self.log_color(f"Successfully connected to dolphin", "green")
 
                 return True
             else:
