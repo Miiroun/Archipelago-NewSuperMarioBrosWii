@@ -27,13 +27,13 @@
 ## Others that helped
 - Sponk : Created 3d model of star coin merged with archipelago logo and boss key model
 - CrazyJoe : Created the custom title screen
+- Flo : Playtester and designed some icons
 - Matgamer2575 : started project and found some memory addresses
 - Adibtw : Consulted Linux compatibility
 - [CelestePihen](https://github.com/CelestePihen) : PRed a few fixes.
 - [IndyGibb](https://github.com/IndyGibb) : PRed some light code changes using Claude
 - Techmuse : helped with locating addresses
 - LuigiXRules : Fixed typos in documentation, provided helpful insight and playtested Us rev1
-- Flo : Playtester
 
 
 ## Communities that helped

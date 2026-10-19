@@ -1,9 +1,22 @@
 # TODO 
 # Super Short term
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
+- flo's issues
+  - collect immedietly and die doesnt make starcoin blue
+  - test if my patch fixes match server state bug and unlock second half of worlds
+  - secret exit 3-5 does not have proper logic
+
+- how should we randomize the secret exit creation items?????
+  - only create them for locatoins that has valid exits?
+
+
+
+- you should be able to also swap the icon on the menu
+- assert gamefile is correct file type
 
 
 ## Playtest
+- do shortest playthrough
 
 
 

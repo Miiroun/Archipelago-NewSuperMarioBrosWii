@@ -2,139 +2,139 @@
     {
       "name": "Super Mushroom",
       "type": "toggle",
-      "img": "images/items/Super Mushroom.webp",
+      "img": "images/items/Super Mushroom.avif",
       "codes": "Super Mushroom"
     },
     {
     "name": "Fire Flower",
     "type": "toggle",
-    "img": "images/items/Fire Flower.webp",
+    "img": "images/items/Fire Flower.avif",
     "codes": "Fire Flower"
   },
   {
     "name": "Mini Mushroom",
     "type": "toggle",
-    "img": "images/items/Mini Mushroom.webp",
+    "img": "images/items/Mini Mushroom.avif",
     "codes": "Mini Mushroom"
   },
   {
     "name": "Propeller Mushroom",
     "type": "toggle",
-    "img": "images/items/Propeller Mushroom.webp",
+    "img": "images/items/Propeller Mushroom.avif",
     "codes": "Propeller Mushroom"
   },
   {
     "name": "Penguin Suit",
     "type": "toggle",
-    "img": "images/items/Penguin Suit.webp",
+    "img": "images/items/Penguin Suit.avif",
     "codes": "Penguin Suit"
   },
   {
     "name": "Ice Flower",
     "type": "toggle",
-    "img": "images/items/Ice Flower.webp",
+    "img": "images/items/Ice Flower.avif",
     "codes": "Ice Flower"
   },
   {
     "name": "Ground Pound",
     "type": "toggle",
-    "img": "images/items/Ground Pound.webp",
+    "img": "images/items/Ground Pound.avif",
     "codes": "Ground Pound"
   },
     {
     "name": "Wall Jump",
     "type": "toggle",
-    "img": "images/items/Wall Jump.webp",
+    "img": "images/items/Wall Jump.avif",
     "codes": "Wall Jump"
   },
     {
     "name": "Crouch",
     "type": "toggle",
-    "img": "images/items/Crouch.webp",
+    "img": "images/items/Crouch.avif",
     "codes": "Crouch"
   },
     {
     "name": "Swim",
     "type": "toggle",
-    "img": "images/items/Swim.webp",
+    "img": "images/items/Swim.png",
     "codes": "Swim"
   },
     {
     "name": "Star",
     "type": "toggle",
-    "img": "images/items/Star.webp",
+    "img": "images/items/Star.avif",
     "codes": "Star"
   },
     {
     "name": "Climb",
     "type": "toggle",
-    "img": "images/items/Climb.webp",
+    "img": "images/items/Climb.avif",
     "codes": "Climb"
   },
     {
     "name": "Carry",
     "type": "toggle",
-    "img": "images/items/Carry.webp",
+    "img": "images/items/Carry.avif",
     "codes": "Carry"
   },
     {
     "name": "Spin Jump",
     "type": "toggle",
-    "img": "images/items/Spin Jump.webp",
+    "img": "images/items/Spin Jump.avif",
     "codes": "Spin Jump"
   },
     {
     "name": "Jump",
     "type": "toggle",
-    "img": "images/items/Jump.webp",
+    "img": "images/items/Jump.avif",
     "codes": "Jump"
   },
     {
     "name": "Run",
     "type": "toggle",
-    "img": "images/items/Run.webp",
+    "img": "images/items/Run.avif",
     "codes": "Run"
   },
     {
     "name": "Pipe",
     "type": "toggle",
-    "img": "images/items/Pipe.webp",
+    "img": "images/items/Pipe.avif",
     "codes": "Pipe"
   },
     {
     "name": "Door",
     "type": "toggle",
-    "img": "images/items/Door.webp",
+    "img": "images/items/Door.avif",
     "codes": "Door"
   },
     {
     "name": "P-Switch",
     "type": "toggle",
-    "img": "images/items/P-Switch.webp",
+    "img": "images/items/P-Switch.avif",
     "codes": "P-Switch"
   },
   {
     "name": "?-Switch",
     "type": "toggle",
-    "img": "images/items/Q-Switch.webp",
+    "img": "images/items/Q-Switch.avif",
     "codes": "?-Switch"
   },
       {
     "name": "!-Switch",
     "type": "toggle",
-    "img": "images/items/!-Switch.webp",
+    "img": "images/items/!-Switch.avif",
     "codes": "!-Switch"
   },
   {
     "name": "Check Point",
     "type": "toggle",
-    "img": "images/items/Check Point.webp",
+    "img": "images/items/Check Point.avif",
     "codes": "Check Point"
   },
   {
     "name": "Yoshi",
     "type": "toggle",
-    "img": "images/items/Yoshi.webp",
+    "img": "images/items/Yoshi.avif",
     "codes": "Yoshi"
   },
   {
