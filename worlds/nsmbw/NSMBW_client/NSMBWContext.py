@@ -479,6 +479,7 @@ class NSMBWContext(SuperContext):
         if (time.time() >= self.save_time + 60 * 1) and Utils.get_settings()["nsmbw_settings"].auto_save:
             self.save_time = time.time()
             await self.handle_screen_transition()
+            self.match_server_state()
             await self.handle_save()
             if self.current_mod == "":
                 await self.modifier_removal()
