@@ -52,6 +52,7 @@ world_star      = [3, 5, 0, 5, 5, 6, 6, 0]
 world_enemy     = [4, 5, 2, 1, 6, 3, 7, 0] # 8-3 should be for enemy, however they sometimes require climb
 # collect override might not be best : maybe an event for each source : with an multiple, then we can do collect on event items
 
+
 for world_num in range(1, 8+1):
     if world_toad[world_num - 1] != 0:
         collection_map_general.update({
@@ -67,6 +68,7 @@ for world_num in range(1, 8+1):
             name_base(world_num, world_enemy[world_num - 1]) : 6,
         })
 collection_map_general.update(collection_map_no_toad)
+
 
 class NSMBWworld(World):
     """
@@ -96,9 +98,10 @@ class NSMBWworld(World):
     glitches_item_name = ITEM.GlitchedLogic
 
     shuffled_level_order : List[int]
-
-
     star_coin_req_per_world_9_level : List[int]
+
+    collection_map_general : Dict[str, int] = {}
+    collection_map_no_toad : Dict [str, int] = {}
 
     def __init__(self, multiworld: "MultiWorld", player: int):
         super().__init__(multiworld, player)
@@ -135,6 +138,7 @@ class NSMBWworld(World):
         # this needs to be done before create locations, here is fine, maybe better in connect regions
         items.precollect_items(self)
         self.set_level_rando()
+        self.construct_randoed_collection_maps()
 
     def connect_entrances(self) -> None:
         """Method to finalize the source and target regions of the World's entrances"""
@@ -219,16 +223,21 @@ class NSMBWworld(World):
     def get_filler_item_name(self) -> str:
         return items.get_random_filler_item_name(self)
 
+
+    def construct_randoed_collection_maps(self):
+        self.collection_map_general  = {name_base(*level_randoed(self.shuffled_level_order, *base_bijection(level))) : amount for level, amount in collection_map_general.items()}
+        self.collection_map_no_toad  = {name_base(*level_randoed(self.shuffled_level_order, *base_bijection(level))) : amount for level, amount in collection_map_no_toad.items()}
+
     def collect(self, state, item: NSMBWItem) -> bool:
         change = super(NSMBWworld, self).collect(state, item)
 
         if change:
-            amount = collection_map_general.get(item.name, 0)
+            amount = self.collection_map_general.get(item.name, 0)
             if amount:
                 pass
                 state.prog_items[item.player][ITEM.FAKE.InventoryPow.value] += amount
 
-            amount = collection_map_no_toad.get(item.name, 0)
+            amount = self.collection_map_no_toad.get(item.name, 0)
             if amount:
                 pass
                 state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] += amount
@@ -240,12 +249,12 @@ class NSMBWworld(World):
 
         if change:
 
-            amount = collection_map_general.get(item.name, 0)
+            amount = self.collection_map_general.get(item.name, 0)
             if amount:
                 pass
                 state.prog_items[item.player][ITEM.FAKE.InventoryPow.value] -= amount
 
-            amount = collection_map_no_toad.get(item.name, 0)
+            amount = self.collection_map_no_toad.get(item.name, 0)
             if amount:
                 pass
                 state.prog_items[item.player][ITEM.FAKE.InventoryPowNoToad.value] -= amount

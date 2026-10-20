@@ -279,7 +279,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "4-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), True_())),  # -5
     "4-GhostHouse"  : Level(pipe & button_down & button_up & normal_move & door & (p_switch | (peng_o & crouch) | (ice_peng_o & carry_block)), (True_(), True_(), True_()), True_()),  # -6 4-GhostHouse
     "4-Tower"  : Level(normal_move & tower_rules, (True_(), True_(), True_()), True_()),  # -7 4-Tower
-    "4-Castle"  : Level(pipe & button_down & button_up & normal_move & swim, (True_(), True_(), True_())),  # -8 4-Castle
+    "4-Castle"  : Level(pipe & button_down & button_up & normal_move & swim & door, (True_(), True_(), True_())),  # -8 4-Castle
     "4-Airship"  : Level(pipe & button_down & button_up & normal_move & spin_jump &(carry_block | propeller_o | (logic_hard & wall_jump & (super_mario | (mini_o & ground_pound)))) & door, (True_(), (carry & ground_pound) | (logic_hard & wall_jump & (ground_pound | (carry & (ice | peng_o)) | (peng_o & crouch))), True_())),  # -9 4-Airship
 # world 5
     "5-1"  : Level(normal_move & (climb | propeller_o) & pipe, (super_mario & ground_pound, swim | mini_o, ((swim | mini_o) & climb) | propeller_o | (logic_hard & climb & run & (carry | ground_pound)))),  # -1
@@ -466,9 +466,9 @@ LEVEL_SECOND_HALF_OF_WORLDS : List[List[int]] = [
     [4,5,6,8], # 1
     [4,5,6,8], # 2
     [4,5,8], # 3
-    [4,5,6,8], # 4
+    [4,5,6,8,9], # 4
     [4,5,6,8], # 5
-    [5,6,8], # 6
+    [5,6,8,9], # 6
     [4,5,6,8], # 7
     [7,4,5,6,9,10], # 8
     [5,6,7,8],  # 9

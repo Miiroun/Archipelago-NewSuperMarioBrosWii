@@ -3,6 +3,8 @@
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - you should be able to also swap the icon on the menu
 - In a future update will it be possible to beat W9 to unlock Bowser?
+- FAQ 
+  - how does soft logic work?
 
 
 
@@ -17,11 +19,6 @@
 - Could not access required locations for accessibility check
 - starcoin_requirement_world_unlock breaks fuzzer
 - same with bowser lock options
-
-
-## Before release
-- go over which options are hidden
-- verify UT 0.3.5 is latest
 
 
 ## Short term

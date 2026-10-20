@@ -684,6 +684,9 @@ class NSMBWContext(SuperContext):
         level_status = bytes_to_int(self.game_interface.get_level_stats(*level))
         randoed = self.game_interface.get_modified_world_level_num_on_map()
 
+        if (randoed == (0,0)) or (level == (0,0)):
+            return []
+
         def send_sc_check(sc_num=0):
             location_name = name_starcoin(*randoed, sc_num)
             if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
