@@ -2,14 +2,11 @@
 # Super Short term
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - you should be able to also swap the icon on the menu
-
-- Create test yaml in option creator
-- do short playtest -> release
+- In a future update will it be possible to beat W9 to unlock Bowser?
 
 
 
 ## Playtest
-- do shortest playthrough
 
 
 

@@ -192,7 +192,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Load save file for client memory.
         """
         Utils.async_start(self.ctx.handle_load())
-        self.ctx.update_memory_to_server()
+        self.ctx.match_server_state()
 
         # self.ctx.handle_load()
 
@@ -386,7 +386,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             logger.info(
                 f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
-        self.ctx.update_memory_to_server()
+        self.ctx.match_server_state()
 
     def _cmd_clear_inventory(self):
         """Clears your inventory of powerups (except 5).

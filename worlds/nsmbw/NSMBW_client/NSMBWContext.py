@@ -241,7 +241,7 @@ class NSMBWContext(SuperContext):
 
             case "RoomUpdate":
                 if "checked_locations" in args:
-                    self.update_memory_to_server()
+                    self.match_server_state()
 
             case "ReceivedItems":
                 pass
@@ -427,7 +427,7 @@ class NSMBWContext(SuperContext):
                 await self.game_interface.patch_runtime_on_load()
                 if Utils.get_settings()["nsmbw_settings"].auto_load:
                     await asyncio.sleep(1)
-                    self.update_memory_to_server()
+                    self.match_server_state()
             else:
                 logger.info(traceback.format_exc())
                 self.log_color(f"Dolphin connection faild", "red")
@@ -564,7 +564,7 @@ class NSMBWContext(SuperContext):
                     await asyncio.sleep(0.5)
 
                 await asyncio.sleep(1)
-                self.update_memory_to_server()
+                self.match_server_state()
                 await asyncio.sleep(0.1)
 
             except FileNotFoundError:
@@ -586,7 +586,7 @@ class NSMBWContext(SuperContext):
         match self.slot_data["alternative_goal"]:
             case AlternativeGoal.option_bowser:
 
-                level_bowcast_condit = self.game_interface.get_level_stats(8,9)
+                level_bowcast_condit = self.game_interface.get_level_stats(*level_randoed(self.slot_data["shuffled_level_order"],8,9))
                 #print(level_bowcast_condit)
                 #stats_in_bytes = #level_bowcast_condit[0] & b'\x10\x00\x00\x00'[0]
                 #bowser_death = #(stats_in_bytes == b'\x10\x00\x00\x00'[0]) # the & remvoes starcoin amount from stats when check for compleation
@@ -1601,7 +1601,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
     async def handle_screen_transition(self):
         #if self.game_interface.is_screen_transition():
         #    pass
-        self.update_memory_to_server()
+        #self.match_server_state()
         await self.ut_auto_tab()
 
 
@@ -1674,7 +1674,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             if self.server and not self.server.socket.closed:
                 await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
 
-    def update_memory_to_server(self):
+    def match_server_state(self):
         if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
             return
         if self.game_interface.memory_addresses is None:
