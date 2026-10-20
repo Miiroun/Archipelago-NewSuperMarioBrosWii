@@ -86,9 +86,9 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 
     volatile bool cleared = false;//IsCourseOmoteClear(param_1_copy, param_2_copy); // default
 
-    if (world == 8 and level == 38) {
+    if ((world == 8 and level == 38) and (bowser_unlock == 0)) {
         // this code allows client to confirm bowser_unlock
-        cleared =  bowser_unlock == 1;
+        cleared =  false;
     } else if (((level == 22) || (level == 23)) && (world_unlocked == 0)) {
         // this code dissables towers if not enabled second half
         cleared =  false;
@@ -98,7 +98,7 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
         if (level_unlock == 1) {
             cleared = IsCourseOmoteClear(param_1_copy, param_2_copy);
         } else if (level_unlock == 3) {
-            if ((1 <= level && level <= 8) || (21 <= level && level <= 25) ) {
+            if ((1 <= level && level <= 8) || (21 <= level && level <= 25) || (level == 38) ) {
                 cleared =  true;
             } else {
                 cleared = IsCourseOmoteClear(param_1_copy, param_2_copy);
