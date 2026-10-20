@@ -3,8 +3,6 @@
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - you should be able to also swap the icon on the menu
 - In a future update will it be possible to beat W9 to unlock Bowser?
-- FAQ 
-  - how does soft logic work?
 
 
 

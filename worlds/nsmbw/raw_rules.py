@@ -287,7 +287,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
     "5-3"  : Level(pipe & button_down & button_up & normal_move, (True_(), carry |((peng_o & crouch) & logic_hard), True_())),  # -3
     "5-4"  : Level(pipe & button_down & button_up & normal_move, (logic_hard | super_mario | run, logic_hard | carry | propeller_o, carry)),  # -4
     "5-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), carry)),  # -5
-    "5-GhostHouse"  : Level(normal_move & door & ((question_switch & carry_block) | logic_hard), (True_(), True_(), True_() ), True_() ),  # -6 5-GhostHousehosthouse
+    "5-GhostHouse"  : Level(normal_move & door & ((question_switch & carry_block) | logic_normal), (True_(), True_(), True_() ), True_() ),  # -6 5-GhostHousehosthouse
     "5-Tower"  : Level(pipe & button_down & button_up & normal_move& tower_rules & (carry | wall_jump | propeller_o), (True_(), True_(), super_mario)),  # -7 5-Tower
     "5-Castle"  : Level(pipe & button_down & button_up & normal_move & door & TimeRule(150), (wall_jump | propeller | (logic_hard & carry & (ice | peng_o)), True_(), True_())),  # -8 5-Castle
 # world 6

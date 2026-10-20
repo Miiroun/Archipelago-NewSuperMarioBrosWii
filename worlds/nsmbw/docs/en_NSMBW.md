@@ -185,10 +185,10 @@ What does the different names mean? <br>
 &emsp; C-1 is the fist coin level, Coin-1, 🪙-1 <br>
 
 Tracker? <br>
-&emsp; A basic implementation of Universal tracker, see setup_en.md for instructions. A pop tracker pack is in development.
+&emsp; A basic implementation of Universal tracker, see setup_en.md for instructions. It has an internal location and item tracker.
 
 Do I need a rivvolution patch? <br>
-&emsp;Some settings require a riivolution patch, it should be auto generated and loaded when you first connect to the archipelago server. Otherwise it is not needed and all patching will be done from memory.
+&emsp; Yes, it should be auto generated and loaded when you first connect to the archipelago server. Otherwise it is not needed and all patching will be done from memory.
 
 Do you support item/location groups?<br>
 &emsp;yes, e.g. Powerups, Movement, Hintmovies, Starcoins, Starcoins_World1, Starcoins_World1_Level1, Level_completion_world1, Level_completion
@@ -212,22 +212,28 @@ Why does the client auto press hotkeys to save and load save states? <br>
 
 Can I run this randomizer on real hardware?<br>
 &emsp;No, since most modifications are run through the external python client. There are no plans to implement this.<br>
-&emsp;You are however encouraged to run the other nsmbw randomizers mentioned bellow, which works on hardware.
+&emsp;You are however encouraged to run the other nsmbw randomizers mentioned below, which works on hardware.
 
 What does the star coin item do?<br>
 &emsp;They can do up to 3 things depending on what you have enabled:
-  1) Enables you to buy hint movies 
-  2) Required to unlock world 9 levels 
-  3) Required to unlock 8-C
+  1) Required MacGuffin to goal.
+  2) Enables you to buy hint movies.
+  3) Required to unlock world 9 levels.
+  4) Required to unlock worlds (on some settings)
 
 I game over'ed and lost all progress, how do I get it back?.<br>
-&emsp;You can run `/match_server_state` in the client to get back all your levels, depending on the collection state set in `host.yaml`.
+&emsp;You can run `/match_server_state` in the client to get back all your level clears.
+You might need to change your collection state set in `host.yaml`.
 
 What are the limitations of level shuffle? <br>
 &emsp; Secret exits must be mapped to other secret exits.<br>
 &emsp; Some level break when moved and are therefor frozzen in place; They are: 2-C, 6-C, 8-3<br>
 &emsp; We have also decided becasue of gameplay reasons not to move the tower, castle, airship and bowsers castle levels.
 
+How does the soft logic for Inventory powerups work?<br>
+&emsp; It weights each source by how good it is (enemy = 6, red mushroom house = 4, star house = 1) by the total amount that exists in game.<br>
+&emsp; This is then compared to how many you have enabled and each source points becomes a ratio so they each put in logic the same amount.<br>
+&emsp; We also round that value up and have a small margin to not cause generation errors and ensure all seeds are beatable (requiring 1 source as hard logic).
 
 Are there bugs?<br>
 &emsp;Expect bugs, it is still in development.<br>
