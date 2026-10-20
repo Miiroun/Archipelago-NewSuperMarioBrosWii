@@ -15,7 +15,7 @@ class LargeTests(Sc2SetupTestBase):
             options.OPTION_NAME[options.RequiredTactics]: options.RequiredTactics.option_standard,
             options.OPTION_NAME[options.MissionOrder]: options.MissionOrder.option_custom,
             options.OPTION_NAME[options.ExcludeOverpoweredItems]: True,
-            # options.OPTION_NAME[options.ExtraLocations]: options.ExtraLocations.option_disabled,
+            # options.OPTION_NAME[options.ExtraLocations]: options.ExtraLocations.option_off,
             options.OPTION_NAME[options.VanillaLocations]: options.VanillaLocations.option_disabled,
         }
         missions_to_check = [

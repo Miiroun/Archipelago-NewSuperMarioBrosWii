@@ -73,7 +73,6 @@ class NSMBWContext(SuperContext):
     want_slot_data = True  # Can't use game specific slot_data
     game_interface: NSMBWInterface
     connection_state = ConnectionState.DISCONNECTED
-    last_error_message: Optional[str] = None
     dolphin_sync_task: Optional[asyncio.Task[Any]] = None
     death_link_enabled : bool = False
     death_link_group : str = ""
@@ -228,8 +227,6 @@ class NSMBWContext(SuperContext):
                 if tracker_loaded:
                     args.setdefault("slot_data", dict())
 
-                if Utils.get_settings()["nsmbw_settings"].debug_mode:
-                    rm_tmp()
 
                 self.game_interface.slot_data = self.slot_data
 
@@ -365,7 +362,6 @@ class NSMBWContext(SuperContext):
             #self.loop_time = time.time()
             try:
                 if self.server:
-                    self.last_error_message = None
                     if not self.slot:
                         await asyncio.sleep(1)
                         #return
@@ -402,11 +398,8 @@ class NSMBWContext(SuperContext):
 
 
                 else:
-                    message = "Waiting for player to connect to server"
-                    if self.last_error_message is not message:
-                        logger.error("Waiting for player to connect to server")
-                        self.last_error_message = message
                     await asyncio.sleep(1)
+
             except Exception as e:
                 if isinstance(e, dolphin_interface_client.DolphinException):
                     self.log_color(str(e))
@@ -456,7 +449,7 @@ class NSMBWContext(SuperContext):
         #print(f"after item loop:   {self.loop_time - time.time()}")
 
         await self.handle_check_goal_complete()
-        await self.handle_checked_location()
+        await self.handle_checked_locations()
         #print(f"after loaction loop:   {self.loop_time - time.time()}")
         await self.handle_check_deathlink()
         await self.handle_modifiers()
@@ -478,7 +471,7 @@ class NSMBWContext(SuperContext):
         await self.handle_receive_items()
 
         await self.handle_check_goal_complete()
-        await self.handle_checked_location()
+        await self.handle_checked_locations()
 
         await self.game_interface.alive_player()
 
@@ -622,9 +615,9 @@ class NSMBWContext(SuperContext):
             case _:
                 raise NotImplementedError
 
-    async def handle_checked_location(self):
+    async def handle_checked_locations(self):
         if self.game_interface.get_savefile_num() == 1:
-            text = f"You are playing on save file 1, to prevent errors, no locations will be sent."
+            text = f"You are playing on save file 1, to prevent errors, no locations will be sent. Please select save file 2 to play on instead."
             if time.time() > self.connection_pause + 90:
                 self.log_color(text, "red")
             else:
@@ -897,6 +890,10 @@ class NSMBWContext(SuperContext):
                 #for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
             randoed_level = self.game_interface.get_modified_world_level_num_on_map()
             level_status = self.game_interface.get_level_stats(*level)[0]
+
+            if level == (3,4):
+                pass
+
             if level_status & 16 == 16:
                 level_name = name_level(*randoed_level)
                 level_id = NSMBWworld.location_name_to_id[level_name]
@@ -1209,12 +1206,13 @@ class NSMBWContext(SuperContext):
 
     def is_world_unlocked(self, world_num) -> bool:
         use_world_one = self.game_interface.is_in_worldmap()  # self.game_interface.is_in_level()#not (current_map_world in [7,8])
+        rule_all = (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)]) or ((not use_world_one) and world_num == 1)
         match self.slot_data["world_unlock"]:
             case WorldUnlock.option_separate | WorldUnlock.option_single | WorldUnlock.option_progressive:
-                return ((self.unlocked_worlds[world_num - 1] >= 1) and (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])) or ((not use_world_one) and world_num == 1)
+                return (self.unlocked_worlds[world_num - 1] >= 1) and rule_all
 
             case WorldUnlock.option_unlocked:
-                return True
+                return rule_all
             case _:
                 raise ValueError(f"world_unlock : {self.slot_data['world_unlock']}")
 
@@ -1695,6 +1693,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             for level_num in range(1, LEVELS_PER_WORLD[world_num - 1] + 1):
                 level = (world_num, level_num)
                 randoed_level = level_randoed(self.slot_data["shuffled_level_order"],*level)
+                # this is called before level_check so shouldn't delete new progress
 
                 current_bytes = bytes_to_int(self.game_interface.get_level_stats(*level))
 
@@ -1703,8 +1702,9 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                         if NSMBWworld.location_name_to_id[name_starcoin(*randoed_level, sc_num)] in self.checked_locations:
                             current_bytes |= 0x00 + (2**(sc_num - 1))
                         elif NSMBWworld.location_name_to_id[name_starcoin(*randoed_level, sc_num)] in self.missing_locations:
-                            if DEBUG_MODE():
-                                current_bytes &= 0x37 - (2 **(sc_num - 1))
+                            pass
+                            #if DEBUG_MODE():
+                            #    current_bytes &= 0x37 - (2 **(sc_num - 1))
                         else:
                             pass # if not enabled in this rando
 
@@ -1714,8 +1714,9 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                         if NSMBWworld.location_name_to_id[name_level(*randoed_level)] in self.checked_locations:
                             current_bytes |= 0x10
                         elif NSMBWworld.location_name_to_id[name_level(*randoed_level)] in self.missing_locations:
-                            if DEBUG_MODE():
-                                current_bytes &= 0x27
+                            pass
+                            #if DEBUG_MODE():
+                            #    current_bytes &= 0x27
                         else:
                             pass # if not enabled in this rando
 
@@ -1728,8 +1729,9 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                             if NSMBWworld.location_name_to_id[name_secret(secret_exit)] in self.checked_locations:
                                 current_bytes |= 0x20
                             elif NSMBWworld.location_name_to_id[name_secret(secret_exit)] in self.missing_locations:
-                                if DEBUG_MODE():
-                                    current_bytes &= 0x17
+                                pass
+                                #if DEBUG_MODE():
+                                #    current_bytes &= 0x17
                             else:
                                 pass # werid shit
 

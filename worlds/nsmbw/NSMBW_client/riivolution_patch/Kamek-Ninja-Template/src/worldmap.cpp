@@ -60,10 +60,10 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
     }
 
 
-    int world = param_1 & 0xffU+1;
-    int level = param_2 & 0xffU+1;
+    volatile int world = (param_1 & 0xffU)+1;
+    volatile int level = (param_2 & 0xffU)+1;
 
-    register int world_unlocked;
+    register int world_unlocked_tmp;
     register int level_unlock;
     register int bowser_unlock;
 
@@ -73,7 +73,7 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
         ori r12, r12, 0xB000
 
         lwz r10, 44(r12)
-        mr world_unlocked, r10
+        mr world_unlocked_tmp, r10
         lwz r10, 48(r12)
         mr level_unlock, r10
         lwz r10, 52(r12)
@@ -81,26 +81,31 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
 
     }
 
-    world_unlocked >> (world-1);
-    world_unlocked = world_unlocked & 1;
+    int world_unlocked = (world_unlocked_tmp >> (world-1) ) & 1;
 
 
-    bool cleared = IsCourseOmoteClear(param_1_copy, param_2_copy); // default
+    volatile bool cleared = false;//IsCourseOmoteClear(param_1_copy, param_2_copy); // default
 
-    if (world == 8 and level == 38){
+    if (world == 8 and level == 38) {
         // this code allows client to confirm bowser_unlock
         cleared =  bowser_unlock == 1;
-    } else if ((level == 22) && (world_unlocked == 0)) {
+    } else if (((level == 22) || (level == 23)) && (world_unlocked == 0)) {
         // this code dissables towers if not enabled second half
         cleared =  false;
+//    } else if (level > 20) {
+//        cleared = false;
     } else {
         if (level_unlock == 1) {
-            //cleared = IsCourseOmoteClear(world, level);
-        } else if (level_unlock == 3)  {
-            cleared = true;
+            cleared = IsCourseOmoteClear(param_1_copy, param_2_copy);
+        } else if (level_unlock == 3) {
+            if ((1 <= level && level <= 8) || (21 <= level && level <= 25) ) {
+                cleared =  true;
+            } else {
+                cleared = IsCourseOmoteClear(param_1_copy, param_2_copy);
+            }
         } else {
             // panic
-            cleared = true;
+            cleared = false;
         }
     }
 

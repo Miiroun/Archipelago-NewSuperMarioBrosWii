@@ -208,16 +208,16 @@ def create_all_items(world: NSMBWworld) -> None:
         for _ in range(9):
             itempool.append(world.create_item(ITEM.BossHealth))
 
-    if world.options.shortcuts_sanity.value == ShortcutSanity.option_enabled:
+    if world.options.shortcuts_sanity.value == ShortcutSanity.option_on:
         for secret_exit in SECRET_EXIT:
             if secret_exit.is_item:
                 itempool.append(world.create_item(name_secret(secret_exit)))
-    elif world.options.shortcuts_sanity.value == ShortcutSanity.option_disabled:
+    elif world.options.shortcuts_sanity.value == ShortcutSanity.option_off:
         excluded_items |=  {name_secret(SecretExit(3, 4, 5, 2, True)),
                             name_secret(SecretExit(7, 8, 6, 2, True)),
                             name_secret(SecretExit(8, 2, 7, 2, True)),
                             }
-    elif world.options.shortcuts_sanity.value == ShortcutSanity.option_dont_lock:
+    elif world.options.shortcuts_sanity.value == ShortcutSanity.option_off_dont_lock:
         for secret_exit in SECRET_EXIT:
             if secret_exit.is_item:
                 excluded_items |= {name_secret(secret_exit)}

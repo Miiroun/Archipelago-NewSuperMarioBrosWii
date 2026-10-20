@@ -3,6 +3,10 @@
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - you should be able to also swap the icon on the menu
 
+- Create test yaml in option creator
+- do short playtest -> release
+
+
 
 ## Playtest
 - do shortest playthrough
@@ -16,7 +20,6 @@
 - Could not access required locations for accessibility check
 - starcoin_requirement_world_unlock breaks fuzzer
 - same with bowser lock options
-
 
 
 ## Before release

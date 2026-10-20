@@ -210,17 +210,17 @@ class LevelCompletion(Toggle):
 
 class ShortcutSanity(Choice):
     """
-    Enabled:Turns all secret exit and some normal exits into locations and unlockable items.
+    on :Turns all secret exit and some normal exits into locations and unlockable items.
         Exits still needs to be unlocked as vanilla to be able to be used.
-    Disabled : Lock disable non-necessary shortcuts, no ap location / items will be created.
-    Dont_lock : Like disabled but most shortcuts (excluding cannons) will behave as vanilla.
+    off : Lock disable non-necessary shortcuts, no ap location / items will be created.
+    off_dont_lock : Like disabled but most shortcuts (excluding cannons) will behave as vanilla.
     """
     display_name = "Include Shortcuts"
-    option_disabled = 0
-    option_enabled = 1
-    option_dont_lock = 2
+    option_off = 0
+    option_on = 1
+    option_off_dont_lock = 2
 
-    default = option_enabled
+    default = option_on
 
 
 class OneupsSanity(Toggle):
@@ -387,11 +387,10 @@ class WorldCompPriority(Toggle):
 
 class GoalStarcoinRequirement(Range):
     """
-    Requires at least x star coins to unlock final level or goal.
+    Requires at least x star coins to unlock your goal.
     Recommended to have bellow ~ 200 to not get fill errors
     """
 
-    display_name = "Bowser Castle Unlock Star"
     range_start = 0
     range_end = 231
 
@@ -399,10 +398,9 @@ class GoalStarcoinRequirement(Range):
 
 class GoalWorldRequirement(Range):
     """
-    Requirement of beating at least x of worlds to unlock final level.
+    Requirement of beating at least x of worlds to unlock your goal.
     """
 
-    display_name = "Bowser Castle Unlock World"
     range_start = 0
     range_end = 7
 
@@ -410,7 +408,7 @@ class GoalWorldRequirement(Range):
 
 class GoalLevelRequirement(Range):
     """
-    Requirement of beating at least x of levels to unlock final level.
+    Requirement of beating at least x of levels to unlock your goal.
     """
 
     range_start = 0
@@ -886,7 +884,7 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if (world.options.starcoin_sanity.value == False):
         #print(f"(NSMBW generation warning) Turning off randomize coin can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 15
-    if (world.options.shortcuts_sanity.value == ShortcutSanity.option_disabled):
+    if (world.options.shortcuts_sanity.value == ShortcutSanity.option_off):
         #print(f"(NSMBW generation warning) Turning off shortcuts_sanity can cause fill errors with a low amount of num_starting_locations.")
         req_start_loc += 5
     if 0 <= req_start_loc:

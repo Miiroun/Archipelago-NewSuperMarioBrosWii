@@ -139,7 +139,7 @@ class ITEM:
     Time            = "Time"
     GlitchedLogic   = "Glitched Logic"
     BossHealth      = "Decrease Boss Health"
-    ProgressiveWorld= "Progressive world"
+    ProgressiveWorld= "Progressive World Unlock"
 
 
 
@@ -206,6 +206,7 @@ def name_starcoin(world_num : int, level_num : int, scnum : int) -> str:
     return f"{name_base(world_num,level_num)} Star Coin {scnum}"
 
 def name_secret(secret_exit : SecretExit) -> str:
+    assert secret_exit in SECRET_EXIT
     if secret_exit.exit_type == 2:
         return f"{name_base(secret_exit.world,secret_exit.level)} Secret exit"
     elif secret_exit.exit_type == 1:

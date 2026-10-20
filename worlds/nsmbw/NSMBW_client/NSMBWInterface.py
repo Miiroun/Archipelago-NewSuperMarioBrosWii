@@ -625,6 +625,14 @@ class NSMBWInterface(object):
         world_num = world_num_tmp + 1
         level_num = level_num_tmp + 1
 
+        # this does special hanlding for the world 3 second half
+        if (world_num, level_num) == (19,4):
+            return 3,4
+        elif (world_num, level_num) == (19,18):
+            return 3,5
+        elif (world_num, level_num) == (19,24):
+            return 3,8
+
         if world_num > 10:
             return 0, 0
 

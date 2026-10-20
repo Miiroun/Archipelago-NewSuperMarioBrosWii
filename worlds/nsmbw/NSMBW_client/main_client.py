@@ -6,7 +6,7 @@ import Utils
 
 from CommonClient import get_base_parser, handle_url_arg, gui_enabled, server_loop
 from .NSMBWContext import NSMBWContext, tracker_loaded, logger
-
+from ..Common import *
 
 def launch_NSMBW_client(*args):
 
@@ -74,6 +74,10 @@ async def shutdown():
 
 
 if __name__ == "__main__":
+    if DEBUG_MODE():
+        rm_tmp()
+        print(f"removed temp")
+
     launch_NSMBW_client()
 
 

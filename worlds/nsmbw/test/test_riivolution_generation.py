@@ -1,5 +1,4 @@
 from .bases import *
-from ..locations import pos_to_level_name, level_name_to_pos
 
 
 
@@ -33,7 +32,7 @@ class TestLevelShufflePlando(NSMBWTestBase):
     def test_level_shuffle_plando(self) -> None:
         self.assertTrue( level_randoed(self.world.shuffled_level_order, 1,1) == (1,1))
 
-    def test_level_shuffle_secret_exit(self) -> None:
+    def test_level_shuffle_secret_exit1_3(self) -> None:
         self.collect_by_name(name_secret(SecretExit(3,4,5,2,True)))
 
         #print(self.world.get_location(name_secret(SecretExit(3,4,5,2,True))).access_rule.explain_str())

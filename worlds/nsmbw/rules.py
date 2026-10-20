@@ -49,11 +49,11 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
 
                 _rule = True_()
                 if (world.options.world_unlock.value == WorldUnlock.option_separate) and (world_num <= 8) :
-                    if org_lev_num in LEVEL_SECOND_HALF_OF_WORLDS[world_num-1]:
+                    if con_lev_num in LEVEL_SECOND_HALF_OF_WORLDS[world_num-1]:
                         _rule &= rules.Has(name_world_unlock(world_num), count=2)
 
 
-                if (world_num == 9) and (world.options.level_unlock.value != LevelUnlock.option_all_unlocked):
+                if (world_num == 9):
                     assert len(world.star_coin_req_per_world_9_level) == 8
                     _rule &= rules.Has(ITEM.StarCoin, count=world.star_coin_req_per_world_9_level[con_lev_num - 1])
 
@@ -172,6 +172,17 @@ def set_all_location_rules(world: "NSMBWworld") -> None:
             if LevelRules[name_base(*level)].roulette is not None:
                 loc = world.get_location(name_roulette(*level))
                 world.set_rule(loc, LevelRules[name_base(*level)].roulette)
+
+    if world.options.shortcuts_sanity.value == ShortcutSanity.option_on:
+        for secret_exit in SECRET_EXIT:
+            if secret_exit.exit_type == 1:
+                continue
+
+            level = (secret_exit.world, secret_exit.level)
+            loc = world.get_location(name_secret(secret_exit))
+            _rule = LevelRules[name_base(*level)].secret_exit
+            assert _rule is not None, "secret exit rule should not be none"
+            world.set_rule(loc, _rule)
 
     loc = world.get_location(name_world_clear(9))
     level_list = list([name_base(*level_randoed(world.shuffled_level_order, 9,level_num)) for level_num in range(1,8+1)])
