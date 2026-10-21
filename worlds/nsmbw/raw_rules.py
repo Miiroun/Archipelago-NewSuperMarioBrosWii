@@ -119,7 +119,7 @@ class GlitchedRule(Rule["NSMBWworld"], game = game_name):
     @override
     def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
         if getattr(world.multiworld, "generation_is_fake", False):
-            return Has(ITEM.GlitchedLogic).resolve(world)
+            return Has(world.glitches_item_name).resolve(world)
         else:
             return False_().resolve(world)
 
