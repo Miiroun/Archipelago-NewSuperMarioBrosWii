@@ -82,17 +82,19 @@ def is_flatpak_installed():
     return False
 
 def rm_game_extract():
-    nsmbw_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)
+    from .Common import nsmbw_settings
+    nsmbw_dir = Path(Utils.get_settings()[nsmbw_settings].temporary_directory)
     if nsmbw_dir.exists():
         shutil.rmtree(nsmbw_dir)
 
 def rm_tmp():
     import os
+    from .Common import nsmbw_settings
 
     rm_game_extract()
 
 
-    Riivolution = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder)
+    Riivolution = Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder)
 
     Riivolution.mkdir(parents=True, exist_ok=True)
     files = os.listdir(Riivolution)
@@ -136,8 +138,9 @@ def is_nsmbwapworld_frozen() -> bool:
             return True
 
 def DEBUG_MODE() -> bool:
+    from .Common import nsmbw_settings
     try:
-        DEBUG_MODE = Utils.get_settings()["nsmbw_settings"].debug_mode
+        DEBUG_MODE = Utils.get_settings()[nsmbw_settings].debug_mode
     except Exception as e:
         #logger.info(str(e))
         DEBUG_MODE = False

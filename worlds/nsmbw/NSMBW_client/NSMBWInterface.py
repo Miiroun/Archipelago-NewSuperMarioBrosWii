@@ -16,7 +16,7 @@ from ..Common import *
 
 
 logger = logging.getLogger("Client")
-if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library != 0):
+if True: # using settings here doesn't work on #  not Ubuntu (Utils.is_linux and Utils.get_settings()[nsmbw_settings].keypress_library != 0):
     try:
         from .lib import keyboard
     except ImportError as e:
@@ -96,8 +96,9 @@ class NSMBWInterface(object):
         if Utils.is_linux:
             expected_amount_connect += is_flatpak_installed()
 
-        if (get_num_dolphin_instances() != expected_amount_connect) and (not get_settings()['nsmbw_settings'].dolphin_instance_override):
-            logger.info(f"Detected number of dolphin instances = {get_num_dolphin_instances()}, should be {expected_amount_connect}.")
+        if (not (0 < get_num_dolphin_instances() <= expected_amount_connect)) and (not get_settings()['nsmbw_settings'].dolphin_instance_override):
+            self.log_color(f"Detected number of dolphin instances = {get_num_dolphin_instances()}, should be {expected_amount_connect}.")
+            logger.info(f"If you are on linux and this seems to be an incorrect error message, change 'dolphin_instance_override' to true in your host.yaml")
             print(f"Presses: {list(psutil.process_iter())}")
             return False
 
@@ -307,17 +308,17 @@ class NSMBWInterface(object):
 
     def _linux_send_hotkey(self, fkey : int, shift : bool) -> bool:
         """Deliver a Dolphin hotkey on Linux"""
-        if Utils.get_settings()["nsmbw_settings"].keypress_library == 1:
+        if Utils.get_settings()[nsmbw_settings].keypress_library == 1:
             if shutil.which("xdotool") is None:
                 self.log_color(f"xdotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey 'F{fkey}', shift:{shift}.","red")
                 return False
-        if Utils.get_settings()["nsmbw_settings"].keypress_library == 2:
+        if Utils.get_settings()[nsmbw_settings].keypress_library == 2:
             if shutil.which("ydotool") is None:
                 self.log_color(f"ydotool not found; install it for automatic save/load states on Linux, turn off this and instead use the keyboard library with root access, or make the state manually in slot. Skipping hotkey 'F{fkey}', shift:{shift}.","red")
                 return False
 
         try:
-            match  Utils.get_settings()["nsmbw_settings"].keypress_library:
+            match  Utils.get_settings()[nsmbw_settings].keypress_library:
                 case 1:
                     if shift:
                         combo = f"shift+F{fkey}"
@@ -348,7 +349,7 @@ class NSMBWInterface(object):
             logger.info(f"Saved savestate to slot {slot}")
 
         try:
-            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library != 0:
+            if Utils.is_linux and Utils.get_settings()[nsmbw_settings].keypress_library != 0:
                 self._linux_send_hotkey(slot, True)
             else:
                 time.sleep(wait_long)
@@ -376,7 +377,7 @@ class NSMBWInterface(object):
         if do_logging:
             logger.info(f"loaded savestate from slot {slot}")
         try:
-            if Utils.is_linux and Utils.get_settings()["nsmbw_settings"].keypress_library:
+            if Utils.is_linux and Utils.get_settings()[nsmbw_settings].keypress_library:
                 self._linux_send_hotkey(slot, False)
             else:
                 time.sleep(wait_short)
@@ -438,7 +439,7 @@ class NSMBWInterface(object):
             current_bytes = self.dolphin_client.read_address(patch.addr, len(patch.code))
             if not current_bytes in [val_0000+val_0000,patch.code, patch.origin] and double_check: # ignores a write to 00000000, since tried to load patch before game data
                 test = (f"bytes {current_bytes} at addr {patch.addr : x} not in code {patch.code} or origin {patch.origin} for patch {patch} with name {patch.name}")
-                if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                if Utils.get_settings()[nsmbw_settings].debug_mode:
                     raise ValueError(test)
                 else:
                     self.log_color(test, "red")

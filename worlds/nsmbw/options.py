@@ -10,9 +10,9 @@ class AlternativeGoal(Choice):
     """
     Which goal to have
     Bowser      : Beat 8-C
-    Starcoin    : Have starcoin = requirement
+    Starcoin    : Have goal_starcoin_unlock to specify amount
     Hintmovie   : Have all hintmovie locations
-    All_levels  : Beat x amount of levels to goal, uses goal_level_unlock
+    Levels  : Beat x amount of levels to goal, uses goal_level_unlock to specify amount
     """
     display_name = "Alternative Goal"
     option_bowser = 0
@@ -560,8 +560,9 @@ class LevelShuffleEnemyAmbushes(Toggle):
 
 class LevelShuffleRemove(OptionList):
     """
-    An option to remove up to 5 levels by plando:ing them to replace coin levels
-    Will not work for levels with seceret exits
+    An option to remove up to 5 levels.
+    This is archived using level plando to replace coin levels.
+    Will not work for levels with secret exits,
     """
     # make this work on none level shuffle
     # - just make non level plando fill in the best it can when stuff is plandoed
@@ -961,6 +962,12 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
     if world.options.goal_level_unlock.value > 65:
         world.options.goal_level_unlock.value = 65
         print(f"(NSMBW generation warning) generation fails if goal_level_unlock > 65.")
+
+    if world.options.alternative_goal.value == AlternativeGoal.option_bowser:
+        if world.options.goal_level_unlock.value >= 77:
+            world.options.goal_level_unlock.value = 76
+            print(f"(NSMBW generation warning) Cannot set goal_level_unlock to 77 levels with alternative goal bowser.")
+
 
     if world.options.block_sanity.value in [BlockSanity.option_powerup_blocks or BlockSanity.option_brick_blocks]:
         raise OptionError("(NSMBW generation error) block_sanity does not currently support your enabled mode")

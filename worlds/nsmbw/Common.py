@@ -9,6 +9,7 @@ import Utils
 
 
 game_name = "NSMBW"
+nsmbw_settings = "nsmbw_settings"
 
 LEVELS_PER_WORLD = [8, 8, 8, 9, 8, 9, 9, 10, 8, 5]
 

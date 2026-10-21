@@ -13,6 +13,7 @@
 ## Bugs to fix
 
 
+
 ## fuzzing error
 - Could not access required locations for accessibility check
 - starcoin_requirement_world_unlock breaks fuzzer
@@ -90,6 +91,18 @@
 - Rename raw rules to rule_data?
 - fix webp alpha images not loading
 - Maybe create custom kivy tab for launching game
+
+
+## Tracker impovmentes
+Locations
+- Hint movie map
+- map for each level
+- inventory pow overview?
+- toadhouse help
+Items
+- world unlock
+- boss heath
+- time
 
 
 ## Logic

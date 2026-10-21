@@ -46,15 +46,18 @@ class Patcher:
         self.name = f"nsmbw_ap_{read_manifest()['world_version']}_{slot_name}_{team_number}_{seed}"
 
 
-        self.input_path = Path(Utils.get_settings()["nsmbw_settings"].game_file_path)
-        self.output_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder) / self.name
+        self.input_path = Path(Utils.get_settings()[nsmbw_settings].game_file_path).resolve()
+        get_settings()[nsmbw_settings].game_file_path = str(self.input_path)
+        get_settings().save()
 
-        file_name = os.path.basename(Path(Utils.get_settings()["nsmbw_settings"].game_file_path))
-        self.temp_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)  /  file_name / "DATA"
+        self.output_path = Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / self.name
 
-        self.random = Random(seed)
+        file_name = os.path.basename(Path(Utils.get_settings()[nsmbw_settings].game_file_path))
+        self.temp_dir = Path(Utils.get_settings()[nsmbw_settings].temporary_directory)  /  file_name / "DATA"
 
-        self.shortcut_path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory)  / "riivolution_shortcuts" / f"{self.name}.json"
+        self.random = Random(seed + self.name)
+
+        self.shortcut_path = Path(Utils.get_settings()[nsmbw_settings].temporary_directory)  / "riivolution_shortcuts" / f"{self.name}.json"
         self.xml_path = self.output_path.parent / "riivolution" / f"{self.name}.xml"
 
         self.apnsmbw_file = Path(Utils.user_path("")) / "worlds" / "nsmbw"
@@ -239,7 +242,7 @@ class Patcher:
             ("star_coin.arc", "Object", "Object"),
             ("openingTitle.arc", os.path.join(RegionNames[self.region], "Layout", "openingTitle"), "Layout"),
             ("key_boss_castle.arc", "Object", "Object"),
-            ("cobKinoko1up.arc", "Worldmap", "Worldmap"),
+            ("cobKinoko1up.arc", "WorldMap", "WorldMap"),
             ]
         if generating:
             _from = self.apnsmbw_file.parent / "nsmbw" / "dev_files" / "riivolution_patch_data_origin"
@@ -255,7 +258,7 @@ class Patcher:
 
     def extract_bsdiff(self):
         if is_nsmbwapworld_frozen():
-            self.bsdiff_patch_dir = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "patch_data"
+            self.bsdiff_patch_dir = Path(Utils.get_settings()[nsmbw_settings].temporary_directory) / "patch_data"
             self.bsdiff_patch_dir.mkdir(exist_ok=True, parents=True)
 
             with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
@@ -344,7 +347,7 @@ class Patcher:
             logger.info(f"Problem with extracting game files, fall back to manually locating dolphin-tool")
 
 
-        dolp_tool = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_tool)
+        dolp_tool = Path(Utils.get_settings()[nsmbw_settings].dolphin_folder) / "DolphinTool.exe"  if Utils.is_windows else Path(Utils.get_settings()[nsmbw_settings].dolphin_tool)
         assert dolp_tool.exists() , f"the path {dolp_tool} to DolphinTool is invaild"
 
         if not (path_to.exists()  and (path_to / "Data" / "files").exists()):
@@ -574,7 +577,7 @@ class Patcher:
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/TW/Layout/openingTitle/openingTitle.arc"})
         ET.SubElement(_patch, "file", {"external" : "Layout/openingTitle.arc", "disc" : r"/US/Layout/openingTitle/openingTitle.arc"})
 
-        # Worldmap folder : for RouteInfo.arc
+        # WorldMap folder : for RouteInfo.arc
         ET.SubElement(_patch, "folder", {"external" : fr"WorldMap/", "disc":fr"/WorldMap", "create":"true"})
 
 
@@ -631,8 +634,8 @@ class Patcher:
                                 "section-name": "NSMBWAP"
                             }
                         ],
-                        "root" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder)),
-                        "xml" : str(Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder) / "riivolution" / f"{self.name}.xml"),
+                        "root" : str(Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder)),
+                        "xml" : str(Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "riivolution" / f"{self.name}.xml"),
                     }
                 ]
             },
@@ -650,12 +653,24 @@ class Patcher:
         assert self.shortcut_path.exists(), "need to have created shortcut successfully"
         print(f"shortcut path:{self.shortcut_path}")
 
-    def get_region(self) -> bool:
+    def get_region(self, raise_error = False) -> bool:
         try:
             with open(self.temp_dir / 'disc' / 'header.bin', "rb") as f:
                 self.region = f.read(6).decode('ascii')
-                return True
-        except Exception as e:
+
+                if self.region in RegionNames.keys():
+                    return True
+
+                logger.info(f"Incorrect game region {self.region}, are you sure you selected the game file for nsmbw?\n"
+                            f"Repromting game file, restart the client for the fix to apply")
+                from ..settings import NSMBWSettings
+                get_settings()['nsmbw_settings']['game_file_path'] = NSMBWSettings.GameFilePath.browse(NSMBWSettings.game_file_path)
+                get_settings().save()
+                if raise_error:
+                    raise ValueError(f"Incorrect game region {self.region}, are you sure you selected the game file for nsmbw?")
+                return False
+
+        except FileNotFoundError as e:
             return False
             #raise Exception(f"Failed to get region: {e}. \n"
             #                f"most likely is this a cache clear error. Run `/rm_tm` in this client and try to connect again.")
@@ -685,7 +700,9 @@ class Patcher:
         self.extract_game()
 
         logger.info(f"Collects game info")
-        self.get_region()
+        if not self.get_region(True):
+            logger.info(f"game patch wrong")
+            return
 
         logger.info(f"Copying standard riivolution to {self.output_path}")
         self.copy_riivolution_skeleton()
@@ -703,6 +720,9 @@ class Patcher:
 
         logger.info(f"Creates desktop shortcut")
         self.create_desktop_shortcut()
+
+
+        logger.info(f"Patch created successfully")
 
 
 if __name__ == "__main__":
@@ -732,7 +752,7 @@ if __name__ == "__main__":
 
     _patcher.patch()
 
-    dolphin_path  = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe)
+    dolphin_path  = Path(Utils.get_settings()[nsmbw_settings].dolphin_folder) / "Dolphin.exe"  if Utils.is_windows else Path(Utils.get_settings()[nsmbw_settings].dolphin_exe)
     short_cut_path = _patcher.shortcut_path
 
     assert short_cut_path.exists(), ""

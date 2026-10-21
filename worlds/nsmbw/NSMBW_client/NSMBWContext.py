@@ -18,7 +18,7 @@ import time
 import traceback
 from enum import IntEnum
 from random import Random
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
 
 import Utils
 from NetUtils import ClientStatus, NetworkItem, JSONMessagePart
@@ -118,7 +118,7 @@ class NSMBWContext(SuperContext):
 
     unlocked_secret_exits : List[str]
 
-    connection_pause = 0
+    connection_pause : float = 0
 
     powerup_grace : int = 0
 
@@ -306,7 +306,7 @@ class NSMBWContext(SuperContext):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 if is_nsmbwapworld_frozen():
-                    _path = Path(Utils.get_settings()["nsmbw_settings"].temporary_directory) / "nsmbw_icon.png"
+                    _path = Path(Utils.get_settings()[nsmbw_settings].temporary_directory) / "nsmbw_icon.png"
                     if not _path.exists():
                         _path.parent.mkdir(parents=True, exist_ok=True)
                         with zipfile.ZipFile(Path(__file__).parent.parent.parent, "r") as zf:
@@ -361,51 +361,44 @@ class NSMBWContext(SuperContext):
         while not self.exit_event.is_set():
             #self.loop_time = time.time()
             try:
-                if self.server:
-                    if not self.slot:
-                        await asyncio.sleep(1)
-                        #return
-                        continue
-                    try:
-                        connection_state = self.game_interface.get_connection_state()
-                        self.update_connection_status(connection_state)
-
-                        if (self.game_interface.memory_addresses is not None) and self.game_interface.dolphin_client.is_connected():
-                            if self.game_interface.get_record_state() == b'\x04':
-                                await self.game_interface.kill_player()
-
-                        if connection_state == ConnectionState.IN_GAME:
-                            await self.handle_in_level()
-                            await asyncio.sleep(0.01)
-                        elif connection_state == ConnectionState.IN_WORLDMAP:
-                            await self.handle_in_worldmap()  # It will say the player is in menu sometimes
-                            await asyncio.sleep(0.01)
-                        elif connection_state == ConnectionState.IN_MENU:
-                            await self.handle_in_main_menu()
-                            await asyncio.sleep(0.01)
-                        else:
-                            if time.time() > self.connection_pause:
-                                await self._handle_game_not_ready()
-                                await asyncio.sleep(1)
-                            else:
-                                await asyncio.sleep(3)
-
-                        #print(f"finished loop:   {self.loop_time - time.time()}")
-                    except Exception as e:
-                        logger.info(traceback.format_exc())
-                        messagebox("New Super Mario Bros Wii Error", str(e), True)
-                        self.log_color(f"Failed with error {e}. When handling client logic", "red")
-
-
-                else:
+                if not self.server:
                     await asyncio.sleep(1)
+                    continue
+                if not self.slot:
+                    await asyncio.sleep(1)
+                    continue
+                if time.time() < self.connection_pause:
+                    await asyncio.sleep(1)
+                    continue
+
+                connection_state = self.game_interface.get_connection_state()
+                self.update_connection_status(connection_state)
+
+                if (self.game_interface.memory_addresses is not None) and self.game_interface.dolphin_client.is_connected():
+                    if self.game_interface.get_record_state() == b'\x04':
+                        await self.game_interface.kill_player()
+
+                if connection_state == ConnectionState.IN_GAME:
+                    await self.handle_in_level()
+                    await asyncio.sleep(0.01)
+                elif connection_state == ConnectionState.IN_WORLDMAP:
+                    await self.handle_in_worldmap()  # It will say the player is in menu sometimes
+                    await asyncio.sleep(0.01)
+                elif connection_state == ConnectionState.IN_MENU:
+                    await self.handle_in_main_menu()
+                    await asyncio.sleep(0.01)
+                else:
+                    if time.time() > self.connection_pause:
+                        await self._handle_game_not_ready()
+                        await asyncio.sleep(1)
+                    else:
+                        await asyncio.sleep(3)
+
 
             except Exception as e:
-                if isinstance(e, dolphin_interface_client.DolphinException):
-                    self.log_color(str(e))
-                else:
-                    logger.error(traceback.format_exc())
-                    self.log_color(str(e))
+                logger.info(traceback.format_exc())
+                messagebox("New Super Mario Bros Wii Error", str(e), True)
+                self.log_color(str(e))
                 await asyncio.sleep(3)
                 continue
 
@@ -425,7 +418,7 @@ class NSMBWContext(SuperContext):
                 self.print_versions()
                 await self.handle_load()
                 await self.game_interface.patch_runtime_on_load()
-                if Utils.get_settings()["nsmbw_settings"].auto_load:
+                if Utils.get_settings()[nsmbw_settings].auto_load:
                     await asyncio.sleep(1)
                     self.match_server_state()
             else:
@@ -476,7 +469,7 @@ class NSMBWContext(SuperContext):
         await self.game_interface.alive_player()
 
         self.game_interface.update_check_sum()
-        if (time.time() >= self.save_time + 60 * 1) and Utils.get_settings()["nsmbw_settings"].auto_save:
+        if (time.time() >= self.save_time + 60 * 1) and Utils.get_settings()[nsmbw_settings].auto_save:
             self.save_time = time.time()
             await self.handle_screen_transition()
             self.match_server_state()
@@ -502,17 +495,18 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_save(self):
+        get_settings().save()
         if self.username is None:
             logger.info("Connect to sever before saving")
             return
-        if Utils.get_settings()["nsmbw_settings"].auto_save_savestates:
+        if Utils.get_settings()[nsmbw_settings].auto_save_savestates:
             await asyncio.sleep(0.5)
             self.game_interface.save_state(self.save_slot)
             await asyncio.sleep(0.5)
 
         print(f"Seedname {self.seed_name}")
         if (self.seed_name != "") and (not (self.seed_name is None)) and (self.patcher is not None):
-            path = Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves"
+            path = Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves"
             path.mkdir(parents=True, exist_ok=True)
 
             data = {
@@ -540,7 +534,7 @@ class NSMBWContext(SuperContext):
 
         if self.seed_name != "" and (not (self.seed_name is None)):
             try:
-                with open(Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.patcher.name}.json", "r") as file_name:
+                with open(Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves" / f"{self.patcher.name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
                     data = json.load(file_name)
                 self.completed_levels = data["completed_levels"]
@@ -559,7 +553,7 @@ class NSMBWContext(SuperContext):
 
                 logger.info("Loaded client save data from file")
 
-                if Utils.get_settings()["nsmbw_settings"].auto_load:
+                if Utils.get_settings()[nsmbw_settings].auto_load:
                     await asyncio.sleep(0.5)
                     self.game_interface.load_state(self.save_slot)
                     await asyncio.sleep(0.5)
@@ -666,7 +660,7 @@ class NSMBWContext(SuperContext):
                         new_level_status = level_status | (1<<sc_num-1)
                         self.game_interface.set_level_stats(*level, int_to_bytes(new_level_status, 1))
 
-                        if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                        if Utils.get_settings()[nsmbw_settings].debug_mode:
                             logger.info(f"Sent check from item {location_name}")
         self.locations_handled += checked_locations
         return checked_locations
@@ -692,7 +686,7 @@ class NSMBWContext(SuperContext):
             if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                 print(f"Starcoin {sc_num} collected from {name_base(*randoed)}")
                 checked_locations.append(NSMBWworld.location_name_to_id[location_name])
-                if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                if Utils.get_settings()[nsmbw_settings].debug_mode:
                     print(f"Sent check from item{location_name}")
         if level_status & 1 == 1:
             send_sc_check(sc_num=1)
@@ -852,7 +846,7 @@ class NSMBWContext(SuperContext):
                     if status == b'\x01':
                         if not NSMBWworld.location_name_to_id[location_name] in self.locations_handled:
                             checked_locations.append(NSMBWworld.location_name_to_id[location_name])
-                            if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                            if Utils.get_settings()[nsmbw_settings].debug_mode:
                                 print(f"Collected hintmovie at {checked_locations}")
 
                 self.locations_handled += checked_locations
@@ -903,7 +897,7 @@ class NSMBWContext(SuperContext):
                 level_id = NSMBWworld.location_name_to_id[level_name]
                 if level_id not in  self.locations_handled:
                     checked_locations.append(level_id)
-                    if Utils.get_settings()["nsmbw_settings"].debug_mode:
+                    if Utils.get_settings()[nsmbw_settings].debug_mode:
                         print(f"You collected a check for completing {level_name}")
 
         self.locations_handled += checked_locations
@@ -983,36 +977,39 @@ class NSMBWContext(SuperContext):
 
 
         # this code is for unlocking the final level
-        bowser_unlock = self.get_bow_unlocked()
-        self.game_interface.set_bowser_unlocked(bowser_unlock)
+        if self.slot_data["alternative_goal"] == AlternativeGoal.option_bowser:
+            bowser_unlock = self.get_bow_unlocked()
+            self.game_interface.set_bowser_unlocked(bowser_unlock)
 
-        level_name = name_level(8,10)
-        level_stats = self.game_interface.get_level_stats(8,10)[0]
-        # runs if to disable bowsers castle if completed 8-arship and not comprehended unlock conditions
-        if  level_stats & 16 == 16 and (not bowser_unlock):
-            if not (level_name in self.completed_levels):
-                self.completed_levels.append(level_name)
-                self.log_color(f"Completed 8-Airship but does not meet requirements for unlocking bowser: run /goal to get reason", "blue")
-        # if previously completed 8-arship and now unlocked bowser
-        if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
-            if level_name in self.completed_levels:
-                self.completed_levels.remove(level_name)
-                self.log_color("Bowsers castle is now unlocked", "blue")
+            level_name = name_level(8,10)
+            level_stats = self.game_interface.get_level_stats(8,10)[0]
+            # runs if to disable bowsers castle if completed 8-arship and not comprehended unlock conditions
+            if  level_stats & 16 == 16 and (not bowser_unlock):
+                if not (level_name in self.completed_levels):
+                    self.completed_levels.append(level_name)
+                    self.log_color(f"Completed 8-Airship but does not meet requirements for unlocking bowser: run /goal to get reason", "blue")
+            # if previously completed 8-arship and now unlocked bowser
+            if (not (level_stats & 0x10 == 0x10)) and (bowser_unlock):
+                if level_name in self.completed_levels:
+                    self.completed_levels.remove(level_name)
+                    self.log_color("Bowsers castle is now unlocked", "blue")
 
 
-        level = self.game_interface.get_world_level_num_on_map()
-        if level[0] == 9:
-            for level_num in range(1,8+1):
-                level_stats = self.game_interface.get_level_stats(9, level_num)[0]
-                if level_stats & 0x10 != 0x10:
-                    break
-            else:
+            level = self.game_interface.get_world_level_num_on_map()
+            if level[0] == 9:
+                for level_num in range(1,8+1):
+                    level_stats = self.game_interface.get_level_stats(9, level_num)[0]
+                    if level_stats & 0x10 != 0x10:
+                        break
+                else:
 
-                loc_name = name_world_clear(9)
-                if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
-                    checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
-                    if Utils.get_settings()["nsmbw_settings"].debug_mode:
-                        print(f"You collected a check for completing {level_name}")
+                    loc_name = name_world_clear(9)
+                    if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
+                        checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
+                        if Utils.get_settings()[nsmbw_settings].debug_mode:
+                            print(f"You collected a check for completing {level_name}")
+        else:
+            self.game_interface.set_bowser_unlocked(True)
 
         self.locations_handled += checked_locations
         return checked_locations
@@ -1679,13 +1676,13 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
                 await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
 
     def match_server_state(self):
-        if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
+        if Utils.get_settings()[nsmbw_settings].collect_level == 0:
             return
         if self.game_interface.memory_addresses is None:
             return
 
         skipp_levels = []
-        if Utils.get_settings()["nsmbw_settings"].collect_level == 1:
+        if Utils.get_settings()[nsmbw_settings].collect_level == 1:
             skipp_levels += [(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9), (8, 9)]
         for world_num in range(1, 8 + 1):
             if self.unlocked_worlds[world_num - 1] <= 1:
@@ -1744,6 +1741,8 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
     def log_color(self, text: str, color: str = "red") -> None:
         text_msg : JSONMessagePart= {"type": "color","text":text,"color": color}
+        assert text
+        assert text is not None
 
         if self.ui:
             #self.ui.print_json([text_msg])
@@ -1757,12 +1756,12 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
     def get_dolphin_run_command(self, save_state_file = "") -> List[str]:
         if Utils.is_windows:
-            dolphin_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_folder) / "Dolphin.exe"
+            dolphin_path = Path(Utils.get_settings()[nsmbw_settings].dolphin_folder) / "Dolphin.exe"
             assert dolphin_path.exists(), "dolphin.exe needs to be correct"
             return [str(dolphin_path)]
 
         elif Utils.is_macos:
-            dolphin_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_exe)
+            dolphin_path = Path(Utils.get_settings()[nsmbw_settings].dolphin_exe)
             assert dolphin_path.exists(), "dolphin.exe needs to be correct"
             return [str(dolphin_path)]
 
@@ -1792,9 +1791,9 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
         try:
             self.connection_pause = time.time() + 999
 
-            auto_start_riivolution: bool = get_settings()["nsmbw_settings"].auto_start_riivolution
-            auto_load: bool = get_settings()["nsmbw_settings"].auto_load
-            input_iso_path: str = get_settings()["nsmbw_settings"].game_file_path
+            auto_start_riivolution: bool = get_settings()[nsmbw_settings].auto_start_riivolution
+            auto_load: bool = get_settings()[nsmbw_settings].auto_load
+            input_iso_path: str = get_settings()[nsmbw_settings].game_file_path
 
             assert input_iso_path is not None, "Add a path to your game file in host.yaml"
             assert Path(input_iso_path).exists(), "Your game file path is invalid"
@@ -1806,28 +1805,38 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
             assert self.patcher.shortcut_path.exists(), "need to have created shortcut successfully"
 
-            if dolphin_interface_client.assert_no_running_dolphin():
-                if auto_start_riivolution or override:
-                    if ((Path(get_settings()['nsmbw_settings'].save_file_path) / "nsmbw_saves" / f"{self.seed_name}.json").exists()) and auto_load:
-                        rii_path = self.patcher.output_path.parent.parent.parent
-                        save_state_file = rii_path / "StateSaves" / f"{self.patcher.region}.s0{self.save_slot}"
-                        subprocess.Popen(self.get_dolphin_run_command(str(save_state_file)) + [
-                            "-e", str(self.patcher.shortcut_path),
-                            "-s", str(save_state_file),
-                            ],
-                        env=Utils.env_cleared_lib_path(),
-                        )
-                    else:
-                        subprocess.Popen(self.get_dolphin_run_command() + [
-                            "-e", str(self.patcher.shortcut_path),
-                            ],
-                            env=Utils.env_cleared_lib_path(),
-                        )
-                    self.connection_pause = time.time() + 15
-            else:
+            if not dolphin_interface_client.assert_no_running_dolphin():
                 message = "Failed to auto start dolphin, make sure you don't have any dolphin windows open. Autostart required for loading the riivolution to patch correctly."
-                #messagebox("Did NOT auto start dolphin", message, True)
                 self.log_color(message,"red")
+                self.connection_pause = 0
+                return
+
+            if auto_start_riivolution or override:
+                result : Any
+                if ((Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves" / f"{self.seed_name}.json").exists()) and auto_load:
+                    rii_path = self.patcher.output_path.parent.parent.parent
+                    save_state_file = rii_path / "StateSaves" / f"{self.patcher.region}.s0{self.save_slot}"
+                    result = subprocess.Popen(self.get_dolphin_run_command(str(save_state_file)) + [
+                        "-e", str(self.patcher.shortcut_path),
+                        "-s", str(save_state_file),
+                        ],
+                    env=Utils.env_cleared_lib_path(),
+                    )
+                else:
+                    result = subprocess.Popen(self.get_dolphin_run_command() + [
+                        "-e", str(self.patcher.shortcut_path),
+                        ],
+                        env=Utils.env_cleared_lib_path(),
+                    )
+                self.connection_pause = time.time() + 15
+                if result.returncode == 0:
+                    return
+                elif result.returncode is None:
+                    return
+                else:
+                    logger.info(f"Exited with return code {result.returncode}")
+                    logger.info(f"Error from starting dolphin: {result.stderr}")
+
 
         except Exception as e:
             async_start(self.disconnect(False))
@@ -1838,15 +1847,23 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
     def detect_dolphin_settings(self):
         try:
-            settings_path = Path(Utils.get_settings()["nsmbw_settings"].dolphin_riivolution_folder).parent.parent / "Config"
+            if is_windows:
+                settings_path = Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder).parent.parent / "Config"
+            else:
+                settings_path = Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder).parent.parent / "config" / "dolphin-emu"
+                if not settings_path.exists():
+                    settings_path = Path(os.environ['HOME']) / ".config" / "dolphin-emu"
+
             assert settings_path.exists(), f"path {settings_path} does not exist"
 
             Dolphin = settings_path / "Dolphin.ini"
+            assert Dolphin.exists(), f"Dolphin.ini does not exist"
+
             config = ConfigParser()
             config.read(Dolphin)
 
 
-            RAMOverrideEnable = config.getboolean("Core", "RAMOverrideEnable")
+            RAMOverrideEnable : bool = config.getboolean("Core", "RAMOverrideEnable",fallback=False)
             if RAMOverrideEnable == True:
                 message = f"Dissable RAMOverrideEnable (mem1 and mem2) in your advanced dolphin settings for the client too hook properly"
                 self.log_color(message)
@@ -1857,8 +1874,9 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             #    config.write(configfile)
 
         except Exception as e:
-            logger.info(traceback.format_exc())
+            #logger.info(traceback.format_exc())
             self.log_color(str(e))
+            logger.info(f"You can ignore this error if you are sure RAMOverrideEnable is disabled in your dolphin settings")
         return True
 
     async def send_random_hint(self):

@@ -167,7 +167,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             logger.info(
                 f"Modifier {self.ctx.current_mod} with time left {self.ctx.current_mod_end_time - time.time()}.")
         else:
-            if not Utils.get_settings()["nsmbw_settings"].debug_mode:
+            if not Utils.get_settings()[nsmbw_settings].debug_mode:
                 logger.info(f"No type active")
             else:
                 logger.info(
@@ -176,6 +176,8 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_refresh_mod(self):
         """clear activ and future modifiers, also clears once that have been permanently activated from incorrect use of save-states"""
+        if self.ctx.game_interface.memory_addresses is None:
+            return
         Utils.async_start(self.ctx.modifier_removal())
         logger.info(f"Successfully refreshed all modifiers")
 
@@ -325,56 +327,73 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         Changes the collection level setting in host.yaml, is constant for all multiworld.
         """
         assert value in ["0", "1", "2"], "Allowed values are 0, 1 or 2"
-        Utils.get_settings()["nsmbw_settings"]["collect_level"] = value
+        Utils.get_settings()[nsmbw_settings]["collect_level"] = value
+        get_settings().save()
 
     def _cmd_toggle_auto_start_riivolution(self):
         """
         Toggles the auto open setting in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["nsmbw_settings"]["auto_start_riivolution"] ^= True
+        Utils.get_settings()[nsmbw_settings]["auto_start_riivolution"] ^= True
         logger.info(f"Auto open: {Utils.get_settings()['nsmbw_settings']['auto_start_riivolution']}")
+        get_settings().save()
 
     def _cmd_toggle_auto_load(self):
         """
         Toggles the auto load setting in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["nsmbw_settings"]["auto_load"] ^= True
+        Utils.get_settings()[nsmbw_settings]["auto_load"] ^= True
         logger.info(f"Auto load: {Utils.get_settings()['nsmbw_settings']['auto_load']}")
+        get_settings().save()
 
     def _cmd_toggle_auto_save(self):
         """
         Toggles the auto save setting in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["nsmbw_settings"]["auto_save"] ^= True
+        Utils.get_settings()[nsmbw_settings]["auto_save"] ^= True
         logger.info(f"Auto save: {Utils.get_settings()['nsmbw_settings']['auto_save']}")
+        get_settings().save()
 
     def _cmd_toggle_auto_save_savestates(self):
         """
         Toggles the auto_save_savestates in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["nsmbw_settings"]["auto_save_savestates"] ^= True
+        Utils.get_settings()[nsmbw_settings]["auto_save_savestates"] ^= True
         logger.info(f"Auto Save Savestates: {Utils.get_settings()['nsmbw_settings']['auto_save_savestates']}")
+        get_settings().save()
 
     def _cmd_toggle_auto_close(self):
         """
         Toggles the auto close setting in host.yaml, is constant for all multiworld.
         """
-        Utils.get_settings()["nsmbw_settings"]["auto_close"] ^= True
+        Utils.get_settings()[nsmbw_settings]["auto_close"] ^= True
         logger.info(f"Auto close: {Utils.get_settings()['nsmbw_settings']['auto_close']}")
+        get_settings().save()
 
 
     def _cmd_reprompt_gamefile(self):
         """Repromt for selecting game file"""
-        NSMBWSettings.GameFilePath.browse(NSMBWSettings.game_file_path)
+        #get_settings()['nsmbw_settings']['game_file_path'] = None
+        #set_obj =
+        #logger.info(f"new game_file_path = {get_settings()['nsmbw_settings']['game_file_path']}")
+        #NSMBWSettings.GameFilePath.browse(NSMBWSettings.game_file_path)
+        #NSMBWSettings.GameFilePath.browse(get_settings()['nsmbw_settings']['game_file_path'])
+        get_settings()['nsmbw_settings']['game_file_path'] = NSMBWSettings.GameFilePath.browse(NSMBWSettings.game_file_path)
+        get_settings().save()
+        logger.info(f"new game_file_path = {get_settings()['nsmbw_settings']['game_file_path']}\n"
+                    f"You may need to restart your client for this to work")
+
 
     def _cmd_repromt_dolphin(self):
         """Repromt the asking for dolphin directory"""
         if is_windows:
-            NSMBWSettings.DolphinFolder.browse(NSMBWSettings.dolphin_folder)
+            get_settings()['nsmbw_settings']['dolphin_folder'] = NSMBWSettings.DolphinFolder.browse(NSMBWSettings.dolphin_folder)
         else:
-            NSMBWSettings.DolphinExe.browse(NSMBWSettings.dolphin_exe)
-            NSMBWSettings.DolphinTool.browse(NSMBWSettings.dolphin_tool)
-        NSMBWSettings.DolphinRiivolutionFolder.browse(NSMBWSettings.dolphin_riivolution_folder)
+            get_settings()['nsmbw_settings']['dolphin_exe'] = NSMBWSettings.DolphinExe.browse(NSMBWSettings.dolphin_exe)
+            get_settings()['nsmbw_settings']['dolphin_tool']  =NSMBWSettings.DolphinTool.browse(NSMBWSettings.dolphin_tool)
+        get_settings()['nsmbw_settings']['dolphin_riivolution_folder'] = NSMBWSettings.DolphinRiivolutionFolder.browse(NSMBWSettings.dolphin_riivolution_folder)
+        get_settings().save()
+
 
     def _cmd_force_hook(self) -> None:
         """Force restart the Dolphin hook process (unhook + fresh re-hook), runs 30 times"""
@@ -383,7 +402,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
     def _cmd_match_server_state(self):
         """Syncs your in game completion to the archipelago multiservers completed locations"""
-        if Utils.get_settings()["nsmbw_settings"].collect_level == 0:
+        if Utils.get_settings()[nsmbw_settings].collect_level == 0:
             logger.info(
                 f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
         self.ctx.match_server_state()
@@ -448,7 +467,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
         logger.info(f"You have collected {coins} out of {req}")
 
-    # if Utils.get_settings()["nsmbw_settings"].debug_mode:
+    # if Utils.get_settings()[nsmbw_settings].debug_mode:
     def _cmd_whatis(self, name):
         """Prints where a location has been rando to"""
         try:
@@ -478,7 +497,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_print_settings(self):
         """Prints your settings, useful for debuging"""
         logger.info(f"SETTINGS")
-        set_obj = Utils.get_settings()["nsmbw_settings"]
+        set_obj = Utils.get_settings()[nsmbw_settings]
         data = ""
         for attr in set_obj:
             data += f"{attr}: {set_obj[attr]} \n"

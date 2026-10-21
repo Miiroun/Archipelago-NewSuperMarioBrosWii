@@ -41,7 +41,7 @@ def get_dolphin_path_windows() -> str:
         return "Dolphin-x64"
 
 class NSMBWSettings(settings.Group):
-    settings_key = "nsmbw_settings"
+    settings_key = nsmbw_settings
 
     class GameFilePath(settings.FilePath):
         """A path to your game file, that ends with either .iso or .wbfs but NOT .nkit.iso"""
@@ -55,6 +55,7 @@ class NSMBWSettings(settings.Group):
             file_ending = path.split(".")[-1]
             if file_ending not in ["iso", "wbfs"]:
                 raise Exception(f"Invalid file extension {file_ending}")
+            assert Path(path).exists()
 
         # this code overwrites default in setting
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:
@@ -132,9 +133,6 @@ class NSMBWSettings(settings.Group):
     class AutoCloseGame(settings.Bool):
         """Enable if you want to close the game automatically"""
 
-    class SaveFileLocation(settings.OptionalUserFolderPath): #Local
-        """A path that the nsmbw client uses to store data about saves"""
-
 
     class CollectLevel(settings.IntEnum):
         """
@@ -194,7 +192,6 @@ class NSMBWSettings(settings.Group):
     debug_mode : DebugMode | bool = not is_nsmbwapworld_frozen()
 
     collect_level : CollectLevel  = CollectLevel(1)
-    save_file_path : SaveFileLocation  = SaveFileLocation("nsmbw")
     allow_gen_impactful_settings : AllowGenDiffSettings | bool = not is_nsmbwapworld_frozen()
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
     dolphin_instance_override : DolphinInstanceOverride | bool= False
