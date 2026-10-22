@@ -242,9 +242,9 @@ def create_regular_locations(world: NSMBWworld) -> None:
             blocks = get_block_id(*level)
             for i in range(1, len(blocks) + 1):
                 name = name_block_sanity(*level, i)
-                if name in []: # this code is for selecting which types of blocks that are enabled
-                    continue
-                loc = get_location_names_with_ids([])
+                #if name in []: # this code is for selecting which types of blocks that are enabled
+                #    continue
+                loc = get_location_names_with_ids([name])
                 world.get_region(name_base(*level)).add_locations(loc, NSMBWLocation)
 
 

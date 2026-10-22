@@ -17,24 +17,28 @@
 - Publish in nsmbw thread
 - forward to apworld-news
 
-# General weirdness
+## General weirdness
 - Why sometimes invisible world map
 
-# Tips to devs
+## Tips to devs
 - Have 2 branches when working on new big feature, so can put out smaller bugfixes until its finished.
 
-# Playtesting
+## Playtesting
 - Only developed on Windows
 - Have test on WSL (Windows subsystem linux) and it at least boots
 
-# Fill errors
+## Fill errors
 - Are cause my magical deamons
-- Free starting locations tends to alleviate issues, with current setup it clears 10_000 generations of fuzzer without fail if it can add starting locations when some options are turned off.
 
-
-# Why not riivolution patch build from kamek?
-- Because I dont have the skill and understanding of how it / c++ works
-- and I want to simplify setup with only one set, and I think I need some form of external memory monitoring
+## Release schedule
+- Run unit tests
+- Run fuzzer (at least x1000)
+- run build_nsmbw.bat
+  - ensure all steps succeed
+- Playtest one playthrough yourself
+  - Get outside help to playtest
+- Test on frozen
+- Test on Linux
 
 
 # Resources

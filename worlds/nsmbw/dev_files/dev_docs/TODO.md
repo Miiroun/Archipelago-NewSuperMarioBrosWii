@@ -3,6 +3,8 @@
 - Work on FINAL MOVMENETS : so REACT can start on block logic ? 
 - you should be able to also swap the icon on the menu
 - In a future update will it be possible to beat W9 to unlock Bowser?
+- i think ideally we would set up the options to basically be Blocksanity, then have the option to include ?-Blocks, Brick Blocks, Hidden Blocks (this one disabled by default) and roulette blocks, and then extra options using those such as disabling moving blocks, blocks in secret areas/rooms, etc.
+  - so to me id probably say 2 list doing it this way
 
 
 

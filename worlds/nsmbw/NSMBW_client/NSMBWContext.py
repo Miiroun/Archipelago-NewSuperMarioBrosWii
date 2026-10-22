@@ -1649,9 +1649,8 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
 
         if len(set_checked_locations) != 0:
             assert True, "Should check that locations are valid"
-            await self.check_locations(list(set_checked_locations))
-            #await self.send_msgs([{"cmd": "LocationChecks", "locations": list(set_checked_locations)}])
-            self.prev_sent_locations |= set_checked_locations
+
+            self.prev_sent_locations |= await self.check_locations(list(set_checked_locations))
 
     async def update_death_link(self, death_link: bool):
         """Helper function to set Death Link connection tag on/off and update the connection if already connected."""
