@@ -1,0 +1,18 @@
+name: Fuzz apworld
+on:
+  push:
+  pull_request:
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Eijebong/ap-actions/fuzz@main
+        with:
+          apworld-path: worlds/nsmbw
+          ap-version: 'latest' # Can also be "latest" to always get the latest, stable release of AP.
+          python-version: '3.13'
+          runs: 500 # This is optional
+          yamls-per-run: 1 # This is optional
+          meta: fuzz_meta.yaml # This is optional
+          dump-ignored: false # This is optional
