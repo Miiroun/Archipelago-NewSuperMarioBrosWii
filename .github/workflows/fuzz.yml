@@ -14,5 +14,5 @@ jobs:
           python-version: '3.13'
           runs: 500 # This is optional
           yamls-per-run: 1 # This is optional
-          meta: fuzz_meta.yaml # This is optional
+          meta: "../fuzz_meta.yaml" # This is optional
           dump-ignored: false # This is optional
