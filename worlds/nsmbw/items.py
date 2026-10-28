@@ -17,7 +17,7 @@ ITEM_NAME_TO_ID = {
     ITEM.ProgressiveWorld : 104,
     ITEM.GlitchedLogic : 199
 }
-ITEM_NAME_GROUPS = {}
+ITEM_NAME_GROUPS : Dict[str, Set[str]] = {}
 
 # Items should have a defined default classification.
 # In our case, we will make a dictionary from item name to classification.

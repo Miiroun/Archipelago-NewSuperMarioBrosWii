@@ -324,6 +324,30 @@ class NSMBWworld(World):
         self.shuffled_level_order = slot_data["shuffled_level_order"]
 
 
+    def extend_hint_information(self, hint_data: Dict[int, Dict[int, str]]):
+        """
+        Fill in additional entrance information text into locations, which is displayed when hinted.
+        structure is {player_id: {location_id: text}} You will need to insert your own player_id.
+        """
+        pass
+
+        local_hint_data : Dict[int, str] = {}
+
+        for i in range(1,HINTMOVIE_COUNT):
+            local_hint_data.update({self.location_name_to_id[name_hintmovie(i)] : "Peach castle"})
+
+        for level in LEVELS:
+            for level_part_name in self.location_name_groups[f"{name_base(*level)} Everything"]:
+                local_hint_data.update({self.location_name_to_id[level_part_name] : name_base(*level_randoed(self.shuffled_level_order, *level))})
+
+        for i in range(1,1000):
+            local_hint_data.update({self.location_name_to_id[name_inventory(i)] : "Toad houses, World enemies"})
+
+
+        hint_data.update({self.player : local_hint_data})
+
+
+
 
     def get_logical_path(self, target_name: str, state: CollectionState) -> list[JSONMessagePart]:
         return []
@@ -364,20 +388,20 @@ class NSMBWworld(World):
 
     @staticmethod
     def map_page_index(data: str) -> int:
-        data_dict = {
-            "World1" : 0,
-            "World2": 1,
-            "World3": 2,
-            "World4": 3,
-            "World5": 4,
-            "World6": 5,
-            "World7": 6,
-            "World8": 7,
-            "World9": 8,
-        }
-        try:
-            return data_dict[data]
-        except KeyError:
+        map_order = [
+            "World1",
+            "World2",
+            "World3",
+            "World4",
+            "World5",
+            "World6",
+            "World7",
+            "World8",
+            "World9",
+        ]
+        if data in map_order:
+            return map_order.index(data) + 1
+        else:
             return 0
 
 

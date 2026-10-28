@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 # We will have a lookup from location name to ID here that, in world.py, we will import and bind to the world class.
 # Even if a location doesn't exist on specific options, it must be present in this lookup.
 LOCATION_NAME_TO_ID = {}
-LOCATION_NAME_GROUPS = {}
+LOCATION_NAME_GROUPS : Dict[str, Set[str]] = {}
 
 
 
