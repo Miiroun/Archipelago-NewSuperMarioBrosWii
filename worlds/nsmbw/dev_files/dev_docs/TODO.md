@@ -6,7 +6,6 @@
 - i think ideally we would set up the options to basically be Blocksanity, then have the option to include ?-Blocks, Brick Blocks, Hidden Blocks (this one disabled by default) and roulette blocks, and then extra options using those such as disabling moving blocks, blocks in secret areas/rooms, etc.
   - so to me id probably say 2 list doing it this way
 - Make coin world level shuffle an option
-- assert no ciso
 - ask for fuzzer hook the compares output across generation
 - run fuzzer profiler hook
 - dynamically extract and change our pop tracker pack???

@@ -54,8 +54,11 @@ class NSMBWSettings(settings.Group):
 
             file_ending = path.split(".")[-1]
             if file_ending not in ["iso", "wbfs"]:
-                raise Exception(f"Invalid file extension {file_ending}")
+                raise ValueError(f"Invalid file extension {file_ending}")
             assert Path(path).exists()
+
+            if "ciso" in path:
+                raise ValueError(f"Invalid game file, do not use a 'ciso' file, they don't work properly.")
 
         # this code overwrites default in setting
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:
