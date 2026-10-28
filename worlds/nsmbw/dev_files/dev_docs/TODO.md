@@ -10,7 +10,8 @@
 - run fuzzer profiler hook
 - dynamically extract and change our pop tracker pack???
   - ask UT for supporting python code instead of lua?
-- fix fuzzer cl
+- ask to connect to broken world
+- update to mention ut 0.3.8
 
 
 
@@ -27,13 +28,6 @@
 - goomba extinction is not implemented
 - mario is invincible on the world map
 - doesn't show errors when disconnecting on a failed dolphin hook
-- goal hint movies broken
-- PAL clear location
-  - think the problem is with my get world_num, level_num function
-- Disconnects when enter peach castle
-  - takes too long ?
-  - is it because we send out hinting? 
-  - -> test on archipelago.gg
 - Some levels (in world3) does not get marked as completed when you beat a level
   - issue is caused by having dolphin open for a long time??
 - world1 -> 1-1 rule is set at 2 points, but starcoin_requirement_world_unlock is not acounted for the second time

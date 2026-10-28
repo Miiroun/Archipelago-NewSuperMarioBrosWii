@@ -557,6 +557,13 @@ class LevelShuffleEnemyAmbushes(Toggle):
     Shuffles the enemy ambush stages
     """
 
+class LevelShuffleCoinWorld(Toggle):
+    """
+    Shuffles the World-Coin levels into the normal level pool
+    will remove 5 levels at random to replace them
+    """
+
+    default = True
 
 class LevelShuffleRemove(OptionList):
     """
@@ -752,6 +759,7 @@ class NSMBWOptions(PerGameCommonOptions):
     level_shuffle : LevelShuffle
     level_shuffle_boss_lock : LevelShuffleBossLock
     level_shuffle_enemy_ambushes : LevelShuffleEnemyAmbushes
+    level_shuffle_coin_world  : LevelShuffleCoinWorld
     level_shuffle_plando : LevelShufflePlando
     level_shuffle_remove : LevelShuffleRemove
 
@@ -840,6 +848,7 @@ option_groups = [
         [
             LevelShuffle,
             LevelShufflePlando,
+            LevelShuffleCoinWorld,
             LevelShuffleEnemyAmbushes,
             LevelShuffleBossLock,
             LevelShuffleRemove,
@@ -980,6 +989,11 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         if world.options.world_unlock.value != WorldUnlock.option_unlocked:
             world.options.world_unlock.value = WorldUnlock.option_unlocked
             print("(NSMBW generation warning) entrance_randomizer require world_unlock set to unlocked")
+
+    if world.options.level_shuffle_coin_world.value == False:
+        world.options.level_shuffle_remove.value.extend(
+            reversed([name_base(10, i) for i in range(1,5+1)])
+        )
 
     for i in range(min(5, len(world.options.level_shuffle_remove.value))):
         world.options.level_shuffle_plando.value.update({

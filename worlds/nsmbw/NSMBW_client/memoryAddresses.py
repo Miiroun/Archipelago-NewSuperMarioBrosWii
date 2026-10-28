@@ -153,7 +153,8 @@ class MemoryAddresses(object):
         self.red_coin_timer_pointer     = self.map_between("E2", 0x8042a078)
         self.red_coin_amount_pointer    = self.map_between("E2", 0x80429f10)
 
-        self.current_position_on_map = self.map_between("E2", 0x815e48a8)
+        self.current_position_on_map = self.hard_code({"E2" :  0x815e48a8})
+        #self.map_between("E2", 0x815e48a8)
         #0x15 = Fortress 0x17 = Castle 0x19 = Green Toad House 0x1a, 1c = Red Toad House 0x1b = Yellow Toad House 0x23 = Cannon 0x26 = Arrow Spot 0x28 = Peach's Castle 0xfffffffe = Moving on slope 0xffffffff = "Free Movement" Path
 
 
