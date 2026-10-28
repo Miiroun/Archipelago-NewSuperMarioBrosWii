@@ -5,14 +5,44 @@
 - In a future update will it be possible to beat W9 to unlock Bowser?
 - i think ideally we would set up the options to basically be Blocksanity, then have the option to include ?-Blocks, Brick Blocks, Hidden Blocks (this one disabled by default) and roulette blocks, and then extra options using those such as disabling moving blocks, blocks in secret areas/rooms, etc.
   - so to me id probably say 2 list doing it this way
+- Make coin world level shuffle an option
+- assert no ciso
+- ask for fuzzer hook the compares output across generation
+- run fuzzer profiler hook
+- Remove blocksanity from docs
+- dynamically extract and change our pop tracker pack???
+  - ask UT for supporting python code instead of lua?
+- extend_hint_information
+- move most auto save features to instead trigger on screen transition
 
 
 
 ## Playtest
+- if level clears are sending on eu rev1 || with level shuffle disabled
+- extend_hint_information
+- accessibility of levels
 
 
 
 ## Bugs to fix
+- random power up giving fill inventory
+  - the condition that checks witch powerups is unlocked isn't perfect
+- goomba extinction is not implemented
+- mario is invincible on the world map
+- doesn't show errors when disconnecting on a failed dolphin hook
+- goal hint movies broken
+- PAL clear location
+  - think the problem is with my get world_num, level_num function
+- Disconnects when enter peach castle
+  - takes too long ?
+  - is it because we send out hinting? 
+  - -> test on archipelago.gg
+- Some levels (in world3) does not get marked as completed when you beat a level
+  - issue is caused by having dolphin open for a long time??
+- world1 -> 1-1 rule is set at 2 points, but starcoin_requirement_world_unlock is not acounted for the second time
+- I think I found a possible bug in v0.4.1.  Death Trap works now, but Time Trap, Gravity Trap, Reverse Control and even Low Gravity don't work.  In handle_modifiers(), it looks like handle_modifiers_add() only runs when an existing modifier expires.  Could this prevent new modifiers from starting when none is active?  I also tested /get_mod, which returned "No type active".  Could you take a look? Thanks!
+- enter peach castle causes issues
+- 7-Castle is accessible when it shouldn't be
 
 
 
@@ -198,6 +228,10 @@ These 2 yaml restraints fixes most of fuzzing errors, especially `starcoin_requi
   - keep levels in same world
   - scale by difficulty
 - Nsmbw: checkpoint item unique for each level?
+
+
+## Breaking changes
+- Im wondering if it makes more sense to call the secret exit items "Secret Exit Path" instead of just "Secret Exit"
 
 
 
