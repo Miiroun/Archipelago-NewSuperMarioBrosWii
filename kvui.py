@@ -684,11 +684,10 @@ class HintLabel(RecycleDataViewBehavior, MDBoxLayout):
                 if child.collide_point(*touch.pos):
                     key = child.sort_key
                     if key == "status":
-                        parent.hint_sorter = lambda element: status_sort_weights[element["status"]["hint"]["status"]]
+                        parent.hint_sorter = lambda element: element["status"]["hint"]["status"]
                     else:
-                        parent.hint_sorter = lambda element: (
-                            remove_between_brackets.sub("", element[key]["text"]).lower()
-                        )
+                        parent.hint_sorter = \
+                            lambda element: remove_between_brackets.sub("", element[key]["text"]).lower()
                     if key == parent.sort_key:
                         # second click reverses order
                         parent.reversed = not parent.reversed
@@ -1381,6 +1380,8 @@ class KivyJSONtoTextParser(JSONtoTextParser):
         for name, code in color_codes.items():
             color_codes[name] = getattr(colors, name, code)
         self.color_codes = color_codes
+        self.theme_style = colors.theme_style
+        self.primary_palette = colors.primary_palette
         super().__init__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
