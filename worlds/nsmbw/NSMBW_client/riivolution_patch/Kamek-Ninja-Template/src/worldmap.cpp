@@ -49,7 +49,7 @@ bool IsCourseOmoteClear(int param_1, int param_2)
 
 
 
-kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
+kmBranchDefCpp(0x800fae70, 0x800faeb0, bool)
 {
     register int param_1_copy;
     register int param_2_copy;
@@ -60,8 +60,8 @@ kmBranchDefCpp(0x800fae70, 0x800faeb0, bool, int param_1, int param_2)
     }
 
 
-    volatile int world = (param_1 & 0xffU)+1;
-    volatile int level = (param_2 & 0xffU)+1;
+    volatile int world = (param_1_copy & 0xffU)+1;
+    volatile int level = (param_2_copy & 0xffU)+1;
 
     register int world_unlocked_tmp;
     register int level_unlock;

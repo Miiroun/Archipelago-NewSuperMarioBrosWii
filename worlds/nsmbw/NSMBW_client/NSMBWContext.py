@@ -7,7 +7,7 @@ from . import dolphin_interface_client
 from .NSMBWCommandProcessor import NSMBWCommandProcessor
 from .NSMBWInterface import *
 from .patcher import Patcher
-from ..options import HintMovieShopPriceLogic, AlternativeGoal, BlockSanity, WorldUnlock
+from ..options import HintMovieShopPriceLogic, AlternativeGoal, BlockSanity, WorldUnlock, RandomizePowerups
 from ..Common import *
 from .. import NSMBWworld, locations
 
@@ -470,12 +470,9 @@ class NSMBWContext(SuperContext):
 
         self.game_interface.update_check_sum()
         if (time.time() >= self.save_time + 60 * 1) and Utils.get_settings()[nsmbw_settings].auto_save:
-            self.save_time = time.time()
             await self.handle_screen_transition()
-            self.match_server_state()
             await self.handle_save()
-            if self.current_mod == "":
-                await self.modifier_removal()
+
 
         await self.ut_auto_tab()
         await self.game_interface.patch_runtime_on_load() # unsure where to put this, just needs to run once, but good if does multiple times if not applied correctly
@@ -495,6 +492,7 @@ class NSMBWContext(SuperContext):
 
 
     async def handle_save(self):
+        self.save_time = time.time()
         get_settings().save()
         if self.username is None:
             logger.info("Connect to sever before saving")
@@ -597,7 +595,7 @@ class NSMBWContext(SuperContext):
                     await self.send_goal()
 
             case AlternativeGoal.option_hintmovies:
-                if len(set(name_hintmovie(hm_num) for hm_num in range(HINTMOVIE_COUNT)) - set(DEPRIO_HM) - self.checked_locations) == 0:
+                if len(set([name_hintmovie(hm_num) for hm_num in range(1, HINTMOVIE_COUNT+1)]) - set(DEPRIO_HM) - self.checked_locations) == 0:
                     await self.send_goal()
 
             case AlternativeGoal.option_levels:
@@ -1145,18 +1143,17 @@ class NSMBWContext(SuperContext):
         if (not self.game_interface.is_in_level() ) or (self.game_interface.get_world_level_num_in_level() == (0,0)):
             return
 
-        unlocked_powerups = self.unlocked_powerups.copy()
         for player_num in range(PLAYER_COUNT):
             current_powerup_state = self.game_interface.get_powerupstate(player_num)
 
             # this if statement makes powerup progresive
             if self.slot_data["randomize_powerups"] >=1:
                 if self.slot_data["randomize_powerups"] == 1:
-                    unlocked_powerups[0] = 1
+                    self.unlocked_powerups[0] = 1
                 elif self.slot_data["randomize_powerups"] == 2:
-                    if (unlocked_powerups[0] == 0) and (sum(unlocked_powerups) >= 1):
-                        unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
-                        unlocked_powerups[0] = 1
+                    if (self.unlocked_powerups[0] == 0) and (sum(self.unlocked_powerups) >= 1):
+                        self.unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
+                        self.unlocked_powerups[0] = 1
 
                 if bytes_to_int(current_powerup_state) > POWERUP_COUNT:
                     continue
@@ -1169,18 +1166,18 @@ class NSMBWContext(SuperContext):
                     print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
                     continue
 
-                if unlocked_powerups[current_pow_index] != 0: # check if current powerup isnt unlocked
+                if self.unlocked_powerups[current_pow_index] != 0: # check if current powerup isnt unlocked
                     continue
 
                 # this runs if not powerup unlocked
                 logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
                 if self.prev_powerup[player_num] == b'\x00': # need to handle this case seperatlly to not crash the next
                     self.game_interface.set_powerupstate(b'\x00', player_num)
-                elif unlocked_powerups[bytes_to_int(self.prev_powerup[player_num]) - 1] == 0: #check if previous powerup is unlocked
+                elif self.unlocked_powerups[bytes_to_int(self.prev_powerup[player_num]) - 1] == 0: #check if previous powerup is unlocked
                     self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)  # set mario to previous sate, if unlocked
                 else:
                     # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
-                    if unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
+                    if self.unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
                         self.game_interface.set_powerupstate(b'\x00', player_num) # set mario to small
                     else:
                         self.game_interface.set_powerupstate(b'\x01', player_num) # set mario to super mario
@@ -1319,15 +1316,21 @@ class NSMBWContext(SuperContext):
                 case ITEM.FILLER.PowerUp:
                     if not self.game_interface.is_in_level():
                         continue
-                    if sum(self.unlocked_powerups) == 0:
+                    if (sum(self.unlocked_powerups) == 0) and (self.slot_data["randomize_powerups"] != RandomizePowerups.option_off):
                         self.filler.remove(item_name)
                         self.filler.append(ITEM.FILLER.FillInventory)
+                        logger.info(f"No powerups unlocked so gives fill inventory instead of PowerUp.")
                         continue
                     for player_num in range(PLAYER_COUNT):
 
                         unlocked_indexes = [i for i in range(2,POWERUP_COUNT)]
+                        for i in unlocked_indexes:
+                            if self.unlocked_powerups[i] == 0:
+                                unlocked_indexes.remove(i)
+                                continue
 
-                        self.game_interface.set_powerupstate(int_to_bytes(self.random.randint(2,POWERUP_COUNT),1) , player_num) # from 2 since dont want to set to normal or super mario
+
+                        self.game_interface.set_powerupstate(int_to_bytes(self.random.choice(unlocked_indexes),1) , player_num) # from 2 since dont want to set to normal or super mario
 
                 case ITEM.FILLER.SuperSpeed:
                     self.modifiers.append(Modifier(ITEM.FILLER.SuperSpeed, 90))
@@ -1383,9 +1386,9 @@ class NSMBWContext(SuperContext):
                         "Once upon a time ... there was plummer ... name ... Mario.",
                         "Once upon a time ... there was plummer ... name ... Luigi.",
                         """
-Everyone knows Mario is cool as f--k. But who knows what he's thinking? Who knows why he crushes turtles? And why do we think about him as fondly as we think of the mystical (nonexistent?) Dr Pepper? Perchance.
-I believe it was Kant who said "Experience without theory is blind, but theory without experience is mere intellectual play." Mario exhibits experience by crushing turts all day, but he exhibits theory by stating "Lets-a go!" Keep it up, baby!
-When Mario leaves his place of safety to stomp a turty, he knows that he may Die. And yet, for a man who can purchase lives with money, a life becomes a mere store of value. A tax that can be paid for, much as a rich man feels any law with a fine is a price. We think of Mario as a hero,but he is simply a one percenter of a more privileged variety. The lifekind. Perchance.
+                        Everyone knows Mario is cool as f--k. But who knows what he's thinking? Who knows why he crushes turtles? And why do we think about him as fondly as we think of the mystical (nonexistent?) Dr Pepper? Perchance.
+                        I believe it was Kant who said "Experience without theory is blind, but theory without experience is mere intellectual play." Mario exhibits experience by crushing turts all day, but he exhibits theory by stating "Lets-a go!" Keep it up, baby!
+                        When Mario leaves his place of safety to stomp a turty, he knows that he may Die. And yet, for a man who can purchase lives with money, a life becomes a mere store of value. A tax that can be paid for, much as a rich man feels any law with a fine is a price. We think of Mario as a hero,but he is simply a one percenter of a more privileged variety. The lifekind. Perchance.
                         """,
                         "The alphabet is a b c d e f h i j k l m n o p q r s t u v w z y z, excpet Which one was missing?"
                         # g
@@ -1507,10 +1510,9 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
             self.game_interface.set_boss_health(max(10 - self.boss_health, 1))
 
     async def handle_modifiers(self, text : bool = True):
-        now = time.time()
-        if now > self.current_mod_end_time and self.current_mod != "":
+        if time.time() > self.current_mod_end_time and self.current_mod != "":
             self.handle_modifiers_clear(text)
-            self.handle_modifiers_add(text)
+        self.handle_modifiers_add(text)
 
     def handle_modifiers_clear(self, text=True):
         match self.current_mod:
@@ -1604,6 +1606,8 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
         #    pass
         #self.match_server_state()
         await self.ut_auto_tab()
+        self.game_interface.patch_runtime = False  # make these functions rerun
+        self.match_server_state()
 
 
         if self.game_interface.is_in_menu():
@@ -1887,7 +1891,7 @@ When Mario leaves his place of safety to stomp a turty, he knows that he may Die
         # hints for all hint movies
         if self.slot_data["hint_hint_movies"]:
             if self.slot_data["hint_movie_sanity"]:
-                loc = set([3000 + i for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
+                loc = set([NSMBWworld.location_name_to_id[name_hintmovie(i)] for i in set(range(1, HINTMOVIE_COUNT + 1)) - set(DEPRIO_HM)])
 
                 if len(loc - self.locations_info.keys() - self.locations_scouted - self.checked_locations)> 0: # test if sent hint before
                     Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": list(loc), "create_as_hint": 2}]))

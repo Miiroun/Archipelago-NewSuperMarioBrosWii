@@ -62,19 +62,20 @@ class DolphinClient:
 Dolphin Connection error, following these debug tips, in this order:
       1) New Super Mario Bros Wii is running in the dolphin emulator.
       2) You dont have multiple instances of dolphin open (except your ONE game library).
-      3) If you are on macOS you will need re-sign dolphin. The procedure is described here: https://github.com/aldelaro5/dolphin-memory-engine#macos-code-signing
-      4) Assert Memory Override (MEM1 and MEM2) is disabled. Dolphin -> Settings -> Advanced -> Emulated Memory Size Override.
-      5) You do not have any cheat-codes enabled: e.g. gecko and ar codes.
-      6) Ensure that RetroAchievements is disabled in Dolphin (under Tools > Achievements, uncheck Enable RetroAchievements.org Integration).
-      7) Change the Fallback Region in Dolphin (under Options > Configuration > General), set it to NTSC-U.
-      8) Restart your PC.
-      9) Assert your dolphin emulator is recent (newer than 2026.1)
-      10) You have not renamed the dolphin exe and are not running on a fork of dolphin.
-      11) Enable MMU in Dolphin -> Settings -> Advanced -> Enable MMU.
-      12) Reset you dolphin settings Dolphin -> Settings -> Advanced -> Reset All Settings.
-      13) Test running the client in administrator mode. (By right-clicking your archipelago launcher -> run as administrator.)
-      14) Look at https://github.com/randovania/py-dolphin-memory-engine/issues?q=is%3Aissue to see if your issue matches any recorded about dme.
-      15) Ask for help in the NSMBW discord, with a screenshot of `/versions`, your log file from /archipelago/logs/nsmbw client_XXXXX and as much additional details as possible.
+      3) Try running the client command '/force_hook'
+      4) If you are on macOS you will need re-sign dolphin. The procedure is described here: https://github.com/aldelaro5/dolphin-memory-engine#macos-code-signing
+      5) Assert Memory Override (MEM1 and MEM2) is disabled. Dolphin -> Settings -> Advanced -> Emulated Memory Size Override.
+      6) You do not have any cheat-codes enabled: e.g. gecko and ar codes.
+      7) Ensure that RetroAchievements is disabled in Dolphin (under Tools > Achievements, uncheck Enable RetroAchievements.org Integration).
+      8) Change the Fallback Region in Dolphin (under Options > Configuration > General), set it to NTSC-U.
+      9) Restart your PC.
+      10) Assert your dolphin emulator is recent (newer than 2026.1)
+      11) You have not renamed the dolphin exe and are not running on a fork of dolphin.
+      12) Enable MMU in Dolphin -> Settings -> Advanced -> Enable MMU.
+      13) Reset you dolphin settings Dolphin -> Settings -> Advanced -> Reset All Settings.
+      14) Test running the client in administrator mode. (By right-clicking your archipelago launcher -> run as administrator.)
+      15) Look at https://github.com/randovania/py-dolphin-memory-engine/issues?q=is%3Aissue to see if your issue matches any recorded about dme.
+      16) Ask for help in the NSMBW discord, with a screenshot of `/versions`, your log file from /archipelago/logs/nsmbw client_XXXXX and as much additional details as possible.
 """)
             logger.info(error_mess)
             time.sleep(3)

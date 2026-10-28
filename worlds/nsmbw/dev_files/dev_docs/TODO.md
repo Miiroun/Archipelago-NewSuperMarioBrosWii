@@ -9,11 +9,8 @@
 - assert no ciso
 - ask for fuzzer hook the compares output across generation
 - run fuzzer profiler hook
-- Remove blocksanity from docs
 - dynamically extract and change our pop tracker pack???
   - ask UT for supporting python code instead of lua?
-- extend_hint_information
-- move most auto save features to instead trigger on screen transition
 
 
 
@@ -21,12 +18,12 @@
 - if level clears are sending on eu rev1 || with level shuffle disabled
 - extend_hint_information
 - accessibility of levels
+- FILLER.PowerUp
+- goal hint movie
 
 
 
 ## Bugs to fix
-- random power up giving fill inventory
-  - the condition that checks witch powerups is unlocked isn't perfect
 - goomba extinction is not implemented
 - mario is invincible on the world map
 - doesn't show errors when disconnecting on a failed dolphin hook

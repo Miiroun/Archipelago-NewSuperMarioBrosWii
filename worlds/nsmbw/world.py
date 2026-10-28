@@ -334,7 +334,7 @@ class NSMBWworld(World):
         local_hint_data : Dict[int, str] = {}
 
         for i in range(1,HINTMOVIE_COUNT):
-            local_hint_data.update({self.location_name_to_id[name_hintmovie(i)] : "Peach castle"})
+            local_hint_data.update({self.location_name_to_id[name_hintmovie(i)] : "Peach's Castle"})
 
         for level in LEVELS:
             for level_part_name in self.location_name_groups[f"{name_base(*level)} Everything"]:
