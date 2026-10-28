@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="NSMBW Client Test" type="tests" factoryName="Autodetect">
+    <module name="Archipelago-main" />
+    <option name="ENV_FILES" value="" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <option name="SDK_HOME" value="" />
+    <option name="WORKING_DIRECTORY" value="" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <option name="DEBUG_JUST_MY_CODE" value="false" />
+    <option name="RUN_TOOL" value="" />
+    <option name="_new_additionalArguments" value="&quot;&quot;" />
+    <option name="_new_target" value="&quot;worlds.nsmbw.NSMBW_client.test_client&quot;" />
+    <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+    <method v="2" />
+  </configuration>
+</component>
