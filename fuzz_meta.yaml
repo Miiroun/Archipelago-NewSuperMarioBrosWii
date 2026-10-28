@@ -7,7 +7,7 @@ NSMBW: #
   world_comp_priority : false
   #world_unlock : separate
   #level_unlock : vanilla
-  #level_completion : true
+  level_completion : true # this is needed for consistent clear, otherwise ~ 2% failure
   #level_shuffle : true
   #hint_movie_sanity  : false
   #alternative_goal : bowser

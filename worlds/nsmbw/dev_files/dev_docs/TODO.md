@@ -10,6 +10,7 @@
 - run fuzzer profiler hook
 - dynamically extract and change our pop tracker pack???
   - ask UT for supporting python code instead of lua?
+- fix fuzzer cl
 
 
 
