@@ -442,14 +442,14 @@ class NSMBWworld(World):
         "map_page_index": map_page_index,
 
         "item_page_item_layouts": [
-            ItemLayoutSection(name="Worlds", items=ITEM.Groups.Worlds.value),
-            ItemLayoutSection(name="Everything", items="Everything"),
-            ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups.value),
-            ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks.value),
+            {"name":"Worlds", "items":ITEM.Groups.Worlds.value},
+            {"name":"Everything", "items":"Everything"},
+            {"name":"Powerups", "items":ITEM.Groups.Powerups.value},
+            {"name":"Unlocks", "items":ITEM.Groups.Unlocks.value},
         ],
         "map_page_item_layouts_left": [
-            ItemLayoutSection(name="Powerups", items=ITEM.Groups.Powerups.value),
-            ItemLayoutSection(name="Unlocks", items=ITEM.Groups.Unlocks.value),
+            {"name":"Powerups", "items":ITEM.Groups.Powerups.value},
+            {"name":"Unlocks", "items":ITEM.Groups.Unlocks.value},
         ],
     }
 
