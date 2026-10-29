@@ -54,6 +54,9 @@ class TestWorld7(WorldBase):
         "starting_world": 7
     }
 
+    def test_levels(self) -> None:
+        self.assertFalse(self.world.get_location(name_level(7, 9)).can_reach(self.multiworld.state))
+
 
 class TestWorld8(WorldBase):
     options = WorldBase.options | {

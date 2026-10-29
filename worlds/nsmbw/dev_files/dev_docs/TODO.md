@@ -7,17 +7,16 @@
   - so to me id probably say 2 list doing it this way
 - Make coin world level shuffle an option
 - ask for fuzzer hook the compares output across generation
-- run fuzzer profiler hook
 - dynamically extract and change our pop tracker pack???
   - ask UT for supporting python code instead of lua?
 - ask to connect to broken world
 - update to mention ut 0.3.8
+- ask for fuzzer help with our macguffins
+- ask for help reading prof file
 
 
 
 ## Playtest
-- if level clears are sending on eu rev1 || with level shuffle disabled
-- extend_hint_information
 - accessibility of levels
 - FILLER.PowerUp
 - goal hint movie
@@ -30,10 +29,9 @@
 - doesn't show errors when disconnecting on a failed dolphin hook
 - Some levels (in world3) does not get marked as completed when you beat a level
   - issue is caused by having dolphin open for a long time??
-- world1 -> 1-1 rule is set at 2 points, but starcoin_requirement_world_unlock is not acounted for the second time
-- I think I found a possible bug in v0.4.1.  Death Trap works now, but Time Trap, Gravity Trap, Reverse Control and even Low Gravity don't work.  In handle_modifiers(), it looks like handle_modifiers_add() only runs when an existing modifier expires.  Could this prevent new modifiers from starting when none is active?  I also tested /get_mod, which returned "No type active".  Could you take a look? Thanks!
-- enter peach castle causes issues
-- 7-Castle is accessible when it shouldn't be
+- fails global mutation on settings
+- returning to 6-5 on the map after dying softlocks - the game is still running like normal but mario isn't on screen and controller input is disabled. closing game+client and reopening fixes it. apworld 0.4.1, game is us ver2.
+
 
 
 

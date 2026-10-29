@@ -18,31 +18,6 @@ from .Utils import cast_object_to_type
 from .items import NSMBWItem
 from .locations import NSMBWLocation, shuffle_level_order, pos_to_level_name, level_name_to_pos
 
-class ItemLayoutSection:
-    name: str
-    items: list[str]
-    orientation: Literal["tb", "lr"]
-    cols: int
-    rows: int
-    item_size: tuple[int, int]
-    item_width: int
-    item_height: int
-
-    def __init__(self, name: str, items: str | list[str],
-                 orientation: Literal["tb", "lr"] = "lr",
-                 cols: int = 5, rows: int = -1,
-                 item_size: tuple[int, int] = (48,48)):
-        self.name = name
-        if isinstance(items, str):
-            self.items = [ items ]
-        else:
-            self.items = items
-        self.orientation = orientation
-        self.cols = cols
-        self.rows = rows
-        self.item_size = item_size
-        self.item_width = item_size[0]
-        self.item_height = item_size[1]
 
 collection_map_no_toad : Dict [str, int] = {}
 collection_map_general : Dict [str, int] = {}

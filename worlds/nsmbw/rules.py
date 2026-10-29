@@ -69,6 +69,17 @@ def set_level_entrance_rules(world: "NSMBWworld") -> None:
                     _rule &= bowser_starcoin_rules & bowser_world_clear_rule & bowser_level_clear_rule
 
                 if (org_lev_num == 0) or (world.options.level_unlock.value == LevelUnlock.option_all_unlocked):
+                    amount: int = world.options.starcoin_requirement_world_unlock.value[str(world_num)]
+                    _rule &= Has(ITEM.StarCoin, count=amount)
+                    match world.options.world_unlock.value:
+                        case WorldUnlock.option_single | WorldUnlock.option_separate:
+                            _rule &= Has(name_world_unlock(world_num))
+                        case WorldUnlock.option_progressive:
+                            _rule &= Has(ITEM.ProgressiveWorld, world_num)
+                        case WorldUnlock.option_unlocked:
+                            pass
+                        case _:
+                            raise ValueError(world.options.world_unlock.value)
                     world.set_rule(world.get_entrance(f"World{world_num}->{name_base(con_randod_world_num, con_randod_level_num)}"),_rule)
                 else:
                     world.set_rule(world.get_entrance(f"{name_base(org_randod_world_num, org_randod_level_num)}->{name_base(con_randod_world_num, con_randod_level_num)}"),_rule )

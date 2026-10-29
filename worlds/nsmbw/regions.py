@@ -73,19 +73,7 @@ def connect_regions(world: NSMBWworld) -> None:
                                                           f"{name_base(world_num,level_num)} internal level connection")
 
     for world_num in range(1,9+1):
-        amount : int = world.options.starcoin_requirement_world_unlock.value[str(world_num)]
-        _rule = rules.True_()
-        match world.options.world_unlock.value:
-            case WorldUnlock.option_single | WorldUnlock.option_separate:
-                _rule &= rules.Has(name_world_unlock(world_num))
-            case WorldUnlock.option_progressive:
-                rules.Has(ITEM.ProgressiveWorld, world_num)
-            case WorldUnlock.option_unlocked:
-                pass
-            case _:
-                raise ValueError(world.options.world_unlock.value)
-        _rule &= rules.Has(ITEM.StarCoin, count=amount)
-        menu_region.connect(world.get_region(f"World{world_num}"), f"menu->World{world_num}", _rule)
+        menu_region.connect(world.get_region(f"World{world_num}"), f"menu->World{world_num}")
         for org_lev_num, con_levels in enumerate(connections[world_num-1]):
             for con_lev_num in con_levels:
                 assert type(con_lev_num) == int, "should be an integer"
