@@ -446,6 +446,7 @@ class FolderPath(Path):
         from Utils import open_directory
         res = open_directory(f"Select {self.description or self.__class__.__name__}", self)
         if res:
+            self.validate(res)
             try:
                 rel = os.path.relpath(res, self.__class__("").resolve())
                 if not rel.startswith(".."):
