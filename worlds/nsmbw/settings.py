@@ -206,9 +206,9 @@ class NSMBWSettings(settings.Group):
         dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(os.path.join(os.environ['APPDATA'], "Dolphin Emulator", "Load", "Riivolution"))
 
     elif Utils.is_macos:
-        dolphin_exe  : DolphinExe = DolphinExe(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Dolphin")
-        dolphin_tool : DolphinTool = DolphinTool(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "DolphinTools")
-        dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(Path(r"~") / "Library" / "Application Support" / "Dolphin" / "Load" / "Riivolution")
+        dolphin_exe  : DolphinExe = DolphinExe(Path(os.path.expanduser('~')) / "Library" / "Application Support" / "Dolphin" / "Dolphin")
+        dolphin_tool : DolphinTool = DolphinTool(Path(os.path.expanduser('~')) / "Library" / "Application Support" / "Dolphin" / "DolphinTools")
+        dolphin_riivolution_folder : DolphinRiivolutionFolder = DolphinRiivolutionFolder(Path(os.path.expanduser('~')) / "Library" / "Application Support" / "Dolphin" / "Load" / "Riivolution")
 
     elif Utils.is_linux:
         keypress_library: KeypressLibrary  = KeypressLibrary(0)

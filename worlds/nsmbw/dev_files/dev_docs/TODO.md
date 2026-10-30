@@ -13,6 +13,7 @@
 - update to mention ut 0.3.8
 - ask for fuzzer help with our macguffins
 - ask for help reading prof file
+- macOS
 
 
 

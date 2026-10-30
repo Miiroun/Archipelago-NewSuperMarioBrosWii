@@ -1,6 +1,7 @@
 # New Super Mario Bros Wii Archipelago Randomizer Setup Guide
 
 ## Software
+- A PC Running Windows or Linux (macOS will not work) 
 - [Archipelago V0.6.7](https://github.com/ArchipelagoMW/Archipelago/releases/latest) 
 - [Dolphin emulator](https://dolphin-emu.org/download/) (minimum 2503)
 - [NSMBW AP-World](https://github.com/Miiroun/Archipelago-NewSuperMarioBrosWii/releases/latest)
