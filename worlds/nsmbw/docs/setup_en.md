@@ -31,7 +31,7 @@
 1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
 2) You will be promoted for the location of your dolphin install if they are not located automatically. 
    - You can change their values later on in `host.yaml`. BE CAREFUL use `/` or `\\` NOT `\` as path separators.
-   - Linux only: On Desbian distros like Fedora and Arch users (including SteamOS) you have to install `dolphin-emu-tool` separate from dolphin. It is included in the ´flat-pak´ version.
+   - Linux only: If you are NOT using the Flatpak dolphin installation, you'll have to install `dolphin-emu-tool` separate from dolphin.
 3) Enter your connection details and press `CONNECT` in the client.
    - Do NOT have dolphin open before and during this step.
 4) The game will now open automatically.
@@ -40,7 +40,7 @@
 5) Select `SAVEFILE 2` to play on.
 6) Play the game: Beat levels and collect star coins. Prepare to beat bowser once and for all.
 7) See the quirks section in [en_NSMBW.md](../docs/en_NSMBW.md) for quirks with the implementation.
-7) Save in game to save progress. You can also use savestates but be carful loading them
+8) Save in game to save progress. You can also use savestates but be carful loading them
    - To close the client run `/exit` to make sure everything is saved correctly.
 
 

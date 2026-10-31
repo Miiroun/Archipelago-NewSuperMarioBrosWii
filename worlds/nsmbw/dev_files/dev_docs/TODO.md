@@ -16,11 +16,14 @@
 
 
 ## Playtest
+- also when i grab a powerup i dont have while having another powerup i dont get it back (ex: i have penguin suit and grab a fire flower it just makes me big instead of penguin) 
+- is lose powerup trap supposed to give you a mushroom when you are small?
 
 
 
 ## Bugs to fix
 - doesn't show errors when disconnecting on a failed dolphin hook
+- due to match_server_state secret exits show up as completed
 
 
 

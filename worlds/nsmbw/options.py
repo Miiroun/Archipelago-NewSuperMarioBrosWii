@@ -463,7 +463,7 @@ class AmountSupportReceived(Range):
 
 class FillerItems(OptionCounter):
     """
-    Select which filler items and in which ration to be generated.
+    Select which filler items and in which ratio to be generated.
     """
     display_name = "Filler Items"
     valid_keys = set(FILLER)
@@ -472,7 +472,7 @@ class FillerItems(OptionCounter):
 
 class TrapItems(OptionCounter):
     """
-    Select which trap items and in which ration to be generated.
+    Select which trap items and in which ratio to be generated.
     """
     display_name = "Trap Items"
     valid_keys = set(TRAPS)
@@ -537,7 +537,7 @@ class LevelShuffle(Choice):
 
 class LevelShuffleBossLock(Choice):
     """
-    Wherther too allow boss levels to be freely placed or for they to stay in their vanilla placements (just shuffled around)
+    Whether to allow boss levels to be freely placed or for they to stay in their vanilla placements (just shuffled around)
     nolock : Places no restriction on level placement
     lock_types : Airships to airships, castles to castles, towers to towers
     lock_positions : Towers, Castles and Airships

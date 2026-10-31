@@ -1172,28 +1172,29 @@ class NSMBWContext(SuperContext):
                         self.unlocked_powerups = [0 for _ in range(len(POWERUP_UNLOCK))]
                         self.unlocked_powerups[0] = 1
 
-                if bytes_to_int(current_powerup_state) > POWERUP_COUNT:
+                if bytes_to_int(current_powerup_state) > POWERUP_COUNT: # check if does valid read
                     continue
 
                 if current_powerup_state == b'\x00': # check if small mario
                     continue
 
-                current_pow_index = bytes_to_int(current_powerup_state) - 1
+                current_pow_index   = bytes_to_int(current_powerup_state) - 1
+                previous_pow_index  = bytes_to_int(self.prev_powerup[player_num]) - 1
                 if  not (0 <= current_pow_index < len(POWERUP_UNLOCK)):
                     print(f"Something is wrong with reading powerup state, {current_pow_index} is not valid, with state {current_powerup_state}.")
                     continue
 
-                if self.unlocked_powerups[current_pow_index] != 0: # check if current powerup isnt unlocked
+                if self.unlocked_powerups[current_pow_index] != 0: # check if current powerup is unlocked
                     continue
 
                 # this runs if not powerup unlocked
                 logger.info(f"You have not unlocked {POWERUP_UNLOCK[current_pow_index]}.")
-                if self.prev_powerup[player_num] == b'\x00': # need to handle this case seperatlly to not crash the next
+                if self.prev_powerup[player_num] == b'\x00': # need to handle this case separately to not crash the next
                     self.game_interface.set_powerupstate(b'\x00', player_num)
-                elif self.unlocked_powerups[bytes_to_int(self.prev_powerup[player_num]) - 1] == 0: #check if previous powerup is unlocked
-                    self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)  # set mario to previous sate, if unlocked
+                elif self.unlocked_powerups[previous_pow_index] != 0: #check if previous powerup is unlocked
+                    self.game_interface.set_powerupstate(self.prev_powerup[player_num], player_num)  # set mario to previous state, if unlocked
                 else:
-                    # this checks so not big mario, which would result in power úp not going away if took damage without it unlocked
+                    # this checks so not super mario, which would result in power-up not going away if took damage without it unlocked
                     if self.unlocked_powerups[0] == 0: # this makes so if collect powerup but big mario is unlocked turns mario big else small
                         self.game_interface.set_powerupstate(b'\x00', player_num) # set mario to small
                     else:
@@ -1383,7 +1384,7 @@ class NSMBWContext(SuperContext):
                     logger.info("What happened to your power up?")
                     for player_num in range(PLAYER_COUNT):
                         curr_pow = self.game_interface.get_powerupstate(player_num)
-                        if curr_pow != b'\x01':
+                        if curr_pow not in [b'\x00', b'\x01']:
                             self.game_interface.set_powerupstate(b'\x01', player_num)
                         else:
                             self.game_interface.set_powerupstate(b'\x00', player_num)

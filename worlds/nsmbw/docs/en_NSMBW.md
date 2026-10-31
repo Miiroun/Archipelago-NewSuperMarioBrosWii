@@ -145,15 +145,10 @@ Among them are alternative to the keyboard library for Linux, and which slot to 
   - None US2: Inventory powerups
   - EU1: Movement (dont turn on)
   - US1: Star and swim movement (add these to don't rando moves if you have movement rando on)
-- On Linux, if you disabled `use_riivolution` will you have to use the external tools Xdotools or Ydotools, selectable in `host.yaml`.
-- Climb movement have issues, you can't leve vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
+- Climb unlock have issues, you can't leave vine without climb and through other ways can climb sometimes softlocks you. You solve this with the /kill command. 
 - Deathlink problems:
   - If not received, try running `/kill`, if this does not work, make sure you have changed the dolphin settings in the set-up guide.
   - Run `/deathlink_debug` or `/debug` (0.3.0) to get information about its current state and post this information in the archipelago discord.
-- Dolphin doesn't autostart: make sure dolphin is your default program for opening iso / wbfs files. 
-- Music shuffle can cause crashes when you reach some parts of the game. To fix this deleate the `Sounds` directory from `Dolphin Emulator\Load\Riivolution\nsmbw_ap_<seedname>\Sounds` 
-- If the client does not auto make savestates (This causes issues with deathlink, movement, etc): Make sure the dolphin settings are correct according to the set-up docs. If you use linux try switch the libraries used by changing the setting in host.yaml.
-- Multiple things can mess with the nsmbw cache stored in the temp folder. To fix them run `/rm_tmp` to clear the temp folder and all riivolution patches. (This will NOT remove your savefiles) .
 - If the games error on patching, try running the command `/rm_tmp`.
 
 
@@ -177,12 +172,6 @@ What is different from vanilla?
 - Peach's castle hint movie shop requires starcoin items
 - You need world items to unlock both half of worlds
 
-What does the different names mean? <br>
-&emsp; 1-T is the Tower in world 1, 1-🏯 <br>
-&emsp; 2-C is the Castle in world 2, 2-🏰 <br>
-&emsp; 3-G is the Ghost house in world 3, 3-🏚️ <br>
-&emsp; 4-A is the Airship in world 4, 4-🚢, 4-⚓ <br>
-&emsp; C-1 is the fist coin level, Coin-1, 🪙-1 <br>
 
 Tracker? <br>
 &emsp; A basic implementation of Universal tracker, see setup_en.md for instructions. It has an internal location and item tracker.
