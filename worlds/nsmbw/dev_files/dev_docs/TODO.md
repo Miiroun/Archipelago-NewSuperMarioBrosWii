@@ -5,33 +5,23 @@
 - In a future update will it be possible to beat W9 to unlock Bowser?
 - i think ideally we would set up the options to basically be Blocksanity, then have the option to include ?-Blocks, Brick Blocks, Hidden Blocks (this one disabled by default) and roulette blocks, and then extra options using those such as disabling moving blocks, blocks in secret areas/rooms, etc.
   - so to me id probably say 2 list doing it this way
-- Make coin world level shuffle an option
 - ask for fuzzer hook the compares output across generation
-- dynamically extract and change our pop tracker pack???
-  - ask UT for supporting python code instead of lua?
-- ask to connect to broken world
-- update to mention ut 0.3.8
 - ask for fuzzer help with our macguffins
 - ask for help reading prof file
-- macOS
+- icons
+  - time
+  - boss healf
+  - world unlocked icons
 
 
 
 ## Playtest
-- accessibility of levels
-- FILLER.PowerUp
-- goal hint movie
 
 
 
 ## Bugs to fix
-- goomba extinction is not implemented
-- mario is invincible on the world map
 - doesn't show errors when disconnecting on a failed dolphin hook
-- Some levels (in world3) does not get marked as completed when you beat a level
-  - issue is caused by having dolphin open for a long time??
-- fails global mutation on settings
-- returning to 6-5 on the map after dying softlocks - the game is still running like normal but mario isn't on screen and controller input is disabled. closing game+client and reopening fixes it. apworld 0.4.1, game is us ver2.
+
 
 
 
@@ -113,6 +103,10 @@
 - Rename raw rules to rule_data?
 - fix webp alpha images not loading
 - Maybe create custom kivy tab for launching game
+- map page move around levels for level shuffel
+  - dynamically extract and change our pop tracker pack???
+  - ask UT for supporting python code instead of lua?
+  - change internal UT??
 
 
 ## Tracker impovmentes
@@ -218,6 +212,11 @@ These 2 yaml restraints fixes most of fuzzing errors, especially `starcoin_requi
   - keep levels in same world
   - scale by difficulty
 - Nsmbw: checkpoint item unique for each level?
+- Skip file selection : load directly into the game
+- macOS
+  - doesnt have dolphin tools : have to recompile myself?
+  - need a mac VM
+
 
 
 ## Breaking changes
@@ -254,6 +253,8 @@ These 2 yaml restraints fixes most of fuzzing errors, especially `starcoin_requi
 - I understand for the ones that are just jingles, but a lot of others like the world map themes wouldn't loop if they were put in a level
 - sometimes freeze after paus menu
   - after loading savestate when the riivo patch have been redone
+- returning to 6-5 on the map after dying softlocks - the game is still running like normal but mario isn't on screen and controller input is disabled. closing game+client and reopening fixes it. apworld 0.4.1, game is us ver2.
+- fails global mutation on settings
 
 
 Summery poll

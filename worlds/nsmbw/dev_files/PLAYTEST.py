@@ -12,20 +12,29 @@ from Main import main as ERmain
 
 multiworld = ERmain(erargs, seed)
 
-main_client = Path(__file__).parent.parent / "NSMBW_client" / "main_client.py"
-subprocess.Popen (
+#main_client = Path(__file__).parent.parent / "NSMBW_client" / "main_client.py"
+#subprocess.Popen (
+#    [
+#            "py", "-3.13", "-m", "worlds.nsmbw.NSMBW_client.main_client",
+#            #"--name", "m",
+#            "--connect", "m:@localhost:38281"
+#    ],
+#    cwd =  Path(__file__).parent.parent.parent.parent,
+#)
+
+#multiworld_args = MultiServer.parse_args()
+#multiworld_args.multidata = output_path(f"AP_{multiworld.seed_name}.zip")
+#asyncio.run(MultiServer.main(multiworld_args))
+
+subprocess.Popen(
     [
-            "py", "-3.13", "-m", "worlds.nsmbw.NSMBW_client.main_client",
-            #"--name", "m",
-            "--connect", "m:@localhost:38281"
+            "py", "-3.13", "-m", "MultiServer",
+            output_path(f"AP_{multiworld.seed_name}.zip"),
     ],
+
     cwd =  Path(__file__).parent.parent.parent.parent,
+    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NEW_CONSOLE,
 )
 
-multiworld_args = MultiServer.parse_args()
-multiworld_args.multidata = output_path(f"AP_{multiworld.seed_name}.zip")
-asyncio.run(MultiServer.main(multiworld_args))
-
-
-#from ..NSMBW_client.main_client import launch_NSMBW_client
-#launch_NSMBW_client("--name", "m","--connect", "localhost:38281")
+from ..NSMBW_client.main_client import launch_NSMBW_client
+launch_NSMBW_client("--name", "m","--connect", "localhost:38281")

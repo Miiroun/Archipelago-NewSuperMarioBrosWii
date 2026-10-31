@@ -86,23 +86,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if (f"DeathLink{self.ctx.death_link_group}" in self.ctx.tags) ^ (self.ctx.death_link_enabled):  # xor ?
             logger.info(f"there is a missmatch between group and tags, please report this")
 
-    def _cmd_start(self):
-        """
-        starts game
-        """
-        if self.ctx.username is None:
-            logger.info(f"Connect before auto start")
-            return
-        async_start(self.ctx.patch_and_run_game(True))
-
-    def _cmd_reapply_checks(self):
-        """
-        Do this command if some checks haven't been applied because of wrong cache.
-        """
-        self.ctx.locations_handled = []
-        self.ctx.handled_num = 0
-        self.ctx.prev_sent_locations = set()
-
     if DEBUG_MODE():
         def _cmd_clear(self, key: str = ""):
             """
@@ -198,14 +181,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
         # self.ctx.handle_load()
 
-    def _cmd_starcoins(self):
-        """
-        Returns the amount of star coin items sent to client.
-        """
-        if self.ctx.username is None:
-            logger.info(f"Not connecterd")
-            return
-        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['goal_starcoin_unlock']} for goaling")
 
     def _cmd_worlds_unlocked(self):
         """
@@ -216,25 +191,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             mess += f"World{world_num} has been received {self.ctx.unlocked_worlds[world_num - 1]} times \n"
         logger.info(mess)
 
-    def _cmd_completed_worlds(self):
-        """
-        Returns the amount of worlds that are considered completed.
-        """
-        if self.ctx.username is None:
-            logger.info(f"Not connecterd")
-            return
-        completed_worlds = sum(
-            [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in [1,2,3,4,5,6,7,9]])
-        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['goal_world_unlock']} worlds for goaling.")
-
-    def _cmd_completed_levels(self):
-        """
-        Returns the amount of levels that are considered completed.
-        """
-        if self.ctx.username is None:
-            logger.info(f"Not connecterd")
-            return
-        logger.info(f"{self.ctx.get_count_levels_cleared()} / {self.ctx.slot_data['goal_level_unlock']} levels completed for goaling ")
 
     def _cmd_goal(self):
         """
@@ -254,9 +210,11 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
                 logger.info(f"Your goal is all levels.")
             case _:
                 raise NotImplementedError
-        self._cmd_starcoins()
-        self._cmd_completed_worlds()
-        self._cmd_completed_levels()
+        logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['goal_starcoin_unlock']} for goaling")
+        completed_worlds = sum(
+            [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in [1,2,3,4,5,6,7,9]])
+        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['goal_world_unlock']} worlds for goaling.")
+        logger.info(f"{self.ctx.get_count_levels_cleared()} / {self.ctx.slot_data['goal_level_unlock']} levels completed for goaling ")
 
     def _cmd_kill(self):
         """
@@ -400,28 +358,13 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         # this command is inspired by  https://github.com/toent/Archipelago-MKWii/blob/main/worlds/mkwii/MKWii%20Client/mkwii_client.py#L107
         Utils.async_start(self.ctx.game_interface.force_hook())
 
-    def _cmd_match_server_state(self):
-        """Syncs your in game completion to the archipelago multiservers completed locations"""
-        if Utils.get_settings()[nsmbw_settings].collect_level == 0:
-            logger.info(
-                f"For this command to work you need to chage you collect_level setting, you can do this with /change_collection_level")
-        self.ctx.match_server_state()
-
-    def _cmd_clear_inventory(self):
-        """Clears your inventory of powerups (except 5).
-        Useful if you want to grind inventory_powerups but have a full inventory"""
-        for pow_num in range(1, POWERUP_COUNT + 2):
-            current_pow = bytes_to_int(self.ctx.game_interface.get_inventory_items(pow_num))
-            set_pow = int_to_bytes(min(current_pow, 5), 1)
-            self.ctx.game_interface.set_inventory_items(set_pow, pow_num)
-
-        logger.info(f"Successfully cleared your inventory of powerups")
 
     def _cmd_change_save_state_slot(self, slot):
         """Changes the save state slot used for saving data."""
         num = int(slot)
         assert 1 <= num <= 8
         self.ctx.save_slot = num
+
 
     def _cmd_rm_tmp(self):
         """Delete all files used for creating the patch files (including all created patches, but not save data) and other temporary files."""
@@ -430,42 +373,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
 
         logger.info(f"Successfully deleted all temporary files.")
 
-    def _cmd_get_time(self):
-        """Prints how much time you have recived"""
-        if self.ctx.username is None:
-            logger.info("Connect to server before running /get_time")
-        elif self.ctx.slot_data["randomize_time"] != 0:
-            logger.info(
-                f" You have unlocked {self.ctx.time}/{self.ctx.slot_data['randomize_time']}, which is {self.ctx.time / self.ctx.slot_data['randomize_time'] * 500} mario seconds")
-        else:
-            logger.info("Time rando is disabled")
-
-    def _cmd_boss_health(self):
-        """Prints how much boss health you have recived"""
-        if self.ctx.username is None:
-            logger.info("Connect to server before running /get_time")
-        elif self.ctx.slot_data["boss_health"] != 0:
-            logger.info(
-                f" You have unlocked {self.ctx.boss_health}/{9} items which means a boss takes {10 - self.ctx.boss_health} hits to kill")
-        else:
-            logger.info("Boss health rando is disabled")
-
-    def _cmd_coins(self):
-        if self.ctx.game_interface.memory_addresses is None:
-            logger.info("Connect to server before running /coins")
-            return
-
-        current_coins = self.ctx.game_interface.get_coin_count()
-        coins = current_coins + self.ctx.coin_overflow
-
-        LEVEL = self.ctx.game_interface.get_world_level_num_in_level()
-        if LEVEL == (0,0):
-            logger.info(f"Not in a level")
-            return
-
-        req = LevelRules[name_base(*LEVEL)].amount_coins
-
-        logger.info(f"You have collected {coins} out of {req}")
 
     # if Utils.get_settings()[nsmbw_settings].debug_mode:
     def _cmd_whatis(self, name):
@@ -528,7 +435,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
     def _cmd_get_error(self):
         """Prints latest stacktrace"""
         logger.info(f"Prints latest stacktrace")
-        logger.info(traceback.format_exc())
+        logger.info(str(traceback.format_exc()))
 
     def _cmd_debug(self):
         """Runs most debug commands, please post results in the NSMBW discord thread in the archipelago discord server."""
@@ -540,7 +447,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         if self.ctx.game_interface.memory_addresses is not None:
             self.ctx.game_interface.connect_to_game()
         self._cmd_refresh_mod()
-        self._cmd_match_server_state()
         # self._cmd_reapply_checks() # send invent pow, dont run
 
         logger.info("---- Info regarding setup ----")
@@ -556,10 +462,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
         self._cmd_received()
         self._cmd_missing()
         self._cmd_unlocks()
-        self._cmd_starcoins()
         self._cmd_worlds_unlocked()
-        self._cmd_completed_worlds()
-        self._cmd_get_time()
         self._cmd_print_item_prossess_data()
 
         logger.info("---- Info regarding errors ----")

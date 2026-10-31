@@ -77,10 +77,16 @@ for i, trap in enumerate(TRAPS):
 ITEM_NAME_GROUPS.update({"Traps" : set(TRAPS)})
 
 
-for i, filler in enumerate(FILLER + UNIQUE):
+for i, filler in enumerate(FILLER):
     ITEM_NAME_TO_ID.update({filler : 501 + i})
     DEFAULT_ITEM_CLASSIFICATIONS.update({filler : ItemClassification.filler})
 ITEM_NAME_GROUPS.update({"Filler" : set(FILLER)})
+
+for i, unique in enumerate(UNIQUE):
+    ITEM_NAME_TO_ID.update({unique : 801 + i})
+    DEFAULT_ITEM_CLASSIFICATIONS.update({unique : ItemClassification.filler})
+ITEM_NAME_GROUPS.update({"UNIQUE" : set(UNIQUE)})
+
 
 DEFAULT_ITEM_CLASSIFICATIONS.update({
     #ITEM.FILLER.SuperSpeed: ItemClassification.useful,
@@ -242,7 +248,7 @@ def create_all_items(world: NSMBWworld) -> None:
     if world.options.randomize_enemies.value:
         for enemies in ENEMIES:
             if enemies in world.options.enemies_included.value:
-                unique_filler |= {enemies}
+                unique_filler.add(enemies)
 
     number_of_items = len(itempool)
     number_of_unfilled_locations = len(world.multiworld.get_unfilled_locations(world.player))
@@ -276,7 +282,6 @@ def create_all_items(world: NSMBWworld) -> None:
         world.push_precollected(world.create_item(_item))
 
 def fill_filler(world : "NSMBWworld", local_itempool):
-    from .locations import NSMBWLocation
     if world.multiworld.players == 1:
         return
 

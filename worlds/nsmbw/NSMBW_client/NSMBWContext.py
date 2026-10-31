@@ -1080,14 +1080,24 @@ class NSMBWContext(SuperContext):
                 if 0 in self.unlocked_worlds:
                     ind = self.unlocked_worlds.index(0)
                     self.unlocked_worlds[ind] = 1
-            elif 201 <= item_id <= 299:
+            elif item_id == 199:
+                pass
+            elif 200 <= item_id <= 299:
                 self.unlocked_worlds[item_id - 201] += 1
-            elif 301 <= item_id <= 399:
+            elif 300 <= item_id <= 399:
                 self.unlocks.append(item_name)
-            elif 601 <= item_id <= 699:
+            elif 401 <= item_id <= 499:
+                pass
+            elif 500 <= item_id <= 599:
+                pass
+            elif 600 <= item_id <= 699:
                 self.unlocked_powerups[item_id - 601] = 1
-            elif 701 <= item_id <= 799:
+            elif 700 <= item_id <= 799:
                 self.unlocked_secret_exits.append(item_name)
+            elif 800 <= item_id <= 899:
+                pass
+            else:
+                raise ValueError(f"Incompatible itemid {item_id}")
 
             if i < self.handled_num:
                 continue
@@ -1095,32 +1105,39 @@ class NSMBWContext(SuperContext):
 
             #this is processed once per item
             print(f"Item {item_name} was received from Player {network_item.player}'s location {network_item.location} ")
-
-            if item_name == ITEM.StarCoin:
-                # implement read of starcoin count and increase by one
-                print(f"A starcoin was received")
-            elif item_name == ITEM.Time:
-                print(f"A time extension was received")
-            elif item_name == ITEM.BossHealth:
-                print("Boss health recived")
-            elif item_name == ITEM.ProgressiveWorld:
-                logger.info(f"Progressive world received.")
-            elif 201 <= item_id <= 299:
+            if 100 <= item_id <= 199:
+                if item_name == ITEM.StarCoin:
+                    # implement read of starcoin count and increase by one
+                    print(f"A starcoin was received")
+                elif item_name == ITEM.Time:
+                    print(f"A time extension was received")
+                elif item_name == ITEM.BossHealth:
+                    print("Boss health recived")
+                elif item_name == ITEM.ProgressiveWorld:
+                    logger.info(f"Progressive world received.")
+                elif item_name == ITEM.GlitchedLogic:
+                    logger.info(f"You should not have the glictched item")
+                else:
+                    raise ValueError(f"Incorrect named item  {item_name}")
+            elif 200 <= item_id <= 299:
                 world_num = item_id - 200
                 if self.unlocked_worlds[world_num-1] == 1:
                     logger.info(f"Progressive world {world_num} was received.")
-            elif 301 <= item_id <= 399:
+            elif 300 <= item_id <= 399:
                 print(f"Received move {item_name} ")
-            elif 401 <= item_id <= 499:
+            elif 400 <= item_id <= 499:
                 self.filler.append(item_name)
-            elif 501 <= item_id <= 599:
+            elif 500 <= item_id <= 599:
                 self.filler.append(item_name)
-            elif 601 <= item_id <= 699:
+            elif 600 <= item_id <= 699:
                 print(f"Power-up {item_name} was received ")
-            elif 701 <= item_id <= 799:
+            elif 700 <= item_id <= 799:
                 print(f"Exit: {item_name} was received")
+            elif 800 <= item_id <= 899:
+                self.filler.append(item_name)
             else:
-                print(f"Handling for {item_name} haven't been implemented")
+                raise NotImplementedError(f"Handling for {item_name} haven't been implemented")
+
 
 
 
@@ -1316,7 +1333,7 @@ class NSMBWContext(SuperContext):
                 case ITEM.FILLER.PowerUp:
                     if not self.game_interface.is_in_level():
                         continue
-                    if (sum(self.unlocked_powerups) == 0) and (self.slot_data["randomize_powerups"] != RandomizePowerups.option_off):
+                    if (sum(self.unlocked_powerups) <= 1) and (self.slot_data["randomize_powerups"] != RandomizePowerups.option_off):
                         self.filler.remove(item_name)
                         self.filler.append(ITEM.FILLER.FillInventory)
                         logger.info(f"No powerups unlocked so gives fill inventory instead of PowerUp.")
@@ -1324,10 +1341,16 @@ class NSMBWContext(SuperContext):
                     for player_num in range(PLAYER_COUNT):
 
                         unlocked_indexes = [i for i in range(2,POWERUP_COUNT)]
-                        for i in unlocked_indexes:
-                            if self.unlocked_powerups[i] == 0:
-                                unlocked_indexes.remove(i)
+                        for i in range(len(unlocked_indexes)):
+                            if self.unlocked_powerups[i+2] == 0:
+                                unlocked_indexes.remove(i+2)
                                 continue
+
+                        if len(unlocked_indexes) == 0:
+                            self.filler.remove(item_name)
+                            self.filler.append(ITEM.FILLER.FillInventory)
+                            logger.info(f"No powerups unlocked so gives fill inventory instead of PowerUp.")
+                            continue
 
 
                         self.game_interface.set_powerupstate(int_to_bytes(self.random.choice(unlocked_indexes),1) , player_num) # from 2 since dont want to set to normal or super mario
@@ -1419,7 +1442,7 @@ class NSMBWContext(SuperContext):
                 # --------------------------UNIQUE--------------------------------------------
 
                 case ITEM.UNIQUE.GoombaExtinction:
-                    logger.info(f"All goombas are nowe extincted")
+                    logger.info(f"Goombas are now extincted, what have you done?")
                     self.game_interface.apply_patch(self.game_interface.memory_addresses.patch_goomba, False)
 
 
