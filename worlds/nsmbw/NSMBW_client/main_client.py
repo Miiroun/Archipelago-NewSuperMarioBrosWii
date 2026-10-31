@@ -8,7 +8,8 @@ from CommonClient import get_base_parser, handle_url_arg, gui_enabled, server_lo
 from .NSMBWContext import NSMBWContext, tracker_loaded, logger
 from ..Common import *
 
-def launch_NSMBW_client(*args):
+
+def launch_NSMBW_client(*args, **kwargs):
 
     Utils.init_logging("NSMBW Client")
 
@@ -50,7 +51,7 @@ def launch_NSMBW_client(*args):
     parser.add_argument('--name', default=None, help="Slot Name to connect as.") # could replace this by reading from yaml
     parser.add_argument("url", nargs="?", help="Archipelago connection url")
 
-    launch_args = handle_url_arg(parser.parse_args(args))
+    launch_args = handle_url_arg(parser.parse_args(args, **kwargs))
 
     # use colorama to display colored text highlighting on windows
     colorama.just_fix_windows_console()
