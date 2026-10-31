@@ -678,13 +678,14 @@ class LevelUnlock(Choice):
 
     default = option_vanilla
 
-class RemoveWorlds(OptionSet):
+class ExcludedWorlds(OptionSet):
     """
     If you enter a world here they will be completly removed from the seed,
     They wont have a level item and they will not be able to be unlocked
     Useful if you want a smaller multi-world
     """
-    visibility = Visibility.none
+    valid_keys = set(f"World{i}" for i in range(1,9+1))
+
 
 
 
@@ -728,7 +729,7 @@ class NSMBWOptions(PerGameCommonOptions):
     important_early_items : ImportantEarlyItems
     world_unlock : WorldUnlock
     level_unlock : LevelUnlock
-    remove_worlds : RemoveWorlds
+    excluded_worlds : ExcludedWorlds
 
     amount_support_received : AmountSupportReceived
     filler_items : FillerItems
@@ -815,7 +816,7 @@ option_groups = [
             StarcoinRequirementWorldUnlock,
             World9UnlockCondition,
             HintMovieShopPriceLogic,
-            RemoveWorlds,
+            ExcludedWorlds,
             WorldUnlock,
             LevelUnlock,
             ImportantEarlyItems,
@@ -994,6 +995,22 @@ def adjust_options(world : "NSMBWworld"): # cannot type check because circular i
         world.options.level_shuffle_remove.value.extend(
             reversed([name_base(10, i) for i in range(1,5+1)])
         )
+
+    if len(world.options.excluded_worlds.value) >= 9:
+        raise OptionError(f"(NSMBW generation error) Cannot generate with >= 9 excluded worlds")
+    elif len(world.options.excluded_worlds.value) >= 5:
+        print(f"(NSMBW generation warning) Generation failures likely with > 4 excluded worlds")
+    for world_name in world.options.excluded_worlds.value:
+        assert world_name in ExcludedWorlds.valid_keys, "invalid key in excluded_worlds"
+        world_num : int = int(world_name[-1])
+        world.options.level_shuffle_plando.value.update(
+            {name_base(world_num,level_num) : name_base(world_num,level_num) for level_num in range(1,LEVELS_PER_WORLD[world_num-1]+1)}
+        )
+
+        world.options.exclude_locations.value.update(
+            loc for loc in sorted(world.location_name_groups[f"World{world_num} Everything"])
+        )
+
 
     for i in range(min(5, len(world.options.level_shuffle_remove.value))):
         world.options.level_shuffle_plando.value.update({

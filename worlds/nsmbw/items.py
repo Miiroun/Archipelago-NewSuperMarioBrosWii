@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from BaseClasses import Item, ItemClassification, CollectionState, MultiWorld, Location, LocationProgressType
 from .Common import *
-from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer, WorldUnlock, LevelShuffle
+from .options import RandomizePowerups, ShortcutSanity, EntranceRandomizer, WorldUnlock, LevelShuffle, ExcludedWorlds
 
 if TYPE_CHECKING:
     from .world import NSMBWworld
@@ -163,7 +163,12 @@ def create_all_items(world: NSMBWworld) -> None:
     itempool: list[Item] = []
 
     if world.options.starcoin_sanity.value == True:
-        for _ in range(77*3):
+        levels = 77
+        for world_name in world.options.excluded_worlds.value:
+            assert world_name in ExcludedWorlds.valid_keys, "invalid key in excluded_worlds"
+            world_num: int = int(world_name[-1])
+            levels -= LEVELS_PER_WORLD[world_num-1]
+        for _ in range(levels*3):
             itempool.append(world.create_item(ITEM.StarCoin))
 
     if world.options.entrance_randomizer.value == EntranceRandomizer.option_off:

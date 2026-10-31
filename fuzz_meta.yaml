@@ -12,6 +12,7 @@ NSMBW: #
   #hint_movie_sanity  : false
   #alternative_goal : bowser
   starcoin_requirement_world_unlock : {}
+  excluded_worlds : {}
   goal_starcoin_unlock : 0
   goal_world_unlock : 0
   goal_level_unlock : 0

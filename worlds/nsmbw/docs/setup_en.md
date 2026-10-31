@@ -28,10 +28,6 @@
 
 
 ## How to play
-0) Verify these points before continuing your setup.
-   - In `host.yaml`, under the section `nsmbw_settings`. Make sure they are their default values `auto_open` : `false` and `auto_open_riivolution` : `true`.
-   - On macOS, you might need to [resign](https://github.com/aldelaro5/dolphin-memory-engine#macos-code-signing) your dolphin copy.
-   - If you disabled `use_riivolution` use [this](../dev_files/dev_docs/secret_options.md#how-to-play-use_riivolution-disabled) guide instead.
 1) Open the archipelago launcher (restart if it was open before) and find the NSMBW Client, open it.
 2) You will be promoted for the location of your dolphin install if they are not located automatically. 
    - You can change their values later on in `host.yaml`. BE CAREFUL use `/` or `\\` NOT `\` as path separators.
