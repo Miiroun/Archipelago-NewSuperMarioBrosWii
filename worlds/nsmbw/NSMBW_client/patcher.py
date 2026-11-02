@@ -1,3 +1,4 @@
+import math
 import random
 import xml.etree.ElementTree as ET
 import json
@@ -679,12 +680,13 @@ class Patcher:
         logger.info(f"Begin patching name: {self.name}")
         logger.info(f"output file path: {self.output_path}")
 
+        output_exists = math.isclose(size_of_folder(self.output_path),106156, rel_tol=0.1) and self.output_path.exists()
         logger.info("tests if old rando exist")
-        if self.output_path.exists() + self.shortcut_path.exists() + self.xml_path.exists()== 3:
+        if output_exists + self.shortcut_path.exists() + self.xml_path.exists()== 3:
             logger.info(f"Old rando files found, uses them instead")
             return
         else:
-            if self.output_path.exists():
+            if output_exists:
                 logger.info(f"old rando only partially exists, clears out remaining to reset it")
                 shutil.rmtree(self.output_path)
             if self.xml_path.exists():

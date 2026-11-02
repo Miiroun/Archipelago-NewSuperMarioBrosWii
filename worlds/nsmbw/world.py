@@ -375,7 +375,7 @@ class NSMBWworld(World):
             "World9",
         ]
         if data in map_order:
-            return map_order.index(data) + 1
+            return map_order.index(data)
         else:
             return 0
 

@@ -1650,7 +1650,7 @@ class NSMBWContext(SuperContext):
                 world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
                 map_key = f"{world_num-level_num}"
             elif self.game_interface.is_in_worldmap():
-                world_num, level_num = self.game_interface.get_modified_world_level_num_on_map()
+                world_num, level_num = self.game_interface.get_world_level_num_on_map()
                 map_key = f"World{world_num}"
 
             if self.previous_map_key != map_key:

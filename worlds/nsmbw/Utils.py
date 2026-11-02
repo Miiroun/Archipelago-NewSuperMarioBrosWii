@@ -75,10 +75,10 @@ def is_flatpak_installed():
             env=Utils.env_cleared_lib_path(),
         )
         if result.returncode == 0:
-            print(f"Flatpak Dolphin Tool Installation detected")
+            #print(f"Flatpak Dolphin Tool Installation detected")
             return True
 
-    print(f"Flatpak Dolphin Tool Installation NOT detected")
+    #print(f"Flatpak Dolphin Tool Installation NOT detected")
     return False
 
 def rm_game_extract():
@@ -145,3 +145,12 @@ def DEBUG_MODE() -> bool:
         #logger.info(str(e))
         DEBUG_MODE = False
     return DEBUG_MODE
+
+def size_of_folder(folder : Path) -> int:
+    if not folder.exists():
+        return 0
+    size = 0
+    for file in os.scandir(folder):
+        size += os.path.getsize(file)
+
+    return size

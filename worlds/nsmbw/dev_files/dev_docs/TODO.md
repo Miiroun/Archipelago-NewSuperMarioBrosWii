@@ -12,18 +12,26 @@
   - time
   - boss healf
   - world unlocked icons
+- updated docs / descriptions around goal locks
 
 
 
 ## Playtest
+- checkpoint image does not load on frozen 
 - also when i grab a powerup i dont have while having another powerup i dont get it back (ex: i have penguin suit and grab a fire flower it just makes me big instead of penguin) 
 - is lose powerup trap supposed to give you a mushroom when you are small?
+- new patch verify on eu
 
 
 
 ## Bugs to fix
 - doesn't show errors when disconnecting on a failed dolphin hook
 - due to match_server_state secret exits show up as completed
+- auto tab on the tracker of by one
+
+ive been having some issues where dying in certain levels locks me on the map screen (cant interact with the game) until i reset. so far this has happened in:
+2-5, 8-4, 8-5
+in all of these cases, mario does not load back to the map in the correct spot (ive been having general issues with either mario or the camera being in the wrong spot when on the map, but usually i can still interact with the game)
 
 
 
