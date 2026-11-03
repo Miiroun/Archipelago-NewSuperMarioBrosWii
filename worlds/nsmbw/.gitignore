@@ -9,16 +9,6 @@
 *.arc
 
 #dev file stuff
-/dev_files/experiment.ipynb
-/dev_files/symbols_E2_dolphin.map
-/dev_files/symbols_E2_rem_ghidra.map
-/dev_files/symbols_P1_rem_ghidra.map
-/dev_files/unused_patch_files
-/dev_files/code_based_on/
 /dev_files/riivolution_patch_data_origin/
-/dev_files/*.png
-/dev_files/*.LZ
-/dev_files/*.bin
-/dev_files/level_images/
 /dev_files/excluded/
 

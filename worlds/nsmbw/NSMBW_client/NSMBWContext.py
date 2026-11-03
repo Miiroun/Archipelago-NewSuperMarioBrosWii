@@ -374,7 +374,7 @@ class NSMBWContext(SuperContext):
                 connection_state = self.game_interface.get_connection_state()
                 self.update_connection_status(connection_state)
 
-                if (self.game_interface.memory_addresses is not None) and self.game_interface.dolphin_client.is_connected():
+                if hasattr(self.game_interface, "memory_addresses") and self.game_interface.dolphin_client.is_connected():
                     if self.game_interface.get_record_state() == b'\x04':
                         await self.game_interface.kill_player()
 
@@ -422,8 +422,8 @@ class NSMBWContext(SuperContext):
                     await asyncio.sleep(1)
                     self.match_server_state()
             else:
-                logger.info(traceback.format_exc())
-                self.log_color(f"Dolphin connection faild", "red")
+                logger.info(DEBUG_TIPS)
+                self.log_color(f"Dolphin connection failed", "red")
                 await self.disconnect(False)
                 await asyncio.sleep(10)
 
@@ -1648,10 +1648,16 @@ class NSMBWContext(SuperContext):
 
             if self.game_interface.is_in_level():
                 world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
-                map_key = f"{world_num-level_num}"
+                if (world_num, level_num) == (0, 0):
+                    return
+                map_key = name_base(world_num, level_num)
+
             elif self.game_interface.is_in_worldmap():
                 world_num, level_num = self.game_interface.get_world_level_num_on_map()
+                if (world_num, level_num) == (0, 0):
+                    return
                 map_key = f"World{world_num}"
+
 
             if self.previous_map_key != map_key:
                 await self.send_msgs([{"cmd" : "Set","key" : f"{self.slot}_{self.team}_NSMBW_UT_MAP",
@@ -1705,7 +1711,7 @@ class NSMBWContext(SuperContext):
     def match_server_state(self):
         if Utils.get_settings()[nsmbw_settings].collect_level == 0:
             return
-        if self.game_interface.memory_addresses is None:
+        if not hasattr(self.game_interface, "memory_addresses"):
             return
 
         skipp_levels = []
@@ -1886,6 +1892,9 @@ class NSMBWContext(SuperContext):
             Dolphin = settings_path / "Dolphin.ini"
             assert Dolphin.exists(), f"Dolphin.ini does not exist"
 
+            RetroAchievements = settings_path / "RetroAchievements.ini"
+            assert RetroAchievements.exists(), "RetroAchievements.ini does not exist"
+
             config = ConfigParser()
             config.read(Dolphin)
 
@@ -1896,6 +1905,15 @@ class NSMBWContext(SuperContext):
                 self.log_color(message)
                 messagebox("Incompatible dolphin settings", message, True)
                 return False
+
+            config.read(RetroAchievements)
+            HardcoreEnabled : bool = config.getboolean("Achievements", "HardcoreEnabled",fallback=False)
+            if HardcoreEnabled == True:
+                message = f"Disable RetroAchievements integration to be able to hook properly"
+                self.log_color(message)
+                messagebox("Incompatible dolphin settings", message, True)
+                return False
+
 
             #with open(settings_path, 'w') as configfile:
             #    config.write(configfile)
@@ -1965,8 +1983,8 @@ class NSMBWContext(SuperContext):
             f"AP version                : {Utils.__version__}\n"
             f"Server version            : {self.server_version}\n"
             f"Generator version         : {self.generator_version}\n"
-            f"Game version              : {self.game_interface.current_game if self.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
-            f"Game revision             : {self.game_interface.game_rev if self.game_interface.memory_addresses is not None else 'Dolphin not connected'}\n"
+            f"Game version              : {self.game_interface.current_game if hasattr(self.game_interface, "memory_addresses") else 'Dolphin not connected'}\n"
+            f"Game revision             : {self.game_interface.game_rev if hasattr(self.game_interface, "memory_addresses") else 'Dolphin not connected'}\n"
             f"Dolphin versions          : {dolphin_version}\n"
         )
 

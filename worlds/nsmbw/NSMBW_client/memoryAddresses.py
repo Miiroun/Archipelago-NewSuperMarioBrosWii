@@ -1,4 +1,5 @@
 import io
+from enum import IntEnum
 from typing import List, Dict
 import zipfile
 from pathlib import Path
@@ -48,8 +49,22 @@ class SymbolReader(object):
         address = self.db_address[index]
         return address
 
+class SPRITEID(object):
+    def __init__(self, this_version):
+        self.SPRING = 279
+        self.GOOMBA = 441
+
+class PROFILEID(object):
+    def __init__(self, this_version):
+        self.SPRING = 279
+        self.GOOMBA = 441
+
+
 
 class MemoryAddresses(object):
+    spriteID : SPRITEID
+    profileID : PROFILEID
+
     def __init__(self, this_version):
         if is_nsmbwapworld_frozen():
             with zipfile.ZipFile(Path(__file__).parent.parent.parent) as zf:
@@ -68,7 +83,8 @@ class MemoryAddresses(object):
             with Path(symbol_path).open('r', encoding='utf-8') as f:
                     self.symbol_reader = SymbolReader(f)
         self.this_version = this_version
-
+        self.spriteID = SPRITEID(self.this_version)
+        self.profileID = PROFILEID(self.this_version)
 
 
         self.SC_current_level = self.map_between("E2",0x803741B0)
