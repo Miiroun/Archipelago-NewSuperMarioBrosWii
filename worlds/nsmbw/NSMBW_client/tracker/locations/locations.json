@@ -4765,7 +4765,7 @@
     "map_locations": [
       {
         "map": "world2",
-        "x": 428,
+        "x": 146,
         "y": 569,
         "size": 32
       }
@@ -4810,7 +4810,7 @@
     "map_locations": [
       {
         "map": "world2",
-        "x": 146,
+        "x": 428,
         "y": 569,
         "size": 32
       }
