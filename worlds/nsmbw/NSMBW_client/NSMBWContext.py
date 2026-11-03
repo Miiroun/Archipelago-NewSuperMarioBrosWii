@@ -1644,14 +1644,17 @@ class NSMBWContext(SuperContext):
 
     async def ut_auto_tab(self):
         if tracker_loaded and self.slot:
-            map_key : str = ""
+            world_num = 0
 
             if self.game_interface.is_in_level():
-                world_num, level_num = self.game_interface.get_modified_world_level_num_in_level()
-                map_key = f"{world_num-level_num}"
+                world_num, _ = self.game_interface.get_modified_world_level_num_in_level()
             elif self.game_interface.is_in_worldmap():
-                world_num, level_num = self.game_interface.get_world_level_num_on_map()
-                map_key = f"World{world_num}"
+                world_num = self.game_interface.get_map_world()[0] + 1
+
+            if not 1 <= world_num <= 9:
+                return
+
+            map_key = f"World{world_num}"
 
             if self.previous_map_key != map_key:
                 await self.send_msgs([{"cmd" : "Set","key" : f"{self.slot}_{self.team}_NSMBW_UT_MAP",
