@@ -1221,8 +1221,7 @@ class NSMBWContext(SuperContext):
             self.prev_powerup[player_num] = self.game_interface.get_powerupstate(player_num)
 
     def is_world_unlocked(self, world_num) -> bool:
-        use_world_one = self.game_interface.is_in_worldmap()  # self.game_interface.is_in_level()#not (current_map_world in [7,8])
-        rule_all = (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)]) or ((not use_world_one) and world_num == 1)
+        rule_all = (self.starcoin_count >= self.slot_data["starcoin_requirement_world_unlock"][str(world_num)])
         match self.slot_data["world_unlock"]:
             case WorldUnlock.option_separate | WorldUnlock.option_single | WorldUnlock.option_progressive:
                 return (self.unlocked_worlds[world_num - 1] >= 1) and rule_all
@@ -1259,8 +1258,9 @@ class NSMBWContext(SuperContext):
 
         self.game_interface.set_world_second_half_unlock(int_to_bytes(second_half, 4))
 
+        force_world_one = not self.game_interface.is_in_worldmap()
         for world_num in range(1, 9 + 1):
-            if self.is_world_unlocked(world_num):
+            if self.is_world_unlocked(world_num) or (force_world_one and world_num == 1):
                 self.game_interface.set_worldstats(world_num, b'\x01')
             else:
                 self.game_interface.set_worldstats(world_num, b'\x00')
