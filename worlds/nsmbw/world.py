@@ -313,7 +313,7 @@ class NSMBWworld(World):
 
         for level in LEVELS:
             for level_part_name in self.location_name_groups[f"{name_base(*level)} Everything"]:
-                local_hint_data.update({self.location_name_to_id[level_part_name] : name_base(*level_randoed(self.shuffled_level_order, *level))})
+                local_hint_data.update({self.location_name_to_id[level_part_name] : name_base(*level_randoed_bijection(self.shuffled_level_order, *level))})
 
         for i in range(1,1000):
             local_hint_data.update({self.location_name_to_id[name_inventory(i)] : "Toad houses, World enemies"})

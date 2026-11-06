@@ -16,6 +16,15 @@
 - replace spring at sprite level or profile level ?
 - fix climb
 
+- whereis hint is wrong
+- se över contribute.md
+- Hm of default
+- Hintmovie 10 doesnt want to unlock
+- Hint movies need level shuffle logic
+- error when go to world 9 from tower
+- corupted save
+- 9-8 doesnt send clear
+- Add new person to credit.md
 
 
 ## Playtest
@@ -27,6 +36,7 @@
 - made memAdress not optional : test if this breaks anything
 - doesn't show errors when disconnecting on a failed dolphin hook
 - read dolphin retroachiv settings
+- hint location
 
 
 
