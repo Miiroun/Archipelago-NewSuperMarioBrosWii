@@ -637,7 +637,7 @@ class NSMBWInterface(object):
         if world_num > 10:
             return 0, 0
 
-        if level_num >= 40 or level_num in [8,9,10,39]:
+        if level_num >= 40 or level_num in [9,10,39]:
             return 0,0
 
         if world_num == 9:
