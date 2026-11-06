@@ -382,9 +382,9 @@ def get_level_connections() -> List[List[List[int]]]:
             [2,3],  # -1
             [7],  # -2
             [7],  # -3
-            [5],  # -4
-            [6],  # -5
-            [8],  # -6
+            [6],  # -4
+            [8],  # -5
+            [5],  # -6
             [4],  # -Towerower
             [9],  # -Castleaslte
             [] #airship
