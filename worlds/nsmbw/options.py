@@ -402,7 +402,7 @@ class GoalWorldRequirement(Range):
     """
 
     range_start = 0
-    range_end = 7
+    range_end = 8 # world 1-7 and 9
 
     default = 2
 

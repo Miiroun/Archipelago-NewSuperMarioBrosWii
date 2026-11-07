@@ -860,7 +860,10 @@ class NSMBWContext(SuperContext):
         return _sum
 
     def get_completed_worlds(self) -> int:
-        return sum([(name_world_clear(world_num) in self.completed_levels) for world_num in range(1, 7 + 1)])
+        return sum([
+            (NSMBWworld.location_name_to_id[name_world_clear(world_num)] in self.checked_locations)
+                    for world_num in [1,2,3,4,5,6,7,9]
+        ])
 
     def get_bow_unlocked(self) -> bool:
         completed_worlds = self.get_completed_worlds()
@@ -972,6 +975,18 @@ class NSMBWContext(SuperContext):
                     if not level_name in self.completed_levels:
                         self.completed_levels.append(level_name)
 
+        if level[0] == 9:
+            for level_num in range(1,8+1):
+                level_stats = self.game_interface.get_level_stats(9, level_num)[0]
+                if level_stats & 0x10 != 0x10:
+                    break
+            else:
+
+                loc_name = name_world_clear(9)
+                if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
+                    checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
+                    if Utils.get_settings()[nsmbw_settings].debug_mode:
+                        print(f"You collected a check for completing {loc_name}")
 
 
         # this code is for unlocking the final level
@@ -992,20 +1007,6 @@ class NSMBWContext(SuperContext):
                     self.completed_levels.remove(level_name)
                     self.log_color("Bowsers castle is now unlocked", "blue")
 
-
-            level = self.game_interface.get_world_level_num_on_map()
-            if level[0] == 9:
-                for level_num in range(1,8+1):
-                    level_stats = self.game_interface.get_level_stats(9, level_num)[0]
-                    if level_stats & 0x10 != 0x10:
-                        break
-                else:
-
-                    loc_name = name_world_clear(9)
-                    if not (NSMBWworld.location_name_to_id[loc_name] in self.locations_handled):
-                        checked_locations.append(NSMBWworld.location_name_to_id[loc_name])
-                        if Utils.get_settings()[nsmbw_settings].debug_mode:
-                            print(f"You collected a check for completing {level_name}")
         else:
             self.game_interface.set_bowser_unlocked(True)
 

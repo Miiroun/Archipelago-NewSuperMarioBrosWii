@@ -26,6 +26,11 @@
 - 9-8 doesnt send clear
 - Add new person to credit.md
 
+world complete broken
+- something to-do with save file
+- shouldn't base this info from local save but rather reconsturct from server : done
+- maybe something is now broken with how we load json ??
+
 
 ## Playtest
 - checkpoint image does not load on frozen 
@@ -37,6 +42,7 @@
 - doesn't show errors when disconnecting on a failed dolphin hook
 - read dolphin retroachiv settings
 - hint location
+- get_completed_worlds fixed
 
 
 

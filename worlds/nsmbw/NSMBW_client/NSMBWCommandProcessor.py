@@ -211,9 +211,7 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             case _:
                 raise NotImplementedError
         logger.info(f"Star coin count: {self.ctx.starcoin_count} out of {self.ctx.slot_data['goal_starcoin_unlock']} for goaling")
-        completed_worlds = sum(
-            [(name_world_clear(world_num) in self.ctx.completed_levels) for world_num in [1,2,3,4,5,6,7,9]])
-        logger.info(f"You have completed {completed_worlds} / {self.ctx.slot_data['goal_world_unlock']} worlds for goaling.")
+        logger.info(f"You have completed {self.ctx.get_completed_worlds()} / {self.ctx.slot_data['goal_world_unlock']} worlds for goaling.")
         logger.info(f"{self.ctx.get_count_levels_cleared()} / {self.ctx.slot_data['goal_level_unlock']} levels completed for goaling ")
 
     def _cmd_kill(self):
