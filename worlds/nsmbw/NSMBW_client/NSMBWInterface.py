@@ -641,6 +641,8 @@ class NSMBWInterface(object):
             return 0,0
 
         if world_num == 9:
+            if level_num > 8:
+                return 0,0
             return world_num, level_num
 
         if (1 <= level_num <= 7 or level_num in [21, 22, 24, 25, 38]):  # becomes 0 if collected

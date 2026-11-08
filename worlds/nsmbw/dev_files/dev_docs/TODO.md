@@ -53,8 +53,13 @@ ive been having some issues where dying in certain levels locks me on the map sc
 2-5, 8-4, 8-5
 in all of these cases, mario does not load back to the map in the correct spot (ive been having general issues with either mario or the camera being in the wrong spot when on the map, but usually i can still interact with the game)
 
+To be fair, it's probably because I made a bad manipulation by entering the secret exit pipe after 6-5 without having the secret exit.
+- need to try and read and disable secret exits earlier : maybe try speed up gameloop ? or continues lissen?
 
 
+Also I had 5-1 has the final level for  W1 I'm not sure it's normal but yeah
+- lock end of world
+- maybe because 2 airships castle_group + airship_group  + airship_group, 
 
 
 ## fuzzing error

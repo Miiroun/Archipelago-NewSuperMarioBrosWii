@@ -430,7 +430,7 @@ def shuffle_level_order(world: NSMBWworld) -> bool:
             case LevelShuffleBossLock.option_nolock:
                 pass
             case LevelShuffleBossLock.option_lock_end_of_world:
-                shuffle_specific_list += add_to_list(castle_group + airship_group  + airship_group, [(world_num, 8 + (world_num in [4,6,7,8])) for world_num in range(1,8+1)])
+                shuffle_specific_list += add_to_list(castle_group + tower_group  + airship_group, [(world_num, 8 + (world_num in [4,6,7,8])) for world_num in range(1,8+1)])
             case _:
                 raise NotImplementedError
 
