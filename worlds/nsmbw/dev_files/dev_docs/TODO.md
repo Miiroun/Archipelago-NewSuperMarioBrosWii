@@ -32,6 +32,10 @@ world complete broken
 - maybe something is now broken with how we load json ??
 
 
+macOS
+- https://github.com/bavario-lginc/DolphinToolExecutables
+- test VM
+
 ## Playtest
 - checkpoint image does not load on frozen 
 - also when i grab a powerup i dont have while having another powerup i dont get it back (ex: i have penguin suit and grab a fire flower it just makes me big instead of penguin) 

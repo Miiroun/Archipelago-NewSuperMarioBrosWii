@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import math
 import shutil
 from collections import defaultdict
@@ -131,6 +132,8 @@ class NSMBWContext(SuperContext):
     
     patcher : Optional[Patcher] = None
 
+    seed_name_hash : str = ""
+
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
             super().__init__(server_address, password)
@@ -238,6 +241,7 @@ class NSMBWContext(SuperContext):
 
             case "RoomInfo":
                 self.seed_name = args["seed_name"]
+                self.seed_name_hash = hashlib.sha256(self.seed_name.encode("utf-8")).hexdigest()
 
             case "RoomUpdate":
                 if "checked_locations" in args:
@@ -502,8 +506,8 @@ class NSMBWContext(SuperContext):
             self.game_interface.save_state(self.save_slot)
             await asyncio.sleep(0.5)
 
-        print(f"Seedname {self.seed_name}")
-        if (self.seed_name != "") and (not (self.seed_name is None)) and (self.patcher is not None):
+        print(f"Seedname {self.seed_name_hash}")
+        if (self.seed_name_hash != "") and (not (self.seed_name_hash is None)) and (self.patcher is not None):
             path = Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves"
             path.mkdir(parents=True, exist_ok=True)
 
@@ -530,7 +534,7 @@ class NSMBWContext(SuperContext):
             logger.info("Connect to sever before loading")
             return
 
-        if self.seed_name != "" and (not (self.seed_name is None)):
+        if self.seed_name_hash != "" and (not (self.seed_name_hash is None)):
             try:
                 with open(Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves" / f"{self.patcher.name}.json", "r") as file_name:
                     # Parsing the JSON file into a Python dictionary
@@ -1831,7 +1835,7 @@ class NSMBWContext(SuperContext):
 
             assert input_iso_path is not None, "Add a path to your game file in host.yaml"
             assert Path(input_iso_path).exists(), "Your game file path is invalid"
-            self.patcher : Patcher = Patcher(self.username, self.seed_name, self.team if self.team else 0, self.slot_data)
+            self.patcher : Patcher = Patcher(self.username, self.seed_name_hash, self.team if self.team else 0, self.slot_data)
             if not self.patcher.shortcut_path.exists():
                 self.patcher.patch()
             self.patcher.get_region()
@@ -1847,7 +1851,7 @@ class NSMBWContext(SuperContext):
 
             if auto_start_riivolution or override:
                 result : Any
-                if ((Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves" / f"{self.seed_name}.json").exists()) and auto_load:
+                if ((Path(Utils.get_settings()[nsmbw_settings].dolphin_riivolution_folder) / "AP_nsmbw_saves" / "nsmbw_clientsaves" / f"{self.seed_name_hash}.json").exists()) and auto_load:
                     rii_path = self.patcher.output_path.parent.parent.parent
                     save_state_file = rii_path / "StateSaves" / f"{self.patcher.region}.s0{self.save_slot}"
                     result = subprocess.Popen(self.get_dolphin_run_command(str(save_state_file)) + [

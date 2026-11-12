@@ -58,7 +58,9 @@ class NSMBWSettings(settings.Group):
             assert Path(path).exists()
 
             if "ciso" in path:
-                raise ValueError(f"Invalid game file, do not use a 'ciso' file, they don't work properly.")
+                raise ValueError(f"Invalid game file, do not use a 'ciso' files, they don't work properly.")
+            if "nkit" in path:
+                raise ValueError(f"Invalid game file, do not use a 'nkit.iso' files, they don't work properly.")
 
         # this code overwrites default in setting
         def browse(self: T,filetypes: Sequence[tuple[str, Sequence[str]]] | None = None, **kwargs: Any)-> T | None:

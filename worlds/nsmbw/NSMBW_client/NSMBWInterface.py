@@ -69,7 +69,7 @@ class NSMBWInterface(object):
     relay_trackers: Optional[Dict[Any, Any]]
     game_id : bytes
 
-    memory_addresses : Optional[MemoryAddresses] = None
+    memory_addresses : MemoryAddresses
     deathtimer : float = time.time()
     should_clear : int
 
@@ -612,6 +612,12 @@ class NSMBWInterface(object):
 
         for i in range(sprite_count):
             self.set_sprite(i, sprite_table[i])
+
+    def replace_sprite(self, _from : int, _to : int) -> None:
+        self.set_sprite(_to, self.get_sprite(_from))
+
+    def replace_profile(self, _from : int, _to : int) -> None:
+        self.set_profile(_to, self.get_profile(_from))
 
 
     async def patch_runtime_on_load(self):
