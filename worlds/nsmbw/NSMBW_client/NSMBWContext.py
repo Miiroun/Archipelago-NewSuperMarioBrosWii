@@ -1914,7 +1914,7 @@ class NSMBWContext(SuperContext):
             config.read(RetroAchievements)
             HardcoreEnabled : bool = config.getboolean("Achievements", "HardcoreEnabled",fallback=False)
             if HardcoreEnabled == True:
-                message = f"Disable RetroAchievements integration to be able to hook properly"
+                message = f"Disable RetroAchievements integration : HardcoreEnabled to be able to hook properly"
                 self.log_color(message)
                 messagebox("Incompatible dolphin settings", message, True)
                 return False

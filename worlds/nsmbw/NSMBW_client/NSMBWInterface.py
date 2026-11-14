@@ -78,6 +78,8 @@ class NSMBWInterface(object):
     slot_data : dict
     patch_runtime : bool = False
 
+    local_profile_table : Dict[int, bytes]
+
     def __init__(self, logger: Logger, log_color) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
@@ -85,6 +87,7 @@ class NSMBWInterface(object):
         self.log_color = log_color
 
         self.random = Random()
+        self.local_profile_table = {}
 
 
 
@@ -567,6 +570,16 @@ class NSMBWInterface(object):
         #            self.set_red_coin_timer(1)
 
 
+        #self.replace_sprite(self.memory_addresses.spriteID.KOOPA, self.memory_addresses.spriteID.GOOMBA)
+        self.replace_profile(self.memory_addresses.profileID.KOOPA, self.memory_addresses.profileID.GOOMBA)
+        #self.replace_profile( 	412, self.memory_addresses.profileID.GOOMBA)
+        #self.replace_profile( 	self.memory_addresses.profileID.GOOMBA, 412)
+
+
+        #self.replace_sprite(self.memory_addresses.spriteID.GOOMBA, self.memory_addresses.spriteID.KOOPA)
+        self.replace_profile(self.memory_addresses.profileID.GOOMBA, self.memory_addresses.profileID.KOOPA)
+        # for some reason they are in reverse order from expected
+
         if ITEM.LEVELELEMENTS.RedSwitch in slot_data_element_included:
             if ITEM.LEVELELEMENTS.RedSwitch in unlocks:
                 pass
@@ -617,7 +630,10 @@ class NSMBWInterface(object):
         self.set_sprite(_to, self.get_sprite(_from))
 
     def replace_profile(self, _from : int, _to : int) -> None:
-        self.set_profile(_to, self.get_profile(_from))
+        #current_address = self.get_profile(_to) # this should be cached
+        replacement_address = self.get_profile(_from)
+        #print(f"replacement_address {replacement_address}")
+        self.set_profile(_to, replacement_address)
 
 
     async def patch_runtime_on_load(self):
@@ -824,8 +840,15 @@ class NSMBWInterface(object):
         return self.dolphin_client.read_address(address,1)
 
     def get_sprite(self, num) -> bytes:
-        address = self.memory_addresses.sprite_init_table_start + 2 * num
-        return self.dolphin_client.read_address(address, 2)
+        address = self.memory_addresses.sprite_init_table_start + 4 * num
+        return self.dolphin_client.read_address(address, 4)
+
+    def get_profile(self, num) -> bytes:
+        if not num in self.local_profile_table.keys():
+            address = self.memory_addresses.profile_init_table_start + 4 * num
+            value =  self.dolphin_client.read_address(address, 4)
+            self.local_profile_table[num] = value
+        return self.local_profile_table[num]
 
     def get_red_coin_timer(self) -> bytes:
         address = self.memory_addresses.red_coin_timer_pointer
@@ -967,7 +990,13 @@ class NSMBWInterface(object):
             self.dolphin_client.write_address(address, data)
 
     def set_sprite(self, num, data : bytes):
-        address = self.memory_addresses.sprite_init_table_start + 2 * num
+        address = self.memory_addresses.sprite_init_table_start + 4 * num
+        self.write_instruction(address, data)
+
+    def set_profile(self, num, data : bytes):
+        self.get_profile(num)
+        address = self.memory_addresses.profile_init_table_start + 4 * num
+        #print(f"address_set profile  {address : x}")
         self.write_instruction(address, data)
 
     def set_starting_world(self, world_num : int):
@@ -1054,6 +1083,8 @@ class NSMBWInterface(object):
                 logger.info(f"Trying to hook, attempt {i} / 30")
             try:
                 self.dolphin_client.connect()
+                time.sleep(0.1)
+                self.connect_to_game()
                 time.sleep(0.1)
                 if self.dolphin_client.is_connected() and self.dolphin_client.dolphin.is_hooked():
                     self.log_color(f"Successfully force connected", "green")

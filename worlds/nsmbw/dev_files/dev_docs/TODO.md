@@ -36,6 +36,9 @@ macOS
 - https://github.com/bavario-lginc/DolphinToolExecutables
 - test VM
 
+- game crash on selecting save file
+
+
 ## Playtest
 - checkpoint image does not load on frozen 
 - also when i grab a powerup i dont have while having another powerup i dont get it back (ex: i have penguin suit and grab a fire flower it just makes me big instead of penguin) 

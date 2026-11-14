@@ -51,13 +51,16 @@ class SymbolReader(object):
 
 class SPRITEID(object):
     def __init__(self, this_version):
-        self.SPRING = 279
-        self.GOOMBA = 441
+        self.KOOPA = 57
+        self.GOOMBA = 20
+        self.SPRING = 536
+
 
 class PROFILEID(object):
     def __init__(self, this_version):
+        self.KOOPA = 54
         self.SPRING = 279
-        self.GOOMBA = 441
+        self.GOOMBA = 51
 
 
 
@@ -287,7 +290,8 @@ class MemoryAddresses(object):
 
         self.patch_goomba = self.create_patch("P1", 0x80031210, instru_blr, instru_stwu + val_fff0, "patch_goomba")
 
-        self.sprite_init_table_start = self.map_between("P1", 0x8076a748)
+        self.sprite_init_table_start = self.map_between("P1", 0x8030a340)
+        self.profile_init_table_start = self.map_between("P1", 0x8076a748)
 
         # what is origin ?????
         self.fast_countdown_speed = self.create_patch("P1", 0x800e3ab8, int_to_bytes(0x3403fe90, 4),int_to_bytes(0x42b80000, 4), name = "fast_countdown_speed" )

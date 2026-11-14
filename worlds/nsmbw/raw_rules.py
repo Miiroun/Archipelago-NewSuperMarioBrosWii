@@ -507,6 +507,9 @@ def get_block_id(world_num : int, level_num : int) -> List[Block]:
             Block("Coinblock after checkpoint 1", 0x45568000, 0xc4020000, 0xc2c80000),
             Block("Propeller After checkpoint", 0x45588000, 0xc4020000, 0xc2c80000),
             Block("Coinblock after checkpoint 2", 0x45578000, 0xc4020000, 0xc2c80000),
+            #Block("", 0x45588000, 0xc4000000, 0xc2c80000),
+            #Block("", 0x45578000, 0xc4000000, 0xc2c80000),
+            #Block("", 0x45568000, 0xc4000000, 0xc2c80000),
 
             Block("Propeller under orange walk", 0x458cc000, 0xc3f80000, 0xc2c80000),
 
