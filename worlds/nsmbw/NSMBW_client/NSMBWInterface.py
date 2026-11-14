@@ -10,7 +10,7 @@ import subprocess
 from random import Random
 
 import Utils
-from ..options import RandomizeEnemies
+from ..options import RandomizeEnemies, EnemieShuffle
 
 from ..Common import *
 
@@ -167,7 +167,8 @@ class NSMBWInterface(object):
                     #return False
                 self.log_color(f"NSMBW Disc Version: {str(self.current_game)} and revision {self.game_rev}", "blue")
 
-                Utils.async_start(self.shuffle_sprites())
+                if self.slot_data["enemies_shuffle"] == EnemieShuffle.option_on:
+                    Utils.async_start(self.shuffle_profiles())
 
                 self.log_color(f"Successfully connected to dolphin", "green")
 
@@ -571,13 +572,13 @@ class NSMBWInterface(object):
 
 
         #self.replace_sprite(self.memory_addresses.spriteID.KOOPA, self.memory_addresses.spriteID.GOOMBA)
-        self.replace_profile(self.memory_addresses.profileID.KOOPA, self.memory_addresses.profileID.GOOMBA)
+        #self.replace_profile(self.memory_addresses.profileID.KOOPA, self.memory_addresses.profileID.GOOMBA)
         #self.replace_profile( 	412, self.memory_addresses.profileID.GOOMBA)
         #self.replace_profile( 	self.memory_addresses.profileID.GOOMBA, 412)
 
 
         #self.replace_sprite(self.memory_addresses.spriteID.GOOMBA, self.memory_addresses.spriteID.KOOPA)
-        self.replace_profile(self.memory_addresses.profileID.GOOMBA, self.memory_addresses.profileID.KOOPA)
+        #self.replace_profile(self.memory_addresses.profileID.GOOMBA, self.memory_addresses.profileID.KOOPA)
         # for some reason they are in reverse order from expected
 
         if ITEM.LEVELELEMENTS.RedSwitch in slot_data_element_included:
@@ -610,30 +611,29 @@ class NSMBWInterface(object):
 
 
 
-    async def shuffle_sprites(self):
+    async def shuffle_profiles(self):
         # Replace all Goombas with Koopas, at the profile level
-        # kmWrite32(0x8076a814, 0x80afdcb0);
+        profiles_to_shuffle : list[int]= [
+            self.memory_addresses.profileID.KOOPA,
+            self.memory_addresses.profileID.GOOMBA,
+        ]
 
-        # should create a list of valid sprites to shuffle
-        return # causes craches
-        sprite_table = []
-        sprite_count = 750
-        for i in range(sprite_count):
-            sprite_table.append(self.get_sprite(i))
+        profiles_to_shuffle_copy = profiles_to_shuffle.copy()
+        self.random.shuffle(profiles_to_shuffle_copy)
+        for _from, _to in zip(profiles_to_shuffle, profiles_to_shuffle_copy):
+            self.replace_profile(_from, _to)
 
-        self.random.shuffle(sprite_table)
 
-        for i in range(sprite_count):
-            self.set_sprite(i, sprite_table[i])
+
 
     def replace_sprite(self, _from : int, _to : int) -> None:
         self.set_sprite(_to, self.get_sprite(_from))
 
     def replace_profile(self, _from : int, _to : int) -> None:
         #current_address = self.get_profile(_to) # this should be cached
-        replacement_address = self.get_profile(_from)
+        replacement_address = self.get_profile(_to)
         #print(f"replacement_address {replacement_address}")
-        self.set_profile(_to, replacement_address)
+        self.set_profile(_from, replacement_address)
 
 
     async def patch_runtime_on_load(self):

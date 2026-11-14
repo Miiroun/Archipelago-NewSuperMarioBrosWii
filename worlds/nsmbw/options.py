@@ -627,6 +627,16 @@ class TileSheetShuffle(Toggle):
     default = False
     #visibility = Visibility.none
 
+class EnemieShuffle(Choice):
+    """
+    Shuffles the in game enemies
+    Logic does not acount for changes
+    """
+    option_off = 0
+    option_on = 3
+
+    default = option_off
+    visibility = Visibility.none
 
 class EntranceRandomizer(Choice):
     """
@@ -764,6 +774,8 @@ class NSMBWOptions(PerGameCommonOptions):
     level_shuffle_plando : LevelShufflePlando
     level_shuffle_remove : LevelShuffleRemove
 
+
+    enemies_shuffle : EnemieShuffle
 
     entrance_randomizer : EntranceRandomizer
 

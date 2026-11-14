@@ -36,7 +36,7 @@ macOS
 - https://github.com/bavario-lginc/DolphinToolExecutables
 - test VM
 
-- game crash on selecting save file
+- seed profiles_to_shuffle_copy
 
 
 ## Playtest
@@ -67,6 +67,8 @@ To be fair, it's probably because I made a bad manipulation by entering the secr
 Also I had 5-1 has the final level for  W1 I'm not sure it's normal but yeah
 - lock end of world
 - maybe because 2 airships castle_group + airship_group  + airship_group, 
+
+- game crash on selecting save file
 
 
 ## fuzzing error
