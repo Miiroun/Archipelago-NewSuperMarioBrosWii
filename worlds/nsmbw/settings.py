@@ -139,17 +139,6 @@ class NSMBWSettings(settings.Group):
         """Enable if you want to close the game automatically"""
 
 
-    class CollectLevel(settings.IntEnum):
-        """
-        Set this to specify how client should respond to a location being remotely collected
-        0 = ignore
-        1= update if not important (castle / final level)
-        2= update even if important ( for same slot coop)
-        """
-        required = True
-        ignore = 0
-        update_not_important = 1
-        update_all = 2
 
     class DebugMode(settings.Bool):
         """Enable debug commands and more detailed logging."""
@@ -196,7 +185,6 @@ class NSMBWSettings(settings.Group):
 
     debug_mode : DebugMode | bool = not is_nsmbwapworld_frozen()
 
-    collect_level : CollectLevel  = CollectLevel(1)
     allow_gen_impactful_settings : AllowGenDiffSettings | bool = not is_nsmbwapworld_frozen()
     dolphin_process_name : DolphinProcessName = DolphinProcessName("")
     dolphin_instance_override : DolphinInstanceOverride | bool= False

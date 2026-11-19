@@ -107,6 +107,10 @@ class TimeRule(Rule["NSMBWworld"], game = game_name):
 
     time : int | FieldResolver
 
+    def __init__(self,time : int | FieldResolver, *varg, **kwargs):
+        super().__init__(self, *varg, **kwargs)
+        self.time = time
+
     @override
     def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
         # caching_enabled only needs to be passed in when your world inherits from CachedRuleBuilderWorld
@@ -293,7 +297,7 @@ LevelRules : Dict[str, Level]= { # normal compleation rules
 # world 6
     "6-1"  : Level(normal_move, (True_(), True_(), logic_hard | ice | peng_o | propeller_o)),  # -1
     "6-2"  : Level(normal_move & pipe& button_down & button_up & (swim | run | logic_normal), (carry_shell | (peng_o & crouch), logic_hard | ice | peng_o | propeller_o, True_())),  # -2
-    "6-3"  : Level(normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))),(True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry))), # 6-3
+    "6-3"  : Level(normal_move & pipe & button_down & button_up & ((swim & question_switch) | (wall_jump & (propeller_o | (logic_hard & ice_peng_o & run)))) & (logic_hard | super_mario | run | spin_jump),(True_(), True_(), (wall_jump & fire) | propeller_o | (logic_hard & ice_peng_o & run & carry))), # 6-3
     "6-4"  : Level(pipe & button_down & button_up & normal_move, (yoshi | propeller| (logic_hard & carry_shell), (yoshi | propeller | ((max_mini | (oswj & logic_hard)) & outside_powerups)), (yoshi | propeller | wall_jump))),  # -4
     "6-5"  : Level(pipe & button_down & button_up & normal_move, (True_(), True_(), climb & (carry | propeller_o)), climb),  # -5
     "6-6"  : Level(pipe & button_down & button_up & normal_move & (question_switch | logic_hard), (True_(), logic_normal | carry | propeller_o, logic_normal | carry | propeller_o),True_()),  # -6
@@ -486,9 +490,10 @@ class Block(NamedTuple):
     rule : Rule = True_()
 
 
-    def __eq__(self, other : "Block") -> bool:
+    def __eq__(self, other) -> bool:
         if type(other) != type(self):
-            raise TypeError(f"Invalid type {type(other)} of {other}")
+            raise NotImplemented
+            #raise TypeError(f"Invalid type {type(other)} of {other}")
 
         return (self.pos_x, self.pos_y, self.pos_z) == (other.pos_x, other.pos_y, other.pos_z)
 

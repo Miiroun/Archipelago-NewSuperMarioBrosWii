@@ -276,15 +276,6 @@ class NSMBWCommandProcessor(SuperClientCommandProcessor):
             else:
                 logger.info(f"You do not have powerups enabled")
 
-    def _cmd_change_collection_level(self, value):
-        """
-        Set this to specify how client should respond to a location being remotely collected.
-        0 = ignore, 1= update if not important (castle / final level), 2= update even if important ( for same slot coop).
-        Changes the collection level setting in host.yaml, is constant for all multiworld.
-        """
-        assert value in ["0", "1", "2"], "Allowed values are 0, 1 or 2"
-        Utils.get_settings()[nsmbw_settings]["collect_level"] = value
-        get_settings().save()
 
     def _cmd_toggle_auto_start_riivolution(self):
         """

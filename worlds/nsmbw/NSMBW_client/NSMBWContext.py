@@ -1714,14 +1714,10 @@ class NSMBWContext(SuperContext):
                 await self.send_msgs([{"cmd": "ConnectUpdate", "tags": self.tags}])
 
     def match_server_state(self):
-        if Utils.get_settings()[nsmbw_settings].collect_level == 0:
-            return
         if not hasattr(self.game_interface, "memory_addresses"):
             return
 
         skipp_levels = []
-        if Utils.get_settings()[nsmbw_settings].collect_level == 1:
-            skipp_levels += [(1, 8), (2, 8), (3, 8), (4, 9), (5, 8), (6, 9), (7, 9), (8, 9)]
         for world_num in range(1, 8 + 1):
             if self.unlocked_worlds[world_num - 1] <= 1:
                 skipp_levels.append((world_num, 7 + (world_num in (7, 8))))
