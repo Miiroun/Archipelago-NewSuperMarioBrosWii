@@ -137,7 +137,7 @@ class NSMBWContext(SuperContext):
     def __init__(self, server_address: str, password: str, real:bool=True):
         if real:
             super().__init__(server_address, password)
-        self.game_interface = NSMBWInterface(logger, self.log_color)
+        self.game_interface = NSMBWInterface(self, logger, self.log_color)
         self.locations_handled = []
 
         self.completed_levels = []
@@ -1762,7 +1762,8 @@ class NSMBWContext(SuperContext):
                         secret_exit = SECRET_EXIT[SECRET_EXIT.index(secret_exit_tmp)]
                         if secret_exit.exit_type == 2:
                             if NSMBWworld.location_name_to_id[name_secret(secret_exit)] in self.checked_locations:
-                                current_bytes |= 0x20
+                                if name_secret(secret_exit) in self.unlocked_secret_exits:
+                                    current_bytes |= 0x20
                             elif NSMBWworld.location_name_to_id[name_secret(secret_exit)] in self.missing_locations:
                                 pass
                                 #if DEBUG_MODE():

@@ -16,7 +16,7 @@ class TestLinuxHotkeys(unittest.TestCase):
 
         self.run = self.enterContext(patch.object(client.subprocess, "run"))
         self.enterContext(patch.object(client.shutil, "which", return_value="/usr/bin/tool"))
-        self.interface = client.NSMBWInterface(Mock(), Mock())
+        self.interface = client.NSMBWInterface(Mock(), Mock(), Mock())
 
     def test_save_and_load_commands(self) -> None:
         for slot in range(1, 9):

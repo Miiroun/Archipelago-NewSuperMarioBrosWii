@@ -7,9 +7,9 @@
 * Report issues that are found in the AP-discord thread (or GitHub)
 
 ## Instructions for how to contribute code
-* Either fork the git-hub repository or ask me (miiroun) to give you a branch. The latter is preferred.
+* Fork the git-hub repo.
 * Create your changes.
-* Make a pull request towards the main branch (NSMBW)
+* Make a pull request towards the main branch (NSMBW).
 * Help from experienced NSMBW moders is highly appreciated, (contact me on discord (miiroun) if you want to work together on this)
 
 
@@ -27,7 +27,3 @@
 * Then make a pull request with your changes to the dev branch on GitHub (NSMBW_miiroun_dev)
 
 
-
-# Poptracker
-* If you want, you can make a pop-tracker pack for this
-* As described in [this](https://github.com/Ixrec/ArchipelagoDocs/blob/main/PopTrackerVsUniversalTracker.md) and [this](https://github.com/FarisTheAncient/Archipelago/blob/tracker/worlds/tracker/docs/map-integration.md) I would prefer if you made it a Hybrid pack, but it is up to you who decideds to make it. 

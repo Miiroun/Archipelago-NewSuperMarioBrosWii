@@ -80,7 +80,9 @@ class NSMBWInterface(object):
 
     local_profile_table : Dict[int, bytes]
 
-    def __init__(self, logger: Logger, log_color) -> None:
+    ctx : "NSMBWContext"
+
+    def __init__(self,ctx, logger: Logger, log_color) -> None:
         self.logger = logger
         self.dolphin_client = DolphinClient(logger)
         self.should_clear = 0
@@ -88,6 +90,8 @@ class NSMBWInterface(object):
 
         self.random = Random()
         self.local_profile_table = {}
+
+        self.ctx = ctx
 
 
 
@@ -619,7 +623,8 @@ class NSMBWInterface(object):
         ]
 
         profiles_to_shuffle_copy = profiles_to_shuffle.copy()
-        self.random.shuffle(profiles_to_shuffle_copy)
+        tmp_rand = Random(self.ctx.seed_name_hash)
+        tmp_rand.shuffle(profiles_to_shuffle_copy)
         for _from, _to in zip(profiles_to_shuffle, profiles_to_shuffle_copy):
             self.replace_profile(_from, _to)
 

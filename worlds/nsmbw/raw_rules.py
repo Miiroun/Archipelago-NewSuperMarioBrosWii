@@ -11,7 +11,11 @@ rule_completed_everything = Has(ITEM.StarCoin, count=231)  & Has("Victory")
 
 @dataclasses.dataclass()
 class HasSC(Rule["NSMBWworld"], game = game_name):
-    amount : int | FieldResolver
+    amount : int
+
+    def __init__(self, amount : int, *varg, **kwargs):
+        #super().__init__(self, *varg, **kwargs)
+        self.amount = amount
 
     @override
     def _instantiate(self, world: "NSMBWworld") -> Rule.Resolved:
@@ -105,10 +109,10 @@ def get_time_rule(world : "NSMBWworld", time : int) -> Rule[TWorld]:
 class TimeRule(Rule["NSMBWworld"], game = game_name):
     """custom rule"""
 
-    time : int | FieldResolver
+    time : int
 
-    def __init__(self,time : int | FieldResolver, *varg, **kwargs):
-        super().__init__(self, *varg, **kwargs)
+    def __init__(self,time : int, *varg, **kwargs):
+        #super().__init__(self, *varg, **kwargs)
         self.time = time
 
     @override

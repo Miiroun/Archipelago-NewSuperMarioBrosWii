@@ -18,7 +18,7 @@ LEVEL_COUNT = 77
 
 
 DEPRIO_HM = [2,4,5,13,28,38,39,46,47,53,57,62,65]
-DEPRIO_HM += [6, 9, 12, 27, 37, 41, 43,51, 54, 55] # broken ?
+DEPRIO_HM += [6, 9,10, 12, 27, 37, 41, 43,51, 54, 55] # broken ?
 
 BOSS_HEALTH_COUNT = 10
 

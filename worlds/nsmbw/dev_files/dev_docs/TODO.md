@@ -16,12 +16,7 @@
 - replace spring at sprite level or profile level ?
 - fix climb
 
-- whereis hint is wrong
-- se över contribute.md
-- Hm of default
-- Hintmovie 10 doesnt want to unlock
 - Hint movies need level shuffle logic
-- error when go to world 9 from tower
 - corupted save
 - 9-8 doesnt send clear
 - Add new person to credit.md
@@ -36,8 +31,6 @@ macOS
 - https://github.com/bavario-lginc/DolphinToolExecutables
 - test VM
 
-- seed profiles_to_shuffle_copy
-
 
 ## Playtest
 - checkpoint image does not load on frozen 
@@ -49,12 +42,17 @@ macOS
 - doesn't show errors when disconnecting on a failed dolphin hook
 - read dolphin retroachiv settings
 - hint location
-- get_completed_worlds fixed
-
+- get_completed_worlds fixed after restart
+- error when go to world 9 from tower
+- whereis hint is wrong
+- due to match_server_state secret exits show up as completed
+Also I had 5-1 has the final level for  W1 I'm not sure it's normal but yeah
+- lock end of world
+- maybe because 2 airships castle_group + airship_group  + airship_group, 
+- seed profiles_to_shuffle_copy
 
 
 ## Bugs to fix
-- due to match_server_state secret exits show up as completed
 
 ive been having some issues where dying in certain levels locks me on the map screen (cant interact with the game) until i reset. so far this has happened in:
 2-5, 8-4, 8-5
@@ -64,9 +62,6 @@ To be fair, it's probably because I made a bad manipulation by entering the secr
 - need to try and read and disable secret exits earlier : maybe try speed up gameloop ? or continues lissen?
 
 
-Also I had 5-1 has the final level for  W1 I'm not sure it's normal but yeah
-- lock end of world
-- maybe because 2 airships castle_group + airship_group  + airship_group, 
 
 - game crash on selecting save file
 
