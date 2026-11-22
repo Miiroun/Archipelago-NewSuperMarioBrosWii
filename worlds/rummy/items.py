@@ -59,8 +59,8 @@ def create_all_items(world: RummyWorld) -> None:
         ((world.options.max_number.value * len(world.options.colors.value)) * world.options.copys_of_cards.value + 1) / world.options.card_per_item.value) - world.options.number_of_starting_card_items.value + world.options.extra_card_items.value)]
     # itempool += [world.create_item(name_symbol_item(symbol)) for symbol in SYMBOLS]
     # itempool += [world.create_item(name_color_item(color)) for color in COLORS]
-    itempool += [world.create_item(MOVES.MELD) for _ in range(2)]
-    itempool += [world.create_item(MOVES.STRAIT) for _ in range(3)]
+    itempool += [world.create_item(MOVES.MELD.value) for _ in range(2)]
+    itempool += [world.create_item(MOVES.STRAIT.value) for _ in range(3)]
 
     # creates early items
     early_items_list = []
